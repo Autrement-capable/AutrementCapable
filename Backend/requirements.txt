@@ -1,0 +1,11 @@
+Flask
+python-dotenv
+Flask-RESTful
+Flask-Restx
+Flask-Cors
+PyJWT
+PyYAML
+python-jose
+passlib
+pymongo
+mongoengine
