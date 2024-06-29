@@ -1,0 +1,158 @@
+#shape-game-container {
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  text-align: center;
+}
+
+.hidden {
+  display: none !important;
+}
+
+#shapeContainer {
+  width: 200px;
+  height: 200px;
+  margin: 20px auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+/* OPTIONS */
+#options {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px auto;
+}
+
+/* SHAPES */
+.square {
+  width: 100px;
+  height: 100px;
+}
+
+.shape {
+  width: 100px;
+  height: 100px;
+}
+
+.rectangle {
+  width: 150px;
+}
+
+.circle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+}
+
+.triangle {
+  width: 0;
+  height: 0;
+  border-left: 50px solid transparent !important;
+  border-right: 50px solid transparent !important;
+  border-bottom: 100px solid black;
+}
+
+.oval {
+  width: 200px;
+  height: 100px;
+  border-radius: 100px / 50px;
+}
+
+.trapezoid {
+  border-bottom: 100px solid red;
+  border-left: 25px solid transparent !important;
+  border-right: 25px solid transparent !important;
+  height: 0;
+  width: 100px;
+}
+
+.star {
+  width: 0 !important;
+  height: 0 !important;
+  border-left: 50px solid transparent !important;
+  border-right: 50px solid transparent !important;
+  border-bottom: 100px solid red;
+  position: relative;
+  background-color: unset !important;
+}
+.star:after {
+  width: 0;
+  height: 0;
+  border-left: 50px solid transparent !important;
+  border-right: 50px solid transparent !important;
+  border-top: 100px solid red;
+  position: absolute;
+  content: "";
+  top: 30px;
+  left: -50px;
+}
+
+/* COLORS */
+.red {
+  background-color: red;
+  border-color: red;
+}
+.red:after {
+  border-color: red;
+}
+
+.blue {
+  background-color: blue;
+  border-color: blue;
+}
+.blue:after {
+  border-color: blue;
+}
+
+.green {
+  background-color: green;
+  border-color: green;
+}
+.green:after {
+  border-color: green;
+}
+
+.yellow {
+  background-color: yellow;
+  border-color: yellow;
+}
+.yellow:after {
+  border-color: yellow;
+}
+
+.purple {
+  background-color: purple;
+  border-color: purple;
+}
+.purple:after {
+  border-color: purple;
+}
+
+.orange {
+  background-color: orange;
+  border-color: orange;
+}
+.orange:after {
+  border-color: orange;
+}
+
+.brown {
+  background-color: rgb(63, 16, 16);
+  border-color: rgb(63, 16, 16);
+}
+.brown:after {
+  border-color: rgb(63, 16, 16);
+}
+
+.gray {
+  background-color: gray;
+  border-color: gray;
+}
+.gray:after {
+  border-color: gray;
+}
