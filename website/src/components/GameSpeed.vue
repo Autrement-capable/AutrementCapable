@@ -169,19 +169,20 @@ export default {
   box-sizing: border-box;
   font-family: 'Poppins', sans-serif;
 }
-body{
+/* body{
   display: flex;
   padding: 0 10px;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-}
+} */
 ::selection{
   color: #fff;
   background: #17A2B8;
 }
 .wrapper{
   text-align: center;
+  margin-left: 20%;
   margin-top: 50px;
   width: 770px;
   padding: 35px;;

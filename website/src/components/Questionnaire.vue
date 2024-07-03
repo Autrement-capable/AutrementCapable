@@ -38,7 +38,6 @@
 <script>
 /* global webkitSpeechRecognition */
 export default {
-  /* global webkitSpeechRecognition */
   name: 'UserQuestionnaire',
   data() {
     return {
