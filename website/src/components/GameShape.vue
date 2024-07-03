@@ -4,18 +4,14 @@
     <div ref="gameArea" id="gameArea" class="hidden">
       <div ref="shapeContainer" id="shapeContainer"></div>
       <div ref="options" id="options">
-        <button ref="option" class="option" @click="getAnswer(1)">Same as before</button>
-        <button ref="option" class="option" @click="getAnswer(2)">
-          Same shape, different color
-        </button>
-        <button ref="option" class="option" @click="getAnswer(3)">
-          Same color, different shape
-        </button>
-        <button ref="option" class="option" @click="getAnswer(4)">Totally different</button>
+        <button class="option" @click="getAnswer(1)">Same as before</button>
+        <button class="option" @click="getAnswer(2)">Same shape, different color</button>
+        <button class="option" @click="getAnswer(3)">Same color, different shape</button>
+        <button class="option" @click="getAnswer(4)">Totally different</button>
       </div>
     </div>
     <div>
-        <button style="display: inline-block;" @click="memoryGame">Commencer le troisième jeu</button>
+      <button style="display: inline-block;" @click="memoryGame">Commencer le troisième jeu</button>
     </div>
   </div>
 </template>
@@ -55,7 +51,6 @@ export default {
       this.time = null;
       this.current_shape = [];
       this.old_shape = [];
-      
       this.$router.push('/game-memory');
     },
     async getAnswer(selected_option) {
@@ -84,13 +79,17 @@ export default {
     },
     async generateImage() {
       return new Promise((resolve) => {
+        if (!this.$refs.options) return;
         this.$refs.options.classList.add("hidden");
         this.old_shape = this.generate_shape(this.old_shape, 0);
+        if (!this.$refs.shapeContainer) return;
         this.$refs.shapeContainer.className = "";
         this.$refs.shapeContainer.classList.add(this.old_shape[0]);
         this.$refs.shapeContainer.classList.add(this.old_shape[1]);
         setTimeout(() => {
-          this.$refs.shapeContainer.className = "";
+          if (this.$refs.shapeContainer) {
+            this.$refs.shapeContainer.className = "";
+          }
           resolve();
         }, this.time_per_round * 1000);
       });
@@ -98,10 +97,13 @@ export default {
     async generateOptions() {
       return new Promise((resolve) => {
         this.current_shape = this.generate_shape(this.old_shape, this.dup_chance);
+        if (!this.$refs.shapeContainer) return;
         this.$refs.shapeContainer.className = "";
         this.$refs.shapeContainer.classList.add(this.current_shape[0]);
         this.$refs.shapeContainer.classList.add(this.current_shape[1]);
-        this.$refs.options.classList.remove("hidden");
+        if (this.$refs.options) {
+          this.$refs.options.classList.remove("hidden");
+        }
         resolve();
       });
     },
@@ -114,14 +116,22 @@ export default {
         this.time = new Date();
       }
       this.round++;
-      this.$refs.startButton.classList.add("hidden");
-      this.$refs.gameArea.classList.remove("hidden");
+      if (this.$refs.startButton) {
+        this.$refs.startButton.classList.add("hidden");
+      }
+      if (this.$refs.gameArea) {
+        this.$refs.gameArea.classList.remove("hidden");
+      }
       await this.generateImage();
       await this.generateOptions();
     },
     GameOver() {
-      this.$refs.gameArea.classList.add("hidden");
-      this.$refs.startButton.classList.remove("hidden");
+      if (this.$refs.gameArea) {
+        this.$refs.gameArea.classList.add("hidden");
+      }
+      if (this.$refs.startButton) {
+        this.$refs.startButton.classList.remove("hidden");
+      }
       alert("Game Over! Your score is: " + this.score);
       this.score = 0;
       this.round = 0;
