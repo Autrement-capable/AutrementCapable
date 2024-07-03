@@ -2,7 +2,7 @@
   <div class="start-button" aria-label="Start page">
     <h1 class="main-title">Autrement Capable</h1>
     <button @click="startProcess" aria-label="Commencez le processus">Commencer</button>
-    <button @click="speakText" aria-label="Écoutez le texte">Écouter le texte</button>
+    <!-- <button @click="speakText" aria-label="Écoutez le texte">Écouter le texte</button> -->
   </div>
 </template>
 
@@ -49,8 +49,13 @@ button {
   border-radius: 5px;
   cursor: pointer;
   margin: 0.5em;
+  transition: transform 0.3s ease, background-color 0.3s ease;
 }
 button:focus {
   outline: 2px solid #0056b3;
+}
+button:hover {
+  transform: scale(1.05);
+  background-color: #0056b3;
 }
 </style>
