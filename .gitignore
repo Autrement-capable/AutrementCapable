@@ -8,3 +8,6 @@ __pycache__/
 # useless files
 
 test*.pdf
+
+# docker init files
+volumes/
