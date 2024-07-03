@@ -1,6 +1,9 @@
 <template>
   <div id="memory_game_container">
     <div ref="gameBoard" id="memory_game"></div>
+    <button @click="dashboard">Finir le jeu</button>
+  </div>
+  <div>
   </div>
 </template>
 
@@ -32,12 +35,16 @@ export default {
       shuffledEmojiList: [],
       emojiCount: 0,
       current_selection: [],
+      isClickBlocked: false,
       guessedCards: 0,
       startTime: null,
       TotalTime: [],
     };
   },
   methods: {
+    dashboard() {
+      this.$router.push('/dashboard');
+    },
     shuffleArray(array, nb_pairs = 8) {
       array = array.slice(0, nb_pairs * 2);
       for (let i = array.length - 1; i > 0; i--) {
@@ -80,6 +87,8 @@ export default {
       this.StartGame();
     },
     Box_Clicked(card) {
+      if (this.isClickBlocked) return; // Step 2: Check the flag before handling the click
+
       if (card.classList.contains("flipped")) {
         return;
       }
@@ -89,21 +98,28 @@ export default {
       card.classList.toggle("flipped");
       this.current_selection.push(card);
       if (this.current_selection.length === 2) {
+        this.isClickBlocked = true; // Step 3: Block further clicks
         if (this.current_selection[0].innerText === this.current_selection[1].innerText) {
           this.guessedCards += 2;
           this.current_selection = [];
           if (this.guessedCards === this.emojiCount) {
             setTimeout(() => {
               this.CheckWin();
+              this.isClickBlocked = false; // Step 4: Re-enable clicks
             }, 200);
+          } else {
+            this.isClickBlocked = false; // Re-enable clicks if not all cards guessed
           }
         } else {
           setTimeout(() => {
             this.current_selection[0].classList.toggle("flipped");
             this.current_selection[1].classList.toggle("flipped");
             this.current_selection = [];
+            this.isClickBlocked = false; // Step 4: Re-enable clicks
           }, 500);
         }
+      } else {
+        this.isClickBlocked = false;
       }
     },
     StartGame() {
@@ -183,5 +199,15 @@ export default {
   opacity: 1;
   transition: 0.25s;
   transform: rotateY(0deg);
+}
+button {
+  padding: 1em 2em;
+  font-size: 1em;
+  background-color: #007BFF;
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 20px;
 }
 </style>

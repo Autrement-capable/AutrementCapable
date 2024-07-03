@@ -47,6 +47,15 @@ export default {
       }
     },
     memoryGame() {
+      this.$refs.gameArea.classList.add("hidden");
+      this.$refs.startButton.classList.remove("hidden");
+      alert("Game Over! Your score is: " + this.score);
+      this.score = 0;
+      this.round = 0;
+      this.time = null;
+      this.current_shape = [];
+      this.old_shape = [];
+      
       this.$router.push('/game-memory');
     },
     async getAnswer(selected_option) {
@@ -280,5 +289,15 @@ export default {
 }
 .gray:after {
   border-color: gray;
+}
+button {
+  padding: 1em 2em;
+  font-size: 1em;
+  background-color: #007BFF;
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 20px;
 }
 </style>

@@ -7,6 +7,7 @@ import UserQuestionnaire from '../components/Questionnaire.vue'
 import GameSpeed from '../components/GameSpeed.vue'
 import GameShape from '../components/GameShape.vue'
 import GameMemory from '../components/GameMemory.vue'
+import CompDashboard from '../components/CompDashboard.vue'
 
 const routes = [
   {
@@ -48,6 +49,11 @@ const routes = [
     path: '/game-memory',
     name: 'GameMemory',
     component: GameMemory
+  },
+  {
+    path: '/dashboard',
+    name: 'CompDashboard',
+    component: CompDashboard
   }
 ]
 
