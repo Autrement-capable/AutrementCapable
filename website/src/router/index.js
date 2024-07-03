@@ -4,6 +4,9 @@ import AccountCreation from '../components/AccountCreation.vue'
 import Explanation from '../components/Explanation.vue'
 import PersonalTest from '../components/PersonalTest.vue'
 import UserQuestionnaire from '../components/Questionnaire.vue'
+import GameSpeed from '../components/GameSpeed.vue'
+import GameShape from '../components/GameShape.vue'
+import GameMemory from '../components/GameMemory.vue'
 
 const routes = [
   {
@@ -30,6 +33,21 @@ const routes = [
     path: '/questionnaire',
     name: 'Questionnaire',
     component: UserQuestionnaire
+  },
+  {
+    path: '/game-speed',
+    name: 'GameSpeed',
+    component: GameSpeed
+  },
+  {
+    path: '/game-shape',
+    name: 'GameShape',
+    component: GameShape
+  },
+  {
+    path: '/game-memory',
+    name: 'GameMemory',
+    component: GameMemory
   }
 ]
 

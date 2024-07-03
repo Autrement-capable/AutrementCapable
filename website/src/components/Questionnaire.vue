@@ -24,6 +24,7 @@
       </div>
     </div>
     <div v-else class="completion-message">
+      <button @click="speedGame">Commencer le premier jeu</button>
       <p>Merci d'avoir répondu aux questions !</p>
     </div>
   </div>
@@ -48,6 +49,9 @@ export default {
     };
   },
   methods: {
+    speedGame() {
+      this.$router.push('/game-speed');
+    },
     nextQuestion() {
       if (this.responses[this.questions[this.currentQuestionIndex].key] !== '') {
         this.currentQuestionIndex++;
