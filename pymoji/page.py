@@ -67,43 +67,43 @@ def index():
         </div>
             <button onclick="changeParameter('background_color', 'prev')">Previous Background Color</button>
             <button onclick="changeParameter('background_color', 'next')">Next Background Color</button>\
-        </div>
+        <div>
             <button onclick="changeParameter('hairstyle', 'prev')">Previous Hairstyle</button>
             <button onclick="changeParameter('hairstyle', 'next')">Next Hairstyle</button>
         </div>
             <button onclick="changeParameter('clothing_color', 'prev')">Previous Clothing Color</button>
             <button onclick="changeParameter('clothing_color', 'next')">Next Clothing Color</button>
-        </div>
+        <div>
             <button onclick="changeParameter('eyebrows', 'prev')">Previous Eyebrows</button>
             <button onclick="changeParameter('eyebrows', 'next')">Next Eyebrows</button>
         </div>
             <button onclick="changeParameter('eyes', 'prev')">Previous Eyes</button>
             <button onclick="changeParameter('eyes', 'next')">Next Eyes</button>
-        </div>
+        <div>
             <button onclick="changeParameter('nose', 'prev')">Previous Nose</button>
             <button onclick="changeParameter('nose', 'next')">Next Nose</button>
         </div>
             <button onclick="changeParameter('mouth', 'prev')">Previous Mouth</button>
             <button onclick="changeParameter('mouth', 'next')">Next Mouth</button>
-        </div>
+        <div>
             <button onclick="changeParameter('facial_hair', 'prev')">Previous Facial Hair</button>
             <button onclick="changeParameter('facial_hair', 'next')">Next Facial Hair</button>
         </div>
             <button onclick="changeParameter('skin_color', 'prev')">Previous Skin Color</button>
             <button onclick="changeParameter('skin_color', 'next')">Next Skin Color</button>
-        </div>
+        <div>
             <button onclick="changeParameter('hair_color', 'prev')">Previous Hair Color</button>
             <button onclick="changeParameter('hair_color', 'next')">Next Hair Color</button>
         </div>
             <button onclick="changeParameter('accessory', 'prev')">Previous Accessory</button>
             <button onclick="changeParameter('accessory', 'next')">Next Accessory</button>
-        </div>
+        <div>
             <button onclick="changeParameter('clothing', 'prev')">Previous Clothing</button>
             <button onclick="changeParameter('clothing', 'next')">Next Clothing</button>
         </div>
             <button onclick="changeParameter('clothing_graphics', 'prev')">Previous Clothing Graphics</button>
             <button onclick="changeParameter('clothing_graphics', 'next')">Next Clothing Graphics</button>
-        </div>
+        <div>
             <button onclick="generate_really_random_avatar()">Random Avatar ddd</button>
         </div>
         <script>
