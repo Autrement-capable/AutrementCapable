@@ -1,4 +1,18 @@
 import python_avatars as pa
+from dictionaries import *
+
+# class CustomColor:
+#     def __init__(self, hex):
+#         self.hex = hex
+
+#     def __str__(self):
+#         return self.hex
+    
+#     def custom_color(self, color):
+#         return color 
+    
+#     CUSTOM = custom_color('#FF00FF')
+
 
 def random_avatar():
     return pa.Avatar.random()
