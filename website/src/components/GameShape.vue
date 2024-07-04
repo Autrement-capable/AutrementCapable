@@ -216,6 +216,44 @@ export default {
   width: 100px;
 }
 
+.text-with-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.text-with-button p {
+  margin-right: 10px;
+}
+
+button {
+  margin-top: 20px;
+  padding: 1em 2em;
+  font-size: 1em;
+  background-color: #007BFF;
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 0.5em;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+button:focus {
+  outline: 2px solid #0056b3;
+}
+
+button:hover {
+  transform: scale(1.05);
+  background-color: #0056b3;
+}
+
+.small-button {
+  padding: 0.5em;
+  font-size: 0.8em;
+}
+
 .star {
   width: 0 !important;
   height: 0 !important;
