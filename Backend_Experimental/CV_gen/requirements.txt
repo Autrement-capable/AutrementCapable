@@ -1,0 +1,6 @@
+Flask
+flask-restx
+flask-cors
+pymupdf
+pillow
+pdf2image
