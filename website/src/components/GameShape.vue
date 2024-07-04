@@ -4,10 +4,10 @@
     <div ref="gameArea" id="gameArea" class="hidden">
       <div ref="shapeContainer" id="shapeContainer"></div>
       <div ref="options" id="options">
-        <button class="option" @click="getAnswer(1)">Same as before</button>
-        <button class="option" @click="getAnswer(2)">Same shape, different color</button>
-        <button class="option" @click="getAnswer(3)">Same color, different shape</button>
-        <button class="option" @click="getAnswer(4)">Totally different</button>
+        <button class="option" @click="getAnswer(1)">Même chose qu'avant</button>
+        <button class="option" @click="getAnswer(2)">Même forme, couleur différente</button>
+        <button class="option" @click="getAnswer(3)">Même couleur, forme différente</button>
+        <button class="option" @click="getAnswer(4)">Totalement différent</button>
       </div>
     </div>
     <div>
@@ -45,7 +45,7 @@ export default {
     memoryGame() {
       this.$refs.gameArea.classList.add("hidden");
       this.$refs.startButton.classList.remove("hidden");
-      alert("Game Over! Your score is: " + this.score);
+      alert("Game Over! Ton score est : " + this.score);
       this.score = 0;
       this.round = 0;
       this.time = null;
@@ -55,10 +55,10 @@ export default {
     },
     async getAnswer(selected_option) {
       const option_list = [
-        "Same as before",
-        "Same shape, different color",
-        "Same color, different shape",
-        "Totally different",
+        "Même chose qu'avant",
+        "Même forme, couleur différente",
+        "Même couleur, forme différente",
+        "Totalement différent",
       ];
       let correct_option = -1;
       if (this.old_shape[0] === this.current_shape[0] && this.old_shape[1] === this.current_shape[1]) {
@@ -132,7 +132,7 @@ export default {
       if (this.$refs.startButton) {
         this.$refs.startButton.classList.remove("hidden");
       }
-      alert("Game Over! Your score is: " + this.score);
+      alert("Game Over! Ton score est : " + this.score);
       this.score = 0;
       this.round = 0;
       this.time = null;
@@ -214,6 +214,44 @@ export default {
   border-right: 25px solid transparent !important;
   height: 0;
   width: 100px;
+}
+
+.text-with-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.text-with-button p {
+  margin-right: 10px;
+}
+
+button {
+  margin-top: 20px;
+  padding: 1em 2em;
+  font-size: 1em;
+  background-color: #007BFF;
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 0.5em;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+button:focus {
+  outline: 2px solid #0056b3;
+}
+
+button:hover {
+  transform: scale(1.05);
+  background-color: #0056b3;
+}
+
+.small-button {
+  padding: 0.5em;
+  font-size: 0.8em;
 }
 
 .star {
