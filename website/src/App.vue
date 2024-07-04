@@ -1,12 +1,18 @@
 <template>
-  <div id="app">
+  <div id="app" class="app-container">
     <router-view></router-view>
+    <AppFooter />
   </div>
 </template>
 
 <script>
+import AppFooter from './components/Footer.vue'
+
 export default {
-  name: 'App'
+  name: 'App',
+  components: {
+    AppFooter
+  }
 }
 </script>
 
@@ -25,5 +31,8 @@ export default {
 
 body {
   font-family: 'Glacial Indifference', sans-serif;
+}
+.app-container {
+  padding-bottom: 60px;
 }
 </style>
