@@ -55,7 +55,9 @@ export default {
     };
   },
   mounted() {
-    this.loadParagraph();
+    this.$nextTick(() => {
+      this.loadParagraph();
+    });
   },
   methods: {
     gameShape() {
@@ -91,8 +93,13 @@ export default {
         this.$refs.typingText.appendChild(span);
       });
       this.$refs.typingText.querySelector('span').classList.add('active');
-      document.addEventListener('keydown', () => this.$refs.inputField.focus());
-      this.$refs.typingText.addEventListener('click', () => this.$refs.inputField.focus());
+      document.addEventListener('keydown', this.focusInputField);
+      this.$refs.typingText.addEventListener('click', this.focusInputField);
+    },
+    focusInputField() {
+      if (this.$refs.inputField) {
+        this.$refs.inputField.focus();
+      }
     },
     initTyping() {
       const characters = this.$refs.typingText.querySelectorAll('span');
