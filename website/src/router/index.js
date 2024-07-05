@@ -9,6 +9,9 @@ import GameShape from "../components/GameShape.vue";
 import GameMemory from "../components/GameMemory.vue";
 import CompDashboard from "../components/CompDashboard.vue";
 import CvPreview from "../components/CvPreview.vue";
+import PostsList from '../components/forum/PostsList.vue';
+import Post from '../components/forum/PostPage.vue';
+import Forum from '../components/forum/ForumPage.vue';
 
 const routes = [
   {
@@ -60,6 +63,23 @@ const routes = [
     path: "/cv-preview",
     name: "CvPreview",
     component: CvPreview,
+  },
+  {
+    path: '/forum',
+    name: 'forum',
+    component: Forum,
+  },
+  {
+    path: '/forum/posts/:category/',
+    name: 'postsList',
+    component: PostsList,
+    props: true
+  },
+  {
+    path: '/forum/posts/:category/:id',
+    name: 'post',
+    component: Post,
+    props: true
   },
 ];
 
