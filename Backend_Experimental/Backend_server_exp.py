@@ -51,7 +51,7 @@ class Courses(Resource):
 @api.route('/cv')
 class CV(Resource):
     def get(self):
-        img = pdf_to_image("test2.pdf", "cv.png")
+        img = pdf_to_image("./CV_gen/test2.pdf", "cv.png")
 
         @after_this_request
         def cleanup(response):
@@ -63,7 +63,7 @@ class CV(Resource):
 @api.route('/cv_download')
 class CV_download(Resource):
     def get(self):
-        return send_file("test2.pdf", as_attachment=True)
+        return send_file("./CV_gen/test2.pdf", as_attachment=True)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000, host='0.0.0.0')
