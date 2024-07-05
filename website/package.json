@@ -9,10 +9,11 @@
     "start": "vue-cli-service serve"
   },
   "dependencies": {
+    "@mdi/font": "^7.4.47",
     "core-js": "^3.8.3",
     "vue": "^3.2.13",
     "vue-router": "^4.0.3",
-    "@mdi/font": "^7.4.47"
+    "yarn": "^1.22.22"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",
