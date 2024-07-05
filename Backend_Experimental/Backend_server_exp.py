@@ -30,13 +30,13 @@ courses = [
     },
     {
         'id': 2,
-        'name': 'Understanding the Basics of Machine Learning',
+        'name': 'Understanding the intricacies of Java',
         'image': 'https://images.dog.ceo/breeds/whippet/n02091134_17108.jpg',
         'url': 'https://example.com/course2'
     },
     {
         'id': 3,
-        'name': 'Understaind yourself',
+        'name': 'Understanding yourself and improving',
         'image': 'https://cataas.com/cat',
         'url': 'https://example.com/course3'
     }

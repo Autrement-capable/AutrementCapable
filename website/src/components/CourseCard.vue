@@ -25,6 +25,7 @@ export default {
   padding: 16px;
   text-align: center;
   max-width: 300px;
+  min-width: 200px;
 }
 
 .course-image {
