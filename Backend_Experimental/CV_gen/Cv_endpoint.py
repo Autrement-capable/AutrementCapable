@@ -32,5 +32,10 @@ class CV(Resource):
 
         return send_file(img, mimetype='image/png')
 
+@api.route('/cv_download')
+class CV_download(Resource):
+    def get(self):
+        return send_file("test2.pdf", as_attachment=True)
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000, host='0.0.0.0')
