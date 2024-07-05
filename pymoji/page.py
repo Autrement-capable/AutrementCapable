@@ -1,12 +1,13 @@
-from flask import Flask, send_file, render_template_string, request, jsonify
+from flask import Flask, send_file, render_template_string, request, jsonify, send_from_directory
 import io
 import python_avatars as pa
 from pymoji import avatar_from_username
 from dictionaries import *
 import tempfile
 import os
+import random
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='avatar-generator/dist', static_url_path='')
 
 # Dictionaries to handle different avatar parameters
 # dict_style = { 'circle': pa.AvatarStyle.CIRCLE, 'transparent': pa.AvatarStyle.TRANSPARENT }
@@ -47,108 +48,15 @@ def random_avatar(style='random', background_color='random', hairstyle='random',
     clothing_graphics = dict_clothing_graphics.get(clothing_graphics, pa.ClothingGraphic.pick_random())
     return pa.Avatar(style=avatar_style, background_color=background_color, top=top, eyebrows=eyebrows, eyes=eyes, nose=nose, mouth=mouth, facial_hair=facial_hair, skin_color = skin_color, hair_color=hair_color, accessory=accessory, clothing=clothing, shirt_graphic=clothing_graphics, clothing_color=clothing_color)
 
+
 @app.route('/')
 def index():
-    return render_template_string('''
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Random Avatar</title>
-    </head>
-    <body>
-        <h1>Random Avatar Generator</h1>
-        <div id="avatar">
-            <img src="/avatar" alt="Avatar" id="avatar-image">
-        </div>
-        <div>
-            <button onclick="changeParameter('style', 'prev')">Previous Style</button>
-            <button onclick="changeParameter('style', 'next')">Next Style</button>
-        </div>
-            <button onclick="changeParameter('background_color', 'prev')">Previous Background Color</button>
-            <button onclick="changeParameter('background_color', 'next')">Next Background Color</button>\
-        </div>
-            <button onclick="changeParameter('hairstyle', 'prev')">Previous Hairstyle</button>
-            <button onclick="changeParameter('hairstyle', 'next')">Next Hairstyle</button>
-        </div>
-            <button onclick="changeParameter('clothing_color', 'prev')">Previous Clothing Color</button>
-            <button onclick="changeParameter('clothing_color', 'next')">Next Clothing Color</button>
-        </div>
-            <button onclick="changeParameter('eyebrows', 'prev')">Previous Eyebrows</button>
-            <button onclick="changeParameter('eyebrows', 'next')">Next Eyebrows</button>
-        </div>
-            <button onclick="changeParameter('eyes', 'prev')">Previous Eyes</button>
-            <button onclick="changeParameter('eyes', 'next')">Next Eyes</button>
-        </div>
-            <button onclick="changeParameter('nose', 'prev')">Previous Nose</button>
-            <button onclick="changeParameter('nose', 'next')">Next Nose</button>
-        </div>
-            <button onclick="changeParameter('mouth', 'prev')">Previous Mouth</button>
-            <button onclick="changeParameter('mouth', 'next')">Next Mouth</button>
-        </div>
-            <button onclick="changeParameter('facial_hair', 'prev')">Previous Facial Hair</button>
-            <button onclick="changeParameter('facial_hair', 'next')">Next Facial Hair</button>
-        </div>
-            <button onclick="changeParameter('skin_color', 'prev')">Previous Skin Color</button>
-            <button onclick="changeParameter('skin_color', 'next')">Next Skin Color</button>
-        </div>
-            <button onclick="changeParameter('hair_color', 'prev')">Previous Hair Color</button>
-            <button onclick="changeParameter('hair_color', 'next')">Next Hair Color</button>
-        </div>
-            <button onclick="changeParameter('accessory', 'prev')">Previous Accessory</button>
-            <button onclick="changeParameter('accessory', 'next')">Next Accessory</button>
-        </div>
-            <button onclick="changeParameter('clothing', 'prev')">Previous Clothing</button>
-            <button onclick="changeParameter('clothing', 'next')">Next Clothing</button>
-        </div>
-            <button onclick="changeParameter('clothing_graphics', 'prev')">Previous Clothing Graphics</button>
-            <button onclick="changeParameter('clothing_graphics', 'next')">Next Clothing Graphics</button>
-        </div>
-            <button onclick="generate_really_random_avatar()">Random Avatar ddd</button>
-        </div>
-        <script>
-            function generateAvatar() {
-                fetch('/avatar')
-                .then(response => response.blob())
-                .then(blob => {
-                    let url = URL.createObjectURL(blob);
-                    document.getElementById('avatar-image').src = url;
-                });
-            }
-                                  
-            function generate_really_random_avatar() {
-                fetch('/really_random_avatar')
-                .then(response => response.blob())
-                .then(blob => {
-                    let url = URL.createObjectURL(blob);
-                    document.getElementById('avatar-image').src = url;
-                });
-            }
+    return send_from_directory(app.static_folder, 'index.html')
 
-            function generateAvatarFromUsername() {
-                var username = prompt("Please enter your username", "Username");
-                if (username) {
-                    fetch('/avatar/' + username)
-                    .then(response => response.blob())
-                    .then(blob => {
-                        let url = URL.createObjectURL(blob);
-                        document.getElementById('avatar-image').src = url;
-                    });
-                }
-            }
+@app.route('/<path:path>')
+def static_proxy(path):
+    return send_from_directory(app.static_folder, path)
 
-            function changeParameter(param, direction) {
-                fetch(`/avatar/update?param=${param}&direction=${direction}`)
-                .then(response => response.blob())
-                .then(blob => {
-                    let url = URL.createObjectURL(blob);
-                    document.getElementById('avatar-image').src = url;
-                });
-            }
-        </script>
-    </body>
-    </html>
-    ''')
 
 
 @app.route('/really_random_avatar')
@@ -314,11 +222,22 @@ def update_avatar():
             current_clothing_graphics_index = (current_clothing_graphics_index + 1) % len(dict_clothing_graphics_keys)
         elif direction == 'prev':
             current_clothing_graphics_index = (current_clothing_graphics_index - 1) % len(dict_clothing_graphics_keys)
-    # if param == 'hat_color':
-    #     if direction == 'next':
-    #         current_hat_color_index = (current_hat_color_index + 1) % len(clothing_color_keys)
-    #     elif direction == 'prev':
-    #         current_hat_color_index = (current_hat_color_index - 1) % len(clothing_color_keys)
+    if param == 'random':
+        if direction == 'none':
+            current_style_index = random.randint(0, len(style_keys) - 1)
+            current_background_color_index = random.randint(0, len(backgorund_color_keys) - 1)
+            current_hairstyle_index = random.randint(0, len(hairstyle_keys) - 1)
+            current_clothing_color_index = random.randint(0, len(clothing_color_keys) - 1)
+            current_eyebrows_index = random.randint(0, len(eyebrows_keys) - 1)
+            current_eyes_index = random.randint(0, len(eyes_keys) - 1)
+            current_nose_index = random.randint(0, len(nose_keys) - 1)
+            current_mouth_index = random.randint(0, len(mouth_keys) - 1)
+            current_facial_hair_index = random.randint(0, len(facial_hair_keys) - 1)
+            current_skin_color_index = random.randint(0, len(skin_color_keys) - 1)
+            current_hair_color_index = random.randint(0, len(hair_color_keys) - 1)
+            current_accessory_index = random.randint(0, len(accessory_keys) - 1)
+            current_clothing_index = random.randint(0, len(clothing_keys) - 1)
+            current_clothing_graphics_index = random.randint(0, len(dict_clothing_graphics_keys) - 1)
     
     selected_style = style_keys[current_style_index]
     selected_background_color = backgorund_color_keys[current_background_color_index]

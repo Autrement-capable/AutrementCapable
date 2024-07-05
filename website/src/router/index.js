@@ -12,6 +12,7 @@ import CvPreview from "../components/CvPreview.vue";
 import PostsList from '../components/forum/PostsList.vue';
 import Post from '../components/forum/PostPage.vue';
 import Forum from '../components/forum/ForumPage.vue';
+import CoursePage from "../components/CoursePage.vue";
 
 const routes = [
   {
@@ -80,6 +81,11 @@ const routes = [
     name: 'post',
     component: Post,
     props: true
+  },
+  {
+    path: "/courses",
+    name: "CoursePage",
+    component: CoursePage,
   },
 ];
 
