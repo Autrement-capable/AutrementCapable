@@ -11,7 +11,7 @@
       </div>
     </div>
     <div>
-      <button style="display: inline-block;" @click="memoryGame">Commencer le troisième jeu</button>
+      <button v-if="gameOver || score >= 3" style="display: inline-block;" @click="memoryGame">Commencer le troisième jeu</button>
     </div>
   </div>
 </template>
@@ -30,6 +30,7 @@ export default {
       score: 0,
       time: null,
       round: 0,
+      gameOver: false, // Ajoutez cette ligne
     };
   },
   methods: {
@@ -138,6 +139,7 @@ export default {
       this.time = null;
       this.current_shape = [];
       this.old_shape = [];
+      this.gameOver = true; // Ajoutez cette ligne
     },
   },
 };
