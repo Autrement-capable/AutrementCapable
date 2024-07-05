@@ -4,3 +4,4 @@ flask-cors
 pymupdf
 pillow
 pdf2image
+fillpdf
