@@ -1,5 +1,6 @@
 <template>
   <h1 class="title">Bravo !</h1>
+  <button @click="goToCvPreview">Voir mon CV généré !</button>
   <!-- <div class="dashboard" aria-label="Dashboard page"> -->
     <!-- <div v-if="currentQuestionIndex < questions.length" class="question-container">
       <p>{{ questions[currentQuestionIndex].text }}</p>
@@ -33,45 +34,16 @@
 <script>
 export default {
   name: 'UserQuestionnaire',
-  data() {
-    return {
-      currentQuestionIndex: 0,
-      questions: [
-        { text: 'Quel âge as-tu ?', key: 'age', type: 'number' },
-        { text: 'Comment voudrais-tu qu\'on t\'appelle ?', key: 'name', type: 'text' },
-        { text: 'Possèdes-tu une maladie / trouble ?', key: 'condition', type: 'text' }
-      ],
-      responses: {
-        age: '',
-        name: '',
-        condition: ''
-      }
-    };
-  },
   methods: {
-    speedGame() {
-      this.$router.push('/game-speed');
+    goToCvPreview() {
+      this.$router.push('/cv-preview');
     },
-    nextQuestion() {
-      if (this.responses[this.questions[this.currentQuestionIndex].key] !== '') {
-        this.currentQuestionIndex++;
-      } else {
-        alert("Veuillez répondre à la question avant de passer à la suivante.");
-      }
-    },
-    repeatQuestion() {
-      const text = this.questions[this.currentQuestionIndex].text;
-      const speech = new SpeechSynthesisUtterance();
-      speech.lang = 'fr-FR';
-      speech.text = text;
-      window.speechSynthesis.speak(speech);
-    }
   }
 }
 </script>
 
 <style scoped>
-@import url('@/assets/styles.css'); 
+@import url('@/assets/styles.css');
 
 .dashboard {
   text-align: center;

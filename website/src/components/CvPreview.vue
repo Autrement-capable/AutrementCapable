@@ -7,7 +7,8 @@
       class="full-size-image"
     />
     <p v-else>Loading image...</p>
-    <button @click="fetchPdf" class="download-button">Download PDF</button>
+    <button @click="fetchPdf" class="download-button">Télécharger le CV</button>
+    <button @click="GoToTrainings" class="download-button">Voir mes formations !</button>
   </div>
 </template>
 
@@ -15,7 +16,7 @@
 export default {
   data() {
     return {
-      imageSrc: null, // URL or base64 string of the image
+      imageSrc: null,
     };
   },
   mounted() {
@@ -23,7 +24,6 @@ export default {
   },
   methods: {
     fetchImage() {
-      // Replace with your API endpoint or image URL
       const imageUrl = "http://127.0.0.1:5000/cv";
 
       fetch(imageUrl)
@@ -35,8 +35,10 @@ export default {
           console.error("Error fetching image:", error);
         });
     },
+    GoToTrainings() {
+      this.$router.push('/courses');
+    },
     fetchPdf() {
-      // Replace with your API endpoint for the PDF
       const pdfUrl = "http://127.0.0.1:5000/cv_download";
 
       fetch(pdfUrl)
@@ -51,7 +53,7 @@ export default {
           const a = document.createElement("a");
           a.style.display = "none";
           a.href = url;
-          a.download = "John_Doe_CV.pdf"; // Set the file name
+          a.download = "John_Doe_CV.pdf";
           document.body.appendChild(a);
           a.click();
           window.URL.revokeObjectURL(url);

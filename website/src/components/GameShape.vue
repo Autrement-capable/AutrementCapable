@@ -10,9 +10,9 @@
         <button class="option" @click="getAnswer(4)">Totalement différent</button>
       </div>
     </div>
-    <div>
-      <button v-if="gameOver || score >= 3" style="display: inline-block;" @click="memoryGame">Commencer le troisième jeu</button>
-    </div>
+  </div>
+  <div>
+    <button v-if="gameOver || score >= 3" style="display: inline-block;" @click="memoryGame">Commencer le troisième jeu</button>
   </div>
 </template>
 
@@ -151,7 +151,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  height: 70vh;
   margin: 0;
   text-align: center;
 }
