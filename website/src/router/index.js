@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import StartButton from "../components/StartButton.vue";
 import AccountCreation from "../components/AccountCreation.vue";
 import Explanation from "../components/Explanation.vue";
+import LoginPage from "../components/LoginPage.vue";
 import PersonalTest from "../components/PersonalTest.vue";
 import UserQuestionnaire from "../components/Questionnaire.vue";
 import GameSpeed from "../components/GameSpeed.vue";
@@ -29,6 +30,11 @@ const routes = [
     path: "/explanation",
     name: "Explanation",
     component: Explanation,
+  },
+  {
+    path: "/login",
+    name: "Login",
+    component: LoginPage,
   },
   {
     path: "/personal-test",
