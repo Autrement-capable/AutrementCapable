@@ -4,14 +4,14 @@
     <div ref="gameArea" id="gameArea" class="hidden">
       <div ref="shapeContainer" id="shapeContainer"></div>
       <div ref="options" id="options">
-        <button class="option" @click="getAnswer(1)">Same as before</button>
-        <button class="option" @click="getAnswer(2)">Same shape, different color</button>
-        <button class="option" @click="getAnswer(3)">Same color, different shape</button>
-        <button class="option" @click="getAnswer(4)">Totally different</button>
+        <button class="option" @click="getAnswer(1)">Même chose qu'avant</button>
+        <button class="option" @click="getAnswer(2)">Même forme, couleur différente</button>
+        <button class="option" @click="getAnswer(3)">Même couleur, forme différente</button>
+        <button class="option" @click="getAnswer(4)">Totalement différent</button>
       </div>
     </div>
     <div>
-      <button style="display: inline-block;" @click="memoryGame">Commencer le troisième jeu</button>
+      <button v-if="gameOver || score >= 3" style="display: inline-block;" @click="memoryGame">Commencer le troisième jeu</button>
     </div>
   </div>
 </template>
@@ -30,6 +30,7 @@ export default {
       score: 0,
       time: null,
       round: 0,
+      gameOver: false, // Ajoutez cette ligne
     };
   },
   methods: {
@@ -45,7 +46,7 @@ export default {
     memoryGame() {
       this.$refs.gameArea.classList.add("hidden");
       this.$refs.startButton.classList.remove("hidden");
-      alert("Game Over! Your score is: " + this.score);
+      alert("Game Over! Ton score est : " + this.score);
       this.score = 0;
       this.round = 0;
       this.time = null;
@@ -55,10 +56,10 @@ export default {
     },
     async getAnswer(selected_option) {
       const option_list = [
-        "Same as before",
-        "Same shape, different color",
-        "Same color, different shape",
-        "Totally different",
+        "Même chose qu'avant",
+        "Même forme, couleur différente",
+        "Même couleur, forme différente",
+        "Totalement différent",
       ];
       let correct_option = -1;
       if (this.old_shape[0] === this.current_shape[0] && this.old_shape[1] === this.current_shape[1]) {
@@ -132,12 +133,13 @@ export default {
       if (this.$refs.startButton) {
         this.$refs.startButton.classList.remove("hidden");
       }
-      alert("Game Over! Your score is: " + this.score);
+      alert("Game Over! Ton score est : " + this.score);
       this.score = 0;
       this.round = 0;
       this.time = null;
       this.current_shape = [];
       this.old_shape = [];
+      this.gameOver = true; // Ajoutez cette ligne
     },
   },
 };
