@@ -1,4 +1,4 @@
-from flask import Flask, send_file, after_this_request
+from flask import Flask, send_file, after_this_request, jsonify
 
 from flask_restx import Api, Resource
 from flask_cors import CORS
@@ -19,6 +19,34 @@ def pdf_to_image(pdf_path, output_image_path, dpi=300):
     # Save the image
     images[0].save(output_image_path, 'PNG')
     return output_image_path
+
+# Dummy course data
+courses = [
+    {
+        'id': 1,
+        'name': 'Introduction to Python',
+        'image': 'https://picsum.photos/200',
+        'url': 'https://example.com/course1'
+    },
+    {
+        'id': 2,
+        'name': 'Understanding the Basics of Machine Learning',
+        'image': 'https://images.dog.ceo/breeds/whippet/n02091134_17108.jpg',
+        'url': 'https://example.com/course2'
+    },
+    {
+        'id': 3,
+        'name': 'Understaind yourself',
+        'image': 'https://cataas.com/cat',
+        'url': 'https://example.com/course3'
+    }
+]
+
+@api.route('/courses')
+class Courses(Resource):
+    def get(self):
+        return jsonify(courses)
+
 
 @api.route('/cv')
 class CV(Resource):

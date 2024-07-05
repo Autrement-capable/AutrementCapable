@@ -9,6 +9,7 @@ import GameShape from "../components/GameShape.vue";
 import GameMemory from "../components/GameMemory.vue";
 import CompDashboard from "../components/CompDashboard.vue";
 import CvPreview from "../components/CvPreview.vue";
+import CoursePage from "../components/CoursePage.vue";
 
 const routes = [
   {
@@ -60,6 +61,11 @@ const routes = [
     path: "/cv-preview",
     name: "CvPreview",
     component: CvPreview,
+  },
+  {
+    path: "/courses",
+    name: "CoursePage",
+    component: CoursePage,
   },
 ];
 
