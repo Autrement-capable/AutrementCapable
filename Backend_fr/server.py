@@ -1,4 +1,4 @@
-from flask import Flask, send_file, render_template_string, request, jsonify, send_from_directory
+from flask import Flask, send_file, render_template_string, request, jsonify, send_from_directory, redirect, url_for
 import io
 import python_avatars as pa
 from pymoji import avatar_from_username
@@ -51,14 +51,16 @@ def random_avatar(style='random', background_color='random', hairstyle='random',
     clothing_graphics = dict_clothing_graphics.get(clothing_graphics, pa.ClothingGraphic.pick_random())
     return pa.Avatar(style=avatar_style, background_color=background_color, top=top, eyebrows=eyebrows, eyes=eyes, nose=nose, mouth=mouth, facial_hair=facial_hair, skin_color = skin_color, hair_color=hair_color, accessory=accessory, clothing=clothing, shirt_graphic=clothing_graphics, clothing_color=clothing_color)
 
-
+@app.route('/StartButton')
+def StartButton():
+    return send_from_directory(app.static_folder, 'index.html')
 @app.route('/avatar-generator')
 def index():
     return send_from_directory(app.static_folder, 'index.html')
 
 @app.route('/')
 def home():
-    return send_from_directory(app.static_folder, 'index.html')
+    return redirect(url_for('login'))
 
 @app.route('/account-creation')
 def account_creation():

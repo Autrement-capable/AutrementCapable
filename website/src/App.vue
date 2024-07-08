@@ -31,6 +31,8 @@ export default {
 
 body {
   font-family: 'Glacial Indifference', sans-serif;
+  padding-top: 0%;
+  margin-top: 0%;
 }
 .app-container {
   padding-bottom: 60px;

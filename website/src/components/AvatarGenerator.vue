@@ -63,6 +63,9 @@
       <div>
         <button @click="changeParameter('random', 'none')">Random Avatar</button>
       </div>
+      <div>
+        <button @click="go_to_index">Start</button>
+      </div>
     </div>
   </template>
   
@@ -81,6 +84,9 @@
             let objectURL = URL.createObjectURL(blob);
             this.avatarUrl = objectURL;
           });
+      },
+      go_to_index() {
+        this.$router.push('/StartButton');
       },
       generateAvatar() {
         this.fetchAvatar('/avatar');
