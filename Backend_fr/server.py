@@ -1,4 +1,4 @@
-from flask import Flask, send_file, render_template_string, request, jsonify, send_from_directory
+from flask import Flask, send_file, render_template_string, request, jsonify, send_from_directory, redirect, url_for
 import io
 import python_avatars as pa
 from pymoji import avatar_from_username
@@ -7,7 +7,10 @@ import tempfile
 import os
 import random
 
-app = Flask(__name__, static_folder='avatar-generator/dist', static_url_path='')
+#
+
+
+app = Flask(__name__, static_folder='../website/dist', static_url_path='')
 
 # Dictionaries to handle different avatar parameters
 # dict_style = { 'circle': pa.AvatarStyle.CIRCLE, 'transparent': pa.AvatarStyle.TRANSPARENT }
@@ -48,10 +51,73 @@ def random_avatar(style='random', background_color='random', hairstyle='random',
     clothing_graphics = dict_clothing_graphics.get(clothing_graphics, pa.ClothingGraphic.pick_random())
     return pa.Avatar(style=avatar_style, background_color=background_color, top=top, eyebrows=eyebrows, eyes=eyes, nose=nose, mouth=mouth, facial_hair=facial_hair, skin_color = skin_color, hair_color=hair_color, accessory=accessory, clothing=clothing, shirt_graphic=clothing_graphics, clothing_color=clothing_color)
 
-
-@app.route('/')
+@app.route('/StartButton')
+def StartButton():
+    return send_from_directory(app.static_folder, 'index.html')
+@app.route('/avatar-generator')
 def index():
     return send_from_directory(app.static_folder, 'index.html')
+
+@app.route('/')
+def home():
+    return redirect(url_for('login'))
+
+@app.route('/account-creation')
+def account_creation():
+    return send_from_directory(app.static_folder, 'index.html')
+
+@app.route('/login')
+def login():
+    return send_from_directory(app.static_folder, 'index.html')
+
+@app.route('/explanation')
+def explanation():
+    return send_from_directory(app.static_folder, 'index.html')
+
+app.route('/personal-test')
+def personal_test():
+    return send_from_directory(app.static_folder, 'index.html')
+
+@app.route('/questionnaire')
+def questionnaire():
+    return send_from_directory(app.static_folder, 'index.html')
+
+@app.route('/game-speed')
+def game_speed():
+    return send_from_directory(app.static_folder, 'index.html')
+
+@app.route('/game-shape')
+def game_shape():
+    return send_from_directory(app.static_folder, 'index.html')
+
+@app.route('/game-memory')
+def game_memory():
+    return send_from_directory(app.static_folder, 'index.html')\
+    
+@app.route('/dashboard')
+def dashboard():
+    return send_from_directory(app.static_folder, 'index.html')
+
+@app.route('/cv-preview')
+def cv_preview():
+    return send_from_directory(app.static_folder, 'index.html')
+
+@app.route('/forum')
+def forum():
+    return send_from_directory(app.static_folder, 'index.html')
+
+@app.route('//forum/posts/:category/')
+def forum_category():
+    return send_from_directory(app.static_folder, 'index.html')
+
+@app.route('/forum/posts/:category/:id')
+def forum_post():
+    return send_from_directory(app.static_folder, 'index.html')
+
+@app.route('/courses')
+def courses():
+    return send_from_directory(app.static_folder, 'index.html')
+
 
 @app.route('/<path:path>')
 def static_proxy(path):

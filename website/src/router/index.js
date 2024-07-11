@@ -14,10 +14,12 @@ import PostsList from '../components/forum/PostsList.vue';
 import Post from '../components/forum/PostPage.vue';
 import Forum from '../components/forum/ForumPage.vue';
 import CoursePage from "../components/CoursePage.vue";
+import AvatarGenerator from "../components/AvatarGenerator.vue";
+import Login from "../components/Login.vue";
 
 const routes = [
   {
-    path: "/",
+    path: "/StartButton",
     name: "StartButton",
     component: StartButton,
   },
@@ -92,6 +94,16 @@ const routes = [
     path: "/courses",
     name: "CoursePage",
     component: CoursePage,
+  },
+  {
+    path: "/avatar-generator",
+    name: "AvatarGenerator",
+    component: AvatarGenerator,
+  },
+  {
+    path: "/login",
+    name: "Login",
+    component: Login,
   },
 ];
 
