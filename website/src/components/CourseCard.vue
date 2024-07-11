@@ -26,11 +26,16 @@ export default {
   text-align: center;
   max-width: 300px;
   min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .course-image {
-  max-width: 100%;
-  height: auto;
+  width: 200px;
+  height: 200px;
+  object-fit: fill;
   border-radius: 8px;
 }
 
