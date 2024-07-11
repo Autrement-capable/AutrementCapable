@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="container_courses">
     <div class="course-container">
       <CourseCard v-for="course in courses" :key="course.id" :course="course" />
     </div>
@@ -10,7 +10,7 @@
 import CourseCard from "./CourseCard.vue";
 
 export default {
-  name: "App",
+  name: "CoursePage",
   components: {
     CourseCard,
   },
@@ -39,13 +39,14 @@ export default {
 </script>
 
 <style>
-#app {
+#container_courses {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  padding: 16px;
+  margin-top: 16px;
 }
 
 .course-container {
@@ -54,5 +55,6 @@ export default {
   gap: 16px;
   justify-content: center;
   padding-bottom: 100px;
+  align-items: stretch;
 }
 </style>
