@@ -1,116 +1,176 @@
 <template>
-    <div>
-      <h1>Random Avatar Generator</h1>
-      <div id="avatar">
-        <img :src="avatarUrl" alt="Avatar" id="avatar-image">
-      </div>
-      <div>
-        <button @click="changeParameter('style', 'prev')">Previous Style</button>
-        <button @click="changeParameter('style', 'next')">Next Style</button>
-      </div>
-      <div>
-        <button @click="changeParameter('background_color', 'prev')">Previous Background Color</button>
-        <button @click="changeParameter('background_color', 'next')">Next Background Color</button>
-      </div>
-      <div>
-        <button @click="changeParameter('hairstyle', 'prev')">Previous Hairstyle</button>
-        <button @click="changeParameter('hairstyle', 'next')">Next Hairstyle</button>
-      </div>
-      <div>
-        <button @click="changeParameter('clothing_color', 'prev')">Previous Clothing Color</button>
-        <button @click="changeParameter('clothing_color', 'next')">Next Clothing Color</button>
-      </div>
-      <div>
-        <button @click="changeParameter('eyebrows', 'prev')">Previous Eyebrows</button>
-        <button @click="changeParameter('eyebrows', 'next')">Next Eyebrows</button>
-      </div>
-      <div>
-        <button @click="changeParameter('eyes', 'prev')">Previous Eyes</button>
-        <button @click="changeParameter('eyes', 'next')">Next Eyes</button>
-      </div>
-      <div>
-        <button @click="changeParameter('nose', 'prev')">Previous Nose</button>
-        <button @click="changeParameter('nose', 'next')">Next Nose</button>
-      </div>
-      <div>
-        <button @click="changeParameter('mouth', 'prev')">Previous Mouth</button>
-        <button @click="changeParameter('mouth', 'next')">Next Mouth</button>
-      </div>
-      <div>
-        <button @click="changeParameter('facial_hair', 'prev')">Previous Facial Hair</button>
-        <button @click="changeParameter('facial_hair', 'next')">Next Facial Hair</button>
-      </div>
-      <div>
-        <button @click="changeParameter('skin_color', 'prev')">Previous Skin Color</button>
-        <button @click="changeParameter('skin_color', 'next')">Next Skin Color</button>
-      </div>
-      <div>
-        <button @click="changeParameter('hair_color', 'prev')">Previous Hair Color</button>
-        <button @click="changeParameter('hair_color', 'next')">Next Hair Color</button>
-      </div>
-      <div>
-        <button @click="changeParameter('accessory', 'prev')">Previous Accessory</button>
-        <button @click="changeParameter('accessory', 'next')">Next Accessory</button>
-      </div>
-      <div>
-        <button @click="changeParameter('clothing', 'prev')">Previous Clothing</button>
-        <button @click="changeParameter('clothing', 'next')">Next Clothing</button>
-      </div>
-      <div>
-        <button @click="changeParameter('clothing_graphics', 'prev')">Previous Clothing Graphics</button>
-        <button @click="changeParameter('clothing_graphics', 'next')">Next Clothing Graphics</button>
-      </div>
-      <div>
-        <button @click="changeParameter('random', 'none')">Random Avatar</button>
-      </div>
-      <div>
-        <button @click="go_to_index">Start</button>
-      </div>
+  <div>
+    <h1>Random Avatar Generator</h1>
+    <div id="avatar">
+      <img :src="avatarUrl" alt="Avatar" id="avatar-image" />
     </div>
-  </template>
-  
-  <script>
-  export default {
-    data() {
-      return {
-        avatarUrl: '/avatar',
-      };
+    <div>
+      <button @click="changeParameter('dec', 'styles')">Previous Style</button>
+      <button @click="changeParameter('inc', 'styles')">Next Style</button>
+    </div>
+    <div>
+      <button @click="changeParameter('dec', 'background_colors')">
+        Previous Background Color
+      </button>
+      <button @click="changeParameter('inc', 'background_colors')">
+        Next Background Color
+      </button>
+    </div>
+    <div>
+      <button @click="changeParameter('dec', 'hairstyles')">
+        Previous Hairstyle
+      </button>
+      <button @click="changeParameter('inc', 'hairstyles')">
+        Next Hairstyle
+      </button>
+    </div>
+    <div>
+      <button @click="changeParameter('dec', 'clothing_color')">
+        Previous Clothing Color
+      </button>
+      <button @click="changeParameter('inc', 'clothing_color')">
+        Next Clothing Color
+      </button>
+    </div>
+    <div>
+      <button @click="changeParameter('dec', 'eyebrows')">
+        Previous Eyebrows
+      </button>
+      <button @click="changeParameter('inc', 'eyebrows')">Next Eyebrows</button>
+    </div>
+    <div>
+      <button @click="changeParameter('dec', 'eyes')">Previous Eyes</button>
+      <button @click="changeParameter('inc', 'eyes')">Next Eyes</button>
+    </div>
+    <div>
+      <button @click="changeParameter('dec', 'nose')">Previous Nose</button>
+      <button @click="changeParameter('inc', 'nose')">Next Nose</button>
+    </div>
+    <div>
+      <button @click="changeParameter('dec', 'mouth')">Previous Mouth</button>
+      <button @click="changeParameter('inc', 'mouth')">Next Mouth</button>
+    </div>
+    <div>
+      <button @click="changeParameter('dec', 'facial_hair')">
+        Previous Facial Hair
+      </button>
+      <button @click="changeParameter('inc', 'facial_hair')">
+        Next Facial Hair
+      </button>
+    </div>
+    <div>
+      <button @click="changeParameter('dec', 'skin_color')">
+        Previous Skin Color
+      </button>
+      <button @click="changeParameter('inc', 'skin_color')">
+        Next Skin Color
+      </button>
+    </div>
+    <div>
+      <button @click="changeParameter('dec', 'hair_color')">
+        Previous Hair Color
+      </button>
+      <button @click="changeParameter('inc', 'hair_color')">
+        Next Hair Color
+      </button>
+    </div>
+    <div>
+      <button @click="changeParameter('dec', 'accessory')">
+        Previous Accessory
+      </button>
+      <button @click="changeParameter('inc', 'accessory')">
+        Next Accessory
+      </button>
+    </div>
+    <div>
+      <button @click="changeParameter('dec', 'clothing_types')">
+        Previous Clothing
+      </button>
+      <button @click="changeParameter('inc', 'clothing_types')">
+        Next Clothing
+      </button>
+    </div>
+    <div>
+      <button @click="changeParameter('inc', 'clothing_graphics')">
+        Previous Clothing Graphics
+      </button>
+      <button @click="changeParameter('dec', 'clothing_graphics')">
+        Next Clothing Graphics
+      </button>
+    </div>
+    <div>
+      <button @click="generateAvatar">Random Avatar</button>
+    </div>
+    <div>
+      <button @click="go_to_index">Start</button>
+    </div>
+  </div>
+</template>
+
+<script>
+const serverUrl = "http://localhost:5000";
+export default {
+  data() {
+    return {
+      avatarUrl: "/avatar",
+    };
+  },
+  methods: {
+    fetchAvatar(url) {
+      console.log(
+        `Url: ${url} index_dict: ${sessionStorage.getItem("index-dict")}`
+      );
+      fetch(url, {
+        headers: {
+          "Content-Type": "application/json",
+          "index-dict": sessionStorage.getItem("index-dict") || "test",
+        },
+      })
+        .then((response) => {
+          if (!response.ok) {
+            return response.json().then((error) => {
+              throw new Error(error.error);
+            });
+          }
+          // Store the header called Index_dict into sessionStorage, it must overwrite the previous one
+          let Index_dict = response.headers.get("index-dict");
+          console.log(Index_dict);
+          sessionStorage.setItem("index-dict", Index_dict);
+          return response.blob();
+        })
+        .then((blob) => {
+          let objectURL = URL.createObjectURL(blob);
+          this.avatarUrl = objectURL;
+        })
+        .catch((error) => {
+          alert(error);
+        });
     },
-    methods: {
-      fetchAvatar(url) {
-        fetch(url)
-          .then(response => response.blob())
-          .then(blob => {
-            let objectURL = URL.createObjectURL(blob);
-            this.avatarUrl = objectURL;
-          });
-      },
-      go_to_index() {
-        this.$router.push('/StartButton');
-      },
-      generateAvatar() {
-        this.fetchAvatar('/avatar');
-      },
+    go_to_index() {
+      this.$router.push("/StartButton");
+    },
+    generateAvatar() {
+      this.fetchAvatar(serverUrl + "/avatar/random");
+    },
     //   generateReallyRandomAvatar() {
     //     this.fetchAvatar('/really_random_avatar');
     //   },
-      generateAvatarFromUsername() {
-        let username = prompt('Please enter your username', 'Username');
-        if (username) {
-          this.fetchAvatar(`/avatar/${username}`);
-        }
-      },
-      changeParameter(param, direction) {
-        this.fetchAvatar(`/avatar/update?param=${param}&direction=${direction}`);
-      },
+    generateAvatarFromUsername() {
+      let username = prompt("Please enter your username", "Username");
+      if (username) {
+        this.fetchAvatar(serverUrl + "/avatar/" + username);
+      }
     },
-    mounted() {
-      this.generateAvatar();
+    changeParameter(action, attr) {
+      this.fetchAvatar(serverUrl + `/avatar/regenerate/${action}/${attr}`);
     },
-  };
-  </script>
-  
-  <style scoped>
-  /* Add your styles here */
-  </style>
-  
+  },
+  mounted() {
+    this.generateAvatar();
+  },
+};
+</script>
+
+<style scoped>
+/* Add your styles here */
+</style>

@@ -3,10 +3,11 @@ from flask import Flask, send_file, after_this_request, jsonify
 from flask_restx import Api, Resource
 from flask_cors import CORS
 import os
+from Avatar_gen.endpoints import AvatarRandom, AvatarUsername, AvatarRegenerate
 
 # create basic app with a signle endpoint that sends a pdf file as image to the client
 app = Flask(__name__)
-CORS(app)
+CORS(app, expose_headers=['index-dict'], allow_headers=['index-dict', 'Content-Type'], origins='*')
 api = Api(app)
 
 from pdf2image import convert_from_path
@@ -64,6 +65,12 @@ class CV(Resource):
 class CV_download(Resource):
     def get(self):
         return send_file("./CV_gen/test2.pdf", as_attachment=True)
+
+api.add_resource(AvatarRandom, '/avatar/random')
+
+api.add_resource(AvatarUsername, '/avatar/<string:username>')
+
+api.add_resource(AvatarRegenerate, '/avatar/regenerate/<string:action_type>/<string:attr>')
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000, host='0.0.0.0')
