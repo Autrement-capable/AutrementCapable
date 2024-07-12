@@ -1,28 +1,26 @@
 <template>
-  <div class="login-background">
-    <div class="wrapper">
-      <form action="">
-        <h1>Login</h1>
-        <div class="input-box">
-          <input type="text" placeholder="Username" required />
-          <i class="bx bxs-user"></i>
-        </div>
-        <div class="input-box">
-          <input type="password" placeholder="Password" required />
-          <i class="bx bxs-lock-alt"></i>
-        </div>
-        <div class="remember-forgot">
-          <label>
-            <input type="checkbox" />Remember me
-          </label>
-          <a href="#">Forgot Password</a>
-        </div>
-        <button @click="login" type="submit" class="btn">Login</button>
-        <div class="register-link">
-          <p>Don't have an account? <a href="#">Register Here</a></p>
-        </div>
-      </form>
-    </div>
+  <div class="wrapper">
+    <form action="">
+      <h1>Login</h1>
+      <div class="input-box">
+        <input type="text" placeholder="Username" required />
+        <i class="bx bxs-user"></i>
+      </div>
+      <div class="input-box">
+        <input type="password" placeholder="Password" required />
+        <i class="bx bxs-lock-alt"></i>
+      </div>
+      <div class="remember-forgot">
+        <label>
+          <input type="checkbox" />Remember me
+        </label>
+        <a href="#">Forgot Password</a>
+      </div>
+      <button type="submit" @click="GoToTest" class="btn">Login</button>
+      <div class="register-link">
+        <p>Don't have an account? <a href="#">Register Here</a></p>
+      </div>
+    </form>
   </div>
 </template>
 
@@ -30,43 +28,27 @@
 export default {
   name: 'LoginPage',
   methods: {
-    login() {
-      this.$router.push('/avatar-generator')
-    },
-  },
+    GoToTest() {
+      this.$router.push('/personal-test');
+    }
+  }
 }
 </script>
 
-<style scoped>
+<style>
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
 
-.login-background {
-  display: flex;
-  margin: 0 !important;
-  height: 100%;
-  justify-content: center;
-  align-items: center;
-  min-height: calc(100vh - 60px);
+.wrapper {
   background: url('../assets/img.jpg') no-repeat;
   background-size: cover;
   background-position: center;
-}
-
-.wrapper {
   width: 420px;
-  background: transparent;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  position: fixed;
-  backdrop-filter: blur(40px);
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-  color: white;
-  border-radius: 10px;
-  padding: 40px;
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(40px);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    padding: 30px 40px;
 }
 
 .wrapper h1 {
@@ -89,12 +71,7 @@ export default {
     border: 2px solid rgba(255, 255, 255, 0.2);
     border-radius: 40px;
     font-size: 16px;
-    color: #fff;
     padding: 20px 45px 20px 20px;
-}
-
-.input-box input::placeholder {
-    color: #fff;
 }
 
 .input-box i {
@@ -118,7 +95,6 @@ export default {
 }
 
 .remember-forgot a {
-    color: #fff;
     text-decoration: none;
 }
 
@@ -148,7 +124,6 @@ export default {
 }
 
 .register-link p a {
-    color: #fff;
     text-decoration: none;
     font-weight: 600;
 }
@@ -156,5 +131,4 @@ export default {
 .register-link p a:hover {
     text-decoration: underline;
 }
-
 </style>

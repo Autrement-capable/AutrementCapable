@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import StartButton from "../components/StartButton.vue";
 import AccountCreation from "../components/AccountCreation.vue";
 import Explanation from "../components/Explanation.vue";
+import LoginPage from "../components/LoginPage.vue";
 import PersonalTest from "../components/PersonalTest.vue";
 import UserQuestionnaire from "../components/Questionnaire.vue";
 import GameSpeed from "../components/GameSpeed.vue";
@@ -13,12 +14,10 @@ import PostsList from '../components/forum/PostsList.vue';
 import Post from '../components/forum/PostPage.vue';
 import Forum from '../components/forum/ForumPage.vue';
 import CoursePage from "../components/CoursePage.vue";
-import AvatarGenerator from "../components/AvatarGenerator.vue";
-import Login from "../components/Login.vue";
 
 const routes = [
   {
-    path: "/StartButton",
+    path: "/",
     name: "StartButton",
     component: StartButton,
   },
@@ -31,6 +30,11 @@ const routes = [
     path: "/explanation",
     name: "Explanation",
     component: Explanation,
+  },
+  {
+    path: "/login",
+    name: "Login",
+    component: LoginPage,
   },
   {
     path: "/personal-test",
@@ -88,16 +92,6 @@ const routes = [
     path: "/courses",
     name: "CoursePage",
     component: CoursePage,
-  },
-  {
-    path: "/avatar-generator",
-    name: "AvatarGenerator",
-    component: AvatarGenerator,
-  },
-  {
-    path: "/login",
-    name: "Login",
-    component: Login,
   },
 ];
 
