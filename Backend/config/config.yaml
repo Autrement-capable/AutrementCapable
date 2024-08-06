@@ -1,0 +1,5 @@
+auth:
+  access_token_duration:
+    hours: 1
+  refresh_token_duration:
+    days: 30

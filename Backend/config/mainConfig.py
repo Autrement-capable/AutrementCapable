@@ -1,11 +1,14 @@
 from flask import Flask, jsonify
 from flask_restx import Api, Resource
-from flask_jwt_extended import JWTManager
+from flask_jwt_extended import JWTManager, decode_token
 from flask_cors import CORS
 from dotenv import load_dotenv
 from os import getenv
 from modules.utils.singleton import singleton
-from datetime import timedelta
+from modules.database.DB import GetRevokedTokens
+from datetime import timedelta, timezone, datetime
+from yaml import safe_load
+from apscheduler.schedulers.background import BackgroundScheduler
 # from modules.database.create_db import *
 
 
@@ -20,6 +23,10 @@ authorization_header = {
     }
 }
 
+"""
+ TODO:
+    - Add refresh token
+    - Add token revocation(token + refresh token)"""
 
 @singleton
 class Server():
@@ -27,6 +34,12 @@ class Server():
         """Initialize the Flask app and the Flask-RESTPlusx API."""
         load_dotenv()
         self.app = Flask(__name__)
+
+        with open("./config/config.yaml", "r") as file:
+            config_file = safe_load(file)
+
+        access_token_duration = timedelta(**config_file['auth']['access_token_duration'])
+        refresh_token_duration = timedelta(**config_file['auth']['refresh_token_duration'])
 
         self.app.config['JWT_SECRET_KEY'] = getenv('SERVER_SECRET')
 
@@ -36,7 +49,9 @@ class Server():
         # in production we should set this to True so that the token is only sent over https
         self.app.config["JWT_COOKIE_SECURE"] = False if getenv("MODE") == "DEV" else True
 
-        self.app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
+        self.app.config["JWT_ACCESS_TOKEN_EXPIRES"] = access_token_duration
+
+        self.app.config["JWT_REFRESH_TOKEN_EXPIRES"] = refresh_token_duration
 
         self.app.config["DEBUG"] = True if getenv("MODE") == "DEV" else False
 
@@ -52,6 +67,10 @@ class Server():
                        validate=True)
 
         self.port = getenv('PORT') if getenv('PORT') else 5000
+
+        self.scheduler = BackgroundScheduler()
+        self.scheduler.add_job(self.__remove_expired_tokens, 'interval', hours=1)
+        self.scheduler.start()
 
     def Run(self) -> None:
         """Run the Flask app.
@@ -99,4 +118,18 @@ class Server():
         """
         return self.jwt
 
+    def __remove_expired_tokens(self) -> None:
+        """ TEMPORARY METHOD
+        Remove expired tokens from the set of revoked tokens.
+        Returns:
+            None
+        """
+        revoked_tokens = GetRevokedTokens()
+        for token in revoked_tokens:
+            payload = decode_token(token)
+            if payload["exp"] < datetime.now(timezone.utc).timestamp():
+                revoked_tokens.remove(token)
+
+    def GetScheduler(self):
+        return self.scheduler
 __all__ = ['Server']
