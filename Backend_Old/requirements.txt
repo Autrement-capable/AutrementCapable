@@ -9,7 +9,3 @@ python-jose
 passlib
 pymongo
 mongoengine
-pymupdf
-pillow
-pdf2image
-fillpdf
