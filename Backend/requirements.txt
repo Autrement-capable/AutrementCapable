@@ -1,11 +1,10 @@
-Flask
+fastapi
+uvicorn
+fastapi-another-jwt-auth
+pydantic
+pydantic[email]
 python-dotenv
-Flask-RESTful
-Flask-Restx
-Flask-Cors
-PyJWT
 PyYAML
-python-jose
 passlib
 pymongo
 mongoengine
