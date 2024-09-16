@@ -1,14 +1,10 @@
-from config.mainConfig import Server
-import config.auth
-import modules.login.loginEndpoint
-from time import sleep
-
+from config.server import server
+import config.route_includer
 import atexit
-import os
 
 
 def CleanUp(): # runs twice, but that's ok , this is beacuse of flask debug mode creating a child process
-    scheculer = Server().GetScheduler()
+    scheculer = server.scheduler
     if scheculer.running:
         print("Cleaning up has started")
         scheculer.shutdown(wait=False)
@@ -17,7 +13,6 @@ def CleanUp(): # runs twice, but that's ok , this is beacuse of flask debug mode
 
 if __name__ == "__main__":
     try:
-        server = Server()
         server.Run()
         atexit.register(CleanUp)
     except Exception as e:
