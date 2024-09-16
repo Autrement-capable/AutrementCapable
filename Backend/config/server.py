@@ -81,7 +81,7 @@ class Server:
 
     def Run(self):
         try:
-            uvicorn.run(self.app, host=self.host, port=self.port, log_level=self.log_lvl)
+             uvicorn.run("app:server.app", host=self.host, port=self.port, log_level=self.log_lvl, reload=True if getenv("MODE") == "DEV" else False)
         except Exception as e:
             print(f"Error: {str(e)}")
             exit(1)
@@ -92,4 +92,7 @@ class Server:
 
 server = Server()
 
-__all__ = ["server"]
+def AddRouter(router):
+    server.app.include_router(router)
+
+__all__ = ["server", "AddRouter"]

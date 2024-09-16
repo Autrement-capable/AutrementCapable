@@ -1,7 +1,5 @@
-from config.mainConfig import server
-import config.auth
-import modules.login.loginEndpoint
-
+from config.server import server
+import config.route_includer
 import atexit
 
 

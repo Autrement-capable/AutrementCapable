@@ -3,6 +3,7 @@ from pydantic import BaseModel, EmailStr
 from fastapi_another_jwt_auth import AuthJWT
 from modules.database.DB import GetUser, AddUser
 from modules.session_management.password import hash_password, verify_password
+from config.server import AddRouter
 import re
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -45,3 +46,5 @@ def register(form: RegisterForm, Authorize: AuthJWT = Depends()):
     access_token = Authorize.create_access_token(subject=user["username"])
     refresh_token = Authorize.create_refresh_token(subject=user["username"])
     return {"access_token": access_token, "refresh_token": refresh_token}
+
+AddRouter(router) # Add the router to the server
