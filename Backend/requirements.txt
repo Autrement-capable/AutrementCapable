@@ -12,3 +12,4 @@ pymupdf
 pillow
 pdf2image
 fillpdf
+apscheduler
