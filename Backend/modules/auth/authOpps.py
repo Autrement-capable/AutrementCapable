@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from fastapi_another_jwt_auth import AuthJWT
 from pydantic import BaseModel, Field
-from modules.database.DB import GetUser, GetRevokedTokens
+# from modules.database.DB import GetUser, GetRevokedTokens
 from modules.utils.jwt_exceptions import create_response_dict
 from config.server import AddRouter
 

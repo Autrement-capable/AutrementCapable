@@ -7,6 +7,8 @@ from config.settings import get_config
 from config.cors import init_cors
 from config.exception_handlers import authjwt_exception_handler
 from modules.utils.singleton import singleton
+from database.postgress.setup import create_Pengine, create_db_and_tables
+from sqlmodel import Session
 from os import getenv
 import uvicorn
 
@@ -24,7 +26,7 @@ class Server:
             docs_url="/docs" if getenv("MODE") == "DEV" else None
         )
 
-        self.port = 5000
+        self.port = int(getenv("PORT", 5000))
         self.host = '0.0.0.0'
         self.log_lvl= "info"
 
@@ -33,6 +35,10 @@ class Server:
 
         # Add JWT exception handler
         self.app.add_exception_handler(AuthJWTException, authjwt_exception_handler)
+
+        # Initialize the database
+        self.postgress_engine = create_Pengine()
+        create_db_and_tables(self.postgress_engine)
 
         openapi_tags = [
             {
@@ -95,6 +101,11 @@ class Server:
 
         self.app.openapi_schema = openapi_schema
         return self.app.openapi_schema
+    
+    def get_Psession(self):
+        """Get a session for the postgress database."""
+        with Session(self.postgress_engine) as session:
+            yield session
 
 server = Server()
 
