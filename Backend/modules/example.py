@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from fastapi import Depends, Path
-from sqlmodel import Session
+from sqlmodel import Session, inspect
 from pydantic import BaseModel
 from config.server import AddRouter, server
 from database.postgress.models.example import Example
@@ -29,5 +29,25 @@ def create_example(form: ExampleForm, DB: Session = Depends(server.get_Psession)
         return example.model_dump_json()
     except Exception as e:
         return {"message": str(e)}, 400
-    
+
+
+@example_router.get("/all")
+def all_examples(DB: Session = Depends(server.get_Psession)):
+    examples = DB.query(Example).all()
+    return [example.model_dump_json() for example in examples]
+
+@example_router.get("/all-tables")
+def all_tables(DB: Session = Depends(server.get_Psession)):
+    inspector = inspect(DB.bind)
+    tables = inspector.get_table_names()
+    return {"tables": tables}
+
+# route used for begging drop all tables
+@example_router.get("/drop-all-tables")
+def drop_all_tables(DB: Session = Depends(server.get_Psession)):
+    inspector = inspect(DB.bind)
+    tables = inspector.get_table_names()
+    for table in tables:
+        DB.execute(f"DROP TABLE {table} CASCADE")
+    return {"message": "All tables dropped"}
 AddRouter(example_router) # Add the router to the server
