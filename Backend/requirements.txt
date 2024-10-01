@@ -13,3 +13,6 @@ pillow
 pdf2image
 fillpdf
 apscheduler
+SQLModel
+# need to be replaced with psycopg2 for production you would need to rework the Dockerfile
+psycopg2-binary
