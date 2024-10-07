@@ -6,6 +6,7 @@ from fastapi.openapi.utils import get_openapi
 from config.settings import get_config
 from config.cors import init_cors
 from config.exception_handlers import authjwt_exception_handler
+from config.roles import init_roles
 from modules.utils.singleton import singleton
 from database.postgress.setup import postgress
 from sqlmodel import Session
@@ -40,6 +41,10 @@ class Server:
         self.postgress = postgress
         self.postgress.create_db_and_tables()
 
+        # add the roles
+        init_roles(self.postgress.GetSession())
+
+        # Tags for managing authentication
         openapi_tags = [
             {
                 "name": "Auth",
