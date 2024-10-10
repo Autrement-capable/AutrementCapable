@@ -20,4 +20,7 @@ jobs:
       run: cd ./Backend
 
     - name: Build Docker image
-      run: docker compose up --build
+      run: docker compose build
+
+    - name: docker compose up
+      run: docker compose up
