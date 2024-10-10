@@ -27,4 +27,4 @@ jobs:
         POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
         POSTGRES_SERVER: ${{ secrets.POSTGRES_SERVER }}
         VERSION: ${{ secrets.VERSION }}
-      run: docker compose up --build
+      run: docker compose build
