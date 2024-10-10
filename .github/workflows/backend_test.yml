@@ -21,12 +21,12 @@ jobs:
 
     - name: Build Docker image
       env:
-        MODE: ${{ secrets.MODE }}
-        PORT: ${{ secrets.PORT }}
-        POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
-        POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-        POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-        POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
-        POSTGRES_SERVER: ${{ secrets.POSTGRES_SERVER }}
-        VERSION: ${{ secrets.VERSION }}
+        MODE: ${{ secrets.MODE}}
+        PORT: ${{ secrets.PORT}}
+        POSTGRES_DB: ${{ secrets.POSTGRES_DB}}
+        POSTGRES_USER: ${{ secrets.POSTGRES_USER}}
+        POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD}}
+        POSTGRES_PORT: ${{secrets.POSTGRES_PORT}}
+        POSTGRES_SERVER: ${{secrets.POSTGRES_SERVER}}
+        VERSION: ${{ secrets.VERSION}}
       run: docker compose up --build
