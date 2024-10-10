@@ -3,12 +3,16 @@ from fastapi_another_jwt_auth import AuthJWT
 from pydantic import BaseModel, Field
 # from modules.database.DB import GetUser, GetRevokedTokens
 from modules.utils.jwt_exceptions import create_response_dict
-from config.server import AddRouter
+from database.postgress.actions.revoked_jwt_tokens import revoke_token
+from config.server import AddRouter, server
+from sqlmodel import Session
+
+from datetime import datetime
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
-class LogoutForm(BaseModel):
-    refresh_token: str = Field(..., description="The refresh token needs to be revoked as well")
+class LogoutResponce(BaseModel):
+    msg: str = Field(..., description="The message")
 
 class RefreshResponse(BaseModel):
     access_token: str = Field(..., description="The new access token")
@@ -23,26 +27,33 @@ def Refresh(Authorize: AuthJWT = Depends()):
     Note: send the refresh token in the Authorization header as a Bearer token.
     """
 
-    Authorize.jwt_required()
-    current_user = Authorize.get_jwt_subject()
-    access_token = Authorize.create_access_token(subject=current_user)
+    Authorize.jwt_refresh_token_required()
+    user_id = Authorize.get_jwt_subject()
+    access_token = Authorize.create_access_token(subject=user_id, fresh=False)
     return {"access_token": access_token}
 
 
-@router.post("/logout", response_model=LogoutForm,
-             responses= create_response_dict(RefreshToken=False),
-             tags=["Auth"])
-def Logout(form: LogoutForm, Authorize: AuthJWT = Depends()):
+@router.post("/logout",
+             responses= create_response_dict(),
+             response_model=LogoutResponce,
+             tags=["Auth", "Auth_refresh"])
+def Logout(Authorize: AuthJWT = Depends(), session: Session = Depends(server.get_Psession)):
     """
     This endpoint is used to revoke the access token and refresh token.
     """
 
-    Authorize.access_token_required()
-    jti = Authorize.get_raw_jwt()['jti'] # should be the access token jti
-    refresh_token = form.refresh_token
-    print("access_token", jti)
-    print("refresh_token", refresh_token)
-    # RevokeToken(jti, refresh_token)
-    return {"message": "Successfully logged out"}
+    # Revoke the access token
+    Authorize.jwt_required()
+    jti_access = Authorize.get_raw_jwt()["jti"]
+    expires_access = datetime.utcfromtimestamp(Authorize.get_raw_jwt()["exp"])
+    revoke_token(jti_access, expires_access, "access", session, commit=False)
+
+    # Revoke the refresh token
+    Authorize.jwt_refresh_token_required()
+    jti_refresh = Authorize.get_raw_jwt()["jti"]
+    expires_refresh = datetime.utcfromtimestamp(Authorize.get_raw_jwt()["exp"])
+    revoke_token(jti_refresh, expires_refresh, "refresh", session)
+
+    return {"msg": "Successfully logged out"}
 
 AddRouter(router) # Add the router to the server

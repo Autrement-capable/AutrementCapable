@@ -34,8 +34,8 @@ def login(form: LoginForm, Authorize: AuthJWT = Depends(), Session = Depends(ser
     if not user or not verify_password(form.password, user.password_hash):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials")
 
-    access_token = Authorize.create_access_token(subject=user["username"])
-    refresh_token = Authorize.create_refresh_token(subject=user["username"])
+    access_token = Authorize.create_access_token(subject=user.user_id, fresh=True)
+    refresh_token = Authorize.create_refresh_token(subject=user.user_id)
     return {"access_token": access_token, "refresh_token": refresh_token}
 
 @router.post("/register", response_model=LoginResponse)
@@ -46,8 +46,8 @@ def register(form: RegisterForm, Authorize: AuthJWT = Depends(), Session = Depen
     user = create_user(Session, form.username, form.email, form.password, first_name=form.first_name, last_name=form.last_name, phone_number=form.phone_number, address=form.address, refresh=True)
     if not user:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User already exists")
-    access_token = Authorize.create_access_token(subject=user["username"])
-    refresh_token = Authorize.create_refresh_token(subject=user["username"])
+    access_token = Authorize.create_access_token(subject=user.user_id, fresh=True)
+    refresh_token = Authorize.create_refresh_token(subject=user.user_id)
     return {"access_token": access_token, "refresh_token": refresh_token}
 
 AddRouter(router) # Add the router to the server

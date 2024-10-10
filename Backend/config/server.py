@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI ,Depends
 from fastapi_another_jwt_auth import AuthJWT
 from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi_another_jwt_auth.exceptions import AuthJWTException
@@ -9,6 +9,7 @@ from config.exception_handlers import authjwt_exception_handler
 from config.roles import init_roles
 from modules.utils.singleton import singleton
 from database.postgress.setup import postgress
+from database.postgress.actions.revoked_jwt_tokens import delete_expired_tokens, get_revoked_token_by_jti
 from sqlmodel import Session
 from os import getenv
 import uvicorn
@@ -71,8 +72,9 @@ class Server:
             exit(1)
 
     def __remove_expired_tokens(self):
-        # Token removal logic here
-        pass
+        """ Remove expired tokens from the database """
+        with self.postgress.GetSession() as session:
+            delete_expired_tokens(session)
 
     def __custom_openapi__(self):
         """
@@ -95,14 +97,26 @@ class Server:
                 "scheme": "bearer",
                 "bearerFormat": "JWT",
                 "description": "JWT Authorization header using the Bearer scheme (FYI: do not include 'Bearer ' in the value)",
-            }
+            },
+            "X-Refresh-Token": {
+                "type": "http",
+                 "scheme": "bearer",
+                "bearerFormat": "JWT",
+                "description": "JWT Refresh Token header using the Bearer scheme (FYI: do not include 'Bearer ' in the value)",
+        }
         }
 
         for path, path_item in openapi_schema["paths"].items():
             for method, operation in path_item.items():
                 tags = operation.get("tags", [])
-                if "Auth" in tags or "Auth_refresh" in tags:
-                    operation["security"] = [{"Authorization": []}]
+                if "Auth" in tags:
+                    if "security" not in operation:
+                        operation["security"] = []
+                    operation["security"].append({"Authorization": []})
+                if "Auth_refresh" in tags:
+                    if "security" not in operation:
+                        operation["security"] = []
+                    operation["security"].append({"X-Refresh-Token": []})
 
         self.app.openapi_schema = openapi_schema
         return self.app.openapi_schema
@@ -112,6 +126,12 @@ class Server:
         yield from self.postgress.GetSession()
 
 server = Server()
+
+@AuthJWT.token_in_denylist_loader
+def check_if_token_in_denylist(decrypted_token, session: Session = Depends(server.get_Psession)):
+    jti = decrypted_token['jti']
+    return get_revoked_token_by_jti(session, jti) is not None
+
 
 def AddRouter(router):
     server.app.include_router(router)
