@@ -10,6 +10,47 @@
   font-weight: bold;
 }
 
+/* Dyslexia-friendly font definition */
+@font-face {
+  font-family: 'Dyslexie';
+  src: url('@/assets/fonts/OpenDyslexic-Regular.otf') format('opentype');
+  font-weight: normal;
+}
+
+@font-face {
+  font-family: 'Dyslexie';
+  src: url('@/assets/fonts/OpenDyslexic-Bold-Italic.otf') format('opentype');
+  font-weight: bold;
+}
+
+/* Dyslexia mode styling */
+.dyslexia-mode {
+  font-family: 'Dyslexie', sans-serif;
+  letter-spacing: 0.05em;
+  line-height: 1.6;
+}
+
+/* Large cursor */
+.large-cursor {
+  cursor: url('@/assets/big-cursor2.png'), auto;
+}
+
+.large-text {
+  font-size: 1.5em; /* You can adjust the size to fit your needs */
+}
+
+.spaced-text {
+  letter-spacing: 0.1em; /* Adjust letter spacing */
+  line-height: 1.8; /* Adjust line height */
+}
+
+.highlight-clickable {
+  background-color: yellow;
+  color: black; /* Optionally, adjust text color for contrast */
+}
+
+/* Default font for the website */
 body {
   font-family: 'Glacial Indifference', sans-serif;
+  cursor: default;
 }

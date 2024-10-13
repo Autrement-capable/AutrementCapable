@@ -1,15 +1,19 @@
 <template>
-  <div id="app" class="app-container">
+  <div id="app" class="app-container" :class="{ 'dyslexia-mode': isDyslexiaMode }">
     <router-view></router-view>
     <div class="accessibility-widget" @click="toggleWidget">
       <i class="icon-accessibility"></i>
     </div>
     <AppFooter />
     <div v-if="showWidget" class="accessibility-options">
-      <!-- Add your accessibility options here -->
       <button @click="toggleTextToSpeech">Lire la page</button>
       <button @click="toggleVoiceNavigation">Navigation vocale</button>
-      <!-- Other options -->
+      <button @click="toggleDyslexiaMode">Mode dyslexie</button>
+      <button @click="makeCursorLarger">Agrandir le curseur</button>
+      <button @click="toggleTextSize">Agrandir le texte</button>
+      <button @click="toggleTextSpacing">Espacer le texte</button>
+      <button @click="toggleHighlightClickable">Surligner les éléments cliquables</button>
+      <div v-if="isDyslexiaMode" class="dyslexia-mode" style="color: red;">Dyslexia Mode Activated</div>
     </div>
   </div>
 </template>
@@ -24,7 +28,9 @@ export default {
   },
   data() {
     return {
-      showWidget: false
+      showWidget: false,
+      isDyslexiaMode: false,
+      isLargeCursor: false, // Track cursor size state
     };
   },
   methods: {
@@ -36,12 +42,44 @@ export default {
     },
     toggleVoiceNavigation() {
       // Add voice navigation functionality here
+    },
+    toggleDyslexiaMode() {
+      this.isDyslexiaMode = !this.isDyslexiaMode;
+    },
+    makeCursorLarger() {
+      this.isLargeCursor = !this.isLargeCursor;
+      if (this.isLargeCursor) {
+        document.body.classList.add('large-cursor');
+      } else {
+        document.body.classList.remove('large-cursor');
+      }
+    },
+    toggleTextSize() {
+      document.body.classList.toggle('large-text');
+    },
+    toggleTextSpacing() {
+      document.body.classList.toggle('spaced-text');
+    },
+    toggleHighlightClickable() {
+      const clickableElements = document.querySelectorAll('a, button');
+      clickableElements.forEach(element => {
+        element.classList.toggle('highlight-clickable');
+      });
     }
   }
 };
 </script>
 
 <style>
+body {
+  cursor: default;
+}
+
+/* Large cursor using a custom image */
+.large-cursor {
+  cursor: crosshair;
+}
+
 .accessibility-widget {
   position: absolute;
   bottom: 80px; /* This ensures it's above the footer */
@@ -79,5 +117,4 @@ button {
 button:hover {
   background-color: #0056b3;
 }
-
 </style>
