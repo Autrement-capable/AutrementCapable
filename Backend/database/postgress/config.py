@@ -2,6 +2,7 @@
 from os import getenv
 from sqlmodel import create_engine, SQLModel, Session
 from modules.utils.singleton import singleton
+from contextlib import contextmanager
 
 DATABASE_URL = (
     f"postgresql://{getenv('POSTGRES_USER')}:{getenv('POSTGRES_PASSWORD')}"
@@ -16,12 +17,17 @@ class Postgress:
         self.SQLModel = SQLModel
 
     def create_db_and_tables(self):
+        """Create the database and tables"""
         print("Creating database and tables")
         self.metadata.create_all(self.engine)
 
+    @contextmanager
     def GetSession(self):
-        with Session(self.engine) as session:
+        session = Session(self.engine)
+        try:
             yield session
+        finally:
+            session.close()
 
 postgress = Postgress()
 
