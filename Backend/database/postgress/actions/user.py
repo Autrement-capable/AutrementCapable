@@ -69,19 +69,38 @@ def get_user_by_email(session: Session, email: str) -> User:
     """ Get a user from the database by email """
     return session.query(User).filter(User.email == email).first()
 
+def get_user_by_username(session: Session, username: str) -> User:
+    """ Get a user from the database by username """
+    return session.query(User).filter(User.username == username).first()
+
+def get_all_usernames(session: Session) -> list[str]:
+    """ Get all usernames from the database """
+    return [user.username for user in session.query(User).all()]
+
+def is_username_taken(session: Session, username: str) -> bool:
+    """ Check if a username is already taken """
+    return bool(session.query(User).filter(User.username == username).first())
+
 def get_user_by_id(session: Session, user_id: int) -> User:
     """ Get a user from the database by ID """
     return session.query(User).filter(User.user_id == user_id).first()
 
-def login_user(session: Session, email: str, password: str, hashed=False):
-    """ Log a user in
+def login_user(session: Session, password: str,  username_email: str, hashed=False) -> User | None:
+    """ Log a user in via standard registration (Password) using their username or email
 
     Args:
         session (Session): The database session
-        email (str): The user's email
         password (str): The user's password
-        hashed (bool, optional): Whether the password is hashed. Defaults to False."""
-    user = get_user_by_email(session, email)
+        username_email (str): The user's username or email
+        hashed (bool, optional): Whether the password is hashed. Defaults to False.
+
+        Returns:
+            User | None: The user object if the login was successful, None otherwise"""
+
+    user = get_user_by_username(session, username_email) # check if the username exists
+    if not user:
+        user = get_user_by_email(session, username_email) # check if the email exists
+
     if not user:
         return None
 

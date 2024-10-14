@@ -20,6 +20,3 @@ class YoungPerson(SQLModel, table=True):
     sensory_sensitivities: Optional[str] = Field(default=None)
     interests: Optional[str] = Field(default=None)
     notes: Optional[str] = Field(default=None)
-
-    # Relationships
-    user: "User" = Relationship(back_populates="young_person")

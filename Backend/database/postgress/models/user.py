@@ -8,19 +8,19 @@ from sqlmodel import Field, Relationship, SQLModel, DateTime
 from sqlalchemy import Column, func
 
 if TYPE_CHECKING:
+    from database.postgress.models.role import Role
     from database.postgress.models.oauth_provider import OAuthProvider
     from database.postgress.models.passkey import Passkey
     from database.postgress.models.password_reset import PasswordReset
     from database.postgress.models.young_person import YoungPerson
-    from database.postgress.models.role import Role
 
 
 class User(SQLModel, table=True):
     __tablename__ = "users"
 
     user_id: Optional[int] = Field(default=None, primary_key=True)
-    username: Optional[str] = Field(default=None)
-    email: str = Field(sa_column_kwargs={"unique": True, "nullable": False})
+    username: str = Field(unique=True, nullable=False)
+    email: str = Field(sa_column_kwargs={"unique": True, "nullable": False}) # this is the same as the line above
     password_hash: Optional[str] = Field(default=None)
     is_oauth: bool = Field(default=False)
     is_passkey: bool = Field(default=False)
@@ -33,11 +33,3 @@ class User(SQLModel, table=True):
     is_active: bool = Field(default=True)
     last_login: Optional[datetime] = Field(default=None)
 
-    # Relationships
-    role: "Role" = Relationship(back_populates="users")
-    oauth_providers: List["OAuthProvider"] = Relationship(back_populates="user")
-    passkeys: List["Passkey"] = Relationship(back_populates="user")
-    password_resets: List["PasswordReset"] = Relationship(back_populates="user")
-    young_person: Optional["YoungPerson"] = Relationship(
-        back_populates="user", sa_relationship_kwargs={"uselist": False}
-    )

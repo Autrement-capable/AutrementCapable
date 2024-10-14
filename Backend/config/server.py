@@ -43,7 +43,8 @@ class Server:
         self.postgress.create_db_and_tables()
 
         # add the roles
-        init_roles(self.postgress.GetSession())
+        with self.postgress.GetSession() as session:
+            init_roles(session)
 
         # Tags for managing authentication
         openapi_tags = [
@@ -98,39 +99,41 @@ class Server:
                 "bearerFormat": "JWT",
                 "description": "JWT Authorization header using the Bearer scheme (FYI: do not include 'Bearer ' in the value)",
             },
-            "X-Refresh-Token": {
-                "type": "http",
-                 "scheme": "bearer",
-                "bearerFormat": "JWT",
-                "description": "JWT Refresh Token header using the Bearer scheme (FYI: do not include 'Bearer ' in the value)",
-        }
+        #     "X-Refresh-Token": { # can't implement properly so dont use this
+        #         "type": "http",
+        #          "scheme": "bearer",
+        #         "bearerFormat": "JWT",
+        #         "description": "JWT Refresh Token header using the Bearer scheme (FYI: do not include 'Bearer ' in the value)",
+        # }
         }
 
         for path, path_item in openapi_schema["paths"].items():
             for method, operation in path_item.items():
                 tags = operation.get("tags", [])
-                if "Auth" in tags:
-                    if "security" not in operation:
-                        operation["security"] = []
-                    operation["security"].append({"Authorization": []})
-                if "Auth_refresh" in tags:
-                    if "security" not in operation:
-                        operation["security"] = []
-                    operation["security"].append({"X-Refresh-Token": []})
+                if "Auth" in tags or "Auth_refresh" in tags:
+                    operation["security"] = [{"Authorization": []}]
+
+                # if "Auth_refresh" in tags: # can't implement properly so dont use this
+                #     if "security" not in operation:
+                #         operation["security"] = []
+                #     operation["security"].append({"Authorization": []})
 
         self.app.openapi_schema = openapi_schema
         return self.app.openapi_schema
 
     def get_Psession(self):
         """Get a session for the postgress database. Wrapper for the postgress.GetSession() method."""
-        yield from self.postgress.GetSession()
+        with self.postgress.GetSession() as session:
+            yield session
 
 server = Server()
 
 @AuthJWT.token_in_denylist_loader
-def check_if_token_in_denylist(decrypted_token, session: Session = Depends(server.get_Psession)):
-    jti = decrypted_token['jti']
-    return get_revoked_token_by_jti(session, jti) is not None
+def check_if_token_in_denylist(decrypted_token):
+    with postgress.GetSession() as session:
+        jti = decrypted_token['jti']
+        print("the jti is", jti)
+        return get_revoked_token_by_jti(session, jti) is not None
 
 
 def AddRouter(router):

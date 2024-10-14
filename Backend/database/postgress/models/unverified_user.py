@@ -16,7 +16,7 @@ class UnverifiedUser(SQLModel, table=True):
     )
 
     unverified_user_id: Optional[int] = Field(default=None, primary_key=True)
-    username: Optional[str] = Field(default=None)
+    username: str = Field(unique=True, nullable=False)
     email: str = Field(nullable=False)
     password_hash: Optional[str] = Field(default=None)
     pending_role: int = Field(nullable=False, foreign_key="roles.role_id")
@@ -29,6 +29,3 @@ class UnverifiedUser(SQLModel, table=True):
     phone_number: Optional[str] = Field(default=None)
     address: Optional[str] = Field(default=None)
     date_created: datetime = Field(sa_column=Column(DateTime, server_default=func.now()))
-
-    # Relationships
-    role: "Role" = Relationship(back_populates="unverified_users")

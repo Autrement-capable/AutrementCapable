@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request, HTTPException
 from fastapi_another_jwt_auth import AuthJWT
 from pydantic import BaseModel, Field
 # from modules.database.DB import GetUser, GetRevokedTokens
 from modules.utils.jwt_exceptions import create_response_dict
-from database.postgress.actions.revoked_jwt_tokens import revoke_token
+from database.postgress.actions.revoked_jwt_tokens import revoke_token, get_revoked_token_by_jti
 from config.server import AddRouter, server
 from sqlmodel import Session
 
@@ -17,10 +17,13 @@ class LogoutResponce(BaseModel):
 class RefreshResponse(BaseModel):
     access_token: str = Field(..., description="The new access token")
 
+class LogoutForm(BaseModel):
+    refresh_token: str = Field(..., description="The refresh token. putting bearer is optional")
+
 @router.post("/refresh", response_model=RefreshResponse,
              responses= create_response_dict(AccessToken=False),
              tags=["Auth_refresh"])
-def Refresh(Authorize: AuthJWT = Depends()):
+def Refresh(request: Request, Authorize: AuthJWT = Depends(), Session = Depends(server.get_Psession)):
     """
     This endpoint is used to refresh the access token.
 
@@ -37,7 +40,7 @@ def Refresh(Authorize: AuthJWT = Depends()):
              responses= create_response_dict(),
              response_model=LogoutResponce,
              tags=["Auth", "Auth_refresh"])
-def Logout(Authorize: AuthJWT = Depends(), session: Session = Depends(server.get_Psession)):
+def Logout(request: Request, form:LogoutForm ,Authorize: AuthJWT = Depends(), session: Session = Depends(server.get_Psession)):
     """
     This endpoint is used to revoke the access token and refresh token.
     """
@@ -46,13 +49,20 @@ def Logout(Authorize: AuthJWT = Depends(), session: Session = Depends(server.get
     Authorize.jwt_required()
     jti_access = Authorize.get_raw_jwt()["jti"]
     expires_access = datetime.utcfromtimestamp(Authorize.get_raw_jwt()["exp"])
-    revoke_token(jti_access, expires_access, "access", session, commit=False)
 
     # Revoke the refresh token
-    Authorize.jwt_refresh_token_required()
-    jti_refresh = Authorize.get_raw_jwt()["jti"]
-    expires_refresh = datetime.utcfromtimestamp(Authorize.get_raw_jwt()["exp"])
-    revoke_token(jti_refresh, expires_refresh, "refresh", session)
+    revoke_token(session, jti_access, expires_access, "access", commit=False)
+
+    refresh_token = form.refresh_token.replace("Bearer ", "")
+    # verify the refresh token
+    try:
+        decoded_token = Authorize.get_raw_jwt(refresh_token)
+        jti_refresh = decoded_token["jti"]
+        expires_refresh = datetime.utcfromtimestamp(decoded_token["exp"])
+        revoke_token(session, jti_refresh, expires_refresh, "refresh")
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=401, detail="Invalid refresh token")
 
     return {"msg": "Successfully logged out"}
 

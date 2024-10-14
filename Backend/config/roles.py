@@ -1,4 +1,5 @@
-from database.postgress.actions.role import create_role
+from database.postgress.actions.role import create_role, get_all_roles
+import copy
 
 from sqlmodel import Session
 roles = {
@@ -41,8 +42,24 @@ roles = {
 }
 
 def init_roles(Session:Session):
+    """ Initialize the roles in the database. Skip roles that already exist."""
     try:
-        for role_name, role_data in roles.items():
+        existing_roles = get_all_roles(Session)
+        existing_role_names = {role.role_name for role in existing_roles}
+
+        # Create a deep copy of the roles dictionary
+        roles_to_add = copy.deepcopy(roles)
+
+        # Remove roles that already exist
+        for role_name in existing_role_names:
+            roles_to_add.pop(role_name, None)
+
+        # If all roles exist, return True
+        if roles_to_add == {}:
+            return True
+
+        # Add the remaining roles to the database
+        for role_name, role_data in roles_to_add.items():
             role = create_role(Session, role_name, role_data["description"], commit=False)
             Session.add(role)
 
@@ -51,3 +68,4 @@ def init_roles(Session:Session):
     except Exception as e:
         print(e)
         return False
+    pass

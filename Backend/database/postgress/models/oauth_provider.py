@@ -23,6 +23,3 @@ class OAuthProvider(SQLModel, table=True):
     refresh_token: Optional[str] = Field(default=None)
     token_expiry: Optional[datetime] = Field(default=None)
     date_linked: datetime = Field(sa_column=Column(DateTime, server_default=func.now()))
-
-    # Relationships
-    user: "User" = Relationship(back_populates="oauth_providers")

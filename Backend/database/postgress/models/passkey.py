@@ -20,6 +20,3 @@ class Passkey(SQLModel, table=True):
     created_at: datetime = Field(sa_column=Column(DateTime, server_default=func.now()))
     last_used_at: Optional[datetime] = Field(default=None)
     credential_nickname: Optional[str] = Field(default=None)
-
-    # Relationships
-    user: "User" = Relationship(back_populates="passkeys")
