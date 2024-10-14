@@ -11,6 +11,8 @@ def CleanUp(): # runs twice, but that's ok , this is beacuse of flask debug mode
         print("Cleaning up has ended")
     # config.client.close()
 
+# test
+
 if __name__ == "__main__":
     try:
         server.Run()
