@@ -13,7 +13,11 @@
       <button @click="toggleTextSize">Agrandir le texte</button>
       <button @click="toggleTextSpacing">Espacer le texte</button>
       <button @click="toggleHighlightClickable">Surligner les éléments cliquables</button>
-      <div v-if="isDyslexiaMode" class="dyslexia-mode" style="color: red;">Dyslexia Mode Activated</div>
+      <button @click="toggleReadingMask">Masque de lecture</button>
+      <button @click="toggleReadingGuide">Guide de lecture</button>
+      <button @click="alignText('left')">Aligner à gauche</button>
+      <button @click="alignText('center')">Aligner au centre</button>
+      <button @click="alignText('right')">Aligner à droite</button>
     </div>
   </div>
 </template>
@@ -30,22 +34,138 @@ export default {
     return {
       showWidget: false,
       isDyslexiaMode: false,
-      isLargeCursor: false, // Track cursor size state
+      isLargeCursor: false,
+      showReadingMask: false,
+      showReadingGuide: false,
     };
   },
   methods: {
     toggleWidget() {
       this.showWidget = !this.showWidget;
     },
+
+    alignText(alignment) {
+      document.body.classList.remove('align-left', 'align-center', 'align-right');
+      document.body.classList.add(`align-${alignment}`);
+    },
+
+    toggleReadingGuide() {
+      this.showReadingGuide = !this.showReadingGuide;
+      if (this.showReadingGuide) {
+        this.createReadingGuide();
+      } else {
+        this.removeReadingGuide();
+      }
+    },
+
+    createReadingGuide() {
+      const guide = document.createElement('div');
+      guide.classList.add('reading-guide');
+      document.body.appendChild(guide);
+
+      document.addEventListener('mousemove', this.updateGuidePosition);
+    },
+
+    removeReadingGuide() {
+      const guide = document.querySelector('.reading-guide');
+      if (guide) {
+        document.body.removeChild(guide);
+        document.removeEventListener('mousemove', this.updateGuidePosition);
+      }
+    },
+
+    updateGuidePosition(event) {
+      const guide = document.querySelector('.reading-guide');
+      if (guide) {
+        const guideHeight = 30; // Adjust the height of the reading guide to be shorter
+        const guideWidth = window.innerWidth * 0.5; // Set guide width to 50% of the window width
+        const guideTop = event.clientY - guideHeight / 2;
+        const guideLeft = event.clientX - guideWidth / 2; // Adjust left position based on the mouse movement
+
+        guide.style.top = `${guideTop}px`;
+        guide.style.left = `${guideLeft}px`; // Allow the guide to move horizontally
+        guide.style.width = `${guideWidth}px`; // Set the width of the guide
+      }
+    },
+
+    toggleReadingMask() {
+      this.showReadingMask = !this.showReadingMask;
+      if (this.showReadingMask) {
+        this.createReadingMask();
+      } else {
+        this.removeReadingMask();
+      }
+    },
+
+    createReadingMask() {
+      const maskTop = document.createElement('div');
+      const maskBottom = document.createElement('div');
+      const maskLeft = document.createElement('div');
+      const maskRight = document.createElement('div');
+
+      maskTop.classList.add('reading-mask-overlay');
+      maskBottom.classList.add('reading-mask-overlay');
+      maskLeft.classList.add('reading-mask-overlay');
+      maskRight.classList.add('reading-mask-overlay');
+
+      maskTop.classList.add('mask-top');
+      maskBottom.classList.add('mask-bottom');
+      maskLeft.classList.add('mask-left');
+      maskRight.classList.add('mask-right');
+
+      document.body.appendChild(maskTop);
+      document.body.appendChild(maskBottom);
+      document.body.appendChild(maskLeft);
+      document.body.appendChild(maskRight);
+
+      document.addEventListener('mousemove', this.updateMaskPosition);
+    },
+
+    removeReadingMask() {
+      const overlays = document.querySelectorAll('.reading-mask-overlay');
+      overlays.forEach(overlay => {
+        document.body.removeChild(overlay);
+      });
+      document.removeEventListener('mousemove', this.updateMaskPosition);
+    },
+
+    updateMaskPosition(event) {
+      const maskHeight = 150; // Adjust the height of the reading mask here
+      const maskTopPosition = event.clientY - maskHeight / 2;
+
+      const maskTop = document.querySelector('.mask-top');
+      const maskBottom = document.querySelector('.mask-bottom');
+      const maskLeft = document.querySelector('.mask-left');
+      const maskRight = document.querySelector('.mask-right');
+
+      maskTop.style.height = `${maskTopPosition}px`;
+      maskBottom.style.top = `${maskTopPosition + maskHeight}px`;
+      maskBottom.style.height = `${window.innerHeight - (maskTopPosition + maskHeight)}px`;
+
+      // Mask left and right regions
+      maskLeft.style.height = `${maskHeight}px`;
+      maskLeft.style.top = `${maskTopPosition}px`;
+      maskRight.style.height = `${maskHeight}px`;
+      maskRight.style.top = `${maskTopPosition}px`;
+    },
+
     toggleTextToSpeech() {
       // Add text-to-speech functionality here
     },
+
     toggleVoiceNavigation() {
       // Add voice navigation functionality here
     },
+
     toggleDyslexiaMode() {
       this.isDyslexiaMode = !this.isDyslexiaMode;
+      if (this.isDyslexiaMode) {
+        document.body.classList.add('dyslexia-mode');
+      } else {
+        document.body.classList.remove('dyslexia-mode');
+      }
     },
+
     makeCursorLarger() {
       this.isLargeCursor = !this.isLargeCursor;
       if (this.isLargeCursor) {
@@ -54,12 +174,15 @@ export default {
         document.body.classList.remove('large-cursor');
       }
     },
+
     toggleTextSize() {
       document.body.classList.toggle('large-text');
     },
+
     toggleTextSpacing() {
       document.body.classList.toggle('spaced-text');
     },
+
     toggleHighlightClickable() {
       const clickableElements = document.querySelectorAll('a, button');
       clickableElements.forEach(element => {
@@ -73,11 +196,6 @@ export default {
 <style>
 body {
   cursor: default;
-}
-
-/* Large cursor using a custom image */
-.large-cursor {
-  cursor: crosshair;
 }
 
 .accessibility-widget {
@@ -94,7 +212,7 @@ body {
 
 .accessibility-options {
   position: absolute;
-  bottom: 140px; /* Slightly higher to make room for the widget itself */
+  bottom: 100px; /* Slightly higher to make room for the widget itself */
   right: 20px;
   background-color: #FFF;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -102,7 +220,7 @@ body {
   border-radius: 8px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 5px;
 }
 
 button {
