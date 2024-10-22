@@ -1,3 +1,7 @@
 import modules.auth.authOpps
 import modules.auth.loginRegisterEndpoint
-import modules.example 
+
+
+from os import getenv
+if getenv("MODE") == "DEV":
+    import modules.testing

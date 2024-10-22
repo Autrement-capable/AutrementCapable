@@ -6,7 +6,6 @@ from typing import List, Optional
 # Import all models
 from database.postgress.config import postgress
 from database.postgress.models.role import Role
-from database.postgress.models.example import Example
 from database.postgress.models.oauth_provider import OAuthProvider
 from database.postgress.models.passkey import Passkey
 from database.postgress.models.user import User
