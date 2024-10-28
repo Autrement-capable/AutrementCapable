@@ -1,3 +1,4 @@
+from os import getenv
 from fastapi import FastAPI, Depends
 from fastapi_another_jwt_auth import AuthJWT
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -9,11 +10,11 @@ from config.exception_handlers import authjwt_exception_handler
 from config.roles import init_roles
 from modules.utils.singleton import singleton
 from database.postgress.setup import postgress
-from database.postgress.actions.revoked_jwt_tokens import delete_expired_tokens, get_revoked_token_by_jti
+from database.postgress.actions.revoked_jwt_tokens import delete_expired_tokens, get_revoked_token_by_jti,  get_revoked_token_by_jti_sync
 import uvicorn
-from os import getenv
 import asyncio
-
+import anyio
+from fastapi.concurrency import run_in_threadpool
 
 @AuthJWT.load_config
 def load_config():
@@ -132,17 +133,29 @@ class Server:
 
 server = Server()
 
-# does not work currently
+# # This function is used to check if a token has been revoked async DOES NOT WORK because the lib does not support async
+# @AuthJWT.token_in_denylist_loader
+# def check_if_token_in_denylist(decrypted_token):
+#     async def check_token():
+#         async with postgress.GetSession() as session:
+#             jti = decrypted_token['jti']
+#             print(f"Checking if jti is revoked: {jti}")
+#             token = await get_revoked_token_by_jti(session, jti)
+#             print(f"Token found: {token}")  # Debug line
+#             return token is not None  # Returns True if token exists (revoked), False if not
+
+#     # Submit the coroutine to the running loop
+#     loop = asyncio.get_event_loop()
+#     future = asyncio.run_coroutine_threadsafe(check_token(), loop)
+#     return future.result()
+
+# Cant use async function because the lib does not support it
 @AuthJWT.token_in_denylist_loader
 def check_if_token_in_denylist(decrypted_token):
-    async def check_token():
-        async with postgress.GetSession() as session:
-            jti = decrypted_token['jti']
-            print("the jti is", jti) # gets called
-            return await get_revoked_token_by_jti(session, jti) is None
-
-    # Run the async function in the main thread( using async engine so this is necessary)
-    return asyncio.create_task(check_token())
+    jti = decrypted_token['jti']
+    with postgress.GetSessionSync() as session:
+        token = get_revoked_token_by_jti_sync(session, jti)
+        return token is not None
 
 
 def AddRouter(router):

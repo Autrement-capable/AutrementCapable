@@ -44,6 +44,7 @@ async def logout(request: Request, form: LogoutForm, Authorize: AuthJWT = Depend
 
     # Revoke the access token
     Authorize.jwt_required()
+    print("gets to here")
     jti_access = Authorize.get_raw_jwt()["jti"]
     expires_access = datetime.utcfromtimestamp(Authorize.get_raw_jwt()["exp"])
 
