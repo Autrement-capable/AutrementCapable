@@ -1,8 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from pydantic import BaseModel, EmailStr
 from fastapi_another_jwt_auth import AuthJWT
-from database.postgress.actions.user import create_user, get_user_by_email, login_user, get_user_by_username
-from modules.session_management.password import hash_password, verify_password
+from database.postgress.actions.user import create_user, login_user, is_username_taken
 from config.server import AddRouter, server
 import re
 
@@ -28,44 +27,40 @@ class RegisterForm(BaseModel):
     password: str
 
 @router.post("/login", response_model=LoginResponse)
-def login(form: LoginForm, Authorize: AuthJWT = Depends(), Session = Depends(server.get_Psession)):
+async def login(form: LoginForm, Authorize: AuthJWT = Depends(), session = Depends(server.get_Psession)):
     """
     Login a user and return an access token and a refresh token
     """
-    user = login_user(Session, form.password, form.username_or_email)
+    user = await login_user(session, form.password, form.username_or_email)
     if not user:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials")
-
     access_token = Authorize.create_access_token(subject=user.user_id, fresh=True)
     refresh_token = Authorize.create_refresh_token(subject=user.user_id)
     return {"access_token": access_token, "refresh_token": refresh_token}
 
-@router.get("/check_username")
-def check_username(username: str, Session = Depends(server.get_Psession)):
-    """ Check if a username is already taken
-
-    Use this when registering a new user to check if the username is already taken
-    /auth/check_username?username=example
-    """
-    user = get_user_by_username(Session, username)
-    if user:
-        return {"exists": True}
-    return {"exists": False}
-
 @router.post("/register", response_model=LoginResponse)
-def register(form: RegisterForm, Authorize: AuthJWT = Depends(), Session = Depends(server.get_Psession)):
+async def register(form: RegisterForm, Authorize: AuthJWT = Depends(), session = Depends(server.get_Psession)):
     """
     NOT FINALLY IMPLEMENTED, currently skips email verification
     Register a new user and return an access token and a refresh
     """
     if not re.fullmatch(email_regex, form.email):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid email format")
-
-    user = create_user(Session, form.username, form.email, form.password, first_name=form.first_name, last_name=form.last_name, phone_number=form.phone_number, address=form.address, fresh=True)
+    user = await create_user(session, form.username, form.email, form.password, first_name=form.first_name, last_name=form.last_name, phone_number=form.phone_number, address=form.address, fresh=True)
     if not user:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User already exists")
     access_token = Authorize.create_access_token(subject=user.user_id, fresh=True)
     refresh_token = Authorize.create_refresh_token(subject=user.user_id)
     return {"access_token": access_token, "refresh_token": refresh_token}
 
-AddRouter(router) # Add the router to the server
+@router.get("/check_username")
+async def check_username(username: str, session = Depends(server.get_Psession)):
+    """ Check if a username is already taken
+
+    Use this when registering a new user to check if the username is already taken
+    /auth/check_username?username=example
+    """
+    user = await is_username_taken(session, username)
+    return {"exists": user}
+
+AddRouter(router)

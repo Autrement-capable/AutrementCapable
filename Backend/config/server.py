@@ -1,6 +1,7 @@
-from fastapi import FastAPI ,Depends
+from os import getenv
+from fastapi import FastAPI, Depends
 from fastapi_another_jwt_auth import AuthJWT
-from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi_another_jwt_auth.exceptions import AuthJWTException
 from fastapi.openapi.utils import get_openapi
 from config.settings import get_config
@@ -9,14 +10,16 @@ from config.exception_handlers import authjwt_exception_handler
 from config.roles import init_roles
 from modules.utils.singleton import singleton
 from database.postgress.setup import postgress
-from database.postgress.actions.revoked_jwt_tokens import delete_expired_tokens, get_revoked_token_by_jti
-from sqlmodel import Session
-from os import getenv
+from database.postgress.actions.revoked_jwt_tokens import delete_expired_tokens, get_revoked_token_by_jti,  get_revoked_token_by_jti_sync
 import uvicorn
+import asyncio
+import anyio
+from fastapi.concurrency import run_in_threadpool
 
 @AuthJWT.load_config
 def load_config():
     return get_config()
+
 
 @singleton
 class Server:
@@ -30,7 +33,8 @@ class Server:
 
         self.port = int(getenv("PORT", 5000))
         self.host = '0.0.0.0'
-        self.log_lvl= "info"
+        self.log_lvl = "info"
+        self.postgress = postgress
 
         # Initialize CORS
         init_cors(self.app)
@@ -38,16 +42,15 @@ class Server:
         # Add JWT exception handler
         self.app.add_exception_handler(AuthJWTException, authjwt_exception_handler)
 
-        # Initialize the database
-        self.postgress = postgress
-        self.postgress.create_db_and_tables()
+        # Initialize the database asynchronously in FastAPI startup event
+        self.app.add_event_handler("startup", self.on_startup)
 
-        # add the roles
-        with self.postgress.GetSession() as session:
-            init_roles(session)
+        # Set up custom OpenAPI
+        self.app.openapi_tags = self.get_openapi_tags()
+        self.app.openapi = self.__custom_openapi__
 
-        # Tags for managing authentication
-        openapi_tags = [
+    def get_openapi_tags(self):
+        return [
             {
                 "name": "Auth",
                 "description": "Operations requiring authentication via ACCESS Token."
@@ -57,29 +60,38 @@ class Server:
                 "description": "Operations requiring authentication via REFRESH Token."
             }
         ]
-        self.app.openapi_tags = openapi_tags
-        self.app.openapi = self.__custom_openapi__
 
-        # Initialize and start scheduler
-        self.scheduler = BackgroundScheduler()
+    async def on_startup(self):
+        """ This function runs during startup of FastAPI application. """
+        # Initialize the database and create tables asynchronously
+        await self.postgress.create_db_and_tables()
+
+        # Initialize roles asynchronously
+        await self.init_roles()
+
+        # Start the async scheduler for deleting expired tokens
+        self.scheduler = AsyncIOScheduler()
         self.scheduler.add_job(self.__remove_expired_tokens, 'interval', hours=1)
         self.scheduler.start()
 
-    def Run(self):
-        try:
-            uvicorn.run("app:server.app", host=self.host, port=self.port, log_level=self.log_lvl, reload=True if getenv("MODE") == "DEV" else False)
-        except Exception as e:
-            print(f"Error: {str(e)}")
-            exit(1)
+    async def init_roles(self):
+        """ Initialize roles asynchronously """
+        async with self.postgress.GetSession() as session:
+            await init_roles(session)
 
-    def __remove_expired_tokens(self):
-        """ Remove expired tokens from the database """
-        with self.postgress.GetSession() as session:
-            delete_expired_tokens(session)
+    async def __remove_expired_tokens(self):
+        """ Remove expired tokens from the database asynchronously """
+        async with self.postgress.GetSession() as session:
+            await delete_expired_tokens(session)
+
+    async def get_Psession(self):
+        """Get an async session for the postgress database."""
+        async with self.postgress.GetSession() as session:
+            yield session
 
     def __custom_openapi__(self):
         """
-        Custom OpenAPI schema for FastAPI app(this is we can test the API in the browser via /docs in Swagger UI)
+        Custom OpenAPI schema for FastAPI app.
         """
         if self.app.openapi_schema:
             return self.app.openapi_schema
@@ -98,13 +110,7 @@ class Server:
                 "scheme": "bearer",
                 "bearerFormat": "JWT",
                 "description": "JWT Authorization header using the Bearer scheme (FYI: do not include 'Bearer ' in the value)",
-            },
-        #     "X-Refresh-Token": { # can't implement properly so dont use this
-        #         "type": "http",
-        #          "scheme": "bearer",
-        #         "bearerFormat": "JWT",
-        #         "description": "JWT Refresh Token header using the Bearer scheme (FYI: do not include 'Bearer ' in the value)",
-        # }
+            }
         }
 
         for path, path_item in openapi_schema["paths"].items():
@@ -113,27 +119,43 @@ class Server:
                 if "Auth" in tags or "Auth_refresh" in tags:
                     operation["security"] = [{"Authorization": []}]
 
-                # if "Auth_refresh" in tags: # can't implement properly so dont use this
-                #     if "security" not in operation:
-                #         operation["security"] = []
-                #     operation["security"].append({"Authorization": []})
-
         self.app.openapi_schema = openapi_schema
         return self.app.openapi_schema
 
-    def get_Psession(self):
-        """Get a session for the postgress database. Wrapper for the postgress.GetSession() method."""
-        with self.postgress.GetSession() as session:
-            yield session
+    def Run(self):
+        """ Run the server. """
+        try:
+            uvicorn.run("app:server.app", host=self.host, port=self.port, log_level=self.log_lvl, reload=True if getenv("MODE") == "DEV" else False)
+        except Exception as e:
+            print(f"Error: {str(e)}")
+            exit(1)
+
 
 server = Server()
 
+# # This function is used to check if a token has been revoked async DOES NOT WORK because the lib does not support async
+# @AuthJWT.token_in_denylist_loader
+# def check_if_token_in_denylist(decrypted_token):
+#     async def check_token():
+#         async with postgress.GetSession() as session:
+#             jti = decrypted_token['jti']
+#             print(f"Checking if jti is revoked: {jti}")
+#             token = await get_revoked_token_by_jti(session, jti)
+#             print(f"Token found: {token}")  # Debug line
+#             return token is not None  # Returns True if token exists (revoked), False if not
+
+#     # Submit the coroutine to the running loop
+#     loop = asyncio.get_event_loop()
+#     future = asyncio.run_coroutine_threadsafe(check_token(), loop)
+#     return future.result()
+
+# Cant use async function because the lib does not support it
 @AuthJWT.token_in_denylist_loader
 def check_if_token_in_denylist(decrypted_token):
-    with postgress.GetSession() as session:
-        jti = decrypted_token['jti']
-        print("the jti is", jti)
-        return get_revoked_token_by_jti(session, jti) is not None
+    jti = decrypted_token['jti']
+    with postgress.GetSessionSync() as session:
+        token = get_revoked_token_by_jti_sync(session, jti)
+        return token is not None
 
 
 def AddRouter(router):
