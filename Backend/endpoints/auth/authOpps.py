@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, Request, HTTPException
 from fastapi_another_jwt_auth import AuthJWT
 from pydantic import BaseModel, Field
-from modules.utils.jwt_exceptions import create_response_dict
+from utils.jwt_exceptions import create_response_dict
 from database.postgress.actions.revoked_jwt_tokens import revoke_token, get_revoked_token_by_jti
-from config.server import AddRouter, server
+from server.server import AddRouter, server
 from sqlmodel.ext.asyncio.session import AsyncSession
 from datetime import datetime
 

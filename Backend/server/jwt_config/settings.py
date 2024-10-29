@@ -5,7 +5,7 @@ from os import getenv
 
 load_dotenv()
 
-__config_file__ = "./config/config.yaml"
+__config_file__ = "./server/config_files/config.yaml"
 
 class Settings(BaseModel):
     authjwt_secret_key: str

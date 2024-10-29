@@ -1,7 +1,5 @@
 from passlib.hash import pbkdf2_sha256
-from functools import wraps
 import secrets
-import inspect
 
 def hash_password(password) -> str:
     """Hash a password using pbkdf2_sha256.
