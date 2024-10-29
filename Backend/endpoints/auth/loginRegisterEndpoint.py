@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, status
 from pydantic import BaseModel, EmailStr
 from fastapi_another_jwt_auth import AuthJWT
 from database.postgress.actions.user import create_user, login_user, is_username_taken
-from config.server import AddRouter, server
+from server.server import AddRouter, server
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])

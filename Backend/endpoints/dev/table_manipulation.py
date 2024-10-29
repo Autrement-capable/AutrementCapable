@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Path
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import inspect
 from sqlalchemy import text
-from config.server import AddRouter, server
+from server.server import AddRouter, server
 
 example_router = APIRouter(prefix="/dev", tags=["Testing", "Development"])
 

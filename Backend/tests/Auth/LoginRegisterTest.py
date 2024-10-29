@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 from fastapi import status
 from httpx import AsyncClient
 
-from config.server import server
+from server.server import server
 
 # Test the synchronous login endpoint using TestClient
 client = TestClient(server.app)
