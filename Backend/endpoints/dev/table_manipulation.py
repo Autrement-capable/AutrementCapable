@@ -4,7 +4,7 @@ from sqlmodel import inspect
 from sqlalchemy import text
 from config.server import AddRouter, server
 
-example_router = APIRouter(prefix="/test", tags=["Testing"])
+example_router = APIRouter(prefix="/dev", tags=["Testing", "Development"])
 
 @example_router.get("/all-tables")
 async def all_tables(DB: AsyncSession = Depends(server.get_Psession)):

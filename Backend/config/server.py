@@ -8,10 +8,12 @@ from config.settings import get_config
 from config.cors import init_cors
 from config.exception_handlers import authjwt_exception_handler
 from config.roles import init_roles
-from modules.utils.singleton import singleton
+from utils.singleton import singleton
 from database.postgress.setup import postgress
 from database.postgress.actions.revoked_jwt_tokens import delete_expired_tokens, get_revoked_token_by_jti,  get_revoked_token_by_jti_sync
 import uvicorn
+
+# not used becasue jwt deny list does not support async
 import asyncio
 import anyio
 from fastapi.concurrency import run_in_threadpool

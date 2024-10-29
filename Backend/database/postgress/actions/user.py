@@ -1,6 +1,6 @@
 from database.postgress.models.user import User
 from database.postgress.actions.role import get_role_by_name
-from modules.session_management.password import verify_password, hash_password
+from utils.password import verify_password, hash_password
 
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select

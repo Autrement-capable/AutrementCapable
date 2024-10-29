@@ -21,3 +21,7 @@ pytest-asyncio
 httpx
 #Debugging
 debugpy
+# email
+fastapi-mail
+# templates
+Jinja2

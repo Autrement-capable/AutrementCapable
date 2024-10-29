@@ -2,7 +2,7 @@ from os import getenv
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlmodel import SQLModel, create_engine, Session
-from modules.utils.singleton import singleton
+from utils.singleton import singleton
 from contextlib import asynccontextmanager, contextmanager
 
 DATABASE_URL_ASYNC = (
