@@ -10,7 +10,7 @@ example_router = APIRouter(prefix="/test", tags=["Testing"])
 async def all_tables(DB: AsyncSession = Depends(server.get_Psession)):
     """Get all tables in the database."""
     inspector = inspect(DB.bind)
-    tables = await DB.run_sync(inspector.get_table_names)  # Use run_sync for synchronous calls in async code
+    tables = await DB.run_sync(inspector.get_table_names)
     return {"tables": tables}
 
 # route used for dropping all tables
@@ -18,10 +18,10 @@ async def all_tables(DB: AsyncSession = Depends(server.get_Psession)):
 async def drop_all_tables(DB: AsyncSession = Depends(server.get_Psession)):
     """Drop all tables in the database."""
     inspector = inspect(DB.bind)
-    tables = await DB.run_sync(inspector.get_table_names)  # Use run_sync for synchronous calls
+    tables = await DB.run_sync(inspector.get_table_names)
     for table in tables:
-        await DB.execute(text(f"DROP TABLE {table} CASCADE"))  # Use await for async DB execution
-    await DB.commit()  # Don't forget to commit the transaction after executing the drop commands
+        await DB.execute(text(f"DROP TABLE {table} CASCADE"))
+    await DB.commit()
     return {"message": "All tables dropped"}
 
 AddRouter(example_router)  # Add the router to the server
