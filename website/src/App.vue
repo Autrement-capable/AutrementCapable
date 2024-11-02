@@ -30,7 +30,7 @@ export default {
     return {
       showWidget: false,
       isDyslexiaMode: false,
-      isLargeCursor: false, // Track cursor size state
+      isLargeCursor: false,
     };
   },
   methods: {
@@ -75,14 +75,13 @@ body {
   cursor: default;
 }
 
-/* Large cursor using a custom image */
 .large-cursor {
   cursor: crosshair;
 }
 
 .accessibility-widget {
   position: absolute;
-  bottom: 80px; /* This ensures it's above the footer */
+  bottom: 80px;
   right: 20px;
   background-color: #007BFF;
   color: white;
@@ -94,7 +93,7 @@ body {
 
 .accessibility-options {
   position: absolute;
-  bottom: 140px; /* Slightly higher to make room for the widget itself */
+  bottom: 140px;
   right: 20px;
   background-color: #FFF;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
