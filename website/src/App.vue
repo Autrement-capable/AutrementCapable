@@ -35,8 +35,6 @@ export default {
       showWidget: false,
       isDyslexiaMode: false,
       isLargeCursor: false,
-      showReadingMask: false,
-      showReadingGuide: false,
     };
   },
   watch: {
@@ -216,9 +214,13 @@ body {
   cursor: default;
 }
 
+.large-cursor {
+  cursor: crosshair;
+}
+
 .accessibility-widget {
   position: absolute;
-  bottom: 80px; /* This ensures it's above the footer */
+  bottom: 80px;
   right: 20px;
   background-color: #007BFF;
   color: white;
@@ -230,7 +232,7 @@ body {
 
 .accessibility-options {
   position: absolute;
-  bottom: 100px; /* Slightly higher to make room for the widget itself */
+  bottom: 140px;
   right: 20px;
   background-color: #FFF;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
