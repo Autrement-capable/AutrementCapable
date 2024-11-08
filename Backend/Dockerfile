@@ -8,6 +8,8 @@ RUN pip install -r requirements.txt --no-cache-dir
 
 COPY . .
 
+RUN python -m unittest test_app.py
+
 ARG PORT=5000
 
 EXPOSE $PORT
