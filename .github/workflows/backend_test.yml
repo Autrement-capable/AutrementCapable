@@ -4,17 +4,24 @@ on:
   push:
     branches:
       - main
+      - test_github_actions
   pull_request:
     branches:
       - main
 
 jobs:
-  build-and-test:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - name: Navigate to Backend directory and build Docker image
       working-directory: ./Backend
@@ -27,4 +34,9 @@ jobs:
         POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
         POSTGRES_SERVER: ${{ secrets.POSTGRES_SERVER }}
         VERSION: ${{ secrets.VERSION }}
-      run: docker compose build
+      run: |
+        docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/backend-app:latest .
+
+    - name: Push Docker image to Docker Hub
+      run: |
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/backend-app:latest
