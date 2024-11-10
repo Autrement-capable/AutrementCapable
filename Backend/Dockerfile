@@ -12,6 +12,11 @@ ARG DEBUG=false
 
 ENV DEBUG=${DEBUG}
 
+ENV DEBUG=${DEBUG}
+ENV PORT=${PORT}
+ENV DEBUG_PORT=${DEBUG_PORT}
+ENV HOST=${HOST}
+
 # Expose ports for the app and debug mode
 EXPOSE ${PORT}
 # EXPOSE ${DEBUG_PORT}
@@ -20,7 +25,8 @@ EXPOSE 5678
 
 # Check the DEBUG environment variable to run the app in debug mode or normal mode
 CMD if [ "$DEBUG" = "true" ]; then \
-        python -m debugpy --listen 0.0.0.0:5678 --wait-for-client app.py; \
+       python -m debugpy --listen ${HOST}:${$DEBUG_PORT} --wait-for-client -m uvicorn app:app --host \
+    ${HOST} --port ${PORT} --reload; \
     else \
-        python app.py; \
+        uvicorn app:app --host ${HOST} --port ${PORT}; \
     fi
