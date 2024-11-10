@@ -3,9 +3,11 @@ from fastapi_another_jwt_auth import AuthJWT
 from pydantic import BaseModel, Field
 from utils.jwt_exceptions import create_response_dict
 from database.postgress.actions.revoked_jwt_tokens import revoke_token, get_revoked_token_by_jti
-from server.server import AddRouter, server
+from server.server import AddRouter
+from database.postgress.setup import postgress
 from sqlmodel.ext.asyncio.session import AsyncSession
 from datetime import datetime
+
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -21,7 +23,7 @@ class LogoutForm(BaseModel):
 @router.post("/refresh", response_model=RefreshResponse,
              responses=create_response_dict(AccessToken=False),
              tags=["Auth_refresh"])
-async def refresh(request: Request, Authorize: AuthJWT = Depends(), session: AsyncSession = Depends(server.get_Psession)):
+async def refresh(request: Request, Authorize: AuthJWT = Depends(), session: AsyncSession = Depends(postgress.GetSession)):
     """
     This endpoint is used to refresh the access token.
 
@@ -37,7 +39,7 @@ async def refresh(request: Request, Authorize: AuthJWT = Depends(), session: Asy
              responses=create_response_dict(),
              response_model=LogoutResponse,
              tags=["Auth", "Auth_refresh"])
-async def logout(request: Request, form: LogoutForm, Authorize: AuthJWT = Depends(), session: AsyncSession = Depends(server.get_Psession)):
+async def logout(request: Request, form: LogoutForm, Authorize: AuthJWT = Depends(), session: AsyncSession = Depends(postgress.GetSession)):
     """
     This endpoint is used to revoke the access token and refresh token.
     """

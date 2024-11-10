@@ -1,19 +1,16 @@
-from server.server import server
+from server.server import server as svr
 import server.route_includer
 import atexit
 
-
 def CleanUp():
-    scheculer = server.scheduler
-    if scheculer.running:
+    scheduler = svr.scheduler
+    if scheduler.running:
         print("Cleaning up has started")
-        scheculer.shutdown(wait=False)
+        scheduler.shutdown(wait=False)
         print("Cleaning up has ended")
 
-if __name__ == "__main__":
-    try:
-        server.Run()
-        atexit.register(CleanUp)
-    except Exception as e:
-        print("Error: " + str(e))
-        exit(1)
+# Ensure that CleanUp is registered when the module is imported
+atexit.register(lambda: CleanUp())
+
+# Make sure that 'svr' is an ASGI-compatible app (e.g., FastAPI instance)
+app = svr.app
