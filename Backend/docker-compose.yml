@@ -22,10 +22,15 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_SERVER=${POSTGRES_SERVER}
       - POSTGRES_PORT=${POSTGRES_PORT}
+      - PORT=${PORT} # Application port
+      - HOST=${HOST} # Host for the application
+      - DEBUG=${DEBUG} # Custom DEBUG flag
+      - DEBUG_PORT=${DEBUG_PORT} # Debug port if debugging
     volumes:
       - .:/app
     ports:
       - ${PORT}:${PORT}
+      - 5678:5678
     depends_on:
       - db
     networks:
