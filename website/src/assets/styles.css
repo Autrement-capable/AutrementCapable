@@ -45,9 +45,11 @@
 }
 
 .highlight-clickable {
-  background-color: yellow;
-  color: black; /* Optionally, adjust text color for contrast */
+  outline: 2px solid rgb(255, 0, 0);
+  box-shadow: 0 0 10px rgb(255, 0, 0);
+  transition: box-shadow 0.3s ease;
 }
+
 
 .reading-mask-overlay {
   position: fixed;
