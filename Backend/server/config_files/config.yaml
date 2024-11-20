@@ -1,5 +1,11 @@
+# supooted time units: seconds, minutes, hours, days, months
 auth:
   access_token_duration:
     hours: 1
   refresh_token_duration:
-    days: 30
+    months: 1
+verify:
+  email_verification_code_duration:
+    days: 5
+  password_reset_code_duration:
+    hours: 1

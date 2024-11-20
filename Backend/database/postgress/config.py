@@ -34,6 +34,7 @@ class Postgress:
     async def GetSession(self):
         async with AsyncSession(self.engine) as session:
             yield session
+
     @contextmanager
     def GetSessionSync(self):
         """Get a synchronous session on the Sync Engine(diffrent from the async engine)
