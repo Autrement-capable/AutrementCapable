@@ -1,75 +1,104 @@
 from database.postgress.models.role import Role
-
-from sqlmodel import Session
+from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy.exc import IntegrityError, OperationalError
-from datetime import datetime , timedelta
+from sqlmodel import select
+from datetime import datetime
 
 # Create functions
 
-def create_role(Session:Session, name:str, desc:str, commit=True, refresh=False ):
-    """ Create a role in the database
+async def create_role(session: AsyncSession, name: str, desc: str, commit=True, refresh=False) -> Role:
+    """ Create a role in the database asynchronously
 
     Args:
-        Session (Session): The database session
+        session (AsyncSession): The database session
         name (str): The role's name
         desc (str): The role's description
         commit (bool, optional): Whether to commit the transaction. Defaults to True.
-        refresh (bool, optional): Whether to refresh the role object from DB(usefull if you want to manipulate it). Defaults to False.
+        refresh (bool, optional): Whether to refresh the role object from DB. Defaults to False.
     """
-    role = Role(role_name=name, description=desc)
-    Session.add(role)
-    if commit:
-        Session.commit()
-    if refresh:
-        Session.refresh(role)
-    return role
+    try:
+        role = Role(role_name=name, description=desc)
+        session.add(role)
+        if commit:
+            await session.commit()
+        if refresh:
+            await session.refresh(role)
+        return role
+    except IntegrityError:
+        await session.rollback()
+        print("Role already exists.")
+        return None
+    except OperationalError:
+        await session.rollback()
+        print("Database operation failed.")
+        return None
+
 
 # Get functions
 
-def get_role_by_name(Session:Session, name:str):
-    """ Get a role from the database by name """
-    return Session.query(Role).filter(Role.role_name == name).first()
+async def get_role_by_name(session: AsyncSession, name: str) -> Role | None:
+    """ Get a role from the database by name asynchronously """
+    statement = select(Role).where(Role.role_name == name)
+    result = await session.exec(statement)
+    return result.first()
 
-def get_role_by_id(Session:Session, role_id:int):
-    """ Get a role from the database by ID """
-    return Session.query(Role).filter(Role.role_id == role_id).first()
+async def get_role_by_id(session: AsyncSession, role_id: int) -> Role | None:
+    """ Get a role from the database by ID asynchronously """
+    statement = select(Role).where(Role.role_id == role_id)
+    result = await session.exec(statement)
+    return result.first()
 
-def get_all_roles(Session:Session):
-    """ Get all roles from the database """
-    return Session.query(Role).all()
+async def get_all_roles(session: AsyncSession) -> list[Role]:
+    """ Get all roles from the database asynchronously """
+    statement = select(Role)
+    result = await session.exec(statement)
+    return result.all()
+
 
 # Update functions
 
-def update_role(Session:Session, role:Role, commit=True, refresh=False):
-    """ Update a role in the database
+async def update_role(session: AsyncSession, role: Role, commit=True, refresh=False) -> Role:
+    """ Update a role in the database asynchronously
 
     Args:
-        Session (Session): The database session
+        session (AsyncSession): The database session
         role (Role): The role object
         commit (bool, optional): Whether to commit the transaction. Defaults to True.
-        refresh (bool, optional): Whether to refresh the role object from DB(usefull if you want to manipulate it). Defaults to False.
+        refresh (bool, optional): Whether to refresh the role object from DB. Defaults to False.
     """
-    Session.add(role)
-    if commit:
-        Session.commit()
-    if refresh:
-        Session.refresh(role)
-    return role
+    try:
+        session.add(role)
+        if commit:
+            await session.commit()
+        if refresh:
+            await session.refresh(role)
+        return role
+    except IntegrityError:
+        await session.rollback()
+        print("A role with this name already exists.")
+        return None
+    except OperationalError:
+        await session.rollback()
+        print("There was an issue with the database operation.")
+        return None
+
 
 # Delete functions
 
-def delete_role(Session:Session, role:Role, commit=True) -> bool:
-    """ Delete a role from the database
+async def delete_role(session: AsyncSession, role: Role, commit=True) -> bool:
+    """ Delete a role from the database asynchronously
 
     Args:
-        Session (Session): The database session
+        session (AsyncSession): The database session
         role (Role): The role object
         commit (bool, optional): Whether to commit the transaction. Defaults to True.
     """
     try:
-        Session.delete(role)
+        await session.delete(role)
         if commit:
-            Session.commit()
+            await session.commit()
         return True
-    except:
+    except Exception:
+        await session.rollback()
+        print("Failed to delete the role.")
         return False
