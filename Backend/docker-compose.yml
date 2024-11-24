@@ -15,24 +15,22 @@ services:
   api:
     build:
       context: .
+      args:
+        - DEBUG=${DEBUG} # Custom DEBUG flag
     environment:
+      - HOST=${HOST} # Application host
+      - PORT=${PORT} # Application port
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_SERVER=${POSTGRES_SERVER}
       - POSTGRES_PORT=${POSTGRES_PORT}
-      - PORT=${PORT} # Application port
-      - HOST=${HOST} # Host for the application
       - DEBUG=${DEBUG} # Custom DEBUG flag
-      - DEBUG_PORT=${DEBUG_PORT} # Debug port if debugging
-    env_file:
-      - .env
     volumes:
       - .:/app
     ports:
       - ${PORT}:${PORT} # Application port
-      # - ${DEBUG_PORT}:${DEBUG_PORT} # Debug port if debugging
-      - 5678:5678 # hardcoding this cause i cant pass it for some reason
+      - ${DEBUG_PORT}:${DEBUG_PORT}
     depends_on:
       - db
     networks:
