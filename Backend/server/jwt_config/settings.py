@@ -5,12 +5,16 @@ from os import getenv
 
 load_dotenv()
 
-__config_file__ = "./config/config.yaml"
+__config_file__ = "./server/config_files/config.yaml"
 
 class Settings(BaseModel):
     authjwt_secret_key: str
     jwt_access_token_expires: int  # in seconds
     jwt_refresh_token_expires: int  # in seconds
+    authjwt_algorithm: str = "HS256"
+    authjwt_token_location: list[str] = ["headers"]
+    authjwt_denylist_enabled: bool = True
+    authjwt_denylist_token_checks: list[str] = ["access", "refresh"]
 
     @classmethod
     def from_yaml(cls, config_path: str):
