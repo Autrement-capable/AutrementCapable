@@ -104,7 +104,7 @@ async def get_uvf_user_by_code(session: AsyncSession, code: str) -> UnverifiedUs
     """ Get an unverified user by their verification code.
 
     Args:
-        session (Session): The database session
+        session (AsyncSession): The database session
         code (str): The verification code
 
     Returns:
@@ -112,7 +112,13 @@ async def get_uvf_user_by_code(session: AsyncSession, code: str) -> UnverifiedUs
         None: If the user is not found
     """
     try:
-        return await session.exec(select(UnverifiedUser).where(UnverifiedUser.verification_token == code))[0]
+        # Execute the query
+        result = await session.execute(
+            select(UnverifiedUser).where(UnverifiedUser.verification_token == code.strip())
+        )
+        # Fetch the first scalar result
+        user = result.scalars().first()
+        return user
     except Exception as e:
         print(f"Error getting user by code: {e}")
         return None
@@ -157,3 +163,15 @@ async def verify_user(session: AsyncSession, verification_code: str, commit=True
         await session.refresh(user)
 
     return user
+
+async def del_uvf_user(session: AsyncSession, user: UnverifiedUser, commit=True):
+    """ Delete an unverified user from the database.
+
+    Args:
+        session (Session): The database session
+        user (UnverifiedUser): The user to delete
+        commit (bool, optional): Whether to commit the transaction. Defaults to True.
+    """
+    await session.delete(user)
+    if commit:
+        await session.commit()

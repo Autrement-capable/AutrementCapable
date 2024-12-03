@@ -15,8 +15,8 @@ services:
   api:
     build:
       context: .
-      args:
-        - DEBUG=${DEBUG} # Custom DEBUG flag
+      # args:
+        # - DEBUG=${DEBUG} # Custom DEBUG flag
     environment:
       - HOST=${HOST} # Application host
       - PORT=${PORT} # Application port
@@ -30,7 +30,6 @@ services:
       - .:/app
     ports:
       - ${PORT}:${PORT} # Application port
-      # - ${DEBUG_PORT}:${DEBUG_PORT} # Debug port if debugging
       - ${DEBUG_PORT}:${DEBUG_PORT}
     depends_on:
       - db

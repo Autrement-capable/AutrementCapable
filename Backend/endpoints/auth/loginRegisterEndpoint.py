@@ -2,11 +2,13 @@ from fastapi import APIRouter, HTTPException, Depends, status
 from pydantic import BaseModel, EmailStr
 from fastapi_another_jwt_auth import AuthJWT
 from database.postgress.actions.user import create_user, login_user, is_username_taken
-from database.postgress.actions.unverified_user import create_unverified_user
+from database.postgress.actions.unverified_user import create_unverified_user, del_uvf_user
 from mail.actions.verify_account import send_verification_email
 from server.server import AddRouter
-from database.postgress.setup import postgress
+from database.postgress.config import GetSession
 from sqlmodel.ext.asyncio.session import AsyncSession
+
+from os import getenv
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -28,7 +30,7 @@ class RegisterForm(BaseModel):
     password: str
 
 @router.post("/login", response_model=LoginResponse)
-async def login(form: LoginForm, Authorize: AuthJWT = Depends(), session: AsyncSession = Depends(postgress.GetSession)):
+async def login(form: LoginForm, Authorize: AuthJWT = Depends(), session: AsyncSession = Depends(GetSession)):
     """
     Login a user and return an access token and a refresh token
     """
@@ -41,7 +43,7 @@ async def login(form: LoginForm, Authorize: AuthJWT = Depends(), session: AsyncS
     return {"access_token": access_token, "refresh_token": refresh_token}
 
 # @router.post("/register", response_model=LoginResponse)
-# async def register(form: RegisterForm, Authorize: AuthJWT = Depends(), session: AsyncSession = Depends(postgress.GetSession)):
+# async def register(form: RegisterForm, Authorize: AuthJWT = Depends(), session: AsyncSession = Depends(GetSession)):
 #     """
 #     NOT FINALLY IMPLEMENTED, currently skips email verification
 #     Register a new user and return an access token and a refresh token
@@ -54,7 +56,7 @@ async def login(form: LoginForm, Authorize: AuthJWT = Depends(), session: AsyncS
 #     return {"access_token": access_token, "refresh_token": refresh_token}
 
 @router.post("/register")
-async def register(form: RegisterForm, Authorize: AuthJWT = Depends(), session: AsyncSession = Depends(postgress.GetSession)):
+async def register(form: RegisterForm, Authorize: AuthJWT = Depends(), session: AsyncSession = Depends(GetSession)):
     """
     Register a new user and return an access token and a refresh token
     """
@@ -65,13 +67,19 @@ async def register(form: RegisterForm, Authorize: AuthJWT = Depends(), session: 
     if not tmp_user:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User already exists")
     #Note we might want to handle failed email sending and delete the tmp user form db
-    if not send_verification_email(tmp_user):
+    try:
+        if not await send_verification_email(tmp_user):
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to send verification email")
+    except Exception as e: # if the email sending fails, delete the user
+        await del_uvf_user(session, tmp_user)
+        if getenv("MODE", False) == "DEV":
+            raise # propagate the error
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to send verification email")
     return {"message": "Verification email sent"}
 
 
 @router.get("/check_username")
-async def check_username(username: str, session:AsyncSession = Depends(postgress.GetSession)):
+async def check_username(username: str, session:AsyncSession = Depends(GetSession)):
     """ Check if a username is already taken
 
     Use this when registering a new user to check if the username is already taken

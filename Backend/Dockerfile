@@ -8,10 +8,12 @@ RUN pip install -r requirements.txt --no-cache-dir
 
 COPY . .
 
-ARG DEBUG=false
+ARG DEBUG="true"
 ARG DEBUG_PORT=5678
 
 ENV DEBUG=${DEBUG}
+ENV HOST="0.0.0.0"
+Env DEBUG_PORT=${DEBUG_PORT}
 
 # Expose ports for the app and debug mode
 EXPOSE ${PORT}
