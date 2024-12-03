@@ -14,19 +14,17 @@ from utils.parse_yaml import get_property
 
 
 email_verification_code_duration = 900 # 15 minutes
-password_reset_code_duration = 900 # 15 minutes
 is_config_loaded = False
 
 def load_config():
-    global email_verification_code_duration, password_reset_code_duration, is_config_loaded
+    global email_verification_code_duration, is_config_loaded
     if not is_config_loaded:
         __config_file__ = "./server/config_files/config.yaml"
         with open(__config_file__, "r") as file:
             config = yaml.safe_load(file)
 
-        mail_server_config = get_property(config, "verify", ["email_verification_code_duration", "password_reset_code_duration"])
+        mail_server_config = get_property(config, "verify", ["email_verification_code_duration"])
         email_verification_code_duration = mail_server_config['email_verification_code_duration']
-        password_reset_code_duration = mail_server_config['password_reset_code_duration']
         is_config_loaded = True
 
 try:
@@ -34,7 +32,6 @@ try:
 except Exception as e:
     print(f"Error loading config: {e}")
     email_verification_code_duration = 900
-    password_reset_code_duration = 900
 
 async def create_unverified_user(session: AsyncSession, username: str, email: str, password: str,
                                  first_name: str = None, last_name: str = None,
@@ -175,3 +172,5 @@ async def del_uvf_user(session: AsyncSession, user: UnverifiedUser, commit=True)
     await session.delete(user)
     if commit:
         await session.commit()
+
+#TODO: Add cron job to delete expired unverified users
