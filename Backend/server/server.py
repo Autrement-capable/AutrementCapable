@@ -87,11 +87,6 @@ class Server:
         async with self.postgress.GetSession() as session:
             await delete_expired_tokens(session)
 
-    async def get_Psession(self):
-        """Get an async session for the postgress database."""
-        async with self.postgress.GetSession() as session:
-            yield session
-
     def __custom_openapi__(self):
         """
         Custom OpenAPI schema for FastAPI app.
@@ -124,15 +119,6 @@ class Server:
 
         self.app.openapi_schema = openapi_schema
         return self.app.openapi_schema
-
-    def Run(self):
-        """ Run the server. """
-        try:
-            uvicorn.run("app:server.app", host=self.host, port=self.port, log_level=self.log_lvl, reload=True if getenv("MODE") == "DEV" else False)
-        except Exception as e:
-            print(f"Error: {str(e)}")
-            exit(1)
-
 
 server = Server()
 

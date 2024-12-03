@@ -39,6 +39,15 @@ export default {
       showReadingGuide: false,
     };
   },
+  watch: {
+    $route() {
+      if (this.isHighlightClickable) {
+        this.$nextTick(() => {
+          this.highlightClickableElements();
+        });
+      }
+    }
+  },
   methods: {
     toggleWidget() {
       this.showWidget = !this.showWidget;
@@ -184,9 +193,18 @@ export default {
     },
 
     toggleHighlightClickable() {
-      const clickableElements = document.querySelectorAll('a, button');
+      this.isHighlightClickable = !this.isHighlightClickable;
+      this.highlightClickableElements();
+    },
+
+    highlightClickableElements() {
+      const clickableElements = document.querySelectorAll('a, button, .small-button');
       clickableElements.forEach(element => {
-        element.classList.toggle('highlight-clickable');
+        if (this.isHighlightClickable) {
+          element.classList.add('highlight-clickable');
+        } else {
+          element.classList.remove('highlight-clickable');
+        }
       });
     }
   }

@@ -7,6 +7,7 @@ from mail.actions.verify_account import send_verification_email
 from server.server import AddRouter
 from database.postgress.config import GetSession
 from sqlmodel.ext.asyncio.session import AsyncSession
+from database.postgress.setup import postgress
 
 from os import getenv
 

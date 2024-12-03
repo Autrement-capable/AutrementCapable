@@ -10,6 +10,7 @@ from server.server import AddRouter
 from sqlmodel.ext.asyncio.session import AsyncSession
 from datetime import datetime
 
+
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 class LogoutResponse(BaseModel):
