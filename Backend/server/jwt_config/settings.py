@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 import yaml
 from os import getenv
+from utils.parse_yaml import get_property
 
 load_dotenv()
 
@@ -21,27 +22,12 @@ class Settings(BaseModel):
         with open(config_path, "r") as file:
             config = yaml.safe_load(file)
 
-        auth_config = config.get("auth", {})
-        access_token_duration = auth_config.get("access_token_duration", {})
-        refresh_token_duration = auth_config.get("refresh_token_duration", {})
-
-        access_token_seconds = (
-            access_token_duration.get("hours", 0) * 3600 +
-            access_token_duration.get("minutes", 0) * 60 +
-            access_token_duration.get("seconds", 0)
-        )
-
-        refresh_token_seconds = (
-            refresh_token_duration.get("days", 0) * 86400 +
-            refresh_token_duration.get("hours", 0) * 3600 +
-            refresh_token_duration.get("minutes", 0) * 60 +
-            refresh_token_duration.get("seconds", 0)
-        )
-
+        config_vals = get_property(config, "auth", ["access_token_duration", "refresh_token_duration"])
+        
         return cls(
             authjwt_secret_key=getenv("SERVER_SECRET"),
-            jwt_access_token_expires=access_token_seconds,
-            jwt_refresh_token_expires=refresh_token_seconds,
+            jwt_access_token_expires=config_vals["access_token_duration"],
+            jwt_refresh_token_expires=config_vals["refresh_token_duration"]
         )
 
 def get_config():

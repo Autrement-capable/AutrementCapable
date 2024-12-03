@@ -81,8 +81,11 @@ async def is_username_taken(session: AsyncSession, username: str) -> bool:
     Returns:
         True if the username is taken, False otherwise
     """
-    result = await session.exec(select(User).where(User.username == username))
-    return result.scalars().first() is not None
+    result = await session.execute(
+        select(User).where(User.username == username)
+    )  # Execute the query
+    user = result.scalars().first()  # Fetch the first result (already scalar)
+    return user is not None
 
 async def login_user(session: AsyncSession, password: str, username_email: str, hashed=False) -> User:
     """ Login a user async
