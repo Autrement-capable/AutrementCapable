@@ -14,6 +14,7 @@ import PostsList from '../components/forum/PostsList.vue';
 import Post from '../components/forum/PostPage.vue';
 import Forum from '../components/forum/ForumPage.vue';
 import CoursePage from "../components/CoursePage.vue";
+import ShapeSequenceGame from "../components/ShapeSequenceGame.vue";
 
 const routes = [
   {
@@ -60,6 +61,11 @@ const routes = [
     path: "/game-memory",
     name: "GameMemory",
     component: GameMemory,
+  },
+  {
+    path: "/shape-sequence-game",
+    name: "ShapeSequenceGame",
+    component: ShapeSequenceGame,
   },
   {
     path: "/dashboard",
