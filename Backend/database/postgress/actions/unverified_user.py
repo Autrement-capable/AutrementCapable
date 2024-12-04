@@ -1,149 +1,177 @@
 from database.postgress.models.user import User
 from database.postgress.models.unverified_user import UnverifiedUser
-from modules.session_management.password import verify_password, hash_password
 from database.postgress.actions.role import get_role_by_name
+from utils.password import verify_password, hash_password
+from utils.verifcation_code import generate_verification_code, generate_random_suffix
+from database.postgress.actions.user import is_username_taken
 
-from sqlmodel import Session
+from sqlmodel.ext.asyncio.session import AsyncSession
+from sqlmodel import select
 from sqlalchemy.exc import IntegrityError, OperationalError
-from datetime import datetime , timedelta
+from datetime import datetime
+import yaml
+from utils.parse_yaml import get_property
 
-# Create functions
-def CreateUnverifiedUser(session: Session, username: str, password: str, verification_token: str,  first_name: str | None = None, last_name: str | None = None,pending_role:str = "Young Person", phone_number: str | None = None, address: str | None = None, token_expires: datetime | None = None, hashed=False, commit = True, fresh=False) -> UnverifiedUser:
-    """ Create a POTENSIAL user in the database via standard registration (Password)
+
+email_verification_code_duration = 900 # 15 minutes
+password_reset_code_duration = 900 # 15 minutes
+is_config_loaded = False
+
+def load_config():
+    global email_verification_code_duration, password_reset_code_duration, is_config_loaded
+    if not is_config_loaded:
+        __config_file__ = "./server/config_files/config.yaml"
+        with open(__config_file__, "r") as file:
+            config = yaml.safe_load(file)
+
+        mail_server_config = get_property(config, "verify", ["email_verification_code_duration", "password_reset_code_duration"])
+        email_verification_code_duration = mail_server_config['email_verification_code_duration']
+        password_reset_code_duration = mail_server_config['password_reset_code_duration']
+        is_config_loaded = True
+
+try:
+    load_config()
+except Exception as e:
+    print(f"Error loading config: {e}")
+    email_verification_code_duration = 900
+    password_reset_code_duration = 900
+
+async def create_unverified_user(session: AsyncSession, username: str, email: str, password: str,
+                                 first_name: str = None, last_name: str = None,
+                                 role_name: str = "Young Person", phone_number: str = None,
+                                 address: str = None, hashed=False, commit=True, fresh=True) -> UnverifiedUser:
+    """ Create an unverified user in the database. Registers a confirmation code for the user as well.
 
     Args:
         session (Session): The database session
-        username (str): The user's email
+        email (str): The user's email
+        username (str): The user's username
         password (str): The user's password
-        verification_token (str): The user's verification token
         first_name (str, optional): The user's first name. Defaults to None.
         last_name (str, optional): The user's last name. Defaults to None.
-        pending_role (str, optional): The user's pending role. Defaults to "Young Person".
+        role_name (str, optional): The user's role. Defaults to "Young Person".
         phone_number (str, optional): The user's phone number. Defaults to None.
         address (str, optional): The user's address. Defaults to None.
-        token_expires (datetime, optional): The time the token expires. Defaults to None.
         hashed (bool, optional): Whether the password given is hashed. Defaults to False.
         commit (bool, optional): Whether to commit the transaction. Defaults to True.
-        fresh (bool, optional): Whether to refresh the user object from DB(usefull if you want to manipulate it). Defaults to False
-    """
-    if token_expires is None:
-        # exprires in 1 day by default
-        token_expires = datetime.utcnow() + timedelta(days=1)
+        fresh (bool, optional): Whether to refresh the user object from DB(usefull if you want to manipulate it). Defaults to True.
+
+        Note: fresh is defaulted because the object is almost always needed after creation."""
     try:
         if not hashed:
             password = hash_password(password)
-        role_id = get_role_by_name(session, pending_role).role_id
+        role_id = (await get_role_by_name(session, role_name)).role_id
         if not role_id:
             print("Role not found")
             return None
-        user = UnverifiedUser(email=username, password_hash=password,pending_role=role_id, verification_token=verification_token, token_expires=token_expires, first_name=first_name, last_name=last_name, phone_number=phone_number, address=address)
+        confirmation_code, expiration = generate_verification_code(email, email_verification_code_duration)
+        user = UnverifiedUser(username=username, email=email, password_hash=password,
+                              pending_role_id=role_id, verification_token=confirmation_code, token_expires=expiration,
+                              first_name=first_name,last_name=last_name, phone_number=phone_number, address=address)
         session.add(user)
         if commit:
-            session.commit()
+            await session.commit()
         if fresh:
-            session.refresh(user)  # Ensure the user object is not expired
+            await session.refresh(user)
         return user
     except IntegrityError:
-        session.rollback()
+        await session.rollback()
         print("A user with this email already exists.")
         return None
     except OperationalError:
-        session.rollback()
+        await session.rollback()
         print("There was an issue with the database operation.")
         return None
     except TypeError as e:
-        session.rollback()
+        await session.rollback()
         print(f"Type error: {e}")
         return None
 
-# Get functions
-
-def get_unverified_user_by_email(session: Session, email: str):
-    """ Get an unverified user from the database by email """
-    return session.query(UnverifiedUser).filter(UnverifiedUser.email == email).first()
-
-def get_unverified_user_by_id(session: Session, user_id: int):
-    """ Get an unverified user from the database by ID """
-    return session.query(UnverifiedUser).filter(UnverifiedUser.unverified_user_id == user_id).first()
-
-def get_unverified_user_by_verification_token(session: Session, verification_token: str):
-    """ Get a user from the database by verification token """
-    return session.query(UnverifiedUser).filter(UnverifiedUser.verification_token == verification_token).first()
-
-# Update functions
-
-def verify_user(session: Session, user: UnverifiedUser, commit = True, fresh=False) -> User:
-    """ Verify a user in the database
+async def get_uvf_user_by_email(session: AsyncSession, email: str) -> UnverifiedUser:
+    """ Get an unverified user by their email.
 
     Args:
         session (Session): The database session
-        user (UnverifiedUser): The user object
-        commit (bool, optional): Whether to commit the transaction. Defaults to True.
-        fresh (bool, optional): Whether to refresh the user object from DB(usefull if you want to manipulate it). Defaults to False
+        email (str): The user's email
+
+    Returns:
+        UnverifiedUser: The unverified user
+        None: If the user is not found
+    """
+    return await session.exec(select(UnverifiedUser).where(UnverifiedUser.email == email))
+
+async def get_uvf_user_by_code(session: AsyncSession, code: str) -> UnverifiedUser:
+    """ Get an unverified user by their verification code.
+
+    Args:
+        session (AsyncSession): The database session
+        code (str): The verification code
+
+    Returns:
+        UnverifiedUser: The unverified user
+        None: If the user is not found
     """
     try:
-        user = User(email=user.email, password_hash=user.password_hash,role_id=user.pending_role ,first_name=user.first_name, last_name=user.last_name, phone_number=user.phone_number, address=user.address)
-        session.add(user)
-        session.delete(user)
-        if commit:
-            session.commit()
-        if fresh:
-            session.refresh(user)
+        # Execute the query
+        result = await session.execute(
+            select(UnverifiedUser).where(UnverifiedUser.verification_token == code.strip())
+        )
+        # Fetch the first scalar result
+        user = result.scalars().first()
         return user
-    except IntegrityError:
-        session.rollback()
-        print("A user with this email already exists.")
-        return None
-    except OperationalError:
-        session.rollback()
-        print("There was an issue with the database operation.")
-        return None
-    except TypeError as e:
-        session.rollback()
-        print(f"Type error: {e}")
+    except Exception as e:
+        print(f"Error getting user by code: {e}")
         return None
 
-# Delete functions
+async def verify_user(session: AsyncSession, verification_code: str, commit=True, fresh=False ) -> User:
+    """ Verify a user using their verification code.
 
-def delete_unverified_user(session: Session, user: UnverifiedUser, commit=True) -> bool:
-    """ Delete a user from the database.
     Args:
         session (Session): The database session
-        user (UnverifiedUser): The user object
-        commit (bool, optional): Whether to commit the transaction. Defaults"""
-    try:
-        session.delete(user)
-        if commit:
-            session.commit()
-        return True
-    except:
-        return False
+        verification_code (str): The user's verification code
+        commit (bool, optional): Whether to commit the transaction. Defaults to True.
+        fresh (bool, optional): Whether to refresh the user object from DB(usefull if you want to manipulate it). Defaults to False
 
-def delete_unverified_users(session: Session, users: list[UnverifiedUser], commit=True) -> bool:
-    """ Delete a list of users from the database """
-    try:
-        for user in users:
-            if not delete_unverified_user(session, user, commit=False):
-                print(f"Failed to delete user {user.email}")
-                session.rollback()
-                return False
-        if commit:
-            session.commit()
-        return True
-    except:
-        session.rollback()
-        return False
-    
-def delete_expired_unverified_users(session: Session, commit=True) -> bool:
-    """ Delete all expired unverified users from the database 
-    
+    Returns:
+        User: The verified user
+        None: If the user is not found or the token has expired.
+    """
+    tmp_user = await get_uvf_user_by_code(session, verification_code)
+    if not tmp_user:
+        print("User not found")
+        return None
+
+    if tmp_user.token_expires < datetime.utcnow():
+        print("Token expired")
+        return None
+
+    # check if username is taken before creating user(rare case when user that has not been verified has the same username as another user)
+    if await is_username_taken(session, tmp_user.username):
+        salt = generate_random_suffix()
+        tmp_user.username = tmp_user.username + salt
+
+    user = User(username=tmp_user.username, email=tmp_user.email, password_hash=tmp_user.password_hash,
+                role_id=tmp_user.pending_role_id, first_name=tmp_user.first_name, last_name=tmp_user.last_name,
+                phone_number=tmp_user.phone_number, address=tmp_user.address)
+
+    session.delete(tmp_user)
+    session.add(user)
+
+    if commit:
+        await session.commit()
+    if fresh:
+        await session.refresh(user)
+
+    return user
+
+async def del_uvf_user(session: AsyncSession, user: UnverifiedUser, commit=True):
+    """ Delete an unverified user from the database.
+
     Args:
         session (Session): The database session
-        commit (bool, optional): Whether to commit the transaction. Defaults to True."""
-    try:
-        session.query(UnverifiedUser).filter(UnverifiedUser.token_expires < datetime.utcnow()).delete()
-        if commit:
-            session.commit()
-        return True
-    except:
-        return False
+        user (UnverifiedUser): The user to delete
+        commit (bool, optional): Whether to commit the transaction. Defaults to True.
+    """
+    await session.delete(user)
+    if commit:
+        await session.commit()

@@ -1,7 +1,8 @@
-from database.postgress.actions.role import create_role, get_all_roles
 import copy
+from sqlmodel.ext.asyncio.session import AsyncSession
+from sqlmodel import select
+from database.postgress.actions.role import create_role, get_all_roles
 
-from sqlmodel import Session
 roles = {
     "Super Admin": {
         "description": "Full system access for technical maintenance.",
@@ -41,10 +42,10 @@ roles = {
     }
 }
 
-def init_roles(Session:Session):
+async def init_roles(session: AsyncSession):
     """ Initialize the roles in the database. Skip roles that already exist."""
     try:
-        existing_roles = get_all_roles(Session)
+        existing_roles = await get_all_roles(session)
         existing_role_names = {role.role_name for role in existing_roles}
 
         # Create a deep copy of the roles dictionary
@@ -60,12 +61,12 @@ def init_roles(Session:Session):
 
         # Add the remaining roles to the database
         for role_name, role_data in roles_to_add.items():
-            role = create_role(Session, role_name, role_data["description"], commit=False)
-            Session.add(role)
+            role = await create_role(session, role_name, role_data["description"], commit=False)
+            session.add(role)
 
-        Session.commit()
+        await session.commit()
         return True
     except Exception as e:
         print(e)
+        await session.rollback()
         return False
-    pass
