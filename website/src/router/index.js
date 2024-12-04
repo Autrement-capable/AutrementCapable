@@ -1,25 +1,26 @@
 import { createRouter, createWebHistory } from "vue-router";
-import StartButton from "../components/StartButton.vue";
+// import StartButton from "../components/StartButton.vue";
 import AccountCreation from "../components/AccountCreation.vue";
 import Explanation from "../components/Explanation.vue";
 import LoginPage from "../components/LoginPage.vue";
 import PersonalTest from "../components/PersonalTest.vue";
 import UserQuestionnaire from "../components/Questionnaire.vue";
+import GameLogic from "../components/GameLogic.vue";
 import GameSpeed from "../components/GameSpeed.vue";
 import GameShape from "../components/GameShape.vue";
 import GameMemory from "../components/GameMemory.vue";
 import CompDashboard from "../components/CompDashboard.vue";
 import CvPreview from "../components/CvPreview.vue";
-import PostsList from '../components/forum/PostsList.vue';
-import Post from '../components/forum/PostPage.vue';
-import Forum from '../components/forum/ForumPage.vue';
+import PostsList from "../components/forum/PostsList.vue";
+import Post from "../components/forum/PostPage.vue";
+import Forum from "../components/forum/ForumPage.vue";
 import CoursePage from "../components/CoursePage.vue";
 
 const routes = [
   {
     path: "/",
-    name: "StartButton",
-    component: StartButton,
+    name: "GameLogic",
+    component: GameLogic,
   },
   {
     path: "/account-creation",
@@ -72,21 +73,21 @@ const routes = [
     component: CvPreview,
   },
   {
-    path: '/forum',
-    name: 'forum',
+    path: "/forum",
+    name: "forum",
     component: Forum,
   },
   {
-    path: '/forum/posts/:category/',
-    name: 'postsList',
+    path: "/forum/posts/:category/",
+    name: "postsList",
     component: PostsList,
-    props: true
+    props: true,
   },
   {
-    path: '/forum/posts/:category/:id',
-    name: 'post',
+    path: "/forum/posts/:category/:id",
+    name: "post",
     component: Post,
-    props: true
+    props: true,
   },
   {
     path: "/courses",
