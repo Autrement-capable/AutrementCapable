@@ -38,6 +38,9 @@ class Server:
         self.log_lvl = "info"
         self.postgress = postgress
 
+        # Start the async scheduler for deleting expired tokens
+        self.scheduler = AsyncIOScheduler()
+
         # Initialize CORS
         init_cors(self.app)
 
@@ -71,8 +74,6 @@ class Server:
         # Initialize roles asynchronously
         await self.init_roles()
 
-        # Start the async scheduler for deleting expired tokens
-        self.scheduler = AsyncIOScheduler()
         self.scheduler.add_job(self.__remove_expired_tokens, 'interval', hours=1)
         self.scheduler.start()
 

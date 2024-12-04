@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from sqlmodel import SQLModel, create_engine, Session
 from utils.singleton import singleton
 from contextlib import asynccontextmanager, contextmanager
+from typing import AsyncGenerator
 
 DATABASE_URL_ASYNC = (
     f"postgresql+asyncpg://{getenv('POSTGRES_USER')}:{getenv('POSTGRES_PASSWORD')}"
@@ -34,6 +35,7 @@ class Postgress:
     async def GetSession(self):
         async with AsyncSession(self.engine) as session:
             yield session
+
     @contextmanager
     def GetSessionSync(self):
         """Get a synchronous session on the Sync Engine(diffrent from the async engine)
@@ -43,4 +45,11 @@ class Postgress:
 
 postgress = Postgress()
 
-__all__ = ["postgress"]
+async def GetSession() -> AsyncGenerator[AsyncSession, None]:
+    """ Get a session from the async engine (used to resolve the async session dependency in the endpoints)
+
+    Note: i dont know why this is needed, but it is, if you remove it, the endpoints will break"""
+    async with postgress.GetSession() as session:
+        yield session
+
+__all__ = ["postgress", "GetSession"]
