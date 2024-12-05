@@ -20,4 +20,4 @@ class PasswordReset(SQLModel, table=True):
     user_id: int = Field(foreign_key="users.user_id", nullable=False)
     reset_token: str = Field(nullable=False)
     token_expires: datetime = Field(nullable=False)
-    date_requested: datetime = Field(sa_column=Column(DateTime, server_default=func.now()))
+    date_requested: datetime = Field(nullable=True, default=None)

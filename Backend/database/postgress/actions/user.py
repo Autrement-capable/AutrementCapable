@@ -2,6 +2,7 @@ from database.postgress.models.user import User
 from database.postgress.actions.role import get_role_by_name
 from utils.password import verify_password, hash_password
 
+from sqlalchemy.orm import joinedload, selectinload
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
 from sqlalchemy.exc import IntegrityError, OperationalError
@@ -56,25 +57,36 @@ async def create_user(session: AsyncSession, username: str, email: str, password
 
 # Get functions
 
-async def get_user_by_email(session: AsyncSession, email: str) -> User:
-    """ Get a user by email async """
-    result = await session.exec(select(User).where(User.email == email))
-    return result.scalars().first()
+async def get_user_by_email(session: AsyncSession, email: str, lazy=True) -> User:
+    """ Get a user by email async.
+    Args:
+        session (Session): The database session.
+        email (str): The user's email.
+        lazy (bool, optional): Whether to load the email object lazily. Defaults to True.
+    """
+    query = select(User).where(User.email == email)
+    result = await session.exec(query)
+    user = result.first()
+
+    if not lazy:
+        await session.refresh(user)  # Ensure all attributes are loaded
+
+    return user
 
 async def get_user_by_username(session: AsyncSession, username: str) -> User:
     """ Get a user by username async """
     result = await session.exec(select(User).where(User.username == username))
-    return result.scalars().first()
+    return result.first()
 
 async def get_user_by_id(session: AsyncSession, user_id: int) -> User:
     """ Get a user by id async """
     result = await session.exec(select(User).where(User.user_id == user_id))
-    return result.scalars().first()
+    return result.first()
 
 async def get_all_usernames(session: AsyncSession) -> list[str]:
     """ Get all usernames async """
     result = await session.exec(select(User.username))
-    return result.scalars().all()
+    return result.all()
 
 async def is_username_taken(session: AsyncSession, username: str) -> bool:
     """ Check if a username is taken async
@@ -84,7 +96,7 @@ async def is_username_taken(session: AsyncSession, username: str) -> bool:
     result = await session.execute(
         select(User).where(User.username == username)
     )  # Execute the query
-    user = result.scalars().first()  # Fetch the first result (already scalar)
+    user = result.first()  # Fetch the first result (already scalar)
     return user is not None
 
 async def login_user(session: AsyncSession, password: str, username_email: str, hashed=False) -> User:

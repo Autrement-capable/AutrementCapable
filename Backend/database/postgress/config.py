@@ -48,7 +48,9 @@ postgress = Postgress()
 async def GetSession() -> AsyncGenerator[AsyncSession, None]:
     """ Get a session from the async engine (used to resolve the async session dependency in the endpoints)
 
-    Note: i dont know why this is needed, but it is, if you remove it, the endpoints will break"""
+    Note: i dont know why this is needed, but it is, if you remove it, the endpoints will break
+    CAUTION: you may need to do **session_maker = sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)**
+    if you are having issues with expired objects and lazy loading (not caught by the debugger!!!)"""
     async with postgress.GetSession() as session:
         yield session
 

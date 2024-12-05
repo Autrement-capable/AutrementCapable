@@ -4,6 +4,8 @@ from database.postgress.actions.role import get_role_by_name
 from utils.password import verify_password, hash_password
 from utils.verifcation_code import generate_verification_code, generate_random_suffix
 from database.postgress.actions.user import is_username_taken
+from server.server import AddCronJob
+from database.postgress.setup import postgress
 
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
@@ -16,6 +18,25 @@ from utils.parse_yaml import get_property
 email_verification_code_duration = 900 # 15 minutes
 is_config_loaded = False
 
+
+# Cron job functions
+async def delete_expired_unverified_users() -> bool:
+    """ Delete expired unverified users from the database.
+    """
+    async with postgress.GetSession() as session:
+        try:
+            statement = select(UnverifiedUser).where(UnverifiedUser.token_expires < datetime.utcnow())
+            result = await session.execute(statement)
+            users = result.scalars().all()
+            for user in users:
+                await session.delete(user)
+            await session.commit()
+        except Exception as e:
+            print(f"Error deleting expired unverified users: {e}")
+            await session.rollback()
+            return False
+
+
 def load_config():
     global email_verification_code_duration, is_config_loaded
     if not is_config_loaded:
@@ -23,8 +44,10 @@ def load_config():
         with open(__config_file__, "r") as file:
             config = yaml.safe_load(file)
 
-        mail_server_config = get_property(config, "verify", ["email_verification_code_duration"])
+        mail_server_config = get_property(config, "verify", ["email_verification_code_duration", "email_ver_purge_interval"])
         email_verification_code_duration = mail_server_config['email_verification_code_duration']
+        prune_interval = mail_server_config['email_ver_purge_interval']
+        AddCronJob(delete_expired_unverified_users, trigger="interval", seconds=prune_interval) # cron job to delete expired unverified users
         is_config_loaded = True
 
 try:
@@ -154,8 +177,14 @@ async def verify_user(session: AsyncSession, verification_code: str, commit=True
     session.delete(tmp_user)
     session.add(user)
 
-    if commit:
-        await session.commit()
+    try:
+        if commit:
+            await session.commit()
+    except IntegrityError as e:
+        await session.rollback()
+        print(f"Error deleting user: {e}")
+        return False
+
     if fresh:
         await session.refresh(user)
 
@@ -172,5 +201,3 @@ async def del_uvf_user(session: AsyncSession, user: UnverifiedUser, commit=True)
     await session.delete(user)
     if commit:
         await session.commit()
-
-#TODO: Add cron job to delete expired unverified users

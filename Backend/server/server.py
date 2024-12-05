@@ -17,6 +17,7 @@ import uvicorn
 import asyncio
 import anyio
 from fastapi.concurrency import run_in_threadpool
+from typing import Callable
 
 @AuthJWT.load_config
 def load_config():
@@ -150,4 +151,8 @@ def check_if_token_in_denylist(decrypted_token):
 def AddRouter(router):
     server.app.include_router(router)
 
-__all__ = ["server", "AddRouter"]
+async def AddCronJob(func: Callable, **kwargs: dict):
+    """ Add a cron job to the scheduler """
+    await server.scheduler.add_job(func, **kwargs)
+
+__all__ = ["server", "AddRouter", "AddCronJob"]

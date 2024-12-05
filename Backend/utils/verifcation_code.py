@@ -15,12 +15,15 @@ def generate_verification_code(email: str, expiration_seconds: int = 900) -> tup
     Args:
         email (str): The email to generate the verification code for.
         expiration_seconds (int, optional): The expiration time in seconds. Defaults to 900(15 minutes).
+
+    Returns:
+        tuple[str, datetime]: The generated verification code and the expiration time.
     """
     expiration = (datetime.utcnow() + timedelta(seconds=expiration_seconds)).isoformat()
     message = f"{email}:{expiration}".encode()
     secret = SERVER_SECRET.encode()
     signature = hmac.new(secret, message, hashlib.sha256).digest()
-    verification_code = base64.urlsafe_b64encode(signature).decode()
+    verification_code = base64.urlsafe_b64encode(signature).decode().rstrip("=") # Remove padding
     expiration = datetime.fromisoformat(expiration)
     return verification_code, expiration
 

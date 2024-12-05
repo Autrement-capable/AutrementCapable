@@ -1,16 +1,40 @@
 from database.postgress.models.password_reset import PasswordReset
 from database.postgress.models.user import User
 from utils.verifcation_code import generate_verification_code
+from database.postgress.setup import postgress
+from server.server import AddCronJob
 
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlmodel import select
 from sqlalchemy.exc import IntegrityError, OperationalError
-from datetime import datetime
+from datetime import datetime, timedelta
 import yaml
 from utils.parse_yaml import get_property
 
 password_reset_code_duration = 900 # 15 minutes
 is_config_loaded = False
+
+# Cron job functions
+async def delete_expired_password_resets() -> bool:
+    """ Delete all expired password resets from the database asynchronously
+
+    Args:
+        session (AsyncSession): The database session
+        commit (bool, optional): Whether to commit the transaction. Defaults to True."""
+
+    async with postgress.GetSession() as session:
+        try:
+            statement = select(PasswordReset).where(PasswordReset.token_expires < datetime.utcnow())
+            result = await session.execute(statement)
+            resets = result.scalars().all()
+            for reset in resets:
+                await session.delete(reset)
+            await session.commit()
+        except Exception as e:
+            print(f"Error deleting expired password resets: {e}")
+            await session.rollback()
+            return False
+
 
 def load_config():
     global password_reset_code_duration, is_config_loaded
@@ -19,8 +43,10 @@ def load_config():
         with open(__config_file__, "r") as file:
             config = yaml.safe_load(file)
 
-        mail_server_config = get_property(config, "verify", ["password_reset_code_duration"])
+        mail_server_config = get_property(config, "verify", ["password_reset_code_duration", "password_reset_purge_interval"])
         password_reset_code_duration = mail_server_config['password_reset_code_duration']
+        prune_interval = mail_server_config['password_reset_purge_interval']
+        AddCronJob(delete_expired_password_resets, trigger="interval", seconds=prune_interval) # cron job to delete expired password resets
         is_config_loaded = True
 
 try:
@@ -40,14 +66,13 @@ async def create_password_reset(session: AsyncSession, user:User, commit = True,
 
         Note: fresh is defaulted because the object is almost always needed after creation."""
     try:
-        reset_token = generate_verification_code(32)
-        token_expires = datetime.now() + timedelta(seconds=password_reset_code_duration)
-        password_reset = PasswordReset(user_id=user.user_id, reset_token=reset_token, token_expires=token_expires)
+        reset_token, token_expire = generate_verification_code(32, password_reset_code_duration)
+        password_reset = PasswordReset(user_id=user.user_id, reset_token=reset_token, token_expires=token_expire)
         session.add(password_reset)
         if commit:
             await session.commit()
         if fresh:
-            session.refresh(password_reset)
+            await session.refresh(password_reset)
         return password_reset
     except IntegrityError as e:
         await session.rollback()
@@ -78,11 +103,11 @@ async def del_password_reset(session: AsyncSession, reset: PasswordReset, commit
         reset (PasswordReset): The password reset to delete
         commit (bool, optional): Whether to commit the transaction. Defaults to True."""
     try:
-        session.delete(reset)
+        await session.delete(reset)
         if commit:
             await session.commit()
     except Exception as e:
         await session.rollback()
         print(f"Error deleting password reset: {e}")
-
-#TODO: Add cron job to delete expired password resets
+        return False
+    return True
