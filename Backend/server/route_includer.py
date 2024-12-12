@@ -1,4 +1,5 @@
 import endpoints.auth.authOpps
+import endpoints.auth.email_opps
 import endpoints.auth.loginRegisterEndpoint
 
 
