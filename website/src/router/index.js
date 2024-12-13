@@ -15,6 +15,7 @@ import Post from '../components/forum/PostPage.vue';
 import Forum from '../components/forum/ForumPage.vue';
 import CoursePage from "../components/CoursePage.vue";
 import ShapeSequenceGame from "../components/ShapeSequenceGame.vue";
+import MetierCard from "../components/MetierPage.vue";
 
 const routes = [
   {
@@ -98,6 +99,11 @@ const routes = [
     path: "/courses",
     name: "CoursePage",
     component: CoursePage,
+  },
+  {
+    path: "/metier",
+    name: "MetierCard",
+    component: MetierCard,
   },
 ];
 
