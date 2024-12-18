@@ -15,14 +15,14 @@
 
         <!-- Nouvelle section qui apparaît si isExpanded est vrai -->
         <div v-if="isExpanded" class="additional-info">
-            <h2>Compétences requises</h2>
+            <h2 style="text-align: center;">Compétences requises</h2>
             <ul>
                 <li style="margin: 20px;">Précision et minutie</li>
                 <li style="margin: 20px;">Maîtrise des techniques de soudure</li>
                 <li style="margin: 20px;">Bonne condition physique</li>
                 <li style="margin: 20px;">Respect des règles de sécurité</li>
             </ul>
-            <h2>Environnement de travail</h2>
+            <h2 style="text-align: center;">Environnement de travail</h2>
             <p>
                 Les soudeurs travaillent dans divers environnements : chantiers de construction,
                 usines de fabrication, secteurs de l'aéronautique ou encore en maintenance.
@@ -37,16 +37,16 @@
                 Centres d'intérêt : J'aime bouger, Je veux travailler de mes mains
             </p>
 
-            <h2>Le métier</h2>
-            <h2 style="margin-top: 10px;">Étudier le plan</h2>
+            <h2 style="margin-top: 20px; margin-bottom: 20px; text-align: center;">Le métier</h2>
+            <h2 style="margin: 10px; text-align: center;">Étudier le plan</h2>
             <p>
                 Du chauffe-eau à la centrale nucléaire, le soudage permet d'assembler les pièces métalliques d'objets de toutes tailles et de toutes natures. Selon les entreprises, la même personne peut être amenée à fabriquer les pièces du produit à réaliser. Elle utilise alors les techniques de découpe des métaux, de déformation (par emboutissage, perçage...). Dans tous les cas, le travail de soudage démarre par la prise de consignes auprès de la hiérarchie, de l'étude du plan d'ensemble de l'ouvrage à réaliser, et des parties à assembler.
             </p>
-            <h2 style="margin: 10px;">Préparer le travail</h2>
+            <h2 style="margin: 10px; text-align: center;">Préparer le travail</h2>
             <p>
                 Les documents techniques indiquent le procédé à utiliser (soudage à l'arc, semi-automatique, avec fil fourré, plasma...) et les caractéristiques des métaux utilisés (acier, inox, cuivre, alliage), susceptibles de subir des déformations, par exemple. Avant de procéder à la soudure, il faut préparer la surface par ponçage, grattage, etc. Sur un chantier, il faut aussi se cordonner avec les autres corps de métiers.
             </p>
-            <h2 style="margin: 10px;">Régler les machines et contrôler la qualité</h2>
+            <h2 style="margin: 10px; text-align: center;">Régler les machines et contrôler la qualité</h2>
             <p>
                 Après l'installation et le réglage de leur matériel, les soudeurs revêtent les équipements de protection (gants, masque à verre filtrant...) puis attaquent les opérations de soudage proprement dites. Dernière étape : contrôler la qualité du travail effectué pour éviter toute fuite ou casse.
             </p>
@@ -55,9 +55,15 @@
         <!-- Ajout d'une div vide pour "descendre plus bas" -->
         
         <div class="button-container">
-            <button>J'aime</button>
-            <button>Je ne sais pas</button>
-            <button>Je n'aime pas</button>
+            <button>
+                👍 J'aime
+            </button>
+            <button>
+                🤔 Je ne sais pas
+            </button>
+            <button>
+                👎 Je n'aime pas
+            </button>
         </div>
     </div>
     <div v-if="isExpanded" class="extra-space"></div>
@@ -143,10 +149,20 @@ export default {
     color: #000000;
 }
 
-.button-container {
-    display: flex;
-    justify-content: space-evenly;
-    margin-top: 20px;
+.button-container button {
+    gap: 8px; /* Espacement entre l'emoji et le texte */
+    font-size: 1rem;
+    padding: 10px 20px;
+    border: 1.5px solid #007bff;
+    border-radius: 10px;
+    background-color: #000000;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.button-container button:hover {
+    background-color: #007bff;
+    color: white;
 }
 
 video {
