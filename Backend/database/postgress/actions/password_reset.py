@@ -1,5 +1,5 @@
-from database.postgress.models.password_reset import PasswordReset
-from database.postgress.models.user import User
+from database.postgress.models.test_model import PasswordReset
+from database.postgress.models.test_model import User
 from utils.verifcation_code import generate_verification_code
 from database.postgress.setup import postgress
 from server.server import AddCronJob
@@ -67,7 +67,7 @@ async def create_password_reset(session: AsyncSession, user:User, commit = True,
         Note: fresh is defaulted because the object is almost always needed after creation."""
     try:
         reset_token, token_expire = generate_verification_code(32, password_reset_code_duration)
-        password_reset = PasswordReset(user_id=user.user_id, reset_token=reset_token, token_expires=token_expire)
+        password_reset = PasswordReset(user_id=user.user_id, reset_token=reset_token, token_expires=token_expire, user=user)
         session.add(password_reset)
         if commit:
             await session.commit()

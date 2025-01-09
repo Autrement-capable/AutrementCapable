@@ -151,8 +151,8 @@ def check_if_token_in_denylist(decrypted_token):
 def AddRouter(router):
     server.app.include_router(router)
 
-async def AddCronJob(func: Callable, **kwargs: dict):
+def AddCronJob(func: Callable, **kwargs: dict):
     """ Add a cron job to the scheduler """
-    await server.scheduler.add_job(func, **kwargs)
+    server.scheduler.add_job(func, **kwargs)
 
 __all__ = ["server", "AddRouter", "AddCronJob"]

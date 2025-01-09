@@ -1,8 +1,8 @@
 from jinja2 import Environment, FileSystemLoader
 from pydantic import EmailStr
 from fastapi_mail import MessageSchema
-from database.postgress.models.user import User
-from database.postgress.models.password_reset import PasswordReset
+from database.postgress.models.test_model import User
+from database.postgress.models.test_model import PasswordReset
 from mail.config import mail
 
 from os import getenv

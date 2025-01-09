@@ -5,8 +5,8 @@ from sqlalchemy import UniqueConstraint, Column, func
 from sqlmodel import Field, SQLModel, DateTime, Relationship
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from database.postgress.models.role import Role
+# if TYPE_CHECKING:
+#     from database.postgress.models.role import Role
 
 class UnverifiedUser(SQLModel, table=True):
     __tablename__ = "unverified_users"
@@ -19,7 +19,6 @@ class UnverifiedUser(SQLModel, table=True):
     username: str = Field(unique=True, nullable=False)
     email: str = Field(nullable=False)
     password_hash: Optional[str] = Field(default=None)
-    pending_role_id: int = Field(nullable=False, foreign_key="roles.role_id")
     is_oauth: bool = Field(default=False)
     is_passkey: bool = Field(default=False)
     verification_token: str = Field(nullable=False, unique=True)
@@ -29,3 +28,6 @@ class UnverifiedUser(SQLModel, table=True):
     phone_number: Optional[str] = Field(default=None)
     address: Optional[str] = Field(default=None)
     date_created: datetime = Field(sa_column=Column(DateTime, server_default=func.now()))
+
+    pending_role_id: int = Field(nullable=False, foreign_key="roles.role_id")
+    role: Optional["Role"] = Relationship(back_populates="unverified_users")

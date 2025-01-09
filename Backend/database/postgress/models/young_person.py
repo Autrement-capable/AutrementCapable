@@ -1,3 +1,6 @@
+# this file is just a draft and not used in the project
+# TODO: implement the tong person model and see how it would be used in the project
+
 from __future__ import annotations
 from datetime import date
 from typing import Optional, TYPE_CHECKING

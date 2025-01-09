@@ -1,7 +1,7 @@
 from jinja2 import Environment, FileSystemLoader
 from pydantic import EmailStr
 from fastapi_mail import MessageSchema
-from database.postgress.models.unverified_user import UnverifiedUser
+from database.postgress.models.test_model import UnverifiedUser
 from mail.config import mail
 
 from os import getenv

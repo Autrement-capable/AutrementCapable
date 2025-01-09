@@ -9,10 +9,7 @@ from sqlalchemy import Column, func
 
 if TYPE_CHECKING:
     from database.postgress.models.role import Role
-    from database.postgress.models.oauth_provider import OAuthProvider
-    from database.postgress.models.passkey import Passkey
     from database.postgress.models.password_reset import PasswordReset
-    from database.postgress.models.young_person import YoungPerson
 
 
 class User(SQLModel, table=True):
@@ -24,7 +21,6 @@ class User(SQLModel, table=True):
     password_hash: Optional[str] = Field(default=None)
     is_oauth: bool = Field(default=False)
     is_passkey: bool = Field(default=False)
-    role_id: int = Field(foreign_key="roles.role_id", nullable=False)
     first_name: Optional[str] = Field(default=None)
     last_name: Optional[str] = Field(default=None)
     phone_number: Optional[str] = Field(default=None)
@@ -33,3 +29,6 @@ class User(SQLModel, table=True):
     is_active: bool = Field(default=True)
     last_login: Optional[datetime] = Field(default=None)
 
+    role_id: int = Field(foreign_key="roles.role_id", nullable=False)
+    role: Role = Relationship(back_populates="users")
+    password_resets: list["PasswordReset"] = Relationship(back_populates="user_obj")

@@ -1,4 +1,4 @@
-from database.postgress.models.revokedTokens import RevokedToken
+from database.postgress.models.test_model import RevokedToken
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy.exc import IntegrityError, OperationalError
 from datetime import datetime

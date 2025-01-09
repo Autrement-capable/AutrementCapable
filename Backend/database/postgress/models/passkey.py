@@ -1,3 +1,5 @@
+# this file is just a draft and not used in the project
+# TODO: implement the passkey model and see how it would be used in the project
 from __future__ import annotations # This is a Python 3.10 feature that allows you to use forward references in type hints.
 from datetime import datetime
 from typing import Optional, TYPE_CHECKING

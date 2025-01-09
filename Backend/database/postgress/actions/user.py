@@ -1,4 +1,4 @@
-from database.postgress.models.user import User
+from database.postgress.models.test_model import User
 from database.postgress.actions.role import get_role_by_name
 from utils.password import verify_password, hash_password
 
@@ -11,8 +11,9 @@ from datetime import datetime
 # Create functions
 
 async def create_user(session: AsyncSession, username: str, email: str, password: str, first_name: str = None, last_name: str = None, role_name: str = "Young Person", phone_number: str = None, address: str = None, hashed=False, commit=True, fresh=False) -> User:
-    """ Create a user in the database via standard registration (Password) Async
+    """ Create a user in the database via direct registration (Password no email verfication) async
 
+    Not used currently, but can be used to create a user in the database without email verification.
     Args:
         session (Session): The database session
         email (str): The user's email
@@ -29,11 +30,11 @@ async def create_user(session: AsyncSession, username: str, email: str, password
     try:
         if not hashed:
             password = hash_password(password)
-        role_id = (await get_role_by_name(session, role_name)).role_id
-        if not role_id:
+        role = await get_role_by_name(session, role_name)
+        if not role:
             print("Role not found")
             return None
-        user = User(username=username, email=email, password_hash=password, role_id=role_id, first_name=first_name, last_name=last_name, phone_number=phone_number, address=address)
+        user = User(username=username, email=email, password_hash=password, role_id=role.role_id, first_name=first_name, last_name=last_name, phone_number=phone_number, address=address, role=role)
         session.add(user)
         if commit:
             await session.commit()
