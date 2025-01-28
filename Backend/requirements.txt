@@ -13,13 +13,13 @@ pdf2image
 fillpdf
 apscheduler
 SQLModel
-# need to be replaced with psycopg2 for production you would need to rework the Dockerfile
-psycopg2-binary
+# gino
+psycopg2
 # for testing
 pytest
 pytest-asyncio
 httpx
-#Debugging
+# Debugging
 debugpy
 # email
 fastapi-mail
