@@ -17,6 +17,8 @@ import Forum from "../components/forum/ForumPage.vue";
 import CoursePage from "../components/CoursePage.vue";
 import ShapeSequenceGame from "../components/ShapeSequenceGame.vue";
 import MetierCard from "../components/MetierPage.vue";
+import SoudeurCard from "../components/SoudeurCard.vue";
+import JardinerCard from "@/components/JardinerCard.vue";
 
 const routes = [
   {
@@ -102,10 +104,21 @@ const routes = [
     component: CoursePage,
   },
   {
-    path: "/metier",
+    path: "/metier/:metierId",
     name: "MetierCard",
     component: MetierCard,
+    props: true,
   },
+  {
+    path: "/metier/soudeur",
+    name: "SoudeurCard",
+    component: SoudeurCard,
+  },
+  {
+    path: "/metier/jardinier",
+    name: "JardinerCard",
+    component: JardinerCard,
+  }
 ];
 
 const router = createRouter({

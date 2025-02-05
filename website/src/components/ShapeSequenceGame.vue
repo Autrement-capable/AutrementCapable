@@ -57,6 +57,8 @@ export default {
 
         // Level configuration
         const levels = [
+            { sequence: ["rectangle", "circle", "triangle", "?", "rectangle"], answer: "circle" },
+            { sequence: ["rectangle", "rectangle", "triangle", "circle", "?", "rectangle", "triangle", "circle",], answer: "rectangle"},
             { sequence: ["triangle", "circle", "triangle", "?"], answer: "circle" },
             { sequence: ["circle", "rectangle", "?", "rectangle"], answer: "circle" },
             { sequence: ["square", "triangle", "square", "?", "square"], answer: "triangle" },
