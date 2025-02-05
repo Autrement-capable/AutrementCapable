@@ -7,6 +7,7 @@
         :skills="metierData.skills"
         :workEnvironment="metierData.environment"
         :jobDetails="metierData.details"
+        :nextRoute="'JardinerCard'"
     />
 </template>
 
