@@ -1,6 +1,7 @@
 <template>
   <div class="questionnaire" aria-label="Questionnaire page">
-    <h1 class="title">Questionnaire</h1>
+    <h1 class="title">Bonjour !</h1>
+    <img src="../assets/jeunefemme.png" alt="Questionnaire" class="image" />
     <div v-if="currentQuestionIndex < questions.length" class="question-container">
       <div class="text-with-button">
         <p class="sub-title">{{ questions[currentQuestionIndex].text }}</p>
@@ -42,28 +43,30 @@ export default {
   data() {
     return {
       currentQuestionIndex: 0,
+      backgroundColors: ['#e0f7fa', '#e8f5e9', '#fce4ec', '#fff3e0', '#ede7f6', '#f9fbe7'],
       questions: [
-        { text: 'Quel âge as-tu ?', key: 'age', type: 'number' },
-        { text: 'Comment voudrais-tu qu\'on t\'appelle ?', key: 'name', type: 'text' },
-        { text: 'Possèdes-tu une maladie / trouble ?', key: 'condition', type: 'text' },
-        { text: 'Comment te sens-tu aujourd\'hui ?', key: 'currentMood', type: 'text' },
-        { text: 'Qu\'est-ce qui te rend heureux(se) ?', key: 'happiness', type: 'text' },
-        { text: 'Quelles sont tes activités préférées ?', key: 'favoriteActivities', type: 'text' },
-        { text: 'Quelles passions aimerais-tu développer ?', key: 'passions', type: 'text' },
-        { text: 'Quelles sont tes forces et tes talents ?', key: 'strengths', type: 'text' },
-        { text: 'Quelles compétences aimerais-tu améliorer ?', key: 'skillsToImprove', type: 'text' },
-        { text: 'Quelles sont les valeurs qui te tiennent à cœur ?', key: 'values', type: 'text' },
-        { text: 'Qu\'est-ce qui te motive à te lever chaque jour ?', key: 'motivations', type: 'text' },
-        { text: 'Quels sont tes rêves pour le futur ?', key: 'dreams', type: 'text' },
-        { text: 'Qui sont les personnes qui te soutiennent le plus ?', key: 'supportNetwork', type: 'text' },
-        { text: 'Comment te sens-tu dans tes relations avec les autres ?', key: 'relationships', type: 'text' },
-        { text: 'Qu\'attends-tu des autres pour te sentir bien ?', key: 'expectationsFromOthers', type: 'text' },
-        { text: 'Quelles sont tes aspirations professionnelles ?', key: 'careerAspirations', type: 'text' },
-        { text: 'Comment te vois-tu dans 5 ans ?', key: 'futureSelf', type: 'text' },
-        { text: 'Quels métiers t\'intéressent le plus ?', key: 'interestedJobs', type: 'text' },
-        { text: 'Quelles adaptations te facilitent la vie quotidienne ?', key: 'adaptations', type: 'text' },
-        { text: 'Quels obstacles rencontres-tu souvent ?', key: 'obstacles', type: 'text' },
-        { text: 'Comment pouvons-nous t\'aider à surmonter ces obstacles ?', key: 'overcomingObstacles', type: 'text' }
+        { text: '🎂 Quel âge as-tu ?', key: 'age', type: 'number' },
+        { text: '🎨 Quelles sont tes passions ?', key: 'passions', type: 'text', icon: 'passion-icon.png' },
+        { text: '👤 Comment voudrais-tu qu\'on t\'appelle ?', key: 'name', type: 'text' },
+        { text: '🏥 Possèdes-tu une maladie / trouble ?', key: 'condition', type: 'text' },
+        { text: '😊 Comment te sens-tu aujourd\'hui ?', key: 'currentMood', type: 'text' },
+        { text: '😃 Qu\'est-ce qui te rend heureux(se) ?', key: 'happiness', type: 'text' },
+        { text: '👨‍👩‍👧‍👦 Qui sont les personnes qui te soutiennent le plus ?', key: 'supportNetwork', type: 'text' },
+        { text: '🏃 Quelles sont tes activités préférées ?', key: 'favoriteActivities', type: 'text' },
+        { text: '😃 Aimes-tu faire rire les autres ?', key: 'funny', type: 'text' },
+        { text: '📚 Quelles compétences aimerais-tu améliorer ?', key: 'skillsToImprove', type: 'text' },
+        { text: '💖 Quelles sont les valeurs qui te tiennent à cœur ?', key: 'values', type: 'text' },
+        { text: '🌅 Qu\'est-ce qui te motive à te lever chaque jour ?', key: 'motivations', type: 'text' },
+        { text: '🌟 Quels sont tes rêves pour le futur ?', key: 'dreams', type: 'text' },
+        { text: '💪 Quelles sont tes forces et tes talents ?', key: 'strengths', type: 'text' },
+        { text: '🤝 Comment te sens-tu dans tes relations avec les autres ?', key: 'relationships', type: 'text' },
+        { text: '🗣️ Qu\'attends-tu des autres pour te sentir bien ?', key: 'expectationsFromOthers', type: 'text' },
+        { text: '💼 Quelles sont tes aspirations professionnelles ?', key: 'careerAspirations', type: 'text' },
+        { text: '🔮 Comment te vois-tu dans 5 ans ?', key: 'futureSelf', type: 'text' },
+        { text: '💼 Quels métiers t\'intéressent le plus ?', key: 'interestedJobs', type: 'text' },
+        { text: '♿ Quelles adaptations te facilitent la vie quotidienne ?', key: 'adaptations', type: 'text' },
+        { text: '🚧 Quels obstacles rencontres-tu souvent ?', key: 'obstacles', type: 'text' },
+        { text: '🆘 Comment pouvons-nous t\'aider à surmonter ces obstacles ?', key: 'overcomingObstacles', type: 'text' }
       ],
       responses: {
         age: '',
@@ -93,6 +96,7 @@ export default {
     };
   },
   mounted() {
+    this.updateBackgroundColor();
     if ('webkitSpeechRecognition' in window) {
       this.recognition = new webkitSpeechRecognition();
       this.recognition.lang = 'fr-FR';
@@ -129,21 +133,62 @@ export default {
     speedGame() {
       this.$router.push('/game-speed');
     },
-    nextQuestion() {
+    async nextQuestion() {
       if (this.responses[this.questions[this.currentQuestionIndex].key] !== '') {
+        if (this.questions[this.currentQuestionIndex].key === 'passions') {
+          await this.generateBackgroundImage(this.responses.passions);
+        }
         this.currentQuestionIndex++;
-        console.log('Moved to next question');
+        this.updateBackgroundColor();
       } else {
         alert("Veuillez répondre à la question avant de passer à la suivante.");
       }
     },
+    async generateBackgroundImage(passions) {
+      try {
+        const response = await fetch('https://imagegeneratorac.openai.azure.com/openai/deployments/<dalle3>/images/generations?api-version=2024-02-01', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'api-key': 'Ey4WNC8QhYWW1kVyXS00UpzcZabiSMSlvhSAEOZ5Qpkk1W4Y6nqzJQQJ99ALAC5T7U2XJ3w3AAABACOGKYOI', // Remplacez par votre clé API Azure
+          },
+          body: JSON.stringify({
+            prompt: `A beautiful representation of ${passions}, colorful and inspirational, suitable for a website background`,
+            n: 1,
+            size: '1024x1024',
+          }),
+        });
+
+        if (!response.ok) {
+          const errorDetails = await response.json();
+          console.error('Azure API Error:', errorDetails);
+          return;
+        }
+
+        const data = await response.json();
+
+        if (data.data && data.data.length > 0 && data.data[0].url) {
+          const imageUrl = data.data[0].url;
+          document.querySelector('.questionnaire').style.backgroundImage = `url(${imageUrl})`;
+          document.querySelector('.questionnaire').style.backgroundSize = 'cover';
+        } else {
+          console.error('Invalid response structure:', data);
+        }
+      } catch (error) {
+        console.error('Error generating background image:', error);
+      }
+    },
+
+    updateBackgroundColor() {
+      const colorIndex = this.currentQuestionIndex % this.backgroundColors.length;
+      document.querySelector('.questionnaire').style.backgroundColor = this.backgroundColors[colorIndex];
+    },
     skipQuestion() {
       this.currentQuestionIndex++;
-      console.log('Skipped to next question');
+      this.updateBackgroundColor();
     },
     repeatQuestion() {
       const text = this.questions[this.currentQuestionIndex].text;
-      console.log('Repeating question:', text);
       const speech = new SpeechSynthesisUtterance();
       speech.lang = 'fr-FR';
       speech.text = text;
@@ -151,13 +196,10 @@ export default {
     },
     startRecognition() {
       if (this.recognition && !this.isRecognizing) {
-        console.log('Starting recognition');
         this.recognition.start();
-      } else {
-        console.log('Recognition already in progress or not supported');
       }
-    }
-  }
+    },
+  },
 }
 </script>
 
@@ -166,10 +208,11 @@ export default {
 
 .questionnaire {
   text-align: center;
-  background-color: #f5f5f5;
+  background-color: #e0f7fa;
   padding: 20px;
   height: 100vh;
 }
+
 
 .title {
   font-family: 'Glacial Indifference', sans-serif;
@@ -181,11 +224,18 @@ export default {
   font-family: 'Glacial Indifference', sans-serif;
   font-weight: bold;
   font-size: 2em;
+  margin-bottom: 20px;
+}
+
+.image {
+  width: 200px;
+  height: 230px;
+  margin: 20px;
 }
 
 .question-container {
-  margin-top: 10%;
-  margin-bottom: 15px;
+  margin-top: 2%;
+  margin-bottom: 5%;
 }
 
 .small-input {

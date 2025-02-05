@@ -1,11 +1,11 @@
 import { createRouter, createWebHistory } from "vue-router";
-// import StartButton from "../components/StartButton.vue";
+import StartButton from "../components/StartButton.vue";
 import AccountCreation from "../components/AccountCreation.vue";
 import Explanation from "../components/Explanation.vue";
 import LoginPage from "../components/LoginPage.vue";
 import PersonalTest from "../components/PersonalTest.vue";
 import UserQuestionnaire from "../components/Questionnaire.vue";
-import GameLogic from "../components/GameLogic.vue";
+// import GameLogic from "../components/GameLogic.vue";
 import GameSpeed from "../components/GameSpeed.vue";
 import GameShape from "../components/GameShape.vue";
 import GameMemory from "../components/GameMemory.vue";
@@ -24,8 +24,8 @@ import CoiffeurCard from "@/components/CoiffeurCard.vue";
 const routes = [
   {
     path: "/",
-    name: "GameLogic",
-    component: GameLogic,
+    name: "StartButton",
+    component: StartButton,
   },
   {
     path: "/account-creation",
