@@ -5,7 +5,7 @@ import Explanation from "../components/Explanation.vue";
 import LoginPage from "../components/LoginPage.vue";
 import PersonalTest from "../components/PersonalTest.vue";
 import UserQuestionnaire from "../components/Questionnaire.vue";
-import GameLogic from "../components/GameLogic.vue";
+// import GameLogic from "../components/GameLogic.vue";
 import GameSpeed from "../components/GameSpeed.vue";
 import GameShape from "../components/GameShape.vue";
 import GameMemory from "../components/GameMemory.vue";
@@ -21,8 +21,8 @@ import MetierCard from "../components/MetierPage.vue";
 const routes = [
   {
     path: "/",
-    name: "GameLogic",
-    component: GameLogic,
+    name: "UserQuestionnaire",
+    component: UserQuestionnaire,
   },
   {
     path: "/account-creation",
