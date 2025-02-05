@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
-// import StartButton from "../components/StartButton.vue";
+import StartButton from "../components/StartButton.vue";
 import AccountCreation from "../components/AccountCreation.vue";
 import Explanation from "../components/Explanation.vue";
 import LoginPage from "../components/LoginPage.vue";
@@ -23,8 +23,8 @@ import JardinerCard from "@/components/JardinerCard.vue";
 const routes = [
   {
     path: "/",
-    name: "UserQuestionnaire",
-    component: UserQuestionnaire,
+    name: "StartButton",
+    component: StartButton,
   },
   {
     path: "/account-creation",
@@ -118,7 +118,7 @@ const routes = [
     path: "/metier/jardinier",
     name: "JardinerCard",
     component: JardinerCard,
-  }
+  },
 ];
 
 const router = createRouter({
