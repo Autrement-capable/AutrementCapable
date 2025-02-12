@@ -8,7 +8,7 @@ from database.postgress.config import getSession as GetSession
 from database.postgress.actions.user import get_user_by_email
 from database.postgress.actions.revoked_jwt_tokens import revoke_token, get_revoked_token_by_jti
 from database.postgress.actions.password_reset import get_password_reset_by_token, create_password_reset, del_password_reset
-from database.postgress.actions.user import verify_user
+from database.postgress.actions.user import verify_user, update_ver_details
 from mail.actions.reset_password import send_reset_password_email
 
 from server.server import AddRouter
@@ -28,6 +28,9 @@ class TokenResponse(BaseModel):
 class ResetRequestForm(BaseModel):
     email: EmailStr
 
+class ResendRequestForm(BaseModel):
+    email: EmailStr = Field(..., title="The email of the user.", description="The email of the user.")
+
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.get("/verify", response_model=TokenResponse)
@@ -38,8 +41,8 @@ async def verify_users(request: Request, code: str, Authorize: AuthJWT = Depends
     user = await verify_user(session, code, fresh=True)
     if not user:
         raise HTTPException(status_code=404, detail="User not found or the token has expired.")
-    access_token = Authorize.create_access_token(subject=user.user_id, fresh=True)
-    refresh_token = Authorize.create_refresh_token(subject=user.user_id)
+    access_token = Authorize.create_access_token(subject=user.id, fresh=True)
+    refresh_token = Authorize.create_refresh_token(subject=user.id)
     return {"access_token": access_token, "refresh_token": refresh_token}
 
 @router.post("/start-reset-password", responses={200: {"message": "Password reset email sent."}})
@@ -92,10 +95,30 @@ async def reset_password(request: Request, form: ResetForm, session: AsyncSessio
         await session.rollback()
         raise HTTPException(status_code=500, detail="An error occurred while updating the user's password.")
 
-    access_token = Authorize.create_access_token(subject=user.user_id, fresh=True)
-    refresh_token = Authorize.create_refresh_token(subject=user.user_id)
+    access_token = Authorize.create_access_token(subject=user.id, fresh=True)
+    refresh_token = Authorize.create_refresh_token(subject=user.id)
     await del_password_reset(session, reset)
     return {"access_token": access_token, "refresh_token": refresh_token}
 
 
 AddRouter(router)  # Add the router to the server
+
+@router.post("/resend-verification-email", response_model=dict,
+responses={200: {"message": "Verification email sent."}})
+async def resend_verification_email(request: Request, form: ResendRequestForm, session: AsyncSession = Depends(GetSession)):
+    """
+    Resend the verification email to a user.
+    """
+    user = await get_user_by_email(session, form.email, load_type="eager")
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found.")
+    if user.verified:
+        return {"message": "User is already verified."}
+    try:
+        if not await send_verification_email(user, user.verification_details):
+            raise HTTPException(status_code=500, detail="An error occurred while sending the verification email.")
+    except Exception as e:
+        if getenv("MODE", False) == "DEV":
+            raise # propagate the error
+    user.verification_details
+    return {"message": "Verification email sent."}

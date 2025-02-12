@@ -19,17 +19,15 @@ DATABASE_URL_SYNC = (
 class Postgress:
     def __init__(self):
         self.engine = create_async_engine(DATABASE_URL_ASYNC, echo=True if getenv("MODE") == "DEV" else False, future=True)
-        # only exist for the blasted jwt deny list cause the callback needs to be sync func
         self.sync_engine = create_engine(DATABASE_URL_SYNC, echo=True if getenv("MODE") == "DEV" else False, future=True)
 
         self.Session = sessionmaker(self.engine, class_=AsyncSession, expire_on_commit=False)
-
         self.SyncSession = sessionmaker(self.sync_engine, expire_on_commit=False)
 
         self.Base = declarative_base()
 
-    async def get_SyncSession(self) -> Session:
-            yield self.SyncSession()
+    def get_SyncSession(self) -> Session:
+        return self.SyncSession()
 
     async def close(self):
         await self.engine.dispose()
@@ -38,16 +36,14 @@ class Postgress:
     async def create_all(self):
         async with self.engine.begin() as conn:
             await conn.run_sync(self.Base.metadata.create_all)
-    async def getSession(self) -> Session:
-        async with self.Session() as session:
-            yield session
 
+    async def getSession(self) -> AsyncSession:
+        return self.Session()
 
 postgress = Postgress()
 
-async def getSession() -> Session:
-    async with postgress.Session() as session:
-        yield session
+async def getSession() -> AsyncSession:
+    return await postgress.getSession()
 
 Base = postgress.Base
 

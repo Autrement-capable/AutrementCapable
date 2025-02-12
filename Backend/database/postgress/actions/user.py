@@ -253,6 +253,9 @@ async def get_available_usernames(session: AsyncSession, username: str, num_simi
     if username not in taken_usernames:
         return True, [username]  # Username is available
 
+    if num_similars < 1:
+        return False, []  # No suggestions needed
+
     suggestions = set()
     attempt_size = num_similars + 5  # Generate a few extra usernames
 
@@ -267,3 +270,35 @@ async def get_available_usernames(session: AsyncSession, username: str, num_simi
         suggestions.update(available_usernames)
 
     return False, list(suggestions)[:num_similars]
+
+async def update_ver_details(session: AsyncSession, user: User, eagerly_loaded:bool = False, commit=True,) -> UnverifiedDetails:
+    """ Update a user's verification details asynchronously
+
+    Args:
+        session (AsyncSession): The database session
+        user (User): The user object
+        eagerly_loaded (bool): Whether the user object is eagerly loaded (defaults to false)
+        commit (bool, optional): Whether to commit the transaction. Defaults to True.
+
+    Note: if you dont know if the user object is eagerly loaded, set eagerly_loaded to False
+    Returns:
+        UnverifiedDetails | None: The updated unverified details object if successful, None otherwise
+    """
+    if not eagerly_loaded:
+        statement = select(UnverifiedDetails).where(UnverifiedDetails.user_id == user.id)
+        result = await session.execute(statement)
+        unverified_details = result.scalars().first()
+    else:
+        unverified_details = user.verification_details
+    try:
+        verification_token, expiration = generate_verification_code(user.email, email_verification_code_duration)
+        unverified_details.verification_token = verification_token
+        unverified_details.token_expires = expiration
+        session.add(unverified_details)
+        if commit:
+            await session.commit()
+        return unverified_details
+    except Exception as e:
+        print(f"Error updating verification details: {e}")
+        await session.rollback()
+        return None

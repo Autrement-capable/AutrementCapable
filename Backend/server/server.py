@@ -80,8 +80,8 @@ class Server:
 
     async def init_roles(self):
         """ Initialize roles asynchronously """
-        async with self.postgress.getSession() as session:
-            await init_roles(session)
+        session = await self.postgress.getSession()
+        await init_roles(session)
 
     async def __remove_expired_tokens(self):
         """ Remove expired tokens from the database asynchronously """

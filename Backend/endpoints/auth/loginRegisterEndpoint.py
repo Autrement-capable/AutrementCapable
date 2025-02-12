@@ -37,36 +37,28 @@ async def login(form: LoginForm, Authorize: AuthJWT = Depends(), session: AsyncS
 
     user = await login_user(session, form.password, form.username_or_email)
     if not user:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials")
-    access_token = Authorize.create_access_token(subject=user.user_id, fresh=True)
-    refresh_token = Authorize.create_refresh_token(subject=user.user_id)
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+    if not user.verified:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account not verified")
+    access_token = Authorize.create_access_token(subject=user.id, fresh=True)
+    refresh_token = Authorize.create_refresh_token(subject=user.id)
     return {"access_token": access_token, "refresh_token": refresh_token}
-
-# @router.post("/register", response_model=LoginResponse)
-# async def register(form: RegisterForm, Authorize: AuthJWT = Depends(), session: AsyncSession = Depends(GetSession)):
-#     """
-#     NOT FINALLY IMPLEMENTED, currently skips email verification
-#     Register a new user and return an access token and a refresh token
-#     """
-#     user = await create_user(session, form.username, form.email, form.password, first_name=form.first_name, last_name=form.last_name, phone_number=form.phone_number, address=form.address, fresh=True)
-#     if not user:
-#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User already exists")
-#     access_token = Authorize.create_access_token(subject=user.user_id, fresh=True)
-#     refresh_token = Authorize.create_refresh_token(subject=user.user_id)
-#     return {"access_token": access_token, "refresh_token": refresh_token}
 
 @router.post("/register")
 async def register(form: RegisterForm, Authorize: AuthJWT = Depends(), session: AsyncSession = Depends(GetSession)):
     """
     Register a new user and return an access token and a refresh token
     """
+    test,_ = await get_available_usernames(session, form.username)
+    if not test:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Username already taken")
+
     tmp_user, details = await create_user(session, form.username,form.email,
                                             form.password, first_name=form.first_name,
                                             last_name=form.last_name, phone_number=form.phone_number,
                                             address=form.address, fresh=True)
     if not tmp_user:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User already exists")
-    #Note we might want to handle failed email sending and delete the tmp user form db
     try:
         if not await send_verification_email(tmp_user, details):
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to send verification email")
