@@ -1,8 +1,9 @@
-from database.postgress.models.test_model import RevokedToken
-from sqlmodel.ext.asyncio.session import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError, OperationalError
+from sqlalchemy.future import select
 from datetime import datetime
-from sqlmodel import select
+from database.postgress.models import RevokedToken
+from database.postgress import postgress
 
 # Create/Update functions
 
@@ -11,9 +12,9 @@ async def revoke_token(session: AsyncSession, jti: str, expires: datetime, token
 
     Args:
         session (AsyncSession): The database session
-        jti (str): The token's JTI
-        expires (datetime): The token's expiration date
-        token_type (str): The token's type
+        jti (str): The JTI of the token
+        expires (datetime): The expiration date of the token
+        token_type (str): The type of token
         commit (bool, optional): Whether to commit the transaction. Defaults to True.
     """
     try:
@@ -35,16 +36,9 @@ async def revoke_token(session: AsyncSession, jti: str, expires: datetime, token
         print(f"Type error: {e}")
         return None
 
-def revoke_token_sync(session, jti: str, expires: datetime, token_type: str, commit=True) -> RevokedToken:
-    """ Revoke a token in the database synchronously blasted jwt deny list needs this
-
-    Args:
-        session (Session): The database session
-        jti (str): The token's JTI
-        expires (datetime): The token's expiration date
-        token_type (str): The token's type
-        commit (bool, optional): Whether to commit the transaction. Defaults to True.
-    """
+def revoke_token_sync(jti: str, expires: datetime, token_type: str, commit=True) -> RevokedToken:
+    """ Revoke a token in the database synchronously """
+    session = postgress.SyncSession()
     try:
         token = RevokedToken(jti=jti, date_revoked=datetime.utcnow(), data_expires=expires, type=token_type)
         session.add(token)
@@ -63,27 +57,23 @@ def revoke_token_sync(session, jti: str, expires: datetime, token_type: str, com
         session.rollback()
         print(f"Type error: {e}")
         return None
+    finally:
+        session.close()
 
 # Cron job functions
 
 async def delete_expired_tokens(session: AsyncSession, commit=True) -> bool:
-    """ Delete all expired tokens from the database asynchronously
-
-    Args:
-        session (AsyncSession): The database session
-        commit (bool, optional): Whether to commit the transaction. Defaults to True.
-    """
+    """ Delete all expired tokens from the database asynchronously """
     try:
         statement = select(RevokedToken).where(RevokedToken.data_expires < datetime.utcnow())
-        results = await session.exec(statement)
-        expired_tokens = results.all()
+        result = await session.execute(statement)
+        expired_tokens = result.scalars().all()
 
         for token in expired_tokens:
             await session.delete(token)
-        
+
         if commit:
             await session.commit()
-
         return True
     except:
         await session.rollback()
@@ -92,23 +82,17 @@ async def delete_expired_tokens(session: AsyncSession, commit=True) -> bool:
 # Get functions
 
 async def get_revoked_token_by_jti(session: AsyncSession, jti: str) -> RevokedToken:
-    """ Get a revoked token from the database by JTI asynchronously
-
-    Args:
-        session (AsyncSession): The database session
-        jti (str): The token's JTI
-    """
+    """ Get a revoked token from the database by JTI asynchronously """
     statement = select(RevokedToken).where(RevokedToken.jti == jti)
-    result = await session.exec(statement)
-    return result.first()
+    result = await session.execute(statement)
+    return result.scalars().first()
 
-def get_revoked_token_by_jti_sync(session, jti: str) -> RevokedToken:
-    """ Get a revoked token from the database by JTI synchronously blasted jwt deny list needs this
-
-    Args:
-        session (Session): The database session
-        jti (str): The token's JTI
-    """
-    statement = select(RevokedToken).where(RevokedToken.jti == jti)
-    result = session.execute(statement)
-    return result.first()
+def get_revoked_token_by_jti_sync(jti: str) -> RevokedToken:
+    """ Get a revoked token from the database by JTI synchronously """
+    session = postgress.SyncSession()
+    try:
+        statement = select(RevokedToken).where(RevokedToken.jti == jti)
+        result = session.execute(statement)
+        return result.scalars().first()
+    finally:
+        session.close()

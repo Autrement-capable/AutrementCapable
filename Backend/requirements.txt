@@ -1,6 +1,5 @@
 fastapi
 uvicorn
-asyncpg
 fastapi-another-jwt-auth
 pydantic
 pydantic[email]
@@ -12,8 +11,10 @@ pillow
 pdf2image
 fillpdf
 apscheduler
-SQLModel
-# gino
+# for database
+# SQLModel
+asyncpg
+sqlalchemy[asyncio]
 psycopg2
 # for testing
 pytest
@@ -25,3 +26,4 @@ debugpy
 fastapi-mail
 # templates
 Jinja2
+faker

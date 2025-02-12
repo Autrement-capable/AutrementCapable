@@ -1,7 +1,7 @@
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+from database.postgress.models import Role
 import copy
-from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlmodel import select
-from database.postgress.actions.role import create_role, get_all_roles
 
 roles = {
     "Super Admin": {
@@ -45,25 +45,24 @@ roles = {
 async def init_roles(session: AsyncSession):
     """ Initialize the roles in the database. Skip roles that already exist."""
     try:
-        existing_roles = await get_all_roles(session)
-        existing_role_names = {role.role_name for role in existing_roles}
-
+        statement = select(Role.role_name)
+        result = await session.execute(statement)
+        existing_role_names = {row[0] for row in result.all()}
+        
         # Create a deep copy of the roles dictionary
         roles_to_add = copy.deepcopy(roles)
-
+        
         # Remove roles that already exist
         for role_name in existing_role_names:
             roles_to_add.pop(role_name, None)
-
+        
         # If all roles exist, return True
-        if roles_to_add == {}:
+        if not roles_to_add:
             return True
-
+        
         # Add the remaining roles to the database
-        for role_name, role_data in roles_to_add.items():
-            role = await create_role(session, role_name, role_data["description"], commit=False)
-            session.add(role)
-
+        new_roles = [Role(role_name=role_name, description=role_data["description"]) for role_name, role_data in roles_to_add.items()]
+        session.add_all(new_roles)
         await session.commit()
         return True
     except Exception as e:

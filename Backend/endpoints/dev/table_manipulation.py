@@ -1,42 +1,41 @@
 from fastapi import APIRouter, Depends, Path
-from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlmodel import inspect
-from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+from sqlalchemy.ext.asyncio import AsyncEngine
+from sqlalchemy import text, inspect
+
 from server.server import AddRouter
-from database.postgress.config import GetSession
+from database.postgress.config import getSession, postgress
 
 example_router = APIRouter(prefix="/dev", tags=["Development"])
 
+# Ensure we have a reference to the async engine
+async_engine: AsyncEngine = postgress.engine
+
 @example_router.get("/all-tables")
-async def all_tables(DB: AsyncSession = Depends(GetSession)):
+async def all_tables(DB: AsyncSession = Depends(getSession)):
     """Get all tables in the database."""
-    inspector = inspect(DB.bind)
-    tables = await DB.run_sync(inspector.get_table_names)
+    async with async_engine.begin() as conn:
+        inspector = inspect(conn)
+        tables = inspector.get_table_names()
     return {"tables": tables}
 
-# route used for dropping all tables
+# Route used for dropping all tables
 @example_router.get("/drop-all-tables")
-async def drop_all_tables(DB: AsyncSession = Depends(GetSession)):
+async def drop_all_tables(DB: AsyncSession = Depends(getSession)):
     """Drop all tables in the database."""
-    inspector = inspect(DB.bind)
-    tables = await DB.run_sync(inspector.get_table_names)
-    for table in tables:
-        await DB.execute(text(f"DROP TABLE {table} CASCADE"))
-    await DB.commit()
+    async with async_engine.begin() as conn:
+        inspector = inspect(conn)
+        tables = inspector.get_table_names()
+        for table in tables:
+            await conn.execute(text(f"DROP TABLE {table} CASCADE"))
     return {"message": "All tables dropped"}
 
 @example_router.get("/drop-table/{table_name}")
-async def drop_table(table_name: str = Path(..., title="The name of the table to drop."), DB: AsyncSession = Depends(GetSession)):
+async def drop_table(table_name: str = Path(..., title="The name of the table to drop."), DB: AsyncSession = Depends(getSession)):
     """Drop a table in the database."""
     await DB.execute(text(f"DROP TABLE {table_name} CASCADE"))
     await DB.commit()
     return {"message": f"{table_name} dropped"}
-
-@example_router.get("/get-table/{table_name}")
-async def get_table(table_name: str = Path(..., title="The name of the table to get."), DB: AsyncSession = Depends(GetSession)):
-    """Get a table in the database."""
-    inspector = inspect(DB.bind)
-    table = await DB.run_sync(inspector.get_table, table_name)
-    return {"table": table}
 
 AddRouter(example_router)  # Add the router to the server

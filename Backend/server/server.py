@@ -9,7 +9,7 @@ from server.cors.config import init_cors
 from server.jwt_config.exception_handlers import authjwt_exception_handler
 from server.role_config.roles import init_roles
 from utils.singleton import singleton
-from database.postgress.setup import postgress
+from database.postgress.config import postgress
 from database.postgress.actions.revoked_jwt_tokens import delete_expired_tokens, get_revoked_token_by_jti,  get_revoked_token_by_jti_sync
 import uvicorn
 
@@ -70,7 +70,7 @@ class Server:
     async def on_startup(self):
         """ This function runs during startup of FastAPI application. """
         # Initialize the database and create tables asynchronously
-        await self.postgress.create_db_and_tables()
+        await self.postgress.create_all()
 
         # Initialize roles asynchronously
         await self.init_roles()
@@ -80,7 +80,7 @@ class Server:
 
     async def init_roles(self):
         """ Initialize roles asynchronously """
-        async with self.postgress.GetSession() as session:
+        async with self.postgress.getSession() as session:
             await init_roles(session)
 
     async def __remove_expired_tokens(self):
@@ -143,7 +143,7 @@ server = Server()
 @AuthJWT.token_in_denylist_loader
 def check_if_token_in_denylist(decrypted_token):
     jti = decrypted_token['jti']
-    with postgress.GetSessionSync() as session:
+    with postgress.get_SyncSession() as session:
         token = get_revoked_token_by_jti_sync(session, jti)
         return token is not None
 

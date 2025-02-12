@@ -1,12 +1,11 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from pydantic import BaseModel, EmailStr
 from fastapi_another_jwt_auth import AuthJWT
-from database.postgress.actions.user import create_user, login_user, is_username_taken
-from database.postgress.actions.unverified_user import create_unverified_user, del_uvf_user
+from database.postgress.actions.user import create_user, login_user, get_available_usernames, del_uvf_user
 from mail.actions.verify_account import send_verification_email
 from server.server import AddRouter
-from database.postgress.config import GetSession
-from sqlmodel.ext.asyncio.session import AsyncSession
+from database.postgress.config import getSession as GetSession
+from sqlalchemy.ext.asyncio import AsyncSession
 from database.postgress.setup import postgress
 
 from os import getenv
@@ -61,7 +60,7 @@ async def register(form: RegisterForm, Authorize: AuthJWT = Depends(), session: 
     """
     Register a new user and return an access token and a refresh token
     """
-    tmp_user = await create_unverified_user(session, form.username,form.email,
+    tmp_user, details = await create_user(session, form.username,form.email,
                                             form.password, first_name=form.first_name,
                                             last_name=form.last_name, phone_number=form.phone_number,
                                             address=form.address, fresh=True)
@@ -69,7 +68,7 @@ async def register(form: RegisterForm, Authorize: AuthJWT = Depends(), session: 
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User already exists")
     #Note we might want to handle failed email sending and delete the tmp user form db
     try:
-        if not await send_verification_email(tmp_user):
+        if not await send_verification_email(tmp_user, details):
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to send verification email")
     except Exception as e: # if the email sending fails, delete the user
         await del_uvf_user(session, tmp_user)
@@ -83,10 +82,13 @@ async def register(form: RegisterForm, Authorize: AuthJWT = Depends(), session: 
 async def check_username(username: str, session:AsyncSession = Depends(GetSession)):
     """ Check if a username is already taken
 
-    Use this when registering a new user to check if the username is already taken
+    Use this when registering a new user to check if the username is already taken,
+    before attempting to create the user.
+    this also gives suggestions for similar usernames.
     /auth/check_username?username=example
     """
-    user = await is_username_taken(session, username)
-    return {"exists": user}
+    is_available, usernames = await get_available_usernames(session, username)
+
+    return {"is_available": is_available, "usernames": usernames}
 
 AddRouter(router)

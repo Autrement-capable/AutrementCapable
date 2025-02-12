@@ -9,7 +9,7 @@ from os import getenv
 
 template_env = Environment(loader=FileSystemLoader("mail/templates"))
 
-RESET_URL = getenv("RESET_URL", "http://localhost:5000/auth//reset-password")
+RESET_URL = getenv("RESET_URL", "http://localhost:5000/auth/reset-password")
 
 async def send_reset_password_email(user: User, reset: PasswordReset, email: str = None):
     """

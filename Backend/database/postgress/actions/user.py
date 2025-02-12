@@ -1,32 +1,93 @@
-from database.postgress.models.test_model import User
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError, OperationalError
+from sqlalchemy.future import select
+from datetime import datetime
+from sqlalchemy.orm import joinedload
+import yaml
+from database.postgress.models import User, UnverifiedDetails
+from database.postgress.config import postgress
 from database.postgress.actions.role import get_role_by_name
 from utils.password import verify_password, hash_password
+from utils.verifcation_code import generate_verification_code, generate_random_suffix
+from server.server import AddCronJob
+from utils.parse_yaml import get_property
+from faker import Faker
+from typing import Optional, Literal
+import asyncio
 
-from sqlalchemy.orm import joinedload, selectinload
-from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlmodel import select
-from sqlalchemy.exc import IntegrityError, OperationalError
-from datetime import datetime
+email_verification_code_duration = 900  # 15 minutes
+is_config_loaded = False
 
-# Create functions
+# Cron job functions
 
-async def create_user(session: AsyncSession, username: str, email: str, password: str, first_name: str = None, last_name: str = None, role_name: str = "Young Person", phone_number: str = None, address: str = None, hashed=False, commit=True, fresh=False) -> User:
-    """ Create a user in the database via direct registration (Password no email verfication) async
+async def delete_expired_unverified_users() -> bool:
+    """ Delete expired unverified users from the database."""
+    async with postgress.getSession() as session:
+        try:
+            # Select UnverifiedDetails and eagerly load the related User
+            statement = (
+                select(UnverifiedDetails)
+                .where(UnverifiedDetails.token_expires < datetime.utcnow())
+                .options(joinedload(UnverifiedDetails.user))  # Eager loading
+            )
+            result = await session.execute(statement)
+            details: list[UnverifiedDetails] = result.scalars().all()
 
-    Not used currently, but can be used to create a user in the database without email verification.
+            for detail in details:
+                if detail.user:  # Since it's eagerly loaded, this avoids an extra query
+                    await session.delete(detail.user)
+
+            await session.commit()
+            return True
+        except Exception as e:
+            print(f"Error deleting expired unverified users: {e}")
+            await session.rollback()
+            return False
+
+
+def load_config():
+    global email_verification_code_duration, is_config_loaded
+    if not is_config_loaded:
+        __config_file__ = "./server/config_files/config.yaml"
+        with open(__config_file__, "r") as file:
+            config = yaml.safe_load(file)
+
+        mail_server_config = get_property(config, "verify", ["email_verification_code_duration", "email_ver_purge_interval"])
+        email_verification_code_duration = mail_server_config['email_verification_code_duration']
+        prune_interval = mail_server_config['email_ver_purge_interval']
+        AddCronJob(delete_expired_unverified_users, trigger="interval", seconds=prune_interval)
+        is_config_loaded = True
+
+try:
+    load_config()
+except Exception as e:
+    print(f"Error loading config: {e}")
+    email_verification_code_duration = 900
+
+async def create_user(session: AsyncSession, username: str, email: str, password: str,
+                                 first_name: str = None, last_name: str = None,
+                                 role_name: str = "Young Person", phone_number: str = None,
+                                 address: str = None, hashed=False, commit=True, fresh=True) -> tuple[User, UnverifiedDetails] | None:
+    """ Create a user in the database asynchronously
+
     Args:
-        session (Session): The database session
-        email (str): The user's email
+        session (AsyncSession): The database session
         username (str): The user's username
+        email (str): The user's email
         password (str): The user's password
         first_name (str, optional): The user's first name. Defaults to None.
         last_name (str, optional): The user's last name. Defaults to None.
-        role_name (str, optional): The user's role. Defaults to "Young Person".
+        role_name (str, optional): The user's role name. Defaults to "Young Person".
         phone_number (str, optional): The user's phone number. Defaults to None.
         address (str, optional): The user's address. Defaults to None.
-        hashed (bool, optional): Whether the password given is hashed. Defaults to False.
+        hashed (bool, optional): Whether the password is hashed. Defaults to False.
         commit (bool, optional): Whether to commit the transaction. Defaults to True.
-        fresh (bool, optional): Whether to refresh the user object from DB(usefull if you want to manipulate it). Defaults to False."""
+        fresh (bool, optional): Whether to refresh the user object from DB. Defaults to True.
+
+        Returns:
+        tuple[User, UnverifiedDetails] | None: A tuple containing the user and unverified details objects if successful, None otherwise
+
+            FIY: the user object is lazily loaded with selectin strategy"""
     try:
         if not hashed:
             password = hash_password(password)
@@ -34,13 +95,20 @@ async def create_user(session: AsyncSession, username: str, email: str, password
         if not role:
             print("Role not found")
             return None
-        user = User(username=username, email=email, password_hash=password, role_id=role.role_id, first_name=first_name, last_name=last_name, phone_number=phone_number, address=address, role=role)
+        verification_token, expiration = generate_verification_code(email, email_verification_code_duration)
+        user = User(username=username, email=email, password_hash=password,
+                    role_id=role.id, first_name=first_name, last_name=last_name,
+                    phone_number=phone_number, address=address, role=role)
         session.add(user)
+        await session.commit()
+        await session.refresh(user)
+        unverified_details = UnverifiedDetails(user_id=user.id, verification_token=verification_token, token_expires=expiration)
+        session.add(unverified_details)
         if commit:
             await session.commit()
         if fresh:
-            await session.refresh(user)
-        return user
+            await asyncio.gather(session.refresh(user), session.refresh(unverified_details))
+        return user, unverified_details
     except IntegrityError:
         await session.rollback()
         print("A user with this email already exists.")
@@ -54,137 +122,148 @@ async def create_user(session: AsyncSession, username: str, email: str, password
         print(f"Type error: {e}")
         return None
 
-# Oauth and passkey to be implemented
+async def get_user_by_email(session: AsyncSession, email: str, load_type: Literal["lazy", "eager"] = "lazy") -> User | None:
+    """ Get a user by their email asynchronously
 
-# Get functions
-
-async def get_user_by_email(session: AsyncSession, email: str, lazy=True) -> User:
-    """ Get a user by email async.
     Args:
-        session (Session): The database session.
-        email (str): The user's email.
-        lazy (bool, optional): Whether to load the email object lazily. Defaults to True.
+        session (AsyncSession): The database session
+        email (str): The user's email
+        load_type (Literal["lazy", "eager"], optional): The type of loading to use. Defaults to "lazy".
+
+    Returns:
+        User | None: The user object if found, None otherwise
     """
-    query = select(User).where(User.email == email)
-    result = await session.exec(query)
-    user = result.first()
+    if load_type == "lazy":
+        statement = select(User).where(User.email == email)
+    elif load_type == "eager":
+        statement = (select(User)
+        .where(User.email == email)
+        .options(joinedload(User.password_resets), joinedload(User.verification_details)))
+    else:
+        raise ValueError("Invalid load type")
+    
+    result = await session.execute(statement)
+    result = result.scalars().first()
+    if not result:
+        print("User not found")
+        return None
+    return result
 
-    if not lazy:
-        await session.refresh(user)  # Ensure all attributes are loaded
+async def verify_user(session: AsyncSession, verification_code: str, commit=True, fresh=True) -> User:
+    """ Verify a user using their verification code.
 
+    Args:
+        session (AsyncSession): The database session
+        verification_code (str): The code that we will verify that is legit
+        commit (bool): whether to commit on change (defaults to true)
+        fresh (bool): whether to give fresh object back (defaults to true)
+        
+    Returns:
+        User | None: The user object if found, None otherwise
+    """
+    statement = (select(UnverifiedDetails)
+    .where(UnverifiedDetails.verification_token == verification_code.strip())
+    .options(joinedload(UnverifiedDetails.user))) # Eager loading
+    result = await session.execute(statement)
+    unverified_details = result.scalars().first()
+    if not unverified_details:
+        print("User not found")
+        return None
+    if unverified_details.token_expires < datetime.utcnow():
+        print("Token expired")
+        return None
+    user = unverified_details.user
+    if user:
+        await session.delete(unverified_details)
+        if commit:
+            await session.commit()
+        if fresh:
+            await session.refresh(user)
     return user
 
-async def get_user_by_username(session: AsyncSession, username: str) -> User:
-    """ Get a user by username async """
-    result = await session.exec(select(User).where(User.username == username))
-    return result.first()
-
-async def get_user_by_id(session: AsyncSession, user_id: int) -> User:
-    """ Get a user by id async """
-    result = await session.exec(select(User).where(User.user_id == user_id))
-    return result.first()
-
-async def get_all_usernames(session: AsyncSession) -> list[str]:
-    """ Get all usernames async """
-    result = await session.exec(select(User.username))
-    return result.all()
-
-async def is_username_taken(session: AsyncSession, username: str) -> bool:
-    """ Check if a username is taken async
-    Returns:
-        True if the username is taken, False otherwise
-    """
-    result = await session.execute(
-        select(User).where(User.username == username)
-    )  # Execute the query
-    user = result.first()  # Fetch the first result (already scalar)
-    return user is not None
-
-async def login_user(session: AsyncSession, password: str, username_email: str, hashed=False) -> User:
-    """ Login a user async
+async def del_uvf_user(session: AsyncSession, user: User, commit=True) -> bool:
+    """ Delete a user from the database asynchronously
 
     Args:
-        session (Session): The database session
-        password (str): The user's password
-        username_email (str): The user's username or email
-        hashed (bool, optional): Whether the password given is hashed. Defaults to False.
+        session (AsyncSession): The database session
+        user (User): The user object
+        commit (bool, optional): Whether to commit the transaction. Defaults to True.
 
     Returns:
-        User: The user object if successful, None otherwise"""
-    query = select(User).where((User.username == username_email) | (User.email == username_email))
-    result = await session.exec(query)
-    user = result.first()
+        bool: True if successful, False otherwise
+    """
+    try:
+        await session.delete(user)
+        if commit:
+            await session.commit()
+        return True
+    except Exception as e:
+        print(f"Error deleting user: {e}")
+        await session.rollback()
+        return False
+
+async def login_user(session: AsyncSession, password: str, username_or_email: str) -> User | None:
+    """ Login a user asynchronously
+
+    Args:
+        session (AsyncSession): The database session
+        password (str): The user's password
+        username_or_email (str): The user's username or email
+
+    Returns:
+        User | None: The user object if found, None otherwise
+    """
+    statement = select(User).where(User.username == username_or_email)
+    result = await session.execute(statement)
+    user = result.scalars().first()
+
+    if not user:
+        statement = select(User).where(User.email == username_or_email)
+        result = await session.execute(statement)
+        user = result.scalars().first()
 
     if not user:
         return None
 
-    if (not hashed and not verify_password(password, user.password_hash)) or \
-       (hashed and password != user.password_hash):
+    if not verify_password(password, user.password_hash):
         return None
 
     return user
 
-# Update functions
-async def update_user(session: AsyncSession, user: User, commit=True, fresh=False) -> User:
-    """ Update a user in the database async
+fake = Faker()
+
+async def get_available_usernames(session: AsyncSession, username: str, num_similars=3) -> tuple[bool, list[str]]:
+    """ Check if a username is available in the database asynchronously.
+        If taken, return a list of similar available usernames.
 
     Args:
-        session (Session): The database session
-        user (User): The user object
-        commit (bool, optional): Whether to commit the transaction. Defaults to True.
-        fresh (bool, optional): Whether to refresh the user object from DB(usefull if you want to manipulate it). Defaults to False.
+        session (AsyncSession): The database session.
+        username (str): The desired username.
+        num_similars (int, optional): Number of alternative usernames to suggest. Defaults to 3.
 
-        Returns:
-            User: The updated user object if successful, None otherwise"""
-    try:
-        session.add(user)
-        if commit:
-            await session.commit()
-        if fresh:
-            await session.refresh(user)
-        return user
-    except IntegrityError:
-        await session.rollback()
-        print("A user with this email already exists.")
-        return None
-    except OperationalError:
-        await session.rollback()
-        print("There was an issue with the database operation.")
-        return None
-    except TypeError as e:
-        await session.rollback()
-        print(f"Type error: {e}")
-        return None
+    Returns:
+        tuple[bool, list[str]]: A tuple containing a boolean indicating if the username is available
+        and a list of suggested usernames if the username is taken.
+    """
+    # Check if username exists
+    statement = select(User.username).where(User.username == username)
+    result = await session.execute(statement)
+    taken_usernames = set(result.scalars().all())
 
-# Delete functions
-async def delete_user(session: AsyncSession, user: User, commit=True) -> bool:
-    """ Delete a user from the database async
+    if username not in taken_usernames:
+        return True, [username]  # Username is available
 
-    Args:
-        session (Session): The database session
-        user (User): The user object
-        commit (bool, optional): Whether to commit the transaction. Defaults to True.
+    suggestions = set()
+    attempt_size = num_similars + 5  # Generate a few extra usernames
 
-        Returns:
-            bool: True if successful, False otherwise"""
-    try:
-        session.delete(user)
-        if commit:
-            await session.commit()
-        return True
-    except IntegrityError:
-        await session.rollback()
-        print("A user with this email already exists.")
-        return False
-    except OperationalError:
-        await session.rollback()
-        print("There was an issue with the database operation.")
-        return False
-    except TypeError as e:
-        await session.rollback()
-        print(f"Type error: {e}")
-        return False
-    except Exception as e:
-        await session.rollback()
-        print(f"Error: {e}")
-        return False
+    # FIY: this has the unlikely possibility of generating the same username multiple times and that
+    # username being taken, but the chances are very low
+    while len(suggestions) < num_similars:
+        generated_usernames = {fake.user_name() for _ in range(attempt_size)}
+        statement = select(User.username).where(User.username.in_(generated_usernames))
+        result = await session.execute(statement)
+        taken_usernames = set(result.scalars().all())
+        available_usernames = generated_usernames - taken_usernames
+        suggestions.update(available_usernames)
+
+    return False, list(suggestions)[:num_similars]

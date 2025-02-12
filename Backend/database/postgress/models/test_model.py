@@ -1,89 +1,71 @@
-from sqlalchemy import UniqueConstraint, Index, Column, func
-from sqlmodel import Field, Relationship, SQLModel, DateTime
 from typing import Optional
-from datetime import datetime
-from sqlmodel import Field, SQLModel, DateTime
-from sqlalchemy import Column, func
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, func
+from sqlalchemy.orm import relationship, Mapped, mapped_column
+from sqlalchemy.ext.asyncio import AsyncAttrs
+from database.postgress.config import Base
 
-
-class Role(SQLModel, table=True):
+class Role(AsyncAttrs, Base):
     __tablename__ = "roles"
 
-    role_id: Optional[int] = Field(default=None, primary_key=True)
-    role_name: str = Field(sa_column_kwargs={"unique": True, "nullable": False})
-    description: Optional[str] = Field(default=None)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    role_name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
-    unverified_users: list["UnverifiedUser"] = Relationship(back_populates="role")
-    users: list["User"] = Relationship(back_populates="role")
+    users: Mapped[list["User"]] = relationship(back_populates="role", lazy="selectin")
 
+class UnverifiedDetails(AsyncAttrs, Base):
+    __tablename__ = "unverified_details"
 
-class PasswordReset(SQLModel, table=True):
-    __tablename__ = "password-resets"
-    __table_args__ = (
-        UniqueConstraint("reset_token", name="uq_reset_token"),
-        Index("ix_reset_token", "reset_token"), # faster lookups
-    )
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    verification_token: Mapped[str] = mapped_column(String, nullable=False, unique=True)
+    token_expires: Mapped[DateTime] = mapped_column(DateTime, nullable=False)  # Add token expiration
+    date_created: Mapped[DateTime] = mapped_column(DateTime, server_default=func.now())
 
-    reset_id: Optional[int] = Field(default=None, primary_key=True)
-    reset_token: str = Field(nullable=False)
-    token_expires: datetime = Field(nullable=False)
-    date_requested: datetime = Field(nullable=True, default=None)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, unique=True)  # Enforce one-to-one
+    user: Mapped["User"] = relationship(back_populates="verification_details", lazy="selectin")
 
-    user_id: int = Field(foreign_key="users.user_id", nullable=False)
-    user_obj: "User" = Relationship(back_populates="password_resets")
-
-
-class UnverifiedUser(SQLModel, table=True):
-    __tablename__ = "unverified_users"
-    __table_args__ = (
-        UniqueConstraint("email", name="uq_unverified_email"),
-        UniqueConstraint("verification_token", name="uq_verification_token"),
-    )
-
-    unverified_user_id: Optional[int] = Field(default=None, primary_key=True)
-    username: str = Field(unique=True, nullable=False)
-    email: str = Field(nullable=False)
-    password_hash: Optional[str] = Field(default=None)
-    is_oauth: bool = Field(default=False)
-    is_passkey: bool = Field(default=False)
-    verification_token: str = Field(nullable=False, unique=True)
-    token_expires: datetime = Field(nullable=False)
-    first_name: Optional[str] = Field(default=None)
-    last_name: Optional[str] = Field(default=None)
-    phone_number: Optional[str] = Field(default=None)
-    address: Optional[str] = Field(default=None)
-    date_created: datetime = Field(sa_column=Column(DateTime, server_default=func.now()))
-
-    pending_role_id: int = Field(nullable=False, foreign_key="roles.role_id")
-    role: Optional["Role"] = Relationship(back_populates="unverified_users")
-
-class User(SQLModel, table=True):
+class User(AsyncAttrs, Base):
     __tablename__ = "users"
 
-    user_id: Optional[int] = Field(default=None, primary_key=True)
-    username: str = Field(unique=True, nullable=False)
-    email: str = Field(sa_column_kwargs={"unique": True, "nullable": False}) # this is the same as the line above
-    password_hash: Optional[str] = Field(default=None)
-    is_oauth: bool = Field(default=False)
-    is_passkey: bool = Field(default=False)
-    first_name: Optional[str] = Field(default=None)
-    last_name: Optional[str] = Field(default=None)
-    phone_number: Optional[str] = Field(default=None)
-    address: Optional[str] = Field(default=None)
-    date_created: datetime = Field(sa_column=Column(DateTime, server_default=func.now()))
-    is_active: bool = Field(default=True)
-    last_login: Optional[datetime] = Field(default=None)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    username: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    email: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    password_hash: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    is_oauth: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_passkey: Mapped[bool] = mapped_column(Boolean, default=False)
+    first_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    last_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    phone_number: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    address: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    date_created: Mapped[DateTime] = mapped_column(DateTime, server_default=func.now())
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    last_login: Mapped[Optional[DateTime]] = mapped_column(DateTime, nullable=True)
 
-    role_id: int = Field(foreign_key="roles.role_id", nullable=False)
-    role: Role = Relationship(back_populates="users")
-    password_resets: list["PasswordReset"] | None = Relationship(back_populates="user_obj")
+    role_id: Mapped[int] = mapped_column(ForeignKey("roles.id"), nullable=False)
+    role: Mapped["Role"] = relationship(back_populates="users", lazy="selectin")
 
-## create a model for revoked tokens
+    # If this is null, the user is verified
+    verification_details: Mapped[Optional["UnverifiedDetails"]] = relationship(
+        back_populates="user", lazy="selectin", uselist=False, cascade="all, delete-orphan"
+    )
+    password_resets: Mapped[list["PasswordReset"]] = relationship(back_populates="user", lazy="selectin", cascade="all, delete-orphan")
 
-class RevokedToken(SQLModel, table=True):
+
+class PasswordReset(AsyncAttrs, Base):
+    __tablename__ = "password_resets"
+    
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    reset_token: Mapped[str] = mapped_column(String, nullable=False, unique=True)
+    token_expires: Mapped[DateTime] = mapped_column(DateTime, nullable=False)
+    date_requested: Mapped[Optional[DateTime]] = mapped_column(DateTime, default=func.now())
+    
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    user: Mapped["User"] = relationship(back_populates="password_resets", lazy="selectin")
+
+class RevokedToken(AsyncAttrs, Base):
     __tablename__ = "revoked_tokens"
-
-    jti: str = Field(primary_key=True)
-    date_revoked:datetime = Field(sa_column=Column(DateTime, server_default=func.now()))
-    data_expires:datetime = Field(nullable=False)
-    type:str = Field(nullable=False)
+    
+    jti: Mapped[str] = mapped_column(String, primary_key=True)
+    date_revoked: Mapped[DateTime] = mapped_column(DateTime, default=func.now())
+    data_expires: Mapped[DateTime] = mapped_column(DateTime, nullable=False)
+    type: Mapped[str] = mapped_column(String, nullable=False)
