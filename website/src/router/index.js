@@ -19,6 +19,7 @@ import ShapeSequenceGame from "../components/ShapeSequenceGame.vue";
 import MetierCard from "../components/MetierPage.vue";
 import SoudeurCard from "../components/SoudeurCard.vue";
 import JardinerCard from "@/components/JardinerCard.vue";
+import CoiffeurCard from "@/components/CoiffeurCard.vue";
 
 const routes = [
   {
@@ -119,6 +120,11 @@ const routes = [
     name: "JardinerCard",
     component: JardinerCard,
   },
+  {
+    path: "/metier/coiffeur",
+    name: "CoiffeurCard",
+    component: CoiffeurCard,
+  }
 ];
 
 const router = createRouter({

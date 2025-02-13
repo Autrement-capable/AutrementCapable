@@ -1,7 +1,6 @@
 <template>
   <div class="questionnaire" aria-label="Questionnaire page">
     <h1 class="title">Bonjour !</h1>
-    <!-- Affiche l'image générée si elle existe, sinon l'image par défaut -->
     <img :src="generatedImageUrl || require('../assets/jeunefemme.png')" alt="Questionnaire" class="image" />
     <div v-if="currentQuestionIndex < questions.length" class="question-container">
       <div class="text-with-button">
@@ -204,6 +203,10 @@ export default {
 @import url('@/assets/styles.css');
 
 .questionnaire {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   background-color: #e0f7fa;
   padding: 20px;

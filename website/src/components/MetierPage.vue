@@ -46,6 +46,7 @@ export default {
         skills: { type: Array, required: true },
         workEnvironment: { type: String, required: true },
         jobDetails: { type: String, required: true },
+        nextRoute: { type: String, default: null },
     },
     data() {
         return {
@@ -56,14 +57,23 @@ export default {
         toggleExpand() {
             this.isExpanded = !this.isExpanded;
         },
+        navigateToNextMetier() {
+            if (this.nextRoute) {
+                this.$router.push({ name: this.nextRoute });
+            }
+        },
+
         onLike() {
             console.log("User likes this métier!");
+            this.navigateToNextMetier();
         },
         onNeutral() {
             console.log("User is neutral about this métier.");
+            this.navigateToNextMetier();
         },
         onDislike() {
             console.log("User dislikes this métier.");
+            this.navigateToNextMetier();
         },
     },
 };
