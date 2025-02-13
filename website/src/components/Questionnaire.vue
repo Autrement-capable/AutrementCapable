@@ -1,7 +1,8 @@
 <template>
   <div class="questionnaire" aria-label="Questionnaire page">
     <h1 class="title">Bonjour !</h1>
-    <img src="../assets/jeunefemme.png" alt="Questionnaire" class="image" />
+    <!-- Affiche l'image générée si elle existe, sinon l'image par défaut -->
+    <img :src="generatedImageUrl || require('../assets/jeunefemme.png')" alt="Questionnaire" class="image" />
     <div v-if="currentQuestionIndex < questions.length" class="question-container">
       <div class="text-with-button">
         <p class="sub-title">{{ questions[currentQuestionIndex].text }}</p>
@@ -37,36 +38,39 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 /* global webkitSpeechRecognition */
 export default {
   name: 'UserQuestionnaire',
   data() {
     return {
       currentQuestionIndex: 0,
+      generatedImageUrl: null,
       backgroundColors: ['#e0f7fa', '#e8f5e9', '#fce4ec', '#fff3e0', '#ede7f6', '#f9fbe7'],
       questions: [
         { text: '🎂 Quel âge as-tu ?', key: 'age', type: 'number' },
-        { text: '🎨 Quelles sont tes passions ?', key: 'passions', type: 'text', icon: 'passion-icon.png' },
         { text: '👤 Comment voudrais-tu qu\'on t\'appelle ?', key: 'name', type: 'text' },
-        { text: '🏥 Possèdes-tu une maladie / trouble ?', key: 'condition', type: 'text' },
-        { text: '😊 Comment te sens-tu aujourd\'hui ?', key: 'currentMood', type: 'text' },
-        { text: '😃 Qu\'est-ce qui te rend heureux(se) ?', key: 'happiness', type: 'text' },
-        { text: '👨‍👩‍👧‍👦 Qui sont les personnes qui te soutiennent le plus ?', key: 'supportNetwork', type: 'text' },
-        { text: '🏃 Quelles sont tes activités préférées ?', key: 'favoriteActivities', type: 'text' },
-        { text: '😃 Aimes-tu faire rire les autres ?', key: 'funny', type: 'text' },
-        { text: '📚 Quelles compétences aimerais-tu améliorer ?', key: 'skillsToImprove', type: 'text' },
-        { text: '💖 Quelles sont les valeurs qui te tiennent à cœur ?', key: 'values', type: 'text' },
-        { text: '🌅 Qu\'est-ce qui te motive à te lever chaque jour ?', key: 'motivations', type: 'text' },
-        { text: '🌟 Quels sont tes rêves pour le futur ?', key: 'dreams', type: 'text' },
-        { text: '💪 Quelles sont tes forces et tes talents ?', key: 'strengths', type: 'text' },
-        { text: '🤝 Comment te sens-tu dans tes relations avec les autres ?', key: 'relationships', type: 'text' },
-        { text: '🗣️ Qu\'attends-tu des autres pour te sentir bien ?', key: 'expectationsFromOthers', type: 'text' },
-        { text: '💼 Quelles sont tes aspirations professionnelles ?', key: 'careerAspirations', type: 'text' },
-        { text: '🔮 Comment te vois-tu dans 5 ans ?', key: 'futureSelf', type: 'text' },
-        { text: '💼 Quels métiers t\'intéressent le plus ?', key: 'interestedJobs', type: 'text' },
-        { text: '♿ Quelles adaptations te facilitent la vie quotidienne ?', key: 'adaptations', type: 'text' },
-        { text: '🚧 Quels obstacles rencontres-tu souvent ?', key: 'obstacles', type: 'text' },
-        { text: '🆘 Comment pouvons-nous t\'aider à surmonter ces obstacles ?', key: 'overcomingObstacles', type: 'text' }
+        { text: '🎨 Quelles sont tes passions ?', key: 'passions', type: 'text', icon: 'passion-icon.png' },
+        // { text: '🏥 Possèdes-tu une maladie / trouble ?', key: 'condition', type: 'text' },
+        // { text: '😊 Comment te sens-tu aujourd\'hui ?', key: 'currentMood', type: 'text' },
+        // { text: '😃 Qu\'est-ce qui te rend heureux(se) ?', key: 'happiness', type: 'text' },
+        // { text: '👨‍👩‍👧‍👦 Qui sont les personnes qui te soutiennent le plus ?', key: 'supportNetwork', type: 'text' },
+        // { text: '🏃 Quelles sont tes activités préférées ?', key: 'favoriteActivities', type: 'text' },
+        // { text: '😃 Aimes-tu faire rire les autres ?', key: 'funny', type: 'text' },
+        // { text: '📚 Quelles compétences aimerais-tu améliorer ?', key: 'skillsToImprove', type: 'text' },
+        // { text: '💖 Quelles sont les valeurs qui te tiennent à cœur ?', key: 'values', type: 'text' },
+        // { text: '🌅 Qu\'est-ce qui te motive à te lever chaque jour ?', key: 'motivations', type: 'text' },
+        // { text: '🌟 Quels sont tes rêves pour le futur ?', key: 'dreams', type: 'text' },
+        // { text: '💪 Quelles sont tes forces et tes talents ?', key: 'strengths', type: 'text' },
+        // { text: '🤝 Comment te sens-tu dans tes relations avec les autres ?', key: 'relationships', type: 'text' },
+        // { text: '🗣️ Qu\'attends-tu des autres pour te sentir bien ?', key: 'expectationsFromOthers', type: 'text' },
+        // { text: '💼 Quelles sont tes aspirations professionnelles ?', key: 'careerAspirations', type: 'text' },
+        // { text: '🔮 Comment te vois-tu dans 5 ans ?', key: 'futureSelf', type: 'text' },
+        // { text: '💼 Quels métiers t\'intéressent le plus ?', key: 'interestedJobs', type: 'text' },
+        // { text: '♿ Quelles adaptations te facilitent la vie quotidienne ?', key: 'adaptations', type: 'text' },
+        // { text: '🚧 Quels obstacles rencontres-tu souvent ?', key: 'obstacles', type: 'text' },
+        // { text: '🆘 Comment pouvons-nous t\'aider à surmonter ces obstacles ?', key: 'overcomingObstacles', type: 'text' }
       ],
       responses: {
         age: '',
@@ -136,7 +140,7 @@ export default {
     async nextQuestion() {
       if (this.responses[this.questions[this.currentQuestionIndex].key] !== '') {
         if (this.questions[this.currentQuestionIndex].key === 'passions') {
-          await this.generateBackgroundImage(this.responses.passions);
+          await this.generatePicture(this.responses.passions);
         }
         this.currentQuestionIndex++;
         this.updateBackgroundColor();
@@ -144,41 +148,34 @@ export default {
         alert("Veuillez répondre à la question avant de passer à la suivante.");
       }
     },
-    async generateBackgroundImage(passions) {
+    async generatePicture(passions) {
+      const url = process.env.VUE_APP_AZURE_OPENAI_ENDPOINT;
+      const apiKey = process.env.VUE_APP_AZURE_OPENAI_API_KEY;
+
+      const prompt = `Un avatar conçu pour accompagner un utilisateur en situation de handicap neurodéveloppemental (ADHD, autisme, etc.) pour un parcours d’orientation. Il est vu de face, avec une expression amicale et engageante, prêt à poser des questions. Son apparence et son langage corporel montrent son enthousiasme pour ${passions}, avec des vêtements, accessoires ou éléments visuels directement liés à cet univers. Sa passion est : ${passions}. L’avatar doit dégager de la bienveillance et de la curiosité, avec un regard expressif et captivant. Le fond est neutre ou légèrement inspiré par ${passions}, afin de ne pas distraire du personnage principal. L’éclairage est doux et professionnel, adapté à une utilisation digitale.`;
+
+      console.log("Envoi de la requête à l'API Azure OpenAI...");
       try {
-        const response = await fetch('https://imagegeneratorac.openai.azure.com/openai/deployments/<dalle3>/images/generations?api-version=2024-02-01', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'api-key': 'Ey4WNC8QhYWW1kVyXS00UpzcZabiSMSlvhSAEOZ5Qpkk1W4Y6nqzJQQJ99ALAC5T7U2XJ3w3AAABACOGKYOI', // Remplacez par votre clé API Azure
-          },
-          body: JSON.stringify({
-            prompt: `A beautiful representation of ${passions}, colorful and inspirational, suitable for a website background`,
-            n: 1,
-            size: '1024x1024',
-          }),
-        });
+        const response = await axios.post(
+          url,
+          { prompt, n: 1 },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              "api-key": apiKey
+            }
+          }
+        );
 
-        if (!response.ok) {
-          const errorDetails = await response.json();
-          console.error('Azure API Error:', errorDetails);
-          return;
-        }
-
-        const data = await response.json();
-
-        if (data.data && data.data.length > 0 && data.data[0].url) {
-          const imageUrl = data.data[0].url;
-          document.querySelector('.questionnaire').style.backgroundImage = `url(${imageUrl})`;
-          document.querySelector('.questionnaire').style.backgroundSize = 'cover';
-        } else {
-          console.error('Invalid response structure:', data);
-        }
+        // Extraction de l'URL de l'image générée
+        const imageUrl = response.data.data[0].url;
+        console.log("URL de l'image générée :", imageUrl);
+        // Mise à jour de la propriété pour afficher l'image générée
+        this.generatedImageUrl = imageUrl;
       } catch (error) {
-        console.error('Error generating background image:', error);
+        console.error("Erreur lors de la génération de l'image :", error);
       }
     },
-
     updateBackgroundColor() {
       const colorIndex = this.currentQuestionIndex % this.backgroundColors.length;
       document.querySelector('.questionnaire').style.backgroundColor = this.backgroundColors[colorIndex];
@@ -212,7 +209,6 @@ export default {
   padding: 20px;
   height: 100vh;
 }
-
 
 .title {
   font-family: 'Glacial Indifference', sans-serif;
@@ -303,6 +299,7 @@ button:hover {
   justify-content: center;
   gap: 10px;
 }
+
 .completion-message {
   font-size: 1.2em;
   margin-top: 20px;
