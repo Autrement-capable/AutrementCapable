@@ -43,9 +43,6 @@
     <p v-else>Chargement du scénario...</p>
 </template>
 
-
-
-
 <script>
 import { scenarios } from '@/data/data.js';
 const avatars = require.context('@/assets/avatars/', false, /\.svg$/);
@@ -74,6 +71,7 @@ export default {
     watch: {
         $route(to, from) {
             if (to.params.id !== from.params.id) {
+                window.speechSynthesis.cancel();
                 this.loadScenario();
                 this.phase = 'intro';
                 this.feedback = null;
@@ -88,14 +86,12 @@ export default {
             if (!this.scenario) {
                 console.error("Scénario non trouvé !");
             } else {
-                // 🗣️ Lit automatiquement le contexte dès son affichage
                 this.readAloud(this.scenario.contexteIntro);
             }
         },
         startDialogue() {
             this.phase = 'dialogue';
             this.dialogueIndex = 0;
-            // 🗣️ Lit automatiquement le premier dialogue
             if (this.scenario.contexte.length > 0) {
                 this.readAloud(this.scenario.contexte[0].texte);
             }
@@ -103,17 +99,14 @@ export default {
         showNextDialogue() {
             if (this.dialogueIndex < this.scenario.contexte.length - 1) {
                 this.dialogueIndex++;
-                // 🗣️ Lit automatiquement chaque réplique au fur et à mesure
                 this.readAloud(this.scenario.contexte[this.dialogueIndex].texte);
             } else {
                 this.phase = 'choix';
-                // 🗣️ Lit automatiquement la question
                 this.readAloud(this.scenario.question);
             }
         },
         choisirReponse(reponse) {
             this.feedback = `Vous avez choisi : "${reponse.texte}" ✅`;
-            // 🗣️ Lit le choix sélectionné
             this.readAloud(`Vous avez choisi : ${reponse.texte}`);
             this.enregistrerSoftSkills(reponse.skills);
 
@@ -123,7 +116,7 @@ export default {
                     this.$router.push({ name: "ScenarioPage", params: { id: nextId } });
                 } else {
                     this.feedback = "✅ Vous avez complété tous les scénarios !";
-                    this.readAloud(this.feedback);
+                    this.readAloud("Vous avez complété tous les scénarios !");
                 }
             }, 5000);
         },
@@ -139,6 +132,26 @@ export default {
                 console.warn("La synthèse vocale n'est pas supportée par ce navigateur.");
             }
         },
+        // enregistrerSoftSkills(reponse) {
+        //     const savedSkills = JSON.parse(localStorage.getItem('userSoftSkills')) || {};
+        //     console.log(reponse)
+        //     if (reponse.skills) {
+        //         console.log("holaaaaaa")
+        //         for (const [skill, points] of Object.entries(skill)) {
+        //             savedSkills[skill] = (savedSkills[skill] || 0) + points;
+        //         }
+        //     }
+
+        //     if (reponse.penalties) {
+        //         for (const [skill, points] of Object.entries(skill)) {
+        //             savedSkills[skill] = (savedSkills[skill] || 0) - points;
+        //             if (savedSkills[skill] < 0) savedSkills[skill] = 0;
+        //         }
+        //     }
+
+        //     localStorage.setItem('userSoftSkills', JSON.stringify(savedSkills));
+        //     console.log("Soft skills enregistrés :", savedSkills);
+        // },
         enregistrerSoftSkills(skills) {
             const savedSkills = JSON.parse(localStorage.getItem('userSoftSkills')) || {};
             for (const [skill, points] of Object.entries(skills)) {
