@@ -1,50 +1,84 @@
 <template>
     <div v-if="scenario" class="scenario-container">
+        <!-- 🎯 TITRE -->
         <h1>{{ scenario.titre }}</h1>
-        <p class="intro">{{ scenario.contexteIntro }}</p>
 
-        <div class="conversation">
-            <div v-for="(dialogue, index) in scenario.contexte" :key="index" class="dialogue">
-                <p><strong>{{ dialogue.personnage }} :</strong> {{ dialogue.texte }}</p>
+        <!-- 📜 CONTEXTE : Toujours Visible -->
+        <div class="intro-section">
+            <p class="intro">{{ scenario.contexteIntro }}</p>
+            <button v-if="phase === 'intro'" class="start-button" @click="startDialogue">Commencer</button>
+        </div>
+
+        <!-- 💬 DIALOGUES Progressifs -->
+        <div v-if="phase !== 'intro'" class="conversation">
+            <div v-for="(dialogue, index) in visibleDialogues" :key="index" class="dialogue"
+                :class="getDialogueClass(dialogue.personnage)">
+                <img v-if="dialogue.avatar" :src="getAvatarPath(dialogue.avatar)" :alt="dialogue.personnage"
+                    class="avatar" />
+                <div class="bubble">
+                    <p><strong>{{ dialogue.personnage }} :</strong> {{ dialogue.texte }}</p>
+                </div>
+            </div>
+
+            <!-- Bouton suivant pour passer au dialogue suivant -->
+            <button v-if="dialogueIndex < scenario.contexte.length" class="next-button" @click="showNextDialogue">
+                ▶️ Suivant
+            </button>
+
+            <!-- Affiche directement les choix en dessous des dialogues -->
+            <div v-if="phase === 'choix'" class="button-container">
+                <h2 class="question">{{ scenario.question }}</h2>
+                <button v-for="(reponse, index) in scenario.reponses" :key="index" @click="choisirReponse(reponse)">
+                    {{ reponse.texte }}
+                </button>
             </div>
         </div>
 
-        <h2 class="question">{{ scenario.question }}</h2>
-        <div class="button-container">
-            <button v-for="(reponse, index) in scenario.reponses" :key="index" @click="choisirReponse(reponse)">
-                {{ reponse.texte }}
-            </button>
-        </div>
-
+        <!-- 📝 FEEDBACK Final -->
         <div v-if="feedback" class="feedback">
             <p>{{ feedback }}</p>
         </div>
     </div>
+
     <p v-else>Chargement du scénario...</p>
 </template>
 
+
+
+
 <script>
 import { scenarios } from '@/data/data.js';
+const avatars = require.context('@/assets/avatars/', false, /\.svg$/);
 
 export default {
     name: "ScenarioPage",
     props: {
-        id: String, // Récupère l'ID depuis l'URL
+        id: String,
     },
     data() {
         return {
             scenario: null,
             feedback: null,
+            phase: 'intro',
+            dialogueIndex: 0,
         };
     },
+    computed: {
+        visibleDialogues() {
+            return this.scenario ? this.scenario.contexte.slice(0, this.dialogueIndex + 1) : [];
+        }
+    },
     created() {
-        // Charge le scénario selon l'ID
         this.loadScenario();
     },
     watch: {
-        // Recharge le scénario si l'ID change
-        id() {
-            this.loadScenario();
+        $route(to, from) {
+            if (to.params.id !== from.params.id) {
+                this.loadScenario();
+                this.phase = 'intro';
+                this.feedback = null;
+                this.dialogueIndex = 0;
+            }
         }
     },
     methods: {
@@ -55,17 +89,25 @@ export default {
                 console.error("Scénario non trouvé !");
             }
         },
+        startDialogue() {
+            this.phase = 'dialogue';
+            this.dialogueIndex = 0;
+        },
+        showNextDialogue() {
+            if (this.dialogueIndex < this.scenario.contexte.length) {
+                this.dialogueIndex++;
+            }
+            if (this.dialogueIndex === this.scenario.contexte.length) {
+                this.phase = 'choix';
+            }
+        },
         choisirReponse(reponse) {
             this.feedback = `Vous avez choisi : "${reponse.texte}" ✅`;
-
-            // Enregistre les compétences dans localStorage
             this.enregistrerSoftSkills(reponse.skills);
 
-            // Passe au scénario suivant
             setTimeout(() => {
                 const nextId = parseInt(this.id) + 1;
-                const nextScenario = scenarios.find(s => s.id === nextId);
-                if (nextScenario) {
+                if (scenarios.some(s => s.id === nextId)) {
                     this.$router.push({ name: "ScenarioPage", params: { id: nextId } });
                 } else {
                     this.feedback = "✅ Vous avez complété tous les scénarios !";
@@ -79,59 +121,186 @@ export default {
             }
             localStorage.setItem('userSoftSkills', JSON.stringify(savedSkills));
             console.log("Soft skills enregistrés :", savedSkills);
+        },
+        getAvatarPath(filename) {
+            const path = `./${filename}`;
+            if (avatars.keys().includes(path)) {
+                return avatars(path);
+            } else {
+                return avatars('./toi.svg');
+            }
+        },
+        getDialogueClass(personnage) {
+            return personnage === "Toi" ? "dialogue-right" : "dialogue-left";
         }
     }
 };
 </script>
 
+
 <style scoped>
 .scenario-container {
-  font-family: Arial, sans-serif;
-  margin: 20px auto;
-  text-align: center;
-  padding: 20px;
-  max-width: 750px;
-  background-color: #f9f9f9;
-  border-radius: 12px;
-  border: 2px solid #ccc;
+    font-family: Arial, sans-serif;
+    margin: 20px auto;
+    padding: 20px;
+    max-width: 750px;
+    background-color: #f9f9f9;
+    border-radius: 12px;
+    border: 2px solid #ccc;
+    text-align: center;
 }
 
+/* 🎨 Titre */
+h1 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #2c3e50;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+/* 📜 Contexte Introductif */
+.intro {
+    font-size: 1.2rem;
+    font-style: italic;
+    text-align: justify;
+    background-color: #f0f8ff;
+    border-left: 5px solid #007bff;
+    padding: 12px 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+}
+
+/* 🎯 Section Intro */
+.intro-section {
+    text-align: center;
+    padding: 20px;
+}
+
+.start-button {
+    padding: 12px 24px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: white;
+    background-color: #28a745;
+    border-radius: 10px;
+    transition: background-color 0.3s;
+    display: inline-block;
+    width: auto;
+    max-width: 250px;
+    height: auto;
+    text-align: center;
+    margin: 10px auto;
+    line-height: normal;
+}
+
+.start-button:hover {
+    background-color: #218838;
+}
+
+
+/* 💬 Conversations */
 .conversation {
-  text-align: left;
-  padding: 10px;
-  margin-bottom: 20px;
-  background-color: #eef;
-  border-radius: 8px;
+    padding: 15px;
+    background-color: #f0f8ff;
+    border-radius: 12px;
+    margin-bottom: 20px;
 }
 
+/* Bouton Suivant */
+.next-button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: white;
+    background-color: #007bff;
+    border-radius: 10px;
+}
+
+.next-button:hover {
+    background-color: #0056b3;
+}
+
+/* 🗨️ Dialogue */
 .dialogue {
-  padding: 5px;
-  font-size: 1rem;
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.dialogue-right {
+    flex-direction: row-reverse;
+    text-align: right;
+}
+
+/* Avatar */
+.avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin: 0 10px;
+    border: 2px solid #ddd;
+    background-color: white;
+}
+
+/* Bulle de Dialogue */
+.bubble {
+    padding: 10px;
+    background-color: #fff;
+    border-radius: 15px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    max-width: 70%;
+}
+
+.dialogue-left .bubble {
+    background-color: #d0ebff;
+}
+
+.dialogue-right .bubble {
+    background-color: #d4edda;
+}
+
+/* ✅ Boutons de Choix */
+.button-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-top: 15px;
+    width: 100%;
+    max-width: 350px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .button-container button {
-  font-size: 1rem;
-  padding: 10px 20px;
-  margin: 10px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.3s;
+    padding: 10px 15px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 8px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    width: 100%;
+    box-sizing: border-box;
+    transition: background-color 0.3s;
 }
 
 .button-container button:hover {
-  background-color: #0056b3;
+    background-color: #45A049;
 }
 
+
+/* 📝 Feedback Final */
 .feedback {
-  margin-top: 20px;
-  padding: 10px;
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: #2c3e50;
-  background-color: #e1f5fe;
-  border-radius: 6px;
+    margin-top: 20px;
+    padding: 10px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    background-color: #e1f5fe;
+    border-radius: 6px;
+    text-align: center;
 }
 </style>

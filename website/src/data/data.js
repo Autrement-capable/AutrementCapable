@@ -449,12 +449,12 @@ export const scenarios = [
     {
         id: 1,
         titre: "Un inconnu en difficulté",
-        contexteIntro: "Tu rentres tranquillement chez toi après une longue journée. Soudain, tu remarques qu'une personne âgée trébuche et tombe sur le trottoir. Quelques passants hésitent à intervenir. Que fais-tu ?",
+        contexteIntro: "Tu rentres tranquillement chez toi après une longue journée. Soudain, tu remarques qu'une personne âgée trébuche et tombe sur le trottoir. Quelques passants hésitent à intervenir.",
         contexte: [
-          { personnage: "Narrateur", texte: "Tu marches dans la rue quand tu vois une personne âgée tomber sur le trottoir." },
-          { personnage: "Passant 1", texte: "Oh… Elle est tombée !" },
-          { personnage: "Passant 2", texte: "Quelqu’un devrait faire quelque chose..." },
-          { personnage: "Personne âgée", texte: "Aïe... J’ai mal au poignet..." }
+          { personnage: "Narrateur", avatar: "narrateur.svg", texte: "Tu marches dans la rue quand tu vois une personne âgée tomber sur le trottoir." },
+          { personnage: "Passant 1", avatar: "passant1.svg", texte: "Oh… Elle est tombée !" },
+          { personnage: "Passant 2", avatar: "passant2.svg", texte: "Quelqu’un devrait faire quelque chose..." },
+          { personnage: "Personne âgée", avatar: "personne_agee.svg", texte: "Aïe... J’ai mal au poignet..." }
         ],
         question: "Que fais-tu ?",
         reponses: [
@@ -463,15 +463,15 @@ export const scenarios = [
           { id: "C", texte: "Tu observes si quelqu’un d’autre intervient.", skills: { observation: 4 } },
           { id: "D", texte: "Tu continues ta route.", skills: { indifference: 5 } }
         ]
-    },      
+    },
     {
         id: 2,
         titre: "Conflit au supermarché",
-        contexteIntro: "Tu fais des courses dans un supermarché bondé. Après plusieurs minutes dans la file d’attente, quelqu’un passe devant toi. D’autres clients semblent mécontents, mais personne n’ose parler. Comment réagis-tu ?",
+        contexteIntro: "Tu fais des courses dans un supermarché bondé. Après plusieurs minutes dans la file d’attente, quelqu’un passe devant toi. D’autres clients semblent mécontents, mais personne n’ose parler.",
         contexte: [
-          { personnage: "Narrateur", texte: "Tu es au supermarché, et quelqu’un te passe devant dans la file." },
-          { personnage: "Client derrière", texte: "Vous avez vu ? Il passe devant tout le monde !" },
-          { personnage: "Caissier", texte: "Veuillez respecter la file, s’il vous plaît." }
+          { personnage: "Narrateur", avatar: "narrateur.svg", texte: "Tu es au supermarché, et quelqu’un te passe devant dans la file." },
+          { personnage: "Client derrière", avatar: "client.svg", texte: "Vous avez vu ? Il passe devant tout le monde !" },
+          { personnage: "Caissier", avatar: "caissier.svg", texte: "Veuillez respecter la file, s’il vous plaît." }
         ],
         question: "Comment réagis-tu ?",
         reponses: [
@@ -484,11 +484,11 @@ export const scenarios = [
     {
         id: 3,
         titre: "Un ami en difficulté",
-        contexteIntro: "Un ami proche t’appelle, visiblement bouleversé. Il a vécu une mauvaise journée et cherche du soutien. Tu sens qu’il a besoin de parler, mais aussi de conseils. Comment réagis-tu ?",
+        contexteIntro: "Un ami proche t’appelle, visiblement bouleversé. Il a vécu une mauvaise journée et cherche du soutien. Tu sens qu’il a besoin de parler, mais aussi de conseils.",
         contexte: [
-          { personnage: "Alex", texte: "Franchement, j’en peux plus… Mon stage est horrible, mon tuteur me critique tout le temps." },
-          { personnage: "Toi", texte: "Ça n’a pas l’air simple… Qu’est-ce qu’il s’est passé aujourd’hui ?" },
-          { personnage: "Alex", texte: "Je crois que je vais tout arrêter." }
+          { personnage: "Alex", avatar: "alex.svg", texte: "Franchement, j’en peux plus… Mon stage est horrible, mon tuteur me critique tout le temps." },
+          { personnage: "Toi", avatar: "toi.svg", texte: "Ça n’a pas l’air simple… Qu’est-ce qu’il s’est passé aujourd’hui ?" },
+          { personnage: "Alex", avatar: "alex.svg", texte: "Je crois que je vais tout arrêter." }
         ],
         question: "Que fais-tu ?",
         reponses: [
@@ -501,11 +501,11 @@ export const scenarios = [
     {
         id: 4,
         titre: "Erreur au restaurant",
-        contexteIntro: "Tu es au restaurant avec des amis. Après avoir attendu longtemps, tu reçois un plat qui ne correspond pas à ta commande. Le serveur semble pressé. Que fais-tu ?",
+        contexteIntro: "Tu es au restaurant avec des amis. Après avoir attendu longtemps, tu reçois un plat qui ne correspond pas à ta commande. Le serveur semble pressé.",
         contexte: [
-          { personnage: "Serveur", texte: "Voici votre commande !" },
-          { personnage: "Toi", texte: "Hmm… Ce n’est pas ce que j’avais demandé." },
-          { personnage: "Serveur", texte: "Oh, vraiment ? Désolé ! Vous voulez que je change ?" }
+          { personnage: "Serveur", avatar: "serveur.svg", texte: "Voici votre commande !" },
+          { personnage: "Toi", avatar: "toi.svg", texte: "Hmm… Ce n’est pas ce que j’avais demandé." },
+          { personnage: "Serveur", avatar: "serveur.svg", texte: "Oh, vraiment ? Désolé ! Vous voulez que je change ?" }
         ],
         question: "Comment réagis-tu ?",
         reponses: [
@@ -518,11 +518,11 @@ export const scenarios = [
     {
         id: 5,
         titre: "Panne de bus",
-        contexteIntro: "Tu es dans un bus, en route pour un rendez-vous important. Soudain, le bus tombe en panne. Il reste peu de temps avant ton entretien. Que fais-tu ?",
+        contexteIntro: "Tu es dans un bus, en route pour un rendez-vous important. Soudain, le bus tombe en panne. Il reste peu de temps avant ton entretien.",
         contexte: [
-          { personnage: "Conducteur", texte: "Désolé, tout le monde descend, le bus ne repartira pas." },
-          { personnage: "Passager", texte: "On fait quoi, là ? On va être en retard !" },
-          { personnage: "Toi", texte: "L’entretien commence dans 15 minutes..." }
+          { personnage: "Conducteur", avatar: "conducteur.svg", texte: "Désolé, tout le monde descend, le bus ne repartira pas." },
+          { personnage: "Passager", avatar: "passager.svg", texte: "On fait quoi, là ? On va être en retard !" },
+          { personnage: "Toi", avatar: "toi.svg", texte: "L’entretien commence dans 15 minutes..." }
         ],
         question: "Que fais-tu ?",
         reponses: [
@@ -533,4 +533,3 @@ export const scenarios = [
         ]
     }                    
 ];
-  
