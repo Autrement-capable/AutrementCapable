@@ -20,6 +20,8 @@ import MetierCard from "../components/MetierPage.vue";
 import SoudeurCard from "../components/SoudeurCard.vue";
 import JardinerCard from "@/components/JardinerCard.vue";
 import CoiffeurCard from "@/components/CoiffeurCard.vue";
+import ScenarioList from "@/components/ScenarioList.vue";
+import ScenarioPage from "@/components/ScenarioPage.vue";
 
 const routes = [
   {
@@ -124,7 +126,18 @@ const routes = [
     path: "/metier/coiffeur",
     name: "CoiffeurCard",
     component: CoiffeurCard,
-  }
+  },
+  {
+    path: "/scenarios",
+    name: "ScenarioList",
+    component: ScenarioList,
+  },
+  {
+    path: "/scenario/:id",
+    name: "ScenarioPage",
+    component: ScenarioPage,
+    props: true,
+  },
 ];
 
 const router = createRouter({

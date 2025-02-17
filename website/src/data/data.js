@@ -444,3 +444,93 @@ export const postsList = [
         ],
     },
 ];
+
+export const scenarios = [
+    {
+        id: 1,
+        titre: "Un inconnu en difficulté",
+        contexteIntro: "Tu rentres tranquillement chez toi après une longue journée. Soudain, tu remarques qu'une personne âgée trébuche et tombe sur le trottoir. Quelques passants hésitent à intervenir. Que fais-tu ?",
+        contexte: [
+          { personnage: "Narrateur", texte: "Tu marches dans la rue quand tu vois une personne âgée tomber sur le trottoir." },
+          { personnage: "Passant 1", texte: "Oh… Elle est tombée !" },
+          { personnage: "Passant 2", texte: "Quelqu’un devrait faire quelque chose..." },
+          { personnage: "Personne âgée", texte: "Aïe... J’ai mal au poignet..." }
+        ],
+        question: "Que fais-tu ?",
+        reponses: [
+          { id: "A", texte: "Tu aides immédiatement la personne à se relever.", skills: { empathie: 5, initiative: 4 } },
+          { id: "B", texte: "Tu appelles les secours et attends avec elle.", skills: { responsabilite: 4, espritEquipe: 3 } },
+          { id: "C", texte: "Tu observes si quelqu’un d’autre intervient.", skills: { observation: 4 } },
+          { id: "D", texte: "Tu continues ta route.", skills: { indifference: 5 } }
+        ]
+    },      
+    {
+        id: 2,
+        titre: "Conflit au supermarché",
+        contexteIntro: "Tu fais des courses dans un supermarché bondé. Après plusieurs minutes dans la file d’attente, quelqu’un passe devant toi. D’autres clients semblent mécontents, mais personne n’ose parler. Comment réagis-tu ?",
+        contexte: [
+          { personnage: "Narrateur", texte: "Tu es au supermarché, et quelqu’un te passe devant dans la file." },
+          { personnage: "Client derrière", texte: "Vous avez vu ? Il passe devant tout le monde !" },
+          { personnage: "Caissier", texte: "Veuillez respecter la file, s’il vous plaît." }
+        ],
+        question: "Comment réagis-tu ?",
+        reponses: [
+          { id: "A", texte: "Tu fais remarquer calmement la file d’attente.", skills: { assertivite: 5, diplomatie: 4 } },
+          { id: "B", texte: "Tu attends que quelqu’un d’autre réagisse.", skills: { patience: 4 } },
+          { id: "C", texte: "Tu fais une remarque sèche.", skills: { franchise: 4 } },
+          { id: "D", texte: "Tu ignores la situation.", skills: { detachement: 5 } }
+        ]
+    },
+    {
+        id: 3,
+        titre: "Un ami en difficulté",
+        contexteIntro: "Un ami proche t’appelle, visiblement bouleversé. Il a vécu une mauvaise journée et cherche du soutien. Tu sens qu’il a besoin de parler, mais aussi de conseils. Comment réagis-tu ?",
+        contexte: [
+          { personnage: "Alex", texte: "Franchement, j’en peux plus… Mon stage est horrible, mon tuteur me critique tout le temps." },
+          { personnage: "Toi", texte: "Ça n’a pas l’air simple… Qu’est-ce qu’il s’est passé aujourd’hui ?" },
+          { personnage: "Alex", texte: "Je crois que je vais tout arrêter." }
+        ],
+        question: "Que fais-tu ?",
+        reponses: [
+          { id: "A", texte: "Tu l’écoutes attentivement avant de donner ton avis.", skills: { empathie: 5, ecouteActive: 4 } },
+          { id: "B", texte: "Tu lui dis : ‘Ne te laisse pas faire, défends-toi !’", skills: { soutien: 4, motivation: 3 } },
+          { id: "C", texte: "Tu lui réponds : ‘Si c’est trop dur, arrête, tu trouveras autre chose.’", skills: { pragmatisme: 4 } },
+          { id: "D", texte: "Tu proposes de chercher ensemble des solutions.", skills: { espritEquipe: 5, coaching: 4 } }
+        ]
+    },
+    {
+        id: 4,
+        titre: "Erreur au restaurant",
+        contexteIntro: "Tu es au restaurant avec des amis. Après avoir attendu longtemps, tu reçois un plat qui ne correspond pas à ta commande. Le serveur semble pressé. Que fais-tu ?",
+        contexte: [
+          { personnage: "Serveur", texte: "Voici votre commande !" },
+          { personnage: "Toi", texte: "Hmm… Ce n’est pas ce que j’avais demandé." },
+          { personnage: "Serveur", texte: "Oh, vraiment ? Désolé ! Vous voulez que je change ?" }
+        ],
+        question: "Comment réagis-tu ?",
+        reponses: [
+          { id: "A", texte: "Tu demandes calmement à recevoir le bon plat.", skills: { assertivite: 5, communication: 4 } },
+          { id: "B", texte: "Tu ne dis rien et manges quand même.", skills: { patience: 3, passivite: 4 } },
+          { id: "C", texte: "Tu fais une remarque sèche : ‘C’est pas sérieux !’", skills: { franchise: 4 } },
+          { id: "D", texte: "Tu demandes si un geste commercial est possible.", skills: { negociation: 5, assurance: 4 } }
+        ]
+    },
+    {
+        id: 5,
+        titre: "Panne de bus",
+        contexteIntro: "Tu es dans un bus, en route pour un rendez-vous important. Soudain, le bus tombe en panne. Il reste peu de temps avant ton entretien. Que fais-tu ?",
+        contexte: [
+          { personnage: "Conducteur", texte: "Désolé, tout le monde descend, le bus ne repartira pas." },
+          { personnage: "Passager", texte: "On fait quoi, là ? On va être en retard !" },
+          { personnage: "Toi", texte: "L’entretien commence dans 15 minutes..." }
+        ],
+        question: "Que fais-tu ?",
+        reponses: [
+          { id: "A", texte: "Tu regardes sur ton téléphone une alternative rapide.", skills: { reflexionRapide: 5, adaptabilite: 4 } },
+          { id: "B", texte: "Tu appelles ton recruteur pour prévenir de ton retard.", skills: { communication: 5, anticipation: 4 } },
+          { id: "C", texte: "Tu demandes à un passager de partager un taxi.", skills: { initiative: 4, espritEquipe: 4 } },
+          { id: "D", texte: "Tu attends que la situation se règle toute seule.", skills: { patience: 4, passivite: 4 } }
+        ]
+    }                    
+];
+  
