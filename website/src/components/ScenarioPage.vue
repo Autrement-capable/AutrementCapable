@@ -87,22 +87,34 @@ export default {
             this.scenario = scenarios.find(s => s.id === scenarioId);
             if (!this.scenario) {
                 console.error("Scénario non trouvé !");
+            } else {
+                // 🗣️ Lit automatiquement le contexte dès son affichage
+                this.readAloud(this.scenario.contexteIntro);
             }
         },
         startDialogue() {
             this.phase = 'dialogue';
             this.dialogueIndex = 0;
+            // 🗣️ Lit automatiquement le premier dialogue
+            if (this.scenario.contexte.length > 0) {
+                this.readAloud(this.scenario.contexte[0].texte);
+            }
         },
         showNextDialogue() {
-            if (this.dialogueIndex < this.scenario.contexte.length) {
+            if (this.dialogueIndex < this.scenario.contexte.length - 1) {
                 this.dialogueIndex++;
-            }
-            if (this.dialogueIndex === this.scenario.contexte.length) {
+                // 🗣️ Lit automatiquement chaque réplique au fur et à mesure
+                this.readAloud(this.scenario.contexte[this.dialogueIndex].texte);
+            } else {
                 this.phase = 'choix';
+                // 🗣️ Lit automatiquement la question
+                this.readAloud(this.scenario.question);
             }
         },
         choisirReponse(reponse) {
             this.feedback = `Vous avez choisi : "${reponse.texte}" ✅`;
+            // 🗣️ Lit le choix sélectionné
+            this.readAloud(`Vous avez choisi : ${reponse.texte}`);
             this.enregistrerSoftSkills(reponse.skills);
 
             setTimeout(() => {
@@ -111,8 +123,21 @@ export default {
                     this.$router.push({ name: "ScenarioPage", params: { id: nextId } });
                 } else {
                     this.feedback = "✅ Vous avez complété tous les scénarios !";
+                    this.readAloud(this.feedback);
                 }
-            }, 1500);
+            }, 5000);
+        },
+        // 🗣️ Fonction de Synthèse Vocale
+        readAloud(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'fr-FR';
+                utterance.rate = 1;
+                utterance.pitch = 1;
+                window.speechSynthesis.speak(utterance);
+            } else {
+                console.warn("La synthèse vocale n'est pas supportée par ce navigateur.");
+            }
         },
         enregistrerSoftSkills(skills) {
             const savedSkills = JSON.parse(localStorage.getItem('userSoftSkills')) || {};
