@@ -85,8 +85,8 @@ class Server:
 
     async def __remove_expired_tokens(self):
         """ Remove expired tokens from the database asynchronously """
-        async with self.postgress.GetSession() as session:
-            await delete_expired_tokens(session)
+        session = await self.postgress.getSession()
+        await delete_expired_tokens(session)
 
     def __custom_openapi__(self):
         """
@@ -143,9 +143,16 @@ server = Server()
 @AuthJWT.token_in_denylist_loader
 def check_if_token_in_denylist(decrypted_token):
     jti = decrypted_token['jti']
-    with postgress.get_SyncSession() as session:
+    session = postgress.get_SyncSession()  # Get sync session
+    try:
         token = get_revoked_token_by_jti_sync(session, jti)
         return token is not None
+    except Exception as e:
+        print(f"Error checking token deny list: {e}")
+        return True  # Fail-safe: If an error occurs, reject the token
+    finally:
+        session.close()  # Ensure session is always closed
+
 
 
 def AddRouter(router):

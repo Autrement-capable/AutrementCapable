@@ -38,7 +38,7 @@ async def login(form: LoginForm, Authorize: AuthJWT = Depends(), session: AsyncS
     user = await login_user(session, form.password, form.username_or_email)
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
-    if not user.verified:
+    if user.verification_details is not None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account not verified")
     access_token = Authorize.create_access_token(subject=user.id, fresh=True)
     refresh_token = Authorize.create_refresh_token(subject=user.id)
