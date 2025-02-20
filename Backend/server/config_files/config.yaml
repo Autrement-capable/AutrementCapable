@@ -1,5 +1,6 @@
 # supooted time units: seconds, minutes, hours, days, months
 auth:
+  nonce_size: 12
   access_token_duration:
     hours: 1
   refresh_token_duration:

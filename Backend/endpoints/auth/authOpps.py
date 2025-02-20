@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Request, HTTPException
-from fastapi_another_jwt_auth import AuthJWT
+from server.jwt_config.token_creation import create_token, decode_token
 from pydantic import BaseModel, Field
 from utils.jwt_exceptions import create_response_dict
 from database.postgress.config import getSession  # Uses AsyncSession from SQLAlchemy
@@ -23,20 +23,22 @@ class LogoutForm(BaseModel):
 @router.post("/refresh", response_model=RefreshResponse,
              responses=create_response_dict(AccessToken=False),
              tags=["Auth_refresh"])
-async def refresh(request: Request, Authorize: AuthJWT = Depends(), session: AsyncSession = Depends(getSession)):
+async def refresh(request: Request = Depends(), session: AsyncSession = Depends(getSession)):
     """
-    Refresh the access token. Requires a valid refresh token.
+    Refresh the access token. Requires a valid refresh token
+    
+    Note:
+    - The refresh token is sent in the Authorization header as Bearer {refresh_token}
     """
-    Authorize.jwt_refresh_token_required()
-    user_id = Authorize.get_jwt_subject()
-    access_token = Authorize.create_access_token(subject=user_id, fresh=False)
+    payload = await decode_token(session, request=request, is_refresh=True)
+    access_token = create_token(payload["sub"], payload["role"])
     return {"access_token": access_token}
 
 @router.post("/logout",
              responses=create_response_dict(),
              response_model=LogoutResponse,
              tags=["Auth", "Auth_refresh"])
-async def logout(request: Request, form: LogoutForm, Authorize: AuthJWT = Depends(), session: AsyncSession = Depends(getSession)):
+async def logout(request: Request, form: LogoutForm = Depends(), session: AsyncSession = Depends(getSession)):
     """
     Revoke access and refresh tokens to log out the user.
     """

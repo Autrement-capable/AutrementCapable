@@ -1,6 +1,5 @@
 fastapi
 uvicorn
-fastapi-another-jwt-auth
 pydantic
 pydantic[email]
 python-dotenv
@@ -27,3 +26,6 @@ fastapi-mail
 # templates
 Jinja2
 faker
+#auth
+pyjwt
+cryptography
