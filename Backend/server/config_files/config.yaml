@@ -5,6 +5,8 @@ auth:
     hours: 1
   refresh_token_duration:
     months: 1
+  token_purge_interval:
+    hours: 1
 verify:
   email_verification_code_duration:
     days: 5

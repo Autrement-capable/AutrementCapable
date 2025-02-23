@@ -5,21 +5,24 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from fastapi import HTTPException, status, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from server.jwt_config.config import Settings as S
-from database.postgress.actions.revoked_jwt_tokens import get_revoked_token_by_jti
+from server.jwt_config.config import settings as S
+from database.postgress.config import getSession
 from database.postgress.models import RevokedToken
 from typing import Union
 from uuid import uuid4
 import base64
 
+# not 100% sure if this shulbe here or in database.postgress.actions.revoked_jwt_tokens
 async def is_token_revoked(session: AsyncSession, jti: str) -> bool:
     """ Check if a token is in the revoked token list
     Args:
     session (AsyncSession): The SQLAlchemy session
     jti (str): The JWT ID of the token
-    
+
     Returns:
     bool: True if the token is revoked, False otherwise"""
+    from database.postgress.actions.revoked_jwt_tokens import get_revoked_token_by_jti
+
     result = await get_revoked_token_by_jti(session, jti)
     return result is not None
 
@@ -34,7 +37,7 @@ def extract_token_from_header(request: Request) -> str:
     """
     try:
         auth_header = request.headers.get("Authorization")
-        if not auth_header or not auth_header.startswith("Bearer "):
+        if not auth_header or not auth_header.startswith(S.Auth_schema):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or missing Authorization header.")
         return auth_header.split(" ")[1]
     except Exception:
@@ -163,3 +166,46 @@ async def decode_token(session: AsyncSession, token_source: Union[Request, str],
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token.")
     except Exception:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Error decoding token.")
+
+from fastapi import Request, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
+class JWTBearer:
+    """ Dependency class for requiring a valid JWT token """
+
+    def __init__(self, is_refresh: bool = False, required_fresh: bool = False):
+        """
+        Args:
+            is_refresh (bool): If True, requires a refresh token instead of an access token.
+            required_fresh (bool): If True, ensures the token is fresh.
+        """
+        self.is_refresh = is_refresh
+        self.required_fresh = required_fresh
+        self._payload = None  # Stores decoded JWT payload
+
+    async def __call__(self, request: Request, session: AsyncSession = Depends(getSession)):
+        """
+        Extract, decode, and validate JWT token.
+
+        Args:
+            request (Request): Auto-injected FastAPI request object.
+            session (AsyncSession): Auto-injected SQLAlchemy session.
+
+        Returns:
+            dict: The decoded JWT payload and a boolean indicating if the token is a refresh token.
+
+        Raises:
+            HTTPException: If the token is invalid, expired, revoked, or does not meet requirements.
+
+        Note:
+          dict schema:
+            ```json
+            {
+                "payload": dict,
+                "is_refresh": bool
+            }
+        """
+        self._payload = await decode_token(
+            session, request, is_refresh=self.is_refresh, required_fresh=self.required_fresh
+        )
+        return {"payload": self._payload, is_refresh: self.is_refresh}

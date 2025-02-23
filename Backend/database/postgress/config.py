@@ -42,8 +42,12 @@ class Postgress:
 
 postgress = Postgress()
 
+# async def getSession() -> AsyncSession:
+#     return await postgress.getSession()
+
 async def getSession() -> AsyncSession:
-    return await postgress.getSession()
+    async with postgress.Session() as session:
+        yield session
 
 Base = postgress.Base
 

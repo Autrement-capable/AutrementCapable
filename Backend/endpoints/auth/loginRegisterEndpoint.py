@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from pydantic import BaseModel, EmailStr
-from fastapi_another_jwt_auth import AuthJWT
+from server.jwt_config.token_creation import create_token, JWTBearer
 from database.postgress.actions.user import create_user, login_user, get_available_usernames, del_uvf_user
 from mail.actions.verify_account import send_verification_email
 from server.server import AddRouter
@@ -30,7 +30,7 @@ class RegisterForm(BaseModel):
     password: str
 
 @router.post("/login", response_model=LoginResponse)
-async def login(form: LoginForm, Authorize: AuthJWT = Depends(), session: AsyncSession = Depends(GetSession)):
+async def login(form: LoginForm, session: AsyncSession = Depends(GetSession)):
     """
     Login a user and return an access token and a refresh token
     """
@@ -40,12 +40,12 @@ async def login(form: LoginForm, Authorize: AuthJWT = Depends(), session: AsyncS
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     if user.verification_details is not None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account not verified")
-    access_token = Authorize.create_access_token(subject=user.id, fresh=True)
-    refresh_token = Authorize.create_refresh_token(subject=user.id)
+    access_token = create_token(user.id, user.role_id, is_refresh=False, fresh=True)
+    refresh_token = create_token(user.id, user.role_id, is_refresh=True, fresh=True)
     return {"access_token": access_token, "refresh_token": refresh_token}
 
 @router.post("/register")
-async def register(form: RegisterForm, Authorize: AuthJWT = Depends(), session: AsyncSession = Depends(GetSession)):
+async def register(form: RegisterForm, session: AsyncSession = Depends(GetSession)):
     """
     Register a new user and return an access token and a refresh token
     """

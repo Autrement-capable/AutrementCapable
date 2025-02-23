@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Request, HTTPException
 from fastapi.responses import RedirectResponse
-from fastapi_another_jwt_auth import AuthJWT
+from server.jwt_config.token_creation import create_token, decode_token, JWTBearer
 from pydantic import BaseModel, Field, EmailStr
 from utils.password import hash_password
 from utils.jwt_exceptions import create_response_dict
@@ -34,15 +34,15 @@ class ResendRequestForm(BaseModel):
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.get("/verify", response_model=TokenResponse)
-async def verify_users(request: Request, code: str, Authorize: AuthJWT = Depends(), session: AsyncSession = Depends(GetSession)):
+async def verify_users(request: Request, code: str, session: AsyncSession = Depends(GetSession)):
     """
     Verify a user using their verification code.
     """
     user = await verify_user(session, code, fresh=True)
     if not user:
         raise HTTPException(status_code=404, detail="User not found or the token has expired.")
-    access_token = Authorize.create_access_token(subject=user.id, fresh=True)
-    refresh_token = Authorize.create_refresh_token(subject=user.id)
+    access_token = create_token(user.id, user.role_id, is_refresh=False, fresh=True)
+    refresh_token = create_token(user.id, user.role_id, is_refresh=True, fresh=True)
     return {"access_token": access_token, "refresh_token": refresh_token}
 
 @router.post("/start-reset-password", responses={200: {"message": "Password reset email sent."}})
@@ -77,7 +77,7 @@ async def is_valid_reset(request: Request, token: str, session: AsyncSession = D
     return {"valid": True}
 
 @router.post("/reset-password", response_model=TokenResponse)
-async def reset_password(request: Request, form: ResetForm, session: AsyncSession = Depends(GetSession), Authorize: AuthJWT = Depends()):
+async def reset_password(request: Request, form: ResetForm, session: AsyncSession = Depends(GetSession)):
     """
     Reset a user's password.
     """
@@ -95,8 +95,8 @@ async def reset_password(request: Request, form: ResetForm, session: AsyncSessio
         await session.rollback()
         raise HTTPException(status_code=500, detail="An error occurred while updating the user's password.")
 
-    access_token = Authorize.create_access_token(subject=user.id, fresh=True)
-    refresh_token = Authorize.create_refresh_token(subject=user.id)
+    access_token = create_token(user.id, user.role_id, is_refresh=False, fresh=True)
+    refresh_token = create_token(user.id, user.role_id, is_refresh=True, fresh=True)
     await del_password_reset(session, reset)
     return {"access_token": access_token, "refresh_token": refresh_token}
 
