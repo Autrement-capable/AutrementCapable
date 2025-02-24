@@ -1,8 +1,8 @@
-from database.postgress.models.role import Role
-from sqlmodel.ext.asyncio.session import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from sqlalchemy.exc import IntegrityError, OperationalError
-from sqlmodel import select
 from datetime import datetime
+from database.postgress.models import Role
 
 # Create functions
 
@@ -33,27 +33,25 @@ async def create_role(session: AsyncSession, name: str, desc: str, commit=True, 
         print("Database operation failed.")
         return None
 
-
 # Get functions
 
 async def get_role_by_name(session: AsyncSession, name: str) -> Role | None:
     """ Get a role from the database by name asynchronously """
     statement = select(Role).where(Role.role_name == name)
-    result = await session.exec(statement)
-    return result.first()
+    result = await session.execute(statement)
+    return result.scalars().first()
 
 async def get_role_by_id(session: AsyncSession, role_id: int) -> Role | None:
     """ Get a role from the database by ID asynchronously """
-    statement = select(Role).where(Role.role_id == role_id)
-    result = await session.exec(statement)
-    return result.first()
+    statement = select(Role).where(Role.id == role_id)
+    result = await session.execute(statement)
+    return result.scalars().first()
 
 async def get_all_roles(session: AsyncSession) -> list[Role]:
     """ Get all roles from the database asynchronously """
     statement = select(Role)
-    result = await session.exec(statement)
-    return result.all()
-
+    result = await session.execute(statement)
+    return result.scalars().all()
 
 # Update functions
 
@@ -81,7 +79,6 @@ async def update_role(session: AsyncSession, role: Role, commit=True, refresh=Fa
         await session.rollback()
         print("There was an issue with the database operation.")
         return None
-
 
 # Delete functions
 

@@ -8,28 +8,26 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
     ports:
-      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+      - ${POSTGRES_PORT}:5432
     networks:
       - app-network
 
   api:
     build:
       context: .
-      # args:
-        # - DEBUG=${DEBUG} # Custom DEBUG flag
     environment:
-      - HOST=${HOST} # Application host
-      - PORT=${PORT} # Application port
+      - HOST=${HOST}
+      - PORT=${PORT}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_SERVER=${POSTGRES_SERVER}
       - POSTGRES_PORT=${POSTGRES_PORT}
-      - DEBUG=${DEBUG} # Custom DEBUG flag
+      - DEBUG=${DEBUG}
     volumes:
       - .:/app
     ports:
-      - ${PORT}:${PORT} # Application port
+      - ${PORT}:${PORT}
       - ${DEBUG_PORT}:${DEBUG_PORT}
     depends_on:
       - db

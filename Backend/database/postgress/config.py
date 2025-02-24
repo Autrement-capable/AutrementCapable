@@ -1,10 +1,8 @@
 from os import getenv
-from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlalchemy.ext.asyncio import create_async_engine
-from sqlmodel import SQLModel, create_engine, Session
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker, declarative_base, Session
+from sqlalchemy import create_engine
 from utils.singleton import singleton
-from contextlib import asynccontextmanager, contextmanager
-from typing import AsyncGenerator
 
 DATABASE_URL_ASYNC = (
     f"postgresql+asyncpg://{getenv('POSTGRES_USER')}:{getenv('POSTGRES_PASSWORD')}"
@@ -20,38 +18,37 @@ DATABASE_URL_SYNC = (
 @singleton
 class Postgress:
     def __init__(self):
-        self.engine = create_async_engine(DATABASE_URL_ASYNC, echo=True if getenv("MODE") == "DEV" else False)
-        # only exist for the blasted jwt deny list cause the callback needs to be sync func
-        self.sync_engine = create_engine(DATABASE_URL_SYNC, echo=True if getenv("MODE") == "DEV" else False)
-        self.metadata = SQLModel.metadata
-        self.SQLModel = SQLModel
+        self.engine = create_async_engine(DATABASE_URL_ASYNC, echo=True if getenv("MODE") == "DEV" else False, future=True)
+        self.sync_engine = create_engine(DATABASE_URL_SYNC, echo=True if getenv("MODE") == "DEV" else False, future=True)
 
-    async def create_db_and_tables(self):
-        """Create the database and tables"""
+        self.Session = sessionmaker(self.engine, class_=AsyncSession, expire_on_commit=False)
+        self.SyncSession = sessionmaker(self.sync_engine, expire_on_commit=False)
+
+        self.Base = declarative_base()
+
+    def get_SyncSession(self) -> Session:
+        return self.SyncSession()
+
+    async def close(self):
+        await self.engine.dispose()
+        await self.sync_engine.dispose()
+
+    async def create_all(self):
         async with self.engine.begin() as conn:
-            await conn.run_sync(self.metadata.create_all)
+            await conn.run_sync(self.Base.metadata.create_all)
 
-    @asynccontextmanager
-    async def GetSession(self):
-        async with AsyncSession(self.engine) as session:
-            yield session
-
-    @contextmanager
-    def GetSessionSync(self):
-        """Get a synchronous session on the Sync Engine(diffrent from the async engine)
-        For now only exists for the jwt deny list"""
-        with Session(self.sync_engine) as session:
-            yield session
+    async def getSession(self) -> AsyncSession:
+        return self.Session()
 
 postgress = Postgress()
 
-async def GetSession() -> AsyncGenerator[AsyncSession, None]:
-    """ Get a session from the async engine (used to resolve the async session dependency in the endpoints)
+async def getSession() -> AsyncSession:
+    return await postgress.getSession()
 
-    Note: i dont know why this is needed, but it is, if you remove it, the endpoints will break
-    CAUTION: you may need to do **session_maker = sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)**
-    if you are having issues with expired objects and lazy loading (not caught by the debugger!!!)"""
-    async with postgress.GetSession() as session:
-        yield session
+# async def getSession() -> AsyncSession:
+#     async with postgress.Session() as session:
+#         yield session
 
-__all__ = ["postgress", "GetSession"]
+Base = postgress.Base
+
+__all__ = ["postgress", "getSession", "Base"]
