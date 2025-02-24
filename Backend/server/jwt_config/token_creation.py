@@ -167,6 +167,8 @@ async def decode_token(session: AsyncSession, token_source: Union[Request, str],
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has expired.")
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token.")
+    except HTTPException:
+        raise # Re-raise HTTPException
     except Exception:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Error decoding token.")
 
