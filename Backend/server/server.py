@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 from os import getenv
 from fastapi import FastAPI, Depends
 from apscheduler.schedulers.asyncio import AsyncIOScheduler

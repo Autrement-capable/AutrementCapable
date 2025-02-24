@@ -33,7 +33,7 @@ async def refresh(
     - The refresh token is sent in the Authorization header as Bearer {refresh_token}
     """
     jwt = jwt["payload"]
-    access_token = create_token(jwt.user_id, jwt.role_id, is_refresh=False)
+    access_token = create_token(jwt["sub"], jwt["role"], refresh=False)
     return {"access_token": access_token}
 
 @router.post("/logout",
@@ -56,7 +56,7 @@ async def logout(request: Request, form: LogoutForm = Depends(), session: AsyncS
     # Revoke Refresh Token
     refresh_token = form.refresh_token.replace("Bearer ", "")
     try:
-        refresh_payload = decode_token(session, refresh_token, is_refresh=True)
+        refresh_payload = await decode_token(session, refresh_token, is_refresh=True)
         jti_refresh = refresh_payload["jti"]
         expires_refresh = datetime.utcfromtimestamp(refresh_payload["exp"])
         await revoke_token(session, jti_refresh, expires_refresh, "refresh")

@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import yaml
 from os import getenv, urandom
 from utils.parse_yaml import get_property
+import base64
 
 load_dotenv()
 
@@ -35,7 +36,7 @@ class Settings(BaseModel):
             authjwt_token_location=["headers"],
             authjwt_denylist_enabled=True,
             authjwt_denylist_token_checks=["access", "refresh"],
-            aes_key=getenv("AES_KEY", urandom(32)),
+            aes_key=base64.b64decode(getenv("AES_KEY", base64.b64encode(urandom(32)).decode('utf-8'))),
             nonce_size=12,
             auth_schema="Bearer "
         )

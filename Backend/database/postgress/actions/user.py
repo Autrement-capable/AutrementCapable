@@ -17,58 +17,13 @@ from typing import Optional, Literal
 import asyncio
 
 try:
-    email_verification_code_duration = Config.get_property(None, "verify", ["email_verification_code_duration"])
+    email_verification_code_duration = Config.get_property(None, "verify", ["email_verification_code_duration"])["email_verification_code_duration"]
 except Exception as e: # if the config file is not found
     print(f"Error loading config: {e}")
     email_verification_code_duration = 900
 # is_config_loaded = False
 
 # # Cron job functions
-
-# async def delete_expired_unverified_users() -> bool:
-#     """ Delete expired unverified users from the database."""
-#     async with postgress.getSession() as session:
-#         try:
-#             # Select UnverifiedDetails and eagerly load the related User
-#             statement = (
-#                 select(UnverifiedDetails)
-#                 .where(UnverifiedDetails.token_expires < datetime.utcnow())
-#                 .options(joinedload(UnverifiedDetails.user))  # Eager loading
-#             )
-#             result = await session.execute(statement)
-#             details: list[UnverifiedDetails] = result.scalars().all()
-
-#             for detail in details:
-#                 if detail.user:  # Since it's eagerly loaded, this avoids an extra query
-#                     await session.delete(detail.user)
-
-#             await session.commit()
-#             return True
-#         except Exception as e:
-#             print(f"Error deleting expired unverified users: {e}")
-#             await session.rollback()
-#             return False
-
-
-# def load_config():
-#     global email_verification_code_duration, is_config_loaded
-#     if not is_config_loaded:
-#         __config_file__ = "./server/config_files/config.yaml"
-#         with open(__config_file__, "r") as file:
-#             config = yaml.safe_load(file)
-
-#         mail_server_config = get_property(config, "verify", ["email_verification_code_duration", "email_ver_purge_interval"])
-#         email_verification_code_duration = mail_server_config['email_verification_code_duration']
-#         prune_interval = mail_server_config['email_ver_purge_interval']
-#         AddCronJob(delete_expired_unverified_users, trigger="interval", seconds=prune_interval)
-#         is_config_loaded = True
-
-# try:
-#     load_config()
-# except Exception as e:
-#     print(f"Error loading config: {e}")
-#     email_verification_code_duration = 900
-
 @register_cron_job("UnverifiedUserPurgeCron")
 class UnverifiedUserPurgeCron(BaseCronJob):
     """Cron job to delete expired unverified users from the database."""

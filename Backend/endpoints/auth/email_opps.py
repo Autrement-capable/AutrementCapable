@@ -41,8 +41,8 @@ async def verify_users(request: Request, code: str, session: AsyncSession = Depe
     user = await verify_user(session, code, fresh=True)
     if not user:
         raise HTTPException(status_code=404, detail="User not found or the token has expired.")
-    access_token = create_token(user.id, user.role_id, is_refresh=False, fresh=True)
-    refresh_token = create_token(user.id, user.role_id, is_refresh=True, fresh=True)
+    access_token = create_token(user.id, user.role_id, refresh=False, fresh=True)
+    refresh_token = create_token(user.id, user.role_id, refresh=True, fresh=True)
     return {"access_token": access_token, "refresh_token": refresh_token}
 
 @router.post("/start-reset-password", responses={200: {"message": "Password reset email sent."}})
@@ -95,8 +95,8 @@ async def reset_password(request: Request, form: ResetForm, session: AsyncSessio
         await session.rollback()
         raise HTTPException(status_code=500, detail="An error occurred while updating the user's password.")
 
-    access_token = create_token(user.id, user.role_id, is_refresh=False, fresh=True)
-    refresh_token = create_token(user.id, user.role_id, is_refresh=True, fresh=True)
+    access_token = create_token(user.id, user.role_id, refresh=False, fresh=True)
+    refresh_token = create_token(user.id, user.role_id, refresh=True, fresh=True)
     await del_password_reset(session, reset)
     return {"access_token": access_token, "refresh_token": refresh_token}
 

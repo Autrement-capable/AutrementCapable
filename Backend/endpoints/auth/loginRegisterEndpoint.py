@@ -40,8 +40,8 @@ async def login(form: LoginForm, session: AsyncSession = Depends(GetSession)):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     if user.verification_details is not None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account not verified")
-    access_token = create_token(user.id, user.role_id, is_refresh=False, fresh=True)
-    refresh_token = create_token(user.id, user.role_id, is_refresh=True, fresh=True)
+    access_token = create_token(user.id, user.role_id, refresh=False, fresh=True)
+    refresh_token = create_token(user.id, user.role_id, refresh=True, fresh=True)
     return {"access_token": access_token, "refresh_token": refresh_token}
 
 @router.post("/register")
@@ -49,7 +49,7 @@ async def register(form: RegisterForm, session: AsyncSession = Depends(GetSessio
     """
     Register a new user and return an access token and a refresh token
     """
-    test,_ = await get_available_usernames(session, form.username)
+    test,_ = await get_available_usernames(session, form.username, 0)
     if not test:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Username already taken")
 

@@ -37,7 +37,7 @@ def extract_token_from_header(request: Request) -> str:
     """
     try:
         auth_header = request.headers.get("Authorization")
-        if not auth_header or not auth_header.startswith(S.Auth_schema):
+        if not auth_header or not auth_header.startswith(S.auth_schema):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or missing Authorization header.")
         return auth_header.split(" ")[1]
     except Exception:
@@ -73,7 +73,10 @@ def decrypt_payload(encrypted_payload: bytes) -> dict:
         nonce = encrypted_payload[:S.nonce_size]
         data = encrypted_payload[S.nonce_size:]
         decrypted = aesgcm.decrypt(nonce, data, None).decode()
-        return jwt.decode(decrypted, S.authjwt_secret_key, algorithms=[S.authjwt_algorithm])
+        payload = jwt.decode(decrypted, S.authjwt_secret_key, algorithms=[S.authjwt_algorithm])
+        # because there is some standart i need to follow sub must be str so i convert it back to int
+        payload["sub"] = int(payload["sub"])
+        return payload
     except Exception:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Error decrypting token.")
 
@@ -99,7 +102,7 @@ def create_token(user_id: int, role_id: int, refresh: bool = False, fresh: bool 
     ```
     """
     payload = {
-        "sub": user_id,
+        "sub": str(user_id),
         "role": role_id,
         "iat": datetime.datetime.utcnow(),
         "exp": datetime.datetime.utcnow() + datetime.timedelta(seconds=S.jwt_access_token_expires),
@@ -208,4 +211,4 @@ class JWTBearer:
         self._payload = await decode_token(
             session, request, is_refresh=self.is_refresh, required_fresh=self.required_fresh
         )
-        return {"payload": self._payload, is_refresh: self.is_refresh}
+        return {"payload": self._payload, "refresh": self.is_refresh}
