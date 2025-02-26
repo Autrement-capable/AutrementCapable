@@ -1,10 +1,17 @@
 FROM python:3.10.15-slim
 
+# Install system dependencies required for psycopg2
+RUN apt-get update && apt-get install -y \
+    gcc \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 COPY requirements.txt .
 
-RUN pip install -r requirements.txt --no-cache-dir
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
@@ -13,17 +20,11 @@ ARG DEBUG_PORT=5678
 
 ENV DEBUG=${DEBUG}
 ENV HOST="0.0.0.0"
-Env DEBUG_PORT=${DEBUG_PORT}
-
-ENV DEBUG=${DEBUG}
-ENV PORT=${PORT}
 ENV DEBUG_PORT=${DEBUG_PORT}
-ENV HOST=${HOST}
+ENV PORT=5000
 
 # Expose ports for the app and debug mode
 EXPOSE ${PORT}
-# EXPOSE ${DEBUG_PORT}
-# hardcoding the debug port to 5678 because it does not accecpt it otherwise
 EXPOSE ${DEBUG_PORT}
 
 # Check the DEBUG environment variable to run the app in debug mode or normal mode

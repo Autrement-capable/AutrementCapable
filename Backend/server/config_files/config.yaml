@@ -1,9 +1,12 @@
 # supooted time units: seconds, minutes, hours, days, months
 auth:
+  nonce_size: 12
   access_token_duration:
     hours: 1
   refresh_token_duration:
     months: 1
+  token_purge_interval:
+    hours: 1
 verify:
   email_verification_code_duration:
     days: 5

@@ -1,15 +1,15 @@
 from jinja2 import Environment, FileSystemLoader
 from pydantic import EmailStr
 from fastapi_mail import MessageSchema
-from database.postgress.models.user import User
-from database.postgress.models.password_reset import PasswordReset
+from database.postgress.models.test_model import User
+from database.postgress.models.test_model import PasswordReset
 from mail.config import mail
 
 from os import getenv
 
 template_env = Environment(loader=FileSystemLoader("mail/templates"))
 
-RESET_URL = getenv("RESET_URL", "http://localhost:5000/auth//reset-password")
+RESET_URL = getenv("RESET_URL", "http://localhost:5000/auth/reset-password")
 
 async def send_reset_password_email(user: User, reset: PasswordReset, email: str = None):
     """
