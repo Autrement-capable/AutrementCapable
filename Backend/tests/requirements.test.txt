@@ -1,0 +1,16 @@
+# Test dependencies
+pytest==7.4.0
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+pytest-mock==3.11.1
+pytest-xdist==3.3.1
+pytest-env==0.8.2
+httpx==0.24.1
+asgi-lifespan==2.1.0
+coverage==7.3.1
+factory-boy==3.3.0
+faker==19.6.2
+
+# For monitoring and migration compatibility
+prometheus-client==0.17.1
+alembic==1.12.0

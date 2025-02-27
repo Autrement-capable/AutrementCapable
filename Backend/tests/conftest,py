@@ -1,0 +1,134 @@
+import asyncio
+import os
+from typing import AsyncGenerator, Dict, Generator
+import pytest
+from httpx import AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
+from fastapi import FastAPI
+from asgi_lifespan import LifespanManager
+
+from database.postgress.config import Base, postgress
+from database.postgress.models import Role
+from database.postgress.actions.role import create_role
+from server.server import server
+from app import app
+
+# Test database URL
+TEST_DATABASE_URL_ASYNC = (
+    f"postgresql+asyncpg://{os.getenv('POSTGRES_USER', 'postgres_test')}:"
+    f"{os.getenv('POSTGRES_PASSWORD', 'postgres_test')}@"
+    f"{os.getenv('POSTGRES_SERVER', 'localhost')}:"
+    f"{os.getenv('POSTGRES_PORT', '5432')}/"
+    f"{os.getenv('POSTGRES_DB', 'postgres_test')}"
+)
+
+# Create test engine and session
+test_engine = create_async_engine(
+    TEST_DATABASE_URL_ASYNC,
+    echo=False,
+    future=True
+)
+
+TestingSessionLocal = sessionmaker(
+    bind=test_engine,
+    class_=AsyncSession,
+    expire_on_commit=False,
+    autoflush=False
+)
+
+# Override the database session for tests
+@pytest.fixture(scope="session")
+def event_loop() -> Generator:
+    """
+    Create an instance of the default event loop for the test session.
+    """
+    policy = asyncio.get_event_loop_policy()
+    loop = policy.new_event_loop()
+    yield loop
+    loop.close()
+
+@pytest.fixture(scope="session")
+async def test_db_setup() -> AsyncGenerator:
+    """
+    Set up the test database - create all tables.
+    """
+    # Drop all tables first to ensure a clean state
+    async with test_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
+
+    yield
+
+    # Cleanup after all tests
+    async with test_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+
+@pytest.fixture
+async def db_session(test_db_setup) -> AsyncGenerator[AsyncSession, None]:
+    """
+    Create a fresh database session for a test.
+
+    This fixture rolls back the transaction after each test to provide isolation.
+    """
+    async with TestingSessionLocal() as session:
+        yield session
+        await session.rollback()
+
+@pytest.fixture
+async def override_get_session(db_session):
+    """
+    Override the get_session dependency in the API.
+    """
+    async def _override_get_session():
+        yield db_session
+
+    return _override_get_session
+
+@pytest.fixture
+async def test_app(override_get_session) -> AsyncGenerator[FastAPI, None]:
+    """
+    Create a test instance of the FastAPI application with overridden dependencies.
+    """
+    # Override database session dependency
+    from database.postgress.config import getSession
+    app.dependency_overrides[getSession] = override_get_session
+
+    async with LifespanManager(app):
+        yield app
+
+    # Clean up dependency overrides
+    app.dependency_overrides = {}
+
+@pytest.fixture
+async def client(test_app) -> AsyncGenerator[AsyncClient, None]:
+    """
+    Create a test client for making API requests.
+    """
+    async with AsyncClient(app=test_app, base_url="http://test") as ac:
+        yield ac
+
+@pytest.fixture
+async def init_test_data(db_session) -> Dict:
+    """
+    Initialize test data that's commonly needed across tests.
+
+    Returns a dictionary with the created test data.
+    """
+    # Create roles
+    roles = {}
+    for role_name in ["Super Admin", "Admin", "Moderator", "Young Person"]:
+        role = await create_role(
+            db_session,
+            name=role_name,
+            desc=f"Test {role_name} role",
+            commit=True
+        )
+        roles[role_name] = role
+
+    # Create test users if needed for multiple tests
+    # This example only creates roles as they're needed in most auth tests
+
+    return {
+        "roles": roles
+    }
