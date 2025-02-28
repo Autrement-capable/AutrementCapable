@@ -20,6 +20,7 @@ import MetierCard from "../components/MetierPage.vue";
 import SoudeurCard from "../components/SoudeurCard.vue";
 import JardinerCard from "@/components/JardinerCard.vue";
 import CoiffeurCard from "@/components/CoiffeurCard.vue";
+import Environment from "@/components/Environment.vue";
 
 const routes = [
   {
@@ -124,6 +125,11 @@ const routes = [
     path: "/metier/coiffeur",
     name: "CoiffeurCard",
     component: CoiffeurCard,
+  },
+  {
+    path: "/environment",
+    name: "Environment",
+    component: Environment,
   }
 ];
 

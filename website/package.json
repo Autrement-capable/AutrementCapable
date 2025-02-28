@@ -10,8 +10,11 @@
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
+    "@tresjs/cientos": "^4.1.0",
+    "@tresjs/core": "^4.3.3",
     "core-js": "^3.8.3",
     "openai": "^4.77.0",
+    "three": "^0.173.0",
     "vue": "^3.2.13",
     "vue-router": "^4.0.3"
   },
@@ -20,6 +23,7 @@
     "@babel/eslint-parser": "^7.25.9",
     "@babel/preset-env": "^7.26.0",
     "@tailwindcss/postcss": "^4.0.3",
+    "@types/three": "^0.173.0",
     "@vue/cli-plugin-babel": "~5.0.0",
     "@vue/cli-plugin-eslint": "~5.0.0",
     "@vue/cli-plugin-router": "~5.0.0",
