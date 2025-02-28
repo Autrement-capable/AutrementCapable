@@ -444,3 +444,137 @@ export const postsList = [
         ],
     },
 ];
+
+export const scenarios = [
+    {
+        id: 1,
+        titre: "Un inconnu en difficulté",
+        contexteIntro: "Tu rentres tranquillement chez toi après une longue journée. Soudain, tu remarques qu'une personne âgée trébuche et tombe sur le trottoir. Quelques passants hésitent à intervenir.",
+        contexte: [
+          { personnage: "Passant 1", avatar: "passant1.svg", texte: "Oh… Elle est tombée !" },
+          { personnage: "Passant 2", avatar: "passant2.svg", texte: "Quelqu’un devrait faire quelque chose..." },
+          { personnage: "Personne âgée", avatar: "personne_agee.svg", texte: "Aïe... J’ai mal au poignet..." }
+        ],
+        question: "Que fais-tu ?",
+        reponses: [
+          { id: "A", texte: "Tu aides immédiatement la personne à se relever.", skills: { empathie: 5, initiative: 4 } },
+          { id: "B", texte: "Tu appelles les secours et attends avec elle.", skills: { responsabilite: 4, espritEquipe: 3 } },
+          { id: "C", texte: "Tu observes si quelqu’un d’autre intervient.", skills: { observation: 4 }, penalties: { initiative: 2, empathie: 1 } },
+          { id: "D", texte: "Tu continues ta route.", skills: { indifference: 5 }, penalties: { empathie: 5, responsabilite: 4 } }
+        ]
+    },
+    {
+        id: 2,
+        titre: "Conflit au supermarché",
+        contexteIntro: "Tu fais des courses dans un supermarché bondé. Après plusieurs minutes dans la file d’attente, quelqu’un passe devant toi. D’autres clients semblent mécontents, mais personne n’ose parler.",
+        contexte: [
+          { personnage: "Client derrière", avatar: "client.svg", texte: "Vous avez vu ? Il passe devant tout le monde !" },
+          { personnage: "Caissier", avatar: "caissier.svg", texte: "Veuillez respecter la file, s’il vous plaît." }
+        ],
+        question: "Comment réagis-tu ?",
+        reponses: [
+          { id: "A", texte: "Tu fais remarquer calmement la file d’attente.", skills: { assertivite: 5, diplomatie: 4 } },
+          { id: "B", texte: "Tu attends que quelqu’un d’autre réagisse.", skills: { patience: 4 }, penalties: { assertivite: 3, espritEquipe: 2 } },
+          { id: "C", texte: "Tu fais une remarque sèche.", skills: { franchise: 4 }, penalties: { diplomatie: 3 } },
+          { id: "D", texte: "Tu ignores la situation.", skills: { detachement: 5 }, penalties: { assertivite: 4, empathie: 2 } }
+        ]
+    },
+    {
+        id: 3,
+        titre: "Un ami en difficulté",
+        contexteIntro: "Un ami proche t’appelle, visiblement bouleversé. Il a vécu une mauvaise journée et cherche du soutien. Tu sens qu’il a besoin de parler, mais aussi de conseils.",
+        contexte: [
+          { personnage: "Alex", avatar: "alex.svg", texte: "Franchement, j’en peux plus… Mon stage est horrible, mon tuteur me critique tout le temps." },
+          { personnage: "Toi", avatar: "toi.svg", texte: "Ça n’a pas l’air simple… Qu’est-ce qu’il s’est passé aujourd’hui ?" },
+          { personnage: "Alex", avatar: "alex.svg", texte: "Je crois que je vais tout arrêter." }
+        ],
+        question: "Que fais-tu ?",
+        reponses: [
+          { id: "A", texte: "Tu l’écoutes attentivement avant de donner ton avis.", skills: { empathie: 5, ecouteActive: 4 } },
+          { id: "B", texte: "Tu lui dis : ‘Ne te laisse pas faire, défends-toi !’", skills: { soutien: 4, motivation: 3 } },
+          { id: "C", texte: "Tu lui réponds : ‘Si c’est trop dur, arrête, tu trouveras autre chose.’", skills: { pragmatisme: 4 }, penalties: { empathie: 3, soutien: 2 } },
+          { id: "D", texte: "Tu proposes de chercher ensemble des solutions.", skills: { espritEquipe: 5, coaching: 4 } }
+        ]
+    },
+    {
+        id: 4,
+        titre: "Erreur au restaurant",
+        contexteIntro: "Tu es au restaurant avec des amis. Après avoir attendu longtemps, tu reçois un plat qui ne correspond pas à ta commande. Le serveur semble pressé.",
+        contexte: [
+          { personnage: "Serveur", avatar: "serveur.svg", texte: "Voici votre commande !" },
+          { personnage: "Toi", avatar: "toi.svg", texte: "Hmm… Ce n’est pas ce que j’avais demandé." },
+          { personnage: "Serveur", avatar: "serveur.svg", texte: "Oh, vraiment ? Désolé ! Vous voulez que je change ?" }
+        ],
+        question: "Comment réagis-tu ?",
+        reponses: [
+          { id: "A", texte: "Tu demandes calmement à recevoir le bon plat.", skills: { assertivite: 5, communication: 4 } },
+          { id: "B", texte: "Tu ne dis rien et manges quand même.", skills: { patience: 3, passivite: 4 }, penalties: { assertivite: 4, confianceEnSoi: 2 } },
+          { id: "C", texte: "Tu fais une remarque sèche : C’est pas sérieux !’", skills: { franchise: 4 }, penalties: { diplomatie: 3 } },
+          { id: "D", texte: "Tu demandes si un geste commercial est possible.", skills: { negociation: 5, assurance: 4 } }
+        ]
+    },
+    {
+        id: 5,
+        titre: "Panne de bus",
+        contexteIntro: "Tu es dans un bus, en route pour un rendez-vous important. Soudain, le bus tombe en panne. Il reste peu de temps avant ton entretien.",
+        contexte: [
+          { personnage: "Conducteur", avatar: "conducteur.svg", texte: "Désolé, tout le monde descend, le bus ne repartira pas." },
+          { personnage: "Passager", avatar: "passager.svg", texte: "On fait quoi, là ? On va être en retard !" },
+          { personnage: "Toi", avatar: "toi.svg", texte: "L’entretien commence dans 15 minutes..." }
+        ],
+        question: "Que fais-tu ?",
+        reponses: [
+          { id: "A", texte: "Tu regardes sur ton téléphone une alternative rapide.", skills: { reflexionRapide: 5, adaptabilite: 4 } },
+          { id: "B", texte: "Tu appelles ton recruteur pour prévenir de ton retard.", skills: { communication: 5, anticipation: 4 } },
+          { id: "C", texte: "Tu demandes à un passager de partager un taxi.", skills: { initiative: 4, espritEquipe: 4 } },
+          { id: "D", texte: "Tu attends que la situation se règle toute seule.", skills: { patience: 4, passivite: 4 }, penalties: { initiative: 4, anticipation: 3 } }
+        ]
+    },
+    {
+        id: 6,
+        titre: "Conflit en classe",
+        contexteIntro: "Pendant un travail de groupe en classe, l’un de tes camarades critique tes idées devant tout le monde. L’ambiance devient tendue.",
+        contexte: [
+            { personnage: "Camarade", avatar: "camarade.svg", texte: "Ton idée est nulle, on devrait faire autrement." },
+            { personnage: "Autre élève", avatar: "eleve.svg", texte: "Euh… Calmez-vous." },
+        ],
+        question: "Que fais-tu ?",
+        reponses: [
+            { id: "A", texte: "Tu proposes de discuter calmement.", skills: { mediation: 5, empathie: 4 } },
+            { id: "B", texte: "Tu défends tes idées avec fermeté.", skills: { assertivite: 5, confiance: 4 } },
+            { id: "C", texte: "Tu proposes à l’enseignant d’intervenir.", skills: { responsabilite: 4, decision: 3 } },
+            { id: "D", texte: "Tu restes silencieux.", skills: { observation: 4, gestionStress: 3 }, penalties: { assertivite: 4, confiance: 3, mediation: 3 } }
+        ]
+    },
+    {
+        id: 7,
+        titre: "Première journée de stage",
+        contexteIntro: "C'est ton premier jour de stage dans une entreprise. Ton tuteur te donne une tâche que tu ne comprends pas bien.",
+        contexte: [
+            { personnage: "Tuteur", avatar: "tuteur.svg", texte: "Voici ta première tâche, tu peux t’y mettre." },
+            { personnage: "Toi", avatar: "toi.svg", texte: "(Je ne suis pas sûr de tout comprendre…)" }
+        ],
+        question: "Que fais-tu ?",
+        reponses: [
+            { id: "A", texte: "Tu demandes des précisions au tuteur.", skills: { communication: 5, curiosite: 4 } },
+            { id: "B", texte: "Tu essaies de trouver la solution seul.", skills: { autonomie: 5, initiative: 4 } },
+            { id: "C", texte: "Tu observes comment font tes collègues.", skills: { observation: 4, apprentissage: 4 } },
+            { id: "D", texte: "Tu fais au mieux, même si tu n’es pas sûr.", skills: { confianceEnSoi: 4, priseDeRisque: 3 }, penalties: { communication: 3, curiosite: 2, apprentissage: 2 } }
+        ]
+    },
+    {
+        id: 8,
+        titre: "Inclusion dans une activité de groupe",
+        contexteIntro: "Tu organises une activité en groupe. L’un des participants utilise une prothèse de bras et semble avoir du mal avec l’exercice manuel proposé.",
+        contexte: [
+            { personnage: "Participant", avatar: "participant.svg", texte: "Je crois que je ne pourrai pas faire ça... J'ai trop mal au bras." },
+        ],
+        question: "Comment réagis-tu ?",
+        reponses: [
+            { id: "A", texte: "Tu modifies l’activité pour que tout le monde puisse participer.", skills: { creativite: 5, inclusion: 4 } },
+            { id: "B", texte: "Tu lui proposes une autre tâche adaptée.", skills: { adaptabilite: 5, espritEquipe: 4 } },
+            { id: "C", texte: "Tu l’encourages à essayer, en proposant de l’aider.", skills: { soutien: 4, coaching: 5 } },
+            { id: "D", texte: "Tu continues l’activité telle quelle.", skills: { pragmatisme: 4, gestionTemps: 3 }, penalties: { inclusion: 3, empathie: 3 } }
+        ]
+    }    
+];
