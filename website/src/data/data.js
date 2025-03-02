@@ -451,9 +451,9 @@ export const scenarios = [
         titre: "Un inconnu en difficulté",
         contexteIntro: "Tu rentres tranquillement chez toi après une longue journée. Soudain, tu remarques qu'une personne âgée trébuche et tombe sur le trottoir. Quelques passants hésitent à intervenir.",
         contexte: [
-          { personnage: "Passant 1", avatar: "passant1.svg", texte: "Oh… Elle est tombée !" },
-          { personnage: "Passant 2", avatar: "passant2.svg", texte: "Quelqu’un devrait faire quelque chose..." },
-          { personnage: "Personne âgée", avatar: "personne_agee.svg", texte: "Aïe... J’ai mal au poignet..." }
+          { personnage: "Passant 1", avatar: "femme-daffaires.png", texte: "Oh… Elle est tombée !" },
+          { personnage: "Passant 2", avatar: "passant2.png", texte: "Quelqu’un devrait faire quelque chose..." },
+          { personnage: "Personne âgée", avatar: "personne_agee.png", texte: "Aïe... J’ai mal au poignet..." }
         ],
         question: "Que fais-tu ?",
         reponses: [
@@ -468,8 +468,8 @@ export const scenarios = [
         titre: "Conflit au supermarché",
         contexteIntro: "Tu fais des courses dans un supermarché bondé. Après plusieurs minutes dans la file d’attente, quelqu’un passe devant toi. D’autres clients semblent mécontents, mais personne n’ose parler.",
         contexte: [
-          { personnage: "Client derrière", avatar: "client.svg", texte: "Vous avez vu ? Il passe devant tout le monde !" },
-          { personnage: "Caissier", avatar: "caissier.svg", texte: "Veuillez respecter la file, s’il vous plaît." }
+          { personnage: "Client derrière", avatar: "femme.png", texte: "Vous avez vu ? Il passe devant tout le monde !" },
+          { personnage: "Caissier", avatar: "femme-caissiere.png", texte: "Veuillez respecter la file, s’il vous plaît." }
         ],
         question: "Comment réagis-tu ?",
         reponses: [
@@ -484,9 +484,9 @@ export const scenarios = [
         titre: "Un ami en difficulté",
         contexteIntro: "Un ami proche t’appelle, visiblement bouleversé. Il a vécu une mauvaise journée et cherche du soutien. Tu sens qu’il a besoin de parler, mais aussi de conseils.",
         contexte: [
-          { personnage: "Alex", avatar: "alex.svg", texte: "Franchement, j’en peux plus… Mon stage est horrible, mon tuteur me critique tout le temps." },
-          { personnage: "Toi", avatar: "toi.svg", texte: "Ça n’a pas l’air simple… Qu’est-ce qu’il s’est passé aujourd’hui ?" },
-          { personnage: "Alex", avatar: "alex.svg", texte: "Je crois que je vais tout arrêter." }
+          { personnage: "Alex", avatar: "passant2.png", texte: "Franchement, j’en peux plus… Mon stage est horrible, mon tuteur me critique tout le temps." },
+          { personnage: "Toi", avatar: "toi.png", texte: "Ça n’a pas l’air simple… Qu’est-ce qu’il s’est passé aujourd’hui ?" },
+          { personnage: "Alex", avatar: "passant2.png", texte: "Je crois que je vais tout arrêter." }
         ],
         question: "Que fais-tu ?",
         reponses: [
@@ -501,9 +501,9 @@ export const scenarios = [
         titre: "Erreur au restaurant",
         contexteIntro: "Tu es au restaurant avec des amis. Après avoir attendu longtemps, tu reçois un plat qui ne correspond pas à ta commande. Le serveur semble pressé.",
         contexte: [
-          { personnage: "Serveur", avatar: "serveur.svg", texte: "Voici votre commande !" },
-          { personnage: "Toi", avatar: "toi.svg", texte: "Hmm… Ce n’est pas ce que j’avais demandé." },
-          { personnage: "Serveur", avatar: "serveur.svg", texte: "Oh, vraiment ? Désolé ! Vous voulez que je change ?" }
+          { personnage: "Serveur", avatar: "serveur.png", texte: "Voici votre commande !" },
+          { personnage: "Toi", avatar: "toi.png", texte: "Hmm… Ce n’est pas ce que j’avais demandé." },
+          { personnage: "Serveur", avatar: "serveur.png", texte: "Oh, vraiment ? Désolé ! Vous voulez que je change ?" }
         ],
         question: "Comment réagis-tu ?",
         reponses: [
@@ -518,9 +518,9 @@ export const scenarios = [
         titre: "Panne de bus",
         contexteIntro: "Tu es dans un bus, en route pour un rendez-vous important. Soudain, le bus tombe en panne. Il reste peu de temps avant ton entretien.",
         contexte: [
-          { personnage: "Conducteur", avatar: "conducteur.svg", texte: "Désolé, tout le monde descend, le bus ne repartira pas." },
-          { personnage: "Passager", avatar: "passager.svg", texte: "On fait quoi, là ? On va être en retard !" },
-          { personnage: "Toi", avatar: "toi.svg", texte: "L’entretien commence dans 15 minutes..." }
+          { personnage: "Conducteur", avatar: "conducteur.png", texte: "Désolé, tout le monde descend, le bus ne repartira pas." },
+          { personnage: "Passager", avatar: "femme.png", texte: "On fait quoi, là ? On va être en retard !" },
+          { personnage: "Toi", avatar: "toi.png", texte: "L’entretien commence dans 15 minutes..." }
         ],
         question: "Que fais-tu ?",
         reponses: [
@@ -535,8 +535,8 @@ export const scenarios = [
         titre: "Conflit en classe",
         contexteIntro: "Pendant un travail de groupe en classe, l’un de tes camarades critique tes idées devant tout le monde. L’ambiance devient tendue.",
         contexte: [
-            { personnage: "Camarade", avatar: "camarade.svg", texte: "Ton idée est nulle, on devrait faire autrement." },
-            { personnage: "Autre élève", avatar: "eleve.svg", texte: "Euh… Calmez-vous." },
+            { personnage: "Camarade", avatar: "passant2.png", texte: "Ton idée est nulle, on devrait faire autrement." },
+            { personnage: "Autre élève", avatar: "femme.png", texte: "Euh… Calmez-vous." },
         ],
         question: "Que fais-tu ?",
         reponses: [
@@ -551,8 +551,8 @@ export const scenarios = [
         titre: "Première journée de stage",
         contexteIntro: "C'est ton premier jour de stage dans une entreprise. Ton tuteur te donne une tâche que tu ne comprends pas bien.",
         contexte: [
-            { personnage: "Tuteur", avatar: "tuteur.svg", texte: "Voici ta première tâche, tu peux t’y mettre." },
-            { personnage: "Toi", avatar: "toi.svg", texte: "(Je ne suis pas sûr de tout comprendre…)" }
+            { personnage: "Tuteur", avatar: "homme-daffaire.png", texte: "Voici ta première tâche, tu peux t’y mettre." },
+            { personnage: "Toi", avatar: "toi.png", texte: "(Je ne suis pas sûr de tout comprendre…)" }
         ],
         question: "Que fais-tu ?",
         reponses: [
@@ -567,7 +567,7 @@ export const scenarios = [
         titre: "Inclusion dans une activité de groupe",
         contexteIntro: "Tu organises une activité en groupe. L’un des participants utilise une prothèse de bras et semble avoir du mal avec l’exercice manuel proposé.",
         contexte: [
-            { personnage: "Participant", avatar: "participant.svg", texte: "Je crois que je ne pourrai pas faire ça... J'ai trop mal au bras." },
+            { personnage: "Participant", avatar: "passant2.png", texte: "Je crois que je ne pourrai pas faire ça... J'ai trop mal au bras." },
         ],
         question: "Comment réagis-tu ?",
         reponses: [

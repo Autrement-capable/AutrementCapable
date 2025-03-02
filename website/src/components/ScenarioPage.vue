@@ -1,15 +1,12 @@
 <template>
     <div v-if="scenario" class="scenario-container">
-        <!-- 🎯 TITRE -->
         <h1>{{ scenario.titre }}</h1>
 
-        <!-- 📜 CONTEXTE : Toujours Visible -->
         <div class="intro-section">
             <p class="intro">{{ scenario.contexteIntro }}</p>
             <button v-if="phase === 'intro'" class="start-button" @click="startDialogue">Commencer</button>
         </div>
 
-        <!-- 💬 DIALOGUES Progressifs -->
         <div v-if="phase !== 'intro'" class="conversation">
             <div v-for="(dialogue, index) in visibleDialogues" :key="index" class="dialogue"
                 :class="getDialogueClass(dialogue.personnage)">
@@ -20,12 +17,10 @@
                 </div>
             </div>
 
-            <!-- Bouton suivant pour passer au dialogue suivant -->
             <button v-if="dialogueIndex < scenario.contexte.length" class="next-button" @click="showNextDialogue">
                 ▶️ Suivant
             </button>
 
-            <!-- Affiche directement les choix en dessous des dialogues -->
             <div v-if="phase === 'choix'" class="button-container">
                 <h2 class="question">{{ scenario.question }}</h2>
                 <button v-for="(reponse, index) in scenario.reponses" :key="index" @click="choisirReponse(reponse)">
@@ -34,7 +29,6 @@
             </div>
         </div>
 
-        <!-- 📝 FEEDBACK Final -->
         <div v-if="feedback" class="feedback">
             <p>{{ feedback }}</p>
         </div>
@@ -45,7 +39,7 @@
 
 <script>
 import { scenarios } from '@/data/data.js';
-const avatars = require.context('@/assets/avatars/', false, /\.svg$/);
+const avatars = require.context('@/assets/avatars/', false, /\.png$/);
 
 export default {
     name: "ScenarioPage",
@@ -120,7 +114,6 @@ export default {
                 }
             }, 5000);
         },
-        // 🗣️ Fonction de Synthèse Vocale
         readAloud(text) {
             if ('speechSynthesis' in window) {
                 const utterance = new SpeechSynthesisUtterance(text);
@@ -165,7 +158,7 @@ export default {
             if (avatars.keys().includes(path)) {
                 return avatars(path);
             } else {
-                return avatars('./toi.svg');
+                return avatars('./toi.png');
             }
         },
         getDialogueClass(personnage) {
@@ -188,7 +181,6 @@ export default {
     text-align: center;
 }
 
-/* 🎨 Titre */
 h1 {
     font-size: 2rem;
     font-weight: bold;
@@ -197,7 +189,6 @@ h1 {
     margin-bottom: 15px;
 }
 
-/* 📜 Contexte Introductif */
 .intro {
     font-size: 1.2rem;
     font-style: italic;
@@ -209,7 +200,6 @@ h1 {
     border-radius: 8px;
 }
 
-/* 🎯 Section Intro */
 .intro-section {
     text-align: center;
     padding: 20px;
@@ -236,8 +226,6 @@ h1 {
     background-color: #218838;
 }
 
-
-/* 💬 Conversations */
 .conversation {
     padding: 15px;
     background-color: #f0f8ff;
@@ -245,7 +233,6 @@ h1 {
     margin-bottom: 20px;
 }
 
-/* Bouton Suivant */
 .next-button {
     margin-top: 15px;
     padding: 10px 20px;
@@ -260,7 +247,6 @@ h1 {
     background-color: #0056b3;
 }
 
-/* 🗨️ Dialogue */
 .dialogue {
     display: flex;
     align-items: flex-start;
@@ -272,7 +258,6 @@ h1 {
     text-align: right;
 }
 
-/* Avatar */
 .avatar {
     width: 60px;
     height: 60px;
@@ -282,7 +267,6 @@ h1 {
     background-color: white;
 }
 
-/* Bulle de Dialogue */
 .bubble {
     padding: 10px;
     background-color: #fff;
@@ -300,7 +284,6 @@ h1 {
     background-color: #d4edda;
 }
 
-/* ✅ Boutons de Choix */
 .button-container {
     display: flex;
     flex-direction: column;
@@ -330,8 +313,6 @@ h1 {
     background-color: #45A049;
 }
 
-
-/* 📝 Feedback Final */
 .feedback {
     margin-top: 20px;
     padding: 10px;
