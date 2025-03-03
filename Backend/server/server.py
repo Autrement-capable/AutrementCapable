@@ -71,7 +71,7 @@ class Server:
     @staticmethod
     async def run_job_with_session(func:Callable):
         """Executes a cron job with a managed AsyncSession."""
-        async with getSession() as session:
+        async with postgress.Session() as session:
             try:
                 await func(session)
             except Exception as e:
