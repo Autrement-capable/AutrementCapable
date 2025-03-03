@@ -8,7 +8,7 @@ cd "$(dirname "$0")/.."
 
 # Build the tests container
 echo "Building test containers..."
-docker-compose -f tests/docker-compose.test.yml build
+docker compose -f tests/docker-compose.test.yml build
 
 # Parse command-line arguments
 TEST_TYPE=""
@@ -44,7 +44,7 @@ fi
 echo "Running tests with: $PYTEST_ARGS"
 
 # Run the tests
-docker-compose -f tests/docker-compose.test.yml run --rm \
+docker compose -f tests/docker-compose.test.yml run --rm \
     -e PYTEST_ARGS="$PYTEST_ARGS" \
     api_test
 
@@ -58,4 +58,4 @@ fi
 
 # Clean up
 echo "Cleaning up..."
-docker-compose -f tests/docker-compose.test.yml down
+docker compose -f tests/docker-compose.test.yml down
