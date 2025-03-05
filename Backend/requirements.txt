@@ -29,3 +29,6 @@ faker
 #auth
 pyjwt
 cryptography
+# WebAuthn/Passkeys support
+webauthn
+cbor2
