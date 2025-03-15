@@ -19,8 +19,8 @@ class RoomGame {
         // Configuration des objets avec des valeurs par défaut
         this.objectsConfig = {
           background: {
-            width: config.background?.width || null, // Par défaut ajusté à l'écran + 100
-            height: config.background?.height || null, // Par défaut ajusté à l'écran + 100
+            width: config.background?.width || null, // Par défaut ajusté à l'écran
+            height: config.background?.height || null, // Par défaut ajusté à l'écran
             x: config.background?.x || 0,
             y: config.background?.y || 0
           },

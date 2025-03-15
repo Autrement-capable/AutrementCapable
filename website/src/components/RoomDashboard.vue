@@ -60,10 +60,10 @@
       </div>
       
       <div class="action-buttons">
+        <button @click="reinitGame" class="action-button">Réinitialiser le jeu</button>
         <button @click="applyConfig" class="action-button">Appliquer toute la configuration</button>
       </div>
     </div>
-    <button @click="reinitGame" class="action-button">Réinitialiser le jeu</button>
   </div>
 </template>
 
@@ -82,8 +82,8 @@ export default {
       maxInitAttempts: 3,
       spriteConfig: {
         background: {
-          width: 1200,  // Par défaut: largeur de l'écran + 100
-          height: 600,  // Par défaut: hauteur de l'écran + 100
+          width: 1200,  // Par défaut: largeur de l'écran
+          height: 600,  // Par défaut: hauteur de l'écran
           x: 0,
           y: 0
         },
@@ -131,7 +131,12 @@ export default {
     // Initialisation différée pour laisser le DOM se rendre
     setTimeout(() => {
       this.initGame();
-    }, 500); // Délai plus long pour s'assurer que le DOM est prêt
+
+      setTimeout(() => {
+        console.log("Forcage d'une reinitialisation");
+        this.reinitGame();
+        }, 50);
+    }, 50); // Délai plus long pour s'assurer que le DOM est prêt
   },
   beforeUnmount() {
     this.destroyGame();
