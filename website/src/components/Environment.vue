@@ -7,16 +7,27 @@
       <div class="control-group">
         <h3>Dimensions</h3>
         <div class="control-item">
-          <label>Largeur: {{ roomWidth }}m</label>
-          <input type="range" v-model.number="roomWidth" min="3" max="15" step="0.5" @change="updateRoom" />
+          <label style="text-align: center; padding-top: 15px;">Largeur: {{ roomWidth }}m</label>
+          <div class="button-group">
+            <button @click="adjustDimension('roomWidth', -0.5)" class="btn-small-dim">-</button>
+            <button @click="adjustDimension('roomWidth', 0.5)" class="btn-small-dim">+</button>
+          </div>
         </div>
+
         <div class="control-item">
-          <label>Profondeur: {{ roomDepth }}m</label>
-          <input type="range" v-model.number="roomDepth" min="3" max="15" step="0.5" @change="updateRoom" />
+          <label style="text-align: center; padding-top: 15px;">Profondeur: {{ roomDepth }}m</label>
+          <div class="button-group">
+            <button @click="adjustDimension('roomDepth', -0.5)" class="btn-small-dim">-</button>
+            <button @click="adjustDimension('roomDepth', 0.5)" class="btn-small-dim">+</button>
+          </div>
         </div>
+
         <div class="control-item">
-          <label>Hauteur: {{ roomHeight }}m</label>
-          <input type="range" v-model.number="roomHeight" min="2" max="6" step="0.1" @change="updateRoom" />
+          <label style="text-align: center; padding-top: 15px;">Hauteur: {{ roomHeight }}m</label>
+          <div class="button-group">
+            <button @click="adjustDimension('roomHeight', -0.1)" class="btn-small-dim">-</button>
+            <button @click="adjustDimension('roomHeight', 0.1)" class="btn-small-dim">+</button>
+          </div>
         </div>
       </div>
       
@@ -114,6 +125,7 @@
 <script>
 // Import our isolated RoomRenderer class
 import RoomRenderer from './RoomRenderer';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 export default {
   name: 'EnvironmentPage',
@@ -150,7 +162,42 @@ export default {
     // Create the room renderer instance
     // This instance handles all Three.js work independently of Vue
     this.renderer = new RoomRenderer(this.$refs.container);
+    const loader = new GLTFLoader();
     
+    loader.load('/chair/scene.gltf', (gltf) => { 
+      gltf.scene.scale.set(0.012, 0.012, 0.012);
+      gltf.scene.position.set(1.3, 0, 6.3);
+      gltf.scene.rotation.y = 4.7;
+      this.renderer.scene.add(gltf.scene);
+    },
+    undefined,
+    (error) => {
+      console.error("Error loading gltf", error);
+    },
+    );
+
+    loader.load('/desk/scene.gltf', (gltf) => { 
+      gltf.scene.scale.set(0.17, 0.17, 0.17);
+      gltf.scene.position.set(0.44, 0, 6);
+      gltf.scene.rotation.y = Math.PI / 2;
+      this.renderer.scene.add(gltf.scene);
+    },
+    undefined,
+    (error) => {
+      console.error("Error loading gltf", error);
+    },);
+
+    loader.load('/couch/scene.gltf', (gltf) => { 
+      gltf.scene.scale.set(0.013, 0.013, 0.013);
+      gltf.scene.position.set(9.4, -0.05, 4.5);
+      gltf.scene.rotation.y = 4.7;
+      this.renderer.scene.add(gltf.scene);
+    },
+    undefined,
+    (error) => {
+      console.error("Error loading gltf", error);
+    },);
+
     // Set up audio for ambient noise
     if (this.$refs.ambientAudio) {
       this.$refs.ambientAudio.volume = 0;
@@ -301,6 +348,24 @@ export default {
         this.renderer.updatePeople(this.peopleCount);
       }
     },
+
+    adjustDimension(prop, delta) {
+      let min, max;
+      if (prop === 'roomWidth' || prop === 'roomDepth') {
+        min = 3;
+        max = 15;
+      } else if (prop === 'roomHeight') {
+        min = 2;
+        max = 6;
+      }
+      // Calcule la nouvelle valeur en s'assurant qu'elle reste dans les bornes
+      let newValue = this[prop] + delta;
+      if (newValue < min) newValue = min;
+      if (newValue > max) newValue = max;
+      this[prop] = newValue;
+      // Met à jour la salle
+      this.updateRoom();
+    },
     
     // Get furniture display name
     getFurnitureName(type) {
@@ -389,6 +454,29 @@ input[type="color"] {
 
 .btn:hover {
   background-color: #0056b3;
+}
+
+.button-group {
+  display: inline-flex;
+  gap: 5px;
+  margin-top: 5px;
+  justify-content: center;
+  width: 100%;
+}
+
+.btn-small-dim {
+  background-color: #007BFF;
+  color: rgb(255, 255, 255);
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn-small {

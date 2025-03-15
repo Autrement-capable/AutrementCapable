@@ -1,0 +1,8 @@
+Model Information:
+* title:	Ikea Markus Office Chair
+* source:	https://sketchfab.com/3d-models/ikea-markus-office-chair-cee12c29ebda4bcdb91b84a6f126a971
+* author:	Graham Rust (https://sketchfab.com/GRXR.ca)
+
+Model License:
+* license type:	SKETCHFAB Standard (https://sketchfab.com/licenses)
+* requirements:	Under basic restrictions, use worldwide, on all types of media, commercially or not, and in all types of derivative works

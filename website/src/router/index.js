@@ -9,7 +9,7 @@ import UserQuestionnaire from "../components/Questionnaire.vue";
 import GameSpeed from "../components/GameSpeed.vue";
 import GameShape from "../components/GameShape.vue";
 import GameMemory from "../components/GameMemory.vue";
-import CompDashboard from "../components/CompDashboard.vue";
+// import CompDashboard from "../components/CompDashboard.vue";
 import CvPreview from "../components/CvPreview.vue";
 import PostsList from "../components/forum/PostsList.vue";
 import Post from "../components/forum/PostPage.vue";
@@ -23,6 +23,8 @@ import CoiffeurCard from "@/components/CoiffeurCard.vue";
 import Environment from "@/components/Environment.vue";
 import ScenarioList from "@/components/ScenarioList.vue";
 import ScenarioPage from "@/components/ScenarioPage.vue";
+import GameDashboard from '@/components/GameDashboard.vue';
+
 
 const routes = [
   {
@@ -74,11 +76,6 @@ const routes = [
     path: "/shape-sequence-game",
     name: "ShapeSequenceGame",
     component: ShapeSequenceGame,
-  },
-  {
-    path: "/dashboard",
-    name: "CompDashboard",
-    component: CompDashboard,
   },
   {
     path: "/cv-preview",
@@ -143,6 +140,11 @@ const routes = [
     name: "ScenarioPage",
     component: ScenarioPage,
     props: true,
+  },
+  {
+    path: '/dashboard',
+    name: 'Dashboard',
+    component: GameDashboard
   },
 ];
 

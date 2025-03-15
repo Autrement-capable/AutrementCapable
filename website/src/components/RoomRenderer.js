@@ -12,10 +12,9 @@ export default class RoomRenderer {
       this.roomMeshes = {};
       this.furnitureMeshes = [];
       this.directionalLight = null;
+      this.light = null;
+      this.lightHelper = null;
       this.ambientLight = null;
-      this.directionalBackLight = null;
-      this.directionalRightLight = null;
-      this.directionalLeftLight = null;
       this.peopleMeshes = [];
       
       this.room = {
@@ -69,7 +68,6 @@ export default class RoomRenderer {
       // Create scene
       this.scene = new THREE.Scene();
       this.scene.background = new THREE.Color('#1a1a1a');
-      
       // Create camera
       this.camera = new THREE.PerspectiveCamera(
         75,
@@ -105,26 +103,13 @@ export default class RoomRenderer {
     
     setupLighting() {
       const { THREE } = this;
-      const { width, height, depth } = this.room;
+      const { width, height,  } = this.room;
       const { color, intensity, ambient } = this.lighting;
-      
-      this.directionalBackLight = new THREE.DirectionalLight(color, intensity);
-      this.directionalBackLight.position.set(width/2, height / 2, 0.2);
-      this.directionalBackLight.backLight = true;
-      this.directionalBackLight.castShadow = true;
-      this.scene.add(this.directionalBackLight);
 
-      this.directionalRightLight = new THREE.DirectionalLight(color, intensity);
-      this.directionalRightLight.position.set(0.2, height / 2, depth/2);
-      this.directionalRightLight.rightLight = true;
-      this.directionalRightLight.castShadow = true;
-      this.scene.add(this.directionalRightLight);
-
-      this.directionalLeftLight = new THREE.DirectionalLight(color, intensity);
-      this.directionalLeftLight.position.set(width - 0.2, height / 2, depth/2);
-      this.directionalLeftLight.leftLight = true;
-      this.directionalLeftLight.castShadow = true;
-      this.scene.add(this.directionalLeftLight);
+      this.light = new THREE.PointLight(0xffffff, 20, 500, 0.2);
+      this.light.position.set(width/2, height/2, 0.2);
+      this.lightHelper = new THREE.PointLightHelper(this.light, 0.5);
+      this.scene.add(this.light, this.lightHelper);
       
       // Ambient light
       this.ambientLight = new THREE.AmbientLight(color, intensity * 0.5);
@@ -140,24 +125,14 @@ export default class RoomRenderer {
       this.lighting.ambient = ambient;
       
       // Update lights
-      if (this.directionalBackLight) {
-          this.directionalBackLight.color.set(color);
-          this.directionalBackLight.intensity = intensity;
+
+      if (this.light) {
+        this.light.color.set(color);
+        this.light.intensity = intensity;
       }
 
-      if (this.directionalRightLight) {
-          this.directionalRightLight.color.set(color);
-          this.directionalRightLight.intensity = intensity;
-      }
-
-      if (this.directionalLeftLight) {
-          this.directionalLeftLight.color.set(color);
-          this.directionalLeftLight.intensity = intensity;
-      }  
-      
       if (this.ambientLight) {
         this.ambientLight.color.set(color);
-        this.ambientLight.intensity = intensity * 0.5;
         
         // Add or remove based on ambient setting
         if (ambient && !this.scene.children.includes(this.ambientLight)) {
@@ -242,11 +217,7 @@ export default class RoomRenderer {
       // Update camera and lights
       this.camera.position.set(width, height/2 + 3, depth * 1.5);
       this.camera.lookAt(width/2, height/2, depth/2);
-      
-      this.directionalBackLight.position.set(width/2, height / 2, 0.2);
-      this.directionalRightLight.position.set(0.2, height / 2, depth/2);
-      this.directionalLeftLight.position.set(width - 0.2, height / 2, depth/2);
-      
+            
       // Update furniture positions
       this.updateFurniturePositions();
     }
@@ -641,9 +612,6 @@ export default class RoomRenderer {
       this.roomMeshes = {};
       this.furnitureMeshes = [];
       this.directionalLight = null;
-      this.backlight = null;
-      this.rightlight = null;
-      this.leftlight = null;
       this.ambientLight = null;
     }
     
