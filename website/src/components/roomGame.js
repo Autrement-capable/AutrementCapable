@@ -74,7 +74,7 @@ class RoomGame {
           await app.init({
             width: this.container.clientWidth || 800,
             height: this.container.clientHeight || 600,
-            backgroundColor: 0x1099bb,
+            backgroundColor: "#f1f1f1",
             antialias: true
           });
           
@@ -496,12 +496,18 @@ class RoomGame {
         const newX = this.setCharacterX(currentX + moveX);
         const newY = this.setCharacterY(currentY + moveY);
         
-        // Orienter le personnage
+        // Orienter le personnage sans affecter sa dimension
+        // Sauvegarde de la largeur originale
+        const originalWidth = this.character.width;
+        
         if (dx < 0) {
           this.character.scale.x = -1; // Retourner horizontalement
         } else {
           this.character.scale.x = 1; // Normal
         }
+        
+        // Réappliquer la largeur originale
+        this.character.width = originalWidth;
         
         // Notifier le mouvement
         if (this.eventCallback) {
@@ -531,7 +537,7 @@ class RoomGame {
       }
     }
   }
-  
+    
   onBackgroundClick(event) {
     if (!this.character || !this.app) return;
     

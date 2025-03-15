@@ -90,14 +90,14 @@ export default {
         character: {
           width: 60,
           height: 60,
-          x: null,  // Sera défini au centre par défaut
-          y: null   // Sera défini au centre par défaut
+          x: 510,  // Sera défini au centre par défaut
+          y: 360   // Sera défini au centre par défaut
         },
         bed: {
           width: 240,
           height: 120,
-          x: 840,  // 1200 * 0.7
-          y: 360   // 600 * 0.6
+          x: 500,
+          y: 230
         },
         book: {
           width: 60,
@@ -108,13 +108,13 @@ export default {
         desk: {
           width: 180,
           height: 90,
-          x: 240,  // 1200 * 0.2
+          x: 770,  // 1200 * 0.2
           y: 300   // 600 * 0.5
         },
         wardrobe: {
-          width: 120,
+          width: 240,
           height: 240,
-          x: 960,  // 1200 * 0.8
+          x: 160,  // 1200 * 0.8
           y: 180   // 600 * 0.3
         }
       }
