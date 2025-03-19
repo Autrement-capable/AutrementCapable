@@ -24,8 +24,9 @@ import Environment from "@/components/Environment.vue";
 import ScenarioList from "@/components/ScenarioList.vue";
 import ScenarioPage from "@/components/ScenarioPage.vue";
 import GameDashboard from '@/components/GameDashboard.vue';
-import HomePage from '@/components/HomePage.vue'
-import GamePage from '@/components/GamePage.vue'
+import HomePage from '@/components/HomePage.vue';
+import GamePage from '@/components/GamePage.vue';
+import ResultsPage from '@/components/ResultsPage.vue';
 
 const routes = [
   {
@@ -151,6 +152,11 @@ const routes = [
     name: "ScenarioPage",
     component: ScenarioPage,
     props: true,
+  },
+  {
+    path: '/resultats',
+    name: 'ResultsPage',
+    component: ResultsPage
   },
   {
     path: '/dashboard',
