@@ -1,0 +1,73 @@
+{
+	"meta": {
+		"image": "spritesheet.png",
+		"size": {"w":144,"h":144},
+		"scale": "1"
+	},
+	"frames": {
+		"Cliff_Tile.png":
+		{
+			"frame": {"x":0,"y":0,"w":48,"h":96},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {"x":0,"y":0,"w":48,"h":96},
+			"sourceSize": {"w":48,"h":96}
+		},
+		"Path_Tile.png":
+		{
+			"frame": {"x":48,"y":0,"w":48,"h":96},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {"x":0,"y":0,"w":48,"h":96},
+			"sourceSize": {"w":48,"h":96}
+		},
+		"Water_Tile.png":
+		{
+			"frame": {"x":96,"y":0,"w":48,"h":96},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {"x":0,"y":0,"w":48,"h":96},
+			"sourceSize": {"w":48,"h":96}
+		},
+		"Beach_Tile.png":
+		{
+			"frame": {"x":0,"y":96,"w":80,"h":48},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {"x":0,"y":0,"w":80,"h":48},
+			"sourceSize": {"w":80,"h":48}
+		},
+		"FarmLand_Tile.png":
+		{
+			"frame": {"x":80,"y":96,"w":48,"h":48},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {"x":0,"y":0,"w":48,"h":48},
+			"sourceSize": {"w":48,"h":48}
+		},
+		"Grass_Middle.png":
+		{
+			"frame": {"x":128,"y":96,"w":16,"h":16},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {"x":0,"y":0,"w":16,"h":16},
+			"sourceSize": {"w":16,"h":16}
+		},
+		"Path_Middle.png":
+		{
+			"frame": {"x":128,"y":112,"w":16,"h":16},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {"x":0,"y":0,"w":16,"h":16},
+			"sourceSize": {"w":16,"h":16}
+		},
+		"Water_Middle.png":
+		{
+			"frame": {"x":128,"y":128,"w":16,"h":16},
+			"rotated": false,
+			"trimmed": false,
+			"spriteSourceSize": {"x":0,"y":0,"w":16,"h":16},
+			"sourceSize": {"w":16,"h":16}
+		}
+	}
+}
