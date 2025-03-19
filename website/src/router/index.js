@@ -24,7 +24,8 @@ import Environment from "@/components/Environment.vue";
 import ScenarioList from "@/components/ScenarioList.vue";
 import ScenarioPage from "@/components/ScenarioPage.vue";
 import GameDashboard from '@/components/GameDashboard.vue';
-
+import HomePage from '@/components/HomePage.vue'
+import GamePage from '@/components/GamePage.vue'
 
 const routes = [
   {
@@ -46,6 +47,16 @@ const routes = [
     path: "/login",
     name: "Login",
     component: LoginPage,
+  },
+  {
+    path: "/home-page",
+    name: "HomePage",
+    component: HomePage,
+  },
+  {
+    path: "/game-page",
+    name: "GamePage",
+    component: GamePage,
   },
   {
     path: "/personal-test",
