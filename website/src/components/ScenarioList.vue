@@ -12,6 +12,14 @@
     <div class="map-container">
       <div class="path-background"></div>
       
+      <svg class="scenario-paths" width="100%" height="100%">
+        <path v-for="(path, index) in pathsData" 
+              :key="'path-'+index" 
+              :d="path" 
+              class="scenario-path"
+              :class="{ 'completed-path': isPathCompleted(index) }">
+        </path>
+      </svg>
       <div class="scenarios-path">
         <div v-for="(scenario, index) in scenarios" :key="scenario.id" 
             class="scenario-node" 
@@ -105,7 +113,8 @@ export default {
       scenarios,
       completedScenarios: [],
       accessibilityMode: false,
-      hasStarted: false
+      hasStarted: false,
+      pathsData: []
     };
   },
   computed: {
@@ -122,10 +131,19 @@ export default {
     // L'utilisateur a-t-il fait au moins un scénario ?
     hasProgress() {
       return this.completedScenarios.length > 0;
-    }
+    },
   },
   created() {
     this.loadProgress();
+    this.$nextTick(() => {
+      this.calculatePaths();
+      window.addEventListener('resize', this.calculatePaths);
+    });
+  },
+
+  beforeUnmount() {
+    // N'oubliez pas de supprimer l'écouteur d'événement
+    window.removeEventListener('resize', this.calculatePaths);
   },
   methods: {
     // Charger la progression depuis le localStorage
@@ -161,6 +179,11 @@ export default {
       }
     },
     
+    isPathCompleted(pathIndex) {
+      const scenarioId = this.scenarios[pathIndex].id;
+      return this.isCompleted(scenarioId);
+    },
+
     // Vérifier si un scénario est complété
     isCompleted(scenarioId) {
       return this.completedScenarios.includes(scenarioId);
@@ -193,6 +216,36 @@ export default {
       return description.length > 100 
         ? description.substring(0, 97) + '...' 
         : description;
+    },
+
+    calculatePaths() {
+      const container = document.querySelector('.map-container');
+      if (!container) return;
+      
+      const containerWidth = container.offsetWidth;
+      const containerHeight = container.offsetHeight;
+      
+      const paths = [];
+      for (let i = 0; i < this.scenarios.length - 1; i++) {
+        const startPos = this.getNodePosition(i);
+        const endPos = this.getNodePosition(i + 1);
+        
+        // Convertir les pourcentages en pixels
+        const startX = startPos.left * containerWidth / 100;
+        const startY = startPos.top * containerHeight / 100;
+        const endX = endPos.left * containerWidth / 100;
+        const endY = endPos.top * containerHeight / 100;
+        
+        // Point de contrôle pour la courbe
+        const controlX = (startX + endX) / 2;
+        const controlY = Math.min(startY, endY) - 20;
+        
+        // Créer un chemin incurvé entre les deux points
+        const path = `M ${startX} ${startY} Q ${controlX} ${controlY}, ${endX} ${endY}`;
+        paths.push(path);
+      }
+      
+      this.pathsData = paths;
     },
     
     // Obtenir les compétences principales développées dans ce scénario
@@ -382,20 +435,46 @@ export default {
   opacity: 0.4;
 }
 
-/* Conteneur des scénarios */
-.scenarios-path {
-  position: relative;
+.scenario-paths {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
+  z-index: 1;
+  pointer-events: none;
 }
 
-/* Nœud de scénario */
+/* Conteneur des scénarios */
+.scenario-path {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 5px;
+  stroke-linecap: round;
+  stroke-dasharray: 10, 5;
+  opacity: 0.6;
+  animation: dashAnimation 30s linear infinite;
+}
+
+.completed-path {
+  stroke: #4CAF50;
+  opacity: 0.8;
+  stroke-dasharray: none;
+}
+
 .scenario-node {
+  z-index: 2;
   position: absolute;
   width: 70px;
   height: 70px;
   transform: translate(-50%, -50%);
   transition: all 0.3s ease;
+}
+
+@keyframes dashAnimation {
+  to {
+    stroke-dashoffset: -1000;
+  }
 }
 
 /* Lien vers le scénario */

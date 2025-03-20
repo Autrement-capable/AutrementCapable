@@ -4,8 +4,8 @@
 
     <div v-if="!hasCompletedScenarios" class="incomplete-message">
       <p>Vous n'avez pas encore complété les scénarios.</p>
-      <router-link :to="{ name: 'ScenarioPage', params: { id: 1 } }" class="start-button">
-        Commencer les scénarios
+      <router-link :to="{ name: 'ScenarioList' }" class="start-button">
+        Revenir au menu scénario
       </router-link>
     </div>
 
