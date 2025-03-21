@@ -1,6 +1,8 @@
 <template>
   <div id="app" class="app-container" :class="{ 'dyslexia-mode': isDyslexiaMode }">
-    <router-view></router-view>
+    <div class="content-wrapper">
+      <router-view></router-view>
+    </div>
     <div class="accessibility-widget" @click="toggleWidget">
       <i class="icon-accessibility"></i>
     </div>
@@ -212,6 +214,18 @@ export default {
 <style>
 body {
   cursor: default;
+}
+
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding-bottom: 60px; /* Ajustez cette valeur selon la hauteur exacte de votre footer */
+}
+
+.content-wrapper {
+  flex: 1;
 }
 
 .large-cursor {
