@@ -27,6 +27,7 @@ import GameDashboard from '@/components/GameDashboard.vue';
 import HomePage from '@/components/HomePage.vue';
 import GamePage from '@/components/GamePage.vue';
 import ResultsPage from '@/components/ResultsPage.vue';
+import FormationPage from "@/components/FormationPage.vue";
 
 const routes = [
   {
@@ -163,6 +164,11 @@ const routes = [
     name: 'Dashboard',
     component: GameDashboard
   },
+  {
+    path: '/formation',
+    name: 'FormationPage',
+    component: FormationPage
+  }
 ];
 
 const router = createRouter({
