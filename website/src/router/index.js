@@ -28,6 +28,7 @@ import HomePage from '@/components/HomePage.vue';
 import GamePage from '@/components/GamePage.vue';
 import ResultsPage from '@/components/ResultsPage.vue';
 import FormationPage from "@/components/FormationPage.vue";
+import RewardsPage from "@/components/RewardsPage.vue";
 
 const routes = [
   {
@@ -168,6 +169,11 @@ const routes = [
     path: '/formation',
     name: 'FormationPage',
     component: FormationPage
+  },
+  {
+    path: '/badges',
+    name: 'RewardsPage',
+    component: RewardsPage
   }
 ];
 
