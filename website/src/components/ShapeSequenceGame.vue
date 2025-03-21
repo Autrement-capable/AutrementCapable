@@ -31,6 +31,7 @@
 
         <p>{{ feedback }}</p>
         <button @click="restartGame">Recommencer</button>
+        <button @click="MetierPage">Voir la page metier</button>
     </div>
 </template>
 
@@ -39,6 +40,11 @@ import { ref } from "vue";
 
 export default {
     name: "ShapeSequenceGame",
+    methods: {
+        MetierPage() {
+            this.$router.push("/metier");
+        },
+    },
     setup() {
         // List of shapes with their respective image paths
         const shapes = ["square", "circle", "triangle", "rectangle"];
@@ -51,6 +57,8 @@ export default {
 
         // Level configuration
         const levels = [
+            { sequence: ["rectangle", "circle", "triangle", "?", "rectangle"], answer: "circle" },
+            { sequence: ["rectangle", "rectangle", "triangle", "circle", "?", "rectangle", "triangle", "circle",], answer: "rectangle"},
             { sequence: ["triangle", "circle", "triangle", "?"], answer: "circle" },
             { sequence: ["circle", "rectangle", "?", "rectangle"], answer: "circle" },
             { sequence: ["square", "triangle", "square", "?", "square"], answer: "triangle" },

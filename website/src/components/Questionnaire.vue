@@ -1,11 +1,14 @@
 <template>
   <div class="questionnaire" aria-label="Questionnaire page">
-    <h1 class="title">Questionnaire</h1>
+    <h1 class="title">Bonjour !</h1>
+    <img :src="selectedAvatarUrl || require('../assets/jeunefemme.png')" alt="Avatar" :class="imageClass" />
+
     <div v-if="currentQuestionIndex < questions.length" class="question-container">
       <div class="text-with-button">
         <p class="sub-title">{{ questions[currentQuestionIndex].text }}</p>
-        <button class="small-button" @click="repeatQuestion">Ecouter le texte</button>
+        <button class="small-button" @click="repeatQuestion">Écouter le texte</button>
       </div>
+
       <input
         v-if="questions[currentQuestionIndex].type === 'text'"
         type="text"
@@ -23,11 +26,32 @@
         required
       />
       <button class="small-button" @click="startRecognition">🎙️ Parler</button>
+
+      <div v-if="questions[currentQuestionIndex].key === 'passions'">
+        <div v-if="isLoadingImages" class="loading">
+          <p>Chargement des avatars...</p>
+        </div>
+        <div v-else-if="generatedImages.length > 0 && !selectedAvatarUrl" class="avatar-selection">
+          <h2>Choisissez votre avatar :</h2>
+          <div class="avatars-grid">
+            <img
+              v-for="(img, index) in generatedImages"
+              :key="index"
+              :src="img"
+              alt="Option d'avatar"
+              class="avatar-option"
+              @click="selectAvatar(img)"
+            />
+          </div>
+        </div>
+      </div>
+
       <div class="button-group">
         <button @click="nextQuestion">Suivant</button>
         <button class="medium-button" @click="skipQuestion">Je n'ai pas compris / Je ne sais pas</button>
       </div>
     </div>
+
     <div v-else class="completion-message">
       <button @click="speedGame">Commencer le premier jeu</button>
       <p>Merci d'avoir répondu aux questions !</p>
@@ -36,63 +60,34 @@
 </template>
 
 <script>
+import axios from 'axios';
+
 /* global webkitSpeechRecognition */
 export default {
   name: 'UserQuestionnaire',
   data() {
     return {
       currentQuestionIndex: 0,
+      generatedImages: [],
+      selectedAvatarUrl: '',
+      isLoadingImages: false,
+      backgroundColors: ['#e0f7fa', '#e8f5e9', '#fce4ec', '#fff3e0', '#ede7f6', '#f9fbe7'],
       questions: [
-        { text: 'Quel âge as-tu ?', key: 'age', type: 'number' },
-        { text: 'Comment voudrais-tu qu\'on t\'appelle ?', key: 'name', type: 'text' },
-        { text: 'Possèdes-tu une maladie / trouble ?', key: 'condition', type: 'text' },
-        { text: 'Comment te sens-tu aujourd\'hui ?', key: 'currentMood', type: 'text' },
-        { text: 'Qu\'est-ce qui te rend heureux(se) ?', key: 'happiness', type: 'text' },
-        { text: 'Quelles sont tes activités préférées ?', key: 'favoriteActivities', type: 'text' },
-        { text: 'Quelles passions aimerais-tu développer ?', key: 'passions', type: 'text' },
-        { text: 'Quelles sont tes forces et tes talents ?', key: 'strengths', type: 'text' },
-        { text: 'Quelles compétences aimerais-tu améliorer ?', key: 'skillsToImprove', type: 'text' },
-        { text: 'Quelles sont les valeurs qui te tiennent à cœur ?', key: 'values', type: 'text' },
-        { text: 'Qu\'est-ce qui te motive à te lever chaque jour ?', key: 'motivations', type: 'text' },
-        { text: 'Quels sont tes rêves pour le futur ?', key: 'dreams', type: 'text' },
-        { text: 'Qui sont les personnes qui te soutiennent le plus ?', key: 'supportNetwork', type: 'text' },
-        { text: 'Comment te sens-tu dans tes relations avec les autres ?', key: 'relationships', type: 'text' },
-        { text: 'Qu\'attends-tu des autres pour te sentir bien ?', key: 'expectationsFromOthers', type: 'text' },
-        { text: 'Quelles sont tes aspirations professionnelles ?', key: 'careerAspirations', type: 'text' },
-        { text: 'Comment te vois-tu dans 5 ans ?', key: 'futureSelf', type: 'text' },
-        { text: 'Quels métiers t\'intéressent le plus ?', key: 'interestedJobs', type: 'text' },
-        { text: 'Quelles adaptations te facilitent la vie quotidienne ?', key: 'adaptations', type: 'text' },
-        { text: 'Quels obstacles rencontres-tu souvent ?', key: 'obstacles', type: 'text' },
-        { text: 'Comment pouvons-nous t\'aider à surmonter ces obstacles ?', key: 'overcomingObstacles', type: 'text' }
+        { text: '🎂 Quel âge as-tu ?', key: 'age', type: 'number' },
+        { text: '👤 Comment voudrais-tu qu\'on t\'appelle ?', key: 'name', type: 'text' },
+        { text: '🎨 Quelles sont tes passions ?', key: 'passions', type: 'text', icon: 'passion-icon.png' }
       ],
       responses: {
         age: '',
         name: '',
-        condition: '',
-        currentMood: '',
-        happiness: '',
-        favoriteActivities: '',
-        passions: '',
-        strengths: '',
-        skillsToImprove: '',
-        values: '',
-        motivations: '',
-        dreams: '',
-        supportNetwork: '',
-        relationships: '',
-        expectationsFromOthers: '',
-        careerAspirations: '',
-        futureSelf: '',
-        interestedJobs: '',
-        adaptations: '',
-        obstacles: '',
-        overcomingObstacles: ''
+        passions: ''
       },
       recognition: null,
       isRecognizing: false
     };
   },
   mounted() {
+    this.updateBackgroundColor();
     if ('webkitSpeechRecognition' in window) {
       this.recognition = new webkitSpeechRecognition();
       this.recognition.lang = 'fr-FR';
@@ -125,25 +120,77 @@ export default {
       console.error('webkitSpeechRecognition not supported in this browser.');
     }
   },
+  computed: {
+    imageClass() {
+      return this.selectedAvatarUrl ? 'image-selected' : 'image-default';
+    }
+  },
   methods: {
     speedGame() {
       this.$router.push('/game-speed');
     },
-    nextQuestion() {
-      if (this.responses[this.questions[this.currentQuestionIndex].key] !== '') {
-        this.currentQuestionIndex++;
-        console.log('Moved to next question');
-      } else {
+    async nextQuestion() {
+      if (this.responses[this.questions[this.currentQuestionIndex].key] === '') {
         alert("Veuillez répondre à la question avant de passer à la suivante.");
+        return;
       }
+      if (this.questions[this.currentQuestionIndex].key === 'passions') {
+        if (this.generatedImages.length === 0) {
+          await this.generatePicture(this.responses.passions);
+          return;
+        }
+        if (!this.selectedAvatarUrl) {
+          alert("Veuillez choisir un avatar parmi les images proposées.");
+          return;
+        }
+      }
+      this.currentQuestionIndex++;
+      this.updateBackgroundColor();
+    },
+    async generatePicture(passions) {
+      const url = process.env.VUE_APP_AZURE_OPENAI_ENDPOINT;
+      const apiKey = process.env.VUE_APP_AZURE_OPENAI_API_KEY;
+      const prompt = `Un avatar conçu pour accompagner un utilisateur en situation de handicap neurodéveloppemental (ADHD, autisme, etc.). Il est vu de face, avec une expression amicale et engageante, prêt à poser des questions. Son apparence et son langage corporel montrent son enthousiasme pour ${passions}, avec des vêtements, accessoires ou éléments visuels directement liés à cet univers. L’avatar doit dégager de la bienveillance et de la curiosité, avec un regard expressif et captivant. Le fond est neutre et ne contient AUCUN éléments, afin de ne pas distraire du personnage principal. L’éclairage est doux et professionnel, adapté à une utilisation digitale. `;
+      console.log("Envoi de la requête à l'API Azure OpenAI...");
+
+      this.generatedImages = [];
+      this.isLoadingImages = true;
+
+      for (let i = 0; i < 3; i++) {
+        try {
+          const response = await axios.post(
+            url,
+            { prompt, n: 1 },
+            {
+              headers: {
+                "Content-Type": "application/json",
+                "api-key": apiKey
+              }
+            }
+          );
+          const imageUrl = response.data.data[0].url;
+          this.generatedImages.push(imageUrl);
+          console.log(`Image ${i + 1} générée:`, imageUrl);
+        } catch (error) {
+          console.error("Erreur lors de la génération de l'image :", error);
+        }
+      }
+      this.isLoadingImages = false;
+    },
+    selectAvatar(imgUrl) {
+      this.selectedAvatarUrl = imgUrl;
+      console.log("Avatar sélectionné :", imgUrl);
+    },
+    updateBackgroundColor() {
+      const colorIndex = this.currentQuestionIndex % this.backgroundColors.length;
+      document.querySelector('.questionnaire').style.backgroundColor = this.backgroundColors[colorIndex];
     },
     skipQuestion() {
       this.currentQuestionIndex++;
-      console.log('Skipped to next question');
+      this.updateBackgroundColor();
     },
     repeatQuestion() {
       const text = this.questions[this.currentQuestionIndex].text;
-      console.log('Repeating question:', text);
       const speech = new SpeechSynthesisUtterance();
       speech.lang = 'fr-FR';
       speech.text = text;
@@ -151,24 +198,25 @@ export default {
     },
     startRecognition() {
       if (this.recognition && !this.isRecognizing) {
-        console.log('Starting recognition');
         this.recognition.start();
-      } else {
-        console.log('Recognition already in progress or not supported');
       }
     }
   }
-}
+};
 </script>
 
 <style scoped>
 @import url('@/assets/styles.css');
 
 .questionnaire {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  background-color: #f5f5f5;
+  background-color: #e0f7fa;
   padding: 20px;
-  height: 100vh;
+  min-height: 100vh;
 }
 
 .title {
@@ -181,11 +229,22 @@ export default {
   font-family: 'Glacial Indifference', sans-serif;
   font-weight: bold;
   font-size: 2em;
+  margin-bottom: 20px;
+}
+
+.image-default {
+  width: 200px;
+  height: 230px;
+}
+
+.image-selected {
+  width: 300px;
+  height: 300px;
 }
 
 .question-container {
-  margin-top: 10%;
-  margin-bottom: 15px;
+  margin-top: 2%;
+  margin-bottom: 5%;
 }
 
 .small-input {
@@ -216,31 +275,10 @@ export default {
   margin-right: 10px;
 }
 
-button {
-  margin-top: 20px;
-  padding: 1em 2em;
-  font-size: 1em;
-  background-color: #007BFF;
-  color: #ffffff;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  margin: 0.5em;
-  transition: transform 0.3s ease, background-color 0.3s ease;
-}
-
-button:focus {
-  outline: 2px solid #0056b3;
-}
-
-button:hover {
-  transform: scale(1.05);
-  background-color: #0056b3;
-}
-
-.small-button {
-  padding: 0.5em;
-  font-size: 0.8em;
+.button-group {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
 }
 
 .medium-button {
@@ -248,13 +286,41 @@ button:hover {
   font-size: 0.8em;
 }
 
-.button-group {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-}
 .completion-message {
   font-size: 1.2em;
   margin-top: 20px;
+}
+
+/* Styles pour le bloc de sélection d'avatar */
+.avatar-selection {
+  margin: 20px 0;
+}
+
+.avatars-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.avatar-option {
+  width: 300px;
+  height: 300px;
+  object-fit: cover;
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  transition: border-color 0.3s ease;
+}
+
+.avatar-option:hover {
+  border-color: #007BFF;
+}
+
+/* Style pour l'indicateur de chargement */
+.loading {
+  margin: 20px 0;
+  font-size: 1.2em;
+  color: #555;
 }
 </style>
