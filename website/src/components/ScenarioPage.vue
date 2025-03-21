@@ -100,23 +100,6 @@
               <p class="feedback-message">{{ feedback }}</p>
               <div class="feedback-animation"></div>
             </div>
-            
-            <!-- <div class="skills-gained">
-              <h3>Super-pouvoirs gagnés !</h3>
-              <div v-if="lastChoiceSkills.length > 0" class="skills-list">
-                <div v-for="(skill, index) in lastChoiceSkills" :key="index" class="skill-item"
-                     :style="{ '--index': index }">
-                  <div class="skill-icon">{{ getSkillIcon(skill.name) }}</div>
-                  <div class="skill-info">
-                    <div class="skill-name">{{ getSkillDisplayName(skill.name) }}</div>
-                    <div class="skill-points" :class="{ 'negative': skill.value < 0 }">
-                      {{ skill.value > 0 ? '+' : '' }}{{ skill.value }} points
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <p v-else class="no-skills">Pas de super-pouvoirs gagnés cette fois...</p>
-            </div> -->
           </div>
         </div>
       </div>
@@ -131,12 +114,12 @@
           <span v-if="highContrastMode">🌓</span>
           <span v-else>🌑</span>
         </button>
-        <button @click="increaseTextSize" class="accessibility-button">
+        <!-- <button @click="increaseTextSize" class="accessibility-button">
           A+
         </button>
         <button @click="decreaseTextSize" class="accessibility-button">
           A-
-        </button>
+        </button> -->
       </div>
   
       <!-- Message de chargement -->

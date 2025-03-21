@@ -196,22 +196,22 @@ export default {
           gameRoute: '/metier/soudeur',
           shareable: false
         },
-        {
-          id: 8,
-          title: 'Collectionneur de badges',
-          description: 'Vous avez débloqué 5 badges différents !',
-          icon: '🏆',
-          iconColor: '#FFD700',
-          unlocked: false,
-          hint: 'Continuez à jouer pour débloquer plus de badges',
-          game: 'Tous les jeux',
-          gameRoute: '/',
-          shareable: true
-        }
+        // {
+        //   id: 8,
+        //   title: 'Collectionneur de badges',
+        //   description: 'Vous avez débloqué 5 badges différents !',
+        //   icon: '🏆',
+        //   iconColor: '#FFD700',
+        //   unlocked: false,
+        //   hint: 'Continuez à jouer pour débloquer plus de badges',
+        //   game: 'Tous les jeux',
+        //   gameRoute: '/',
+        //   shareable: true
+        // }
       ],
       selectedBadge: null,
       highContrastMode: false,
-      textSizeLevel: 0 // 0 = normal, -1 = small, 1 = large, 2 = extra large
+      textSizeLevel: 0
     };
   },
   computed: {

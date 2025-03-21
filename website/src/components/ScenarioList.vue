@@ -80,9 +80,9 @@
         <span class="btn-text">Continuer l'aventure</span>
       </router-link>
       
-      <router-link v-if="hasProgress" :to="{ name: 'ResultsPage' }" class="view-skills-btn">
+      <router-link v-if="hasProgress" :to="{ name: 'RewardsPage' }" class="view-skills-btn">
         <span class="btn-icon">🏆</span>
-        <span class="btn-text">Voir mes super-pouvoirs</span>
+        <span class="btn-text">Voir mes badges</span>
       </router-link>
     </div>
     
@@ -770,6 +770,10 @@ export default {
   transition: all 0.3s ease;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   text-decoration: none;
+  min-width: 220px;
+  max-width: 400px;
+  width: auto;
+  height: auto;
 }
 
 .start-adventure-btn {
