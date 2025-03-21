@@ -138,7 +138,7 @@
   export default {
     name: "ScenarioPage",
     props: {
-      id: String,
+      urlName: String,
     },
     data() {
       return {
@@ -176,8 +176,8 @@
       window.removeEventListener('beforeunload', this.stopSpeech);
     },
     watch: {
-      $route(to, from) {
-        if (to.params.id !== from.params.id) {
+      urlName(newUrlName, oldUrlName) {
+        if (newUrlName !== oldUrlName) {
           this.stopSpeech();
           this.loadScenario();
           this.phase = 'intro';
@@ -265,9 +265,7 @@
       },
       
       loadScenario() {
-        const scenarioId = parseInt(this.id);
-        console.log("Chargement du scénario ID:", scenarioId);
-        this.scenario = scenarios.find(s => s.id === scenarioId);
+        this.scenario = scenarios.find(s => s.urlName === this.urlName);
         
         if (!this.scenario) {
           console.error("Scénario non trouvé !");
@@ -277,8 +275,7 @@
           }
           console.log("Scénario chargé:", this.scenario);
           console.log("Réponses disponibles:", this.scenario.reponses);
-          
-          // Effet d'apparition progressive du texte
+      
           this.animateText();
         }
       },
@@ -347,7 +344,7 @@
         this.markScenarioCompleted();
         
         // Vérifier si c'est le dernier scénario
-        const currentId = parseInt(this.id);
+        const currentId = this.scenario.id;
         const isLastScenario = !this.scenarios.some(s => s.id === currentId + 1);
         
         if (isLastScenario) {
@@ -369,13 +366,19 @@
             this.$router.push({ name: "ScenarioList", query: { showBadgeUnlock: 'true' } });
           } else {
             const nextId = currentId + 1;
-            this.$router.push({ name: "ScenarioPage", params: { id: nextId } });
+            const nextScenario = scenarios.find(s => s.id === nextId);
+            if (nextScenario) {
+              this.$router.push({ 
+                name: "ScenarioPage", 
+                params: { urlName: nextScenario.urlName } 
+              });
+            }
           }
         }, 4000);
       },
       
       markScenarioCompleted() {
-        const currentId = parseInt(this.id);
+        const currentId = this.scenario.id;
         
         if (!this.completedScenarios.includes(currentId)) {
           this.completedScenarios.push(currentId);

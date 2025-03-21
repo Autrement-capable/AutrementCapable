@@ -150,7 +150,7 @@ const routes = [
     component: ScenarioList,
   },
   {
-    path: "/scenarios/:id",
+    path: "/scenarios/:urlName",
     name: "ScenarioPage",
     component: ScenarioPage,
     props: true,

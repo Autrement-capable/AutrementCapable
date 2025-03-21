@@ -11,7 +11,7 @@
     </div>
     <!-- En-tête avec personnage guide -->
     <div class="guide-character">
-      <img src="@/assets/avatars/guide.jpg" alt="Guide" class="guide-avatar" />
+      <img src="@/assets/avatars/guide.png" alt="Guide" class="guide-avatar" />
       <div class="speech-bubble">
         <p>Bienvenue dans ton aventure de compétences ! Choisis un défi à relever !</p>
       </div>
@@ -36,7 +36,7 @@
             :style="{ 'top': getNodePosition(index).top + '%', 'left': getNodePosition(index).left + '%' }">
           
           <router-link 
-            :to="{ name: 'ScenarioPage', params: { id: scenario.id } }" 
+            :to="{ name: 'ScenarioPage', params: { urlName: scenario.urlName } }"
             class="scenario-link"
             :class="{ 'disabled': !canAccess(scenario.id) }">
             
@@ -75,7 +75,7 @@
         <span class="btn-text">Recommencer l'aventure</span>
       </button>
       
-      <router-link v-else-if="nextScenarioId" :to="{ name: 'ScenarioPage', params: { id: nextScenarioId } }" class="continue-adventure-btn">
+      <router-link v-else-if="nextScenarioId" :to="{ name: 'ScenarioPage', params: { urlName: getNextScenarioUrlName() } }" class="continue-adventure-btn">
         <span class="btn-icon">➡️</span>
         <span class="btn-text">Continuer l'aventure</span>
       </router-link>
@@ -99,12 +99,8 @@
         <h2>Liste des défis</h2>
         <ul>
           <li v-for="scenario in scenarios" :key="scenario.id" class="accessible-item">
-            <router-link 
-              :to="{ name: 'ScenarioPage', params: { id: scenario.id } }"
-              :class="{ 'disabled': !canAccess(scenario.id) }">
-              Défi {{scenario.id}}: {{ scenario.titre }}
-              <span v-if="isCompleted(scenario.id)" class="completion-text"> - Complété ✓</span>
-            </router-link>
+            Défi {{scenario.id}}: {{ scenario.titre }}
+            <span v-if="isCompleted(scenario.id)" class="completion-text"> - Complété ✓</span>
           </li>
         </ul>
       </div>
@@ -188,16 +184,24 @@ export default {
       localStorage.setItem('completedScenarios', JSON.stringify([]));
       this.hasStarted = true;
       this.completedScenarios = [];
-      this.$router.push({ name: 'ScenarioPage', params: { id: 1 } });
+      const firstScenario = this.scenarios.find(s => s.id === 1);
+      this.$router.push({ name: 'ScenarioPage', params: { urlName: firstScenario.urlName } });
     },
     
+    getNextScenarioUrlName() {
+      const nextId = this.nextScenarioId;
+      const nextScenario = this.scenarios.find(s => s.id === nextId);
+      return nextScenario ? nextScenario.urlName : '';
+    },
+
     // Réinitialiser l'aventure
     resetAdventure() {
-      if (confirm("Es-tu sûr de vouloir recommencer toute l'aventure ? Tes super-pouvoirs seront réinitialisés !")) {
+      if (confirm("Es-tu sûr de vouloir recommencer toute l'aventure ? Tes données seront réinitialisés !")) {
         localStorage.setItem('userSoftSkills', JSON.stringify({}));
         localStorage.setItem('completedScenarios', JSON.stringify([]));
         this.completedScenarios = [];
-        this.$router.push({ name: 'ScenarioPage', params: { id: 1 } });
+        const firstScenario = this.scenarios.find(s => s.id === 1);
+        this.$router.push({ name: 'ScenarioPage', params: { urlName: firstScenario.urlName } })
       }
     },
     
@@ -475,8 +479,8 @@ export default {
 }
 
 .guide-avatar {
-  width: 80px;
-  height: 80px;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
   border: 3px solid #FFC107;
   background-color: #fff;
