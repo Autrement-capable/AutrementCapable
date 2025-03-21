@@ -149,6 +149,7 @@
   
   <script>
   import { scenarios } from '@/data/data.js';
+  import { unlockBadge } from '@/utils/badges.js';
   const avatars = require.context('@/assets/avatars/', false, /\.png$/);
   
   export default {
@@ -159,6 +160,7 @@
     data() {
       return {
         scenario: null,
+        scenarios: scenarios,
         feedback: null,
         phase: 'intro',
         dialogueIndex: 0,
@@ -361,17 +363,32 @@
         // Marquer ce scénario comme complété
         this.markScenarioCompleted();
         
-        // Navigation au scénario suivant ou à la page de résultats
+        // Vérifier si c'est le dernier scénario
+        const currentId = parseInt(this.id);
+        const isLastScenario = !this.scenarios.some(s => s.id === currentId + 1);
+        
+        if (isLastScenario) {
+          // Déverrouiller le badge "Maître des scénarios"
+          unlockBadge(2);
+          
+          // Stocker l'information que nous venons de déverrouiller un badge
+          localStorage.setItem('newUnlockedBadge', JSON.stringify({
+            id: 2,
+            title: 'Maître des scénarios',
+            description: 'Vous avez brillamment résolu tous les scénarios sociaux !'
+          }));
+        }
+        
         setTimeout(() => {
           this.stopSpeech();
-          const nextId = parseInt(this.id) + 1;
           
-          if (scenarios.some(s => s.id === nextId)) {
-            this.$router.push({ name: "ScenarioPage", params: { id: nextId } });
+          if (isLastScenario) {
+            this.$router.push({ name: "ScenarioList", query: { showBadgeUnlock: 'true' } });
           } else {
-            this.$router.push({ name: "ResultsPage" });
+            const nextId = currentId + 1;
+            this.$router.push({ name: "ScenarioPage", params: { id: nextId } });
           }
-        }, 6000); // Temps plus long pour voir les animations et les compétences gagnées
+        }, 4000);
       },
       
       markScenarioCompleted() {

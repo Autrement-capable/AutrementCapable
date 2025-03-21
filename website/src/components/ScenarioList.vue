@@ -1,5 +1,14 @@
 <template>
   <div class="adventure-map">
+    <div v-if="showBadgeAnimation" class="badge-unlock-overlay">
+      <div class="badge-unlock-animation">
+        <div class="badge-icon">🎭</div>
+        <h2>Badge débloqué !</h2>
+        <h3>Maître des scénarios</h3>
+        <p>Vous avez brillamment résolu tous les scénarios sociaux !</p>
+        <button @click="closeBadgeAnimation" class="close-animation-btn">Continuer</button>
+      </div>
+    </div>
     <!-- En-tête avec personnage guide -->
     <div class="guide-character">
       <img src="@/assets/avatars/guide.jpg" alt="Guide" class="guide-avatar" />
@@ -114,7 +123,9 @@ export default {
       completedScenarios: [],
       accessibilityMode: false,
       hasStarted: false,
-      pathsData: []
+      pathsData: [],
+      showBadgeAnimation: false,
+      badgeData: null
     };
   },
   computed: {
@@ -139,6 +150,14 @@ export default {
       this.calculatePaths();
       window.addEventListener('resize', this.calculatePaths);
     });
+    if (this.$route.query.showBadgeUnlock === 'true') {
+      const badgeData = localStorage.getItem('newUnlockedBadge');
+      if (badgeData) {
+        this.badgeData = JSON.parse(badgeData);
+        this.showBadgeAnimation = true;
+        localStorage.removeItem('newUnlockedBadge');
+      }
+    }
   },
 
   beforeUnmount() {
@@ -146,6 +165,9 @@ export default {
     window.removeEventListener('resize', this.calculatePaths);
   },
   methods: {
+    closeBadgeAnimation() {
+      this.showBadgeAnimation = false;
+    },
     // Charger la progression depuis le localStorage
     loadProgress() {
       const savedSkills = localStorage.getItem('userSoftSkills');
@@ -363,6 +385,86 @@ export default {
   border-radius: 20px;
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
   position: relative;
+}
+
+.badge-unlock-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.badge-unlock-animation {
+  background-color: #fff;
+  border-radius: 20px;
+  padding: 30px;
+  text-align: center;
+  max-width: 400px;
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
+  animation: scaleIn 0.5s ease-out;
+}
+
+.badge-icon {
+  font-size: 80px;
+  margin-bottom: 20px;
+  animation: pulse 2s infinite;
+}
+
+.badge-unlock-animation h2 {
+  color: #FFD700;
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.badge-unlock-animation h3 {
+  color: #333;
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+}
+
+.badge-unlock-animation p {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.close-animation-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 50px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.close-animation-btn:hover {
+  background-color: #45a049;
+  transform: scale(1.05);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
 }
 
 /* Personnage guide */
