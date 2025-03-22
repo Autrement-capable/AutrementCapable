@@ -174,7 +174,7 @@ export default {
         },
         {
           id: 6,
-          title: 'CV Expert',
+          title: 'CV professionnel',
           description: 'Vous avez complété toutes les étapes pour générer un CV professionnel',
           icon: '📄',
           iconColor: '#607D8B',
@@ -196,18 +196,18 @@ export default {
           gameRoute: '/metier/soudeur',
           shareable: false
         },
-        // {
-        //   id: 8,
-        //   title: 'Collectionneur de badges',
-        //   description: 'Vous avez débloqué 5 badges différents !',
-        //   icon: '🏆',
-        //   iconColor: '#FFD700',
-        //   unlocked: false,
-        //   hint: 'Continuez à jouer pour débloquer plus de badges',
-        //   game: 'Tous les jeux',
-        //   gameRoute: '/',
-        //   shareable: true
-        // }
+        {
+          id: 8,
+          title: 'Inscription à une formation',
+          description: 'Vous vous êtes inscrit à une formation',
+          icon: '🎓',
+          iconColor: '#FFD700',
+          unlocked: false,
+          hint: 'Inscrivez-vous à une formation pour débloquer ce badge',
+          game: 'Formations',
+          gameRoute: '/formation',
+          shareable: true
+        }
       ],
       selectedBadge: null,
       highContrastMode: false,
