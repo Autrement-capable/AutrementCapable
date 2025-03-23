@@ -13,7 +13,7 @@
     <div class="guide-character">
       <img src="@/assets/avatars/guide.png" alt="Guide" class="guide-avatar" />
       <div class="speech-bubble">
-        <p>Bienvenue dans ton aventure de compétences ! Choisis un défi à relever !</p>
+        <p>Bienvenue dans ton aventure des scénarios ! Commence l'aventure !</p>
       </div>
     </div>
 
@@ -75,7 +75,9 @@
         <span class="btn-text">Recommencer l'aventure</span>
       </button>
       
-      <router-link v-else-if="nextScenarioId" :to="{ name: 'ScenarioPage', params: { urlName: getNextScenarioUrlName() } }" class="continue-adventure-btn">
+      <router-link v-else-if="hasStarted && completedScenarios.length > 0 && nextScenarioId" 
+                  :to="{ name: 'ScenarioPage', params: { urlName: getNextScenarioUrlName() } }" 
+                  class="continue-adventure-btn">
         <span class="btn-icon">➡️</span>
         <span class="btn-text">Continuer l'aventure</span>
       </router-link>
@@ -110,6 +112,7 @@
 
 <script>
 import { scenarios } from '@/data/data.js';
+import { resetBadge } from '@/utils/badges';
 
 export default {
   name: 'ScenariosList',
@@ -166,17 +169,28 @@ export default {
     },
     // Charger la progression depuis le localStorage
     loadProgress() {
-      const savedSkills = localStorage.getItem('userSoftSkills');
-      if (savedSkills) {
-        this.hasStarted = true;
-        
-        // Récupérer les scénarios complétés
-        const completedIds = localStorage.getItem('completedScenarios');
-        if (completedIds) {
-          this.completedScenarios = JSON.parse(completedIds).map(id => parseInt(id));
-        }
-      }
-    },
+    // Récupérer les scénarios complétés
+    const completedIds = localStorage.getItem('completedScenarios');
+    if (completedIds) {
+      this.completedScenarios = JSON.parse(completedIds).map(id => parseInt(id));
+      
+      // Définir hasStarted uniquement si l'utilisateur a réellement commencé (au moins un scénario complété)
+      this.hasStarted = this.completedScenarios.length > 0;
+    } else {
+      this.hasStarted = false;
+      this.completedScenarios = [];
+    }
+    
+    // Vérifier aussi les compétences pour plus de sécurité
+    const savedSkills = localStorage.getItem('userSoftSkills');
+    if (savedSkills && !this.hasStarted) {
+      // Si des compétences sont enregistrées mais aucun scénario complété,
+      // cela pourrait indiquer un état partiel où l'utilisateur a commencé mais n'a pas terminé
+      const skills = JSON.parse(savedSkills);
+      // Vérifier si l'objet des compétences n'est pas vide
+      this.hasStarted = Object.keys(skills).length > 0;
+    }
+  },
     
     // Démarrer l'aventure (premier scénario)
     startAdventure() {
@@ -200,6 +214,7 @@ export default {
         localStorage.setItem('userSoftSkills', JSON.stringify({}));
         localStorage.setItem('completedScenarios', JSON.stringify([]));
         this.completedScenarios = [];
+        resetBadge(2);
         const firstScenario = this.scenarios.find(s => s.id === 1);
         this.$router.push({ name: 'ScenarioPage', params: { urlName: firstScenario.urlName } })
       }
