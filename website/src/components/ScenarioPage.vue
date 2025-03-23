@@ -103,6 +103,14 @@
           </div>
         </div>
       </div>
+
+      
+      <div class="return-menu-container">
+        <button @click="retournerAuMenu" class="action-button return-button">
+          <span class="button-icon">🏠</span>
+          <span class="button-text">Retour au menu</span>
+        </button>
+      </div>
       
       <!-- Contrôles d'accessibilité -->
       <div class="accessibility-controls">
@@ -207,6 +215,14 @@
         if (completedIds) {
           this.completedScenarios = JSON.parse(completedIds).map(id => parseInt(id));
         }
+      },
+
+      retournerAuMenu() {
+        this.playSound('button');
+        
+        this.stopSpeech();
+        
+        this.$router.push({ name: "ScenarioList" });
       },
       
       loadAccessibilitySettings() {
@@ -334,16 +350,12 @@
           this.readAloud(`Tu as choisi : ${reponse.texte}`);
         }
         
-        // Extraire et afficher les compétences gagnées
         this.lastChoiceSkills = this.extractSkills(reponse);
         
-        // Enregistrer les compétences
         this.enregistrerSoftSkills(reponse);
         
-        // Marquer ce scénario comme complété
         this.markScenarioCompleted();
         
-        // Vérifier si c'est le dernier scénario
         const currentId = this.scenario.id;
         const isLastScenario = !this.scenarios.some(s => s.id === currentId + 1);
         
@@ -642,6 +654,21 @@
     color: #6c757d;
   }
   
+  .return-menu-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+
+  /* Style pour le bouton de retour */
+  .return-button {
+    background-color: #6c757d;
+  }
+
+  .return-button:hover {
+    background-color: #5a6268;
+  }
   .progress-connector {
     height: 2px;
     background-color: #ced4da;
