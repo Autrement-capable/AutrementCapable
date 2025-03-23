@@ -117,7 +117,7 @@
 
       <div class="action-buttons">
         <button class="reset-button" @click="resetSkills">Réinitialiser les résultats</button>
-        <router-link :to="{ name: 'ScenarioPage', params: { id: 1 } }" class="restart-button">
+        <router-link :to="{ name: 'ScenarioList'}" class="restart-button">
           Recommencer les scénarios
         </router-link>
       </div>
