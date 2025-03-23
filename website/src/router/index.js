@@ -29,6 +29,7 @@ import GamePage from '@/components/GamePage.vue';
 import ResultsPage from '@/components/ResultsPage.vue';
 import FormationPage from "@/components/FormationPage.vue";
 import RewardsPage from "@/components/RewardsPage.vue";
+import SkillsWheelPage from "@/components/SkillsWheelPage.vue";
 
 const routes = [
   {
@@ -174,6 +175,11 @@ const routes = [
     path: '/badges',
     name: 'RewardsPage',
     component: RewardsPage
+  },
+  {
+    path: '/roue-des-competences',
+    name: 'SkillsWheelPage',
+    component: SkillsWheelPage
   }
 ];
 
