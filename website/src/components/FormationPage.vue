@@ -2,6 +2,15 @@
   <!-- Inclusion de Font Awesome pour les icônes -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <div class="formations-page">
+    <div v-if="showBadgeNotification" class="badge-unlock-overlay">
+      <div class="badge-unlock-animation">
+        <div class="badge-icon">🎓</div>
+        <h2>Badge débloqué !</h2>
+        <h3>Première Formation</h3>
+        <p>Vous vous êtes inscrit(e) à votre première formation. Félicitations!</p>
+        <button @click="showBadgeNotification = false" class="close-animation-btn">Continuer</button>
+      </div>
+    </div>
     <header>
       <h1>Découvrez des formations adaptées à vos besoins</h1>
       <p class="subtitle">Entrez directement en contact avec les organismes de formation</p>
@@ -418,11 +427,16 @@
 </template>
 
 <script>
+import { unlockBadge, isBadgeUnlocked } from '@/utils/badges';
+
 export default {
   name: 'FormationsPage',
   data() {
     return {
       selectedCategory: 'recommandees',
+      badgeFormationId: 8,
+      showBadgeNotification: false,
+      badgeUnlocked: null,
       expandedFormations: [],
       showContactModal: false,
       showNotesModal: false,
@@ -1040,12 +1054,33 @@ export default {
       // Sauvegarder dans le localStorage
       this.saveFormationData();
       
+      if (status === 'registered') {
+        this.checkAndUnlockFormationBadge();
+      }
+
       // Si c'est un statut de contact, ouvrir automatiquement le modal de notes
       if (status === 'contacted') {
         this.openNotesModal(formationId);
       }
     },
     
+    checkAndUnlockFormationBadge() {
+      // Vérifier si c'est la première formation à laquelle l'utilisateur s'inscrit
+      const isFirstRegistration = Object.values(this.formationStatuses).filter(
+        status => status === 'registered'
+      ).length === 1;
+      
+      // Si c'est la première inscription et que le badge n'est pas déjà débloqué
+      if (isFirstRegistration && !isBadgeUnlocked(this.badgeFormationId)) {
+        // Débloquer le badge
+        const badgeUnlocked = unlockBadge(this.badgeFormationId);
+        
+        if (badgeUnlocked) {
+          this.showBadgeNotification = true;
+        }
+      }
+    },
+
     resetFormationStatus(formationId) {
       // Demander confirmation avant de réinitialiser
       if (confirm("Voulez-vous vraiment réinitialiser le statut de cette formation ?")) {
@@ -1206,6 +1241,86 @@ h1 {
   font-size: 1.2rem;
   color: #666;
   margin: 0;
+}
+
+.badge-unlock-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.badge-unlock-animation {
+  background-color: #fff;
+  border-radius: 20px;
+  padding: 30px;
+  text-align: center;
+  max-width: 400px;
+  box-shadow: 0 0 30px rgba(63, 81, 181, 0.6);
+  animation: scaleIn 0.5s ease-out;
+}
+
+.badge-icon {
+  font-size: 80px;
+  margin-bottom: 20px;
+  animation: pulse 2s infinite;
+}
+
+.badge-unlock-animation h2 {
+  color: #3f51b5;
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.badge-unlock-animation h3 {
+  color: #333;
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+}
+
+.badge-unlock-animation p {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.close-animation-btn {
+  background-color: #3f51b5;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 50px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.close-animation-btn:hover {
+  background-color: #303f9f;
+  transform: scale(1.05);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
 }
 
 /* Catégories principales */

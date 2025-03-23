@@ -1,4 +1,3 @@
-// src/utils/badges.js
 export function unlockBadge(badgeId) {
     try {
       // Récupérer les badges existants
@@ -69,3 +68,88 @@ export function unlockBadge(badgeId) {
       return [];
     }
   }
+
+export function resetBadge(badgeId) {
+  try {
+    // Récupérer les badges existants
+    const savedBadges = localStorage.getItem('userBadges');
+    if (!savedBadges) {
+      console.log('Aucun badge trouvé en stockage.');
+      return false;
+    }
+    
+    const badges = JSON.parse(savedBadges);
+    
+    // Trouver le badge spécifique
+    const badgeIndex = badges.findIndex(b => b.id === badgeId);
+    
+    if (badgeIndex === -1) {
+      console.log(`Badge ${badgeId} non trouvé.`);
+      return false;
+    }
+    
+    // Vérifier si le badge est déjà verrouillé
+    if (!badges[badgeIndex].unlocked) {
+      console.log(`Badge ${badgeId} déjà verrouillé.`);
+      return false;
+    }
+    
+    // Verrouiller le badge
+    badges[badgeIndex].unlocked = false;
+    badges[badgeIndex].dateUnlocked = null;
+    
+    // Sauvegarder les badges mis à jour
+    localStorage.setItem('userBadges', JSON.stringify(badges));
+    console.log(`Badge ${badgeId} verrouillé avec succès.`);
+    return true;
+    
+  } catch (error) {
+    console.error('Erreur lors du verrouillage du badge:', error);
+    return false;
+  }
+}
+
+export function resetBadges(badgeIds = null) {
+  try {
+    // Récupérer les badges existants
+    const savedBadges = localStorage.getItem('userBadges');
+    if (!savedBadges) {
+      console.log('Aucun badge trouvé en stockage.');
+      return false;
+    }
+    
+    const badges = JSON.parse(savedBadges);
+    let changesMade = false;
+    
+    // Mise à jour des badges
+    const updatedBadges = badges.map(badge => {
+      // Si badgeIds est fourni, vérifier si ce badge doit être réinitialisé
+      if (badgeIds === null || badgeIds.includes(badge.id)) {
+        if (badge.unlocked) {
+          changesMade = true;
+          return {
+            ...badge,
+            unlocked: false,
+            dateUnlocked: null
+          };
+        }
+      }
+      return badge;
+    });
+    
+    // Si aucun changement n'a été effectué, retourner false
+    if (!changesMade) {
+      console.log('Aucun badge déverrouillé à réinitialiser.');
+      return false;
+    }
+    
+    // Sauvegarder les badges mis à jour
+    localStorage.setItem('userBadges', JSON.stringify(updatedBadges));
+    console.log(`Badges verrouillés avec succès.`);
+    return true;
+    
+  } catch (error) {
+    console.error('Erreur lors du verrouillage des badges:', error);
+    return false;
+  }
+}
