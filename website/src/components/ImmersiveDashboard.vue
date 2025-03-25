@@ -10,75 +10,92 @@
       <!-- Section Formations -->
       <div class="section formations" @mouseenter="activeSection = 'formations'" @mouseleave="activeSection = null">
         <div class="section-content" :class="{ 'active': activeSection === 'formations' }">
-          <div class="icon-container" @click="openSection('formations')">
+            <div class="button-particles" v-if="activeSection === 'formations'">
+            <div v-for="i in 8" :key="'formation-particle-'+i" class="button-particle" 
+                :style="generateParticleStyle()"></div>
+            </div>
+            <div class="button-ring"></div>
+            <div class="icon-container" @click="openSection('formations')">
             <div class="glow-effect" :class="{ 'pulse': activeSection === 'formations' }"></div>
             <div class="icon">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor">
                 <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 4c1.86 0 3.41 1.28 3.86 3H8.14c.45-1.72 2-3 3.86-3zm-4 6h8v2h-8v-2zm0 4h8v2h-8v-2z" stroke-width="1.5"/>
-              </svg>
+                </svg>
             </div>
             <span class="tooltip">Formations</span>
             <div class="notification" v-if="notifications.formations > 0">{{ notifications.formations }}</div>
-          </div>
+            </div>
         </div>
-      </div>
+    </div>
 
       <!-- Section Badges -->
       <div class="section badges" @mouseenter="activeSection = 'badges'" @mouseleave="activeSection = null">
-        <div class="section-content" :class="{ 'active': activeSection === 'badges' }">
-          <div class="icon-container" @click="openSection('badges')">
-            <div class="glow-effect" :class="{ 'pulse': activeSection === 'badges' }"></div>
-            <div class="icon">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor">
-                <circle cx="12" cy="8" r="7" stroke-width="1.5"/>
-                <path d="M15.5 14l2 8-5.5-3-5.5 3 2-8" stroke-width="1.5"/>
-              </svg>
-            </div>
-            <span class="tooltip">Badges</span>
-            <div class="notification" v-if="notifications.badges > 0">{{ notifications.badges }}</div>
-          </div>
-        </div>
-      </div>
+				<div class="section-content" :class="{ 'active': activeSection === 'badges' }">
+					<div class="button-particles" v-if="activeSection === 'badges'">
+						<div v-for="i in 8" :key="'badge-particle-'+i" class="button-particle" 
+								:style="generateParticleStyle()"></div>
+					</div>
+					<div class="button-ring"></div>
+					<div class="icon-container" @click="openSection('badges')">
+						<div class="glow-effect" :class="{ 'pulse': activeSection === 'badges' }"></div>
+						<div class="icon">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor">
+								<circle cx="12" cy="8" r="7" stroke-width="1.5"/>
+								<path d="M15.5 14l2 8-5.5-3-5.5 3 2-8" stroke-width="1.5"/>
+							</svg>
+						</div>
+						<span class="tooltip">Badges</span>
+						<div class="notification" v-if="notifications.badges > 0">{{ notifications.badges }}</div>
+					</div>
+				</div>
+			</div>
 
       <!-- Section Jeux -->
       <div class="section games" @mouseenter="activeSection = 'games'" @mouseleave="activeSection = null">
-        <div class="section-content" :class="{ 'active': activeSection === 'games' }">
-          <div class="icon-container" @click="openSection('games')">
-            <div class="glow-effect" :class="{ 'pulse': activeSection === 'games' }"></div>
-            <div class="icon">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor">
-                <path d="M17 4H7a5 5 0 0 0-5 5v6a5 5 0 0 0 5 5h10a5 5 0 0 0 5-5V9a5 5 0 0 0-5-5z" stroke-width="1.5"/>
-                <path d="M10 10H8v2H6v2h2v2h2v-2h2v-2h-2v-2zM17.5 15a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM15 11a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z" stroke-width="1.5"/>
-              </svg>
-            </div>
-            <span class="tooltip">Jeux</span>
-            <div class="notification" v-if="notifications.games > 0">{{ notifications.games }}</div>
-          </div>
-        </div>
-      </div>
+				<div class="section-content" :class="{ 'active': activeSection === 'games' }">
+					<div class="button-particles" v-if="activeSection === 'games'">
+						<div v-for="i in 8" :key="'game-particle-'+i" class="button-particle" 
+								:style="generateParticleStyle()"></div>
+					</div>
+					<div class="button-ring"></div>
+					<div class="icon-container" @click="openSection('games')">
+						<div class="glow-effect" :class="{ 'pulse': activeSection === 'games' }"></div>
+						<div class="icon">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor">
+								<path d="M17 4H7a5 5 0 0 0-5 5v6a5 5 0 0 0 5 5h10a5 5 0 0 0 5-5V9a5 5 0 0 0-5-5z" stroke-width="1.5"/>
+								<path d="M10 10H8v2H6v2h2v2h2v-2h2v-2h-2v-2zM17.5 15a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM15 11a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z" stroke-width="1.5"/>
+							</svg>
+						</div>
+						<span class="tooltip">Jeux</span>
+						<div class="notification" v-if="notifications.games > 0">{{ notifications.games }}</div>
+					</div>
+				</div>
+			</div>
 
       <!-- Section Profil - Plus Immersive! -->
       <div class="section profile" 
-           @mouseenter="activeSection = 'profile'" 
-           @mouseleave="activeSection = null"
-           :class="{ 'profile-highlight': activeSection === 'profile' }">
-        <div class="profile-particles" v-if="activeSection === 'profile'">
-          <div v-for="i in 10" :key="'profile-particle-'+i" class="profile-particle"></div>
-        </div>
-        <div class="section-content" :class="{ 'active': activeSection === 'profile' }">
-          <div class="icon-container" @click="openSection('profile')">
-            <div class="glow-effect" :class="{ 'pulse': activeSection === 'profile' }"></div>
-            <div class="icon profile-icon" :class="{ 'profile-active': activeSection === 'profile' }">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor">
-                <circle cx="12" cy="8" r="5" stroke-width="1.5"/>
-                <path d="M20 21v-2a6 6 0 0 0-6-6H10a6 6 0 0 0-6 6v2" stroke-width="1.5"/>
-              </svg>
-            </div>
-            <span class="tooltip tooltip-profile">Profil</span>
-            <div class="notification" v-if="notifications.profile > 0">{{ notifications.profile }}</div>
-          </div>
-        </div>
-      </div>
+				@mouseenter="activeSection = 'profile'" 
+				@mouseleave="activeSection = null"
+				:class="{ 'profile-highlight': activeSection === 'profile' }">
+			<div class="section-content" :class="{ 'active': activeSection === 'profile' }">
+				<div class="button-particles" v-if="activeSection === 'profile'">
+					<div v-for="i in 8" :key="'profile-particle-'+i" class="button-particle" 
+							:style="generateParticleStyle()"></div>
+				</div>
+				<div class="button-ring"></div>
+				<div class="icon-container" @click="openSection('profile')">
+					<div class="glow-effect" :class="{ 'pulse': activeSection === 'profile' }"></div>
+					<div class="icon profile-icon" :class="{ 'profile-active': activeSection === 'profile' }">
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor">
+							<circle cx="12" cy="8" r="5" stroke-width="1.5"/>
+							<path d="M20 21v-2a6 6 0 0 0-6-6H10a6 6 0 0 0-6 6v2" stroke-width="1.5"/>
+						</svg>
+					</div>
+					<span class="tooltip tooltip-profile">Profil</span>
+					<div class="notification" v-if="notifications.profile > 0">{{ notifications.profile }}</div>
+				</div>
+			</div>
+		</div>
 
       <!-- Avatar central avec cercle de progression amélioré -->
       <div class="avatar-container" @click="interactWithAvatar" :class="{ 'avatar-pulse': avatarAnimating }">
@@ -162,6 +179,67 @@
                            repeatCount="indefinite"/>
                 </stop>
               </linearGradient>
+
+              <linearGradient id="formationsGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#4FC3F7">
+                <animate attributeName="stop-color" 
+                        values="#4FC3F7;#29B6F6;#03A9F4;#4FC3F7" 
+                        dur="4s" 
+                        repeatCount="indefinite"/>
+                </stop>
+                <stop offset="100%" stop-color="#03A9F4">
+                <animate attributeName="stop-color" 
+                        values="#03A9F4;#4FC3F7;#29B6F6;#03A9F4" 
+                        dur="4s" 
+                        repeatCount="indefinite"/>
+                </stop>
+            </linearGradient>
+            
+            <linearGradient id="badgesGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#7C4DFF">
+                <animate attributeName="stop-color" 
+                        values="#7C4DFF;#651FFF;#6200EA;#7C4DFF" 
+                        dur="4s" 
+                        repeatCount="indefinite"/>
+                </stop>
+                <stop offset="100%" stop-color="#6200EA">
+                <animate attributeName="stop-color" 
+                        values="#6200EA;#7C4DFF;#651FFF;#6200EA" 
+                        dur="4s" 
+                        repeatCount="indefinite"/>
+                </stop>
+            </linearGradient>
+            
+            <linearGradient id="gamesGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#FF4081">
+                <animate attributeName="stop-color" 
+                        values="#FF4081;#F50057;#C51162;#FF4081" 
+                        dur="4s" 
+                        repeatCount="indefinite"/>
+                </stop>
+                <stop offset="100%" stop-color="#C51162">
+                <animate attributeName="stop-color" 
+                        values="#C51162;#FF4081;#F50057;#C51162" 
+                        dur="4s" 
+                        repeatCount="indefinite"/>
+                </stop>
+            </linearGradient>
+            
+            <linearGradient id="profileGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#1DE9B6">
+                <animate attributeName="stop-color" 
+                        values="#1DE9B6;#00BFA5;#00897B;#1DE9B6" 
+                        dur="4s" 
+                        repeatCount="indefinite"/>
+                </stop>
+                <stop offset="100%" stop-color="#00897B">
+                <animate attributeName="stop-color" 
+                        values="#00897B;#1DE9B6;#00BFA5;#00897B" 
+                        dur="4s" 
+                        repeatCount="indefinite"/>
+                </stop>
+            </linearGradient>
+
             </defs>
           </svg>
         </div>
@@ -259,6 +337,23 @@ export default {
     calculateLevel() {
       return Math.floor(this.progress / 10) + 1;
     },
+
+    generateParticleStyle() {
+			const duration = 1 + Math.random() * 1.5;
+			const delay = Math.random() * 0.5;
+			const size = 3 + Math.random() * 4;
+			
+			return {
+				left: 'calc(50% - ' + (size / 2) + 'px)',
+				top: 'calc(50% - ' + (size / 2) + 'px)',
+				width: size + 'px',
+				height: size + 'px',
+				transform: 'scale(0)',
+				opacity: '0',
+				animation: `particleExpand ${duration}s ease ${delay}s infinite`
+			};
+		},
+
     
     // Génère un style aléatoire pour les particules d'arrière-plan
     randomParticleStyle() {
@@ -285,16 +380,55 @@ export default {
     
     // Ouvre une section spécifique
     openSection(section) {
-      this.activeModal = section;
-      // Animation spéciale pour le profil
-      if (section === 'profile') {
-        this.triggerProfileAnimation();
-      }
-      // Réduire la notification
-      if (this.notifications[section] > 0) {
-        this.notifications[section]--;
-      }
-    },
+			// Create a ripple effect element
+			const ripple = document.createElement('div');
+			ripple.className = 'button-ripple';
+			
+			// Find the section element
+			const sectionEl = document.querySelector(`.section.${section} .section-content`);
+			if (sectionEl) {
+				sectionEl.appendChild(ripple);
+				
+				// Trigger ripple animation
+				setTimeout(() => {
+					ripple.remove();
+				}, 600);
+				
+				// Add haptic feedback if available
+				if (window.navigator && window.navigator.vibrate) {
+					window.navigator.vibrate(50);
+				}
+			}
+			
+			this.activeModal = section;
+			
+			// Animation speciale pour le profil
+			if (section === 'profile') {
+				this.triggerProfileAnimation();
+			}
+			
+			// Create a flash effect
+			this.createButtonFlash(section);
+			
+			// Réduire la notification
+			if (this.notifications[section] > 0) {
+				this.notifications[section]--;
+			}
+		},
+
+		createButtonFlash(section) {
+			const flash = document.createElement('div');
+			flash.className = `button-flash ${section}-flash`;
+			
+			const sectionEl = document.querySelector(`.section.${section}`);
+			if (sectionEl) {
+				sectionEl.appendChild(flash);
+				
+				setTimeout(() => {
+					flash.remove();
+				}, 500);
+			}
+		},
     
     // Animation spéciale pour le profil
     triggerProfileAnimation() {
@@ -442,6 +576,86 @@ export default {
   }
 }
 
+@keyframes particleExpand {
+  0% {
+    transform: translate(0, 0) scale(0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(
+      calc(cos(var(--angle)) * var(--distance)),
+      calc(sin(var(--angle)) * var(--distance))
+    ) scale(0);
+    opacity: 0;
+  }
+}
+
+.button-ripple {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: white;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  animation: rippleEffect 0.6s ease-out;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+@keyframes rippleEffect {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(20);
+    opacity: 0;
+  }
+}
+
+.button-flash {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  animation: flashEffect 0.5s ease-out;
+  z-index: 10;
+}
+
+.formations-flash {
+  background: radial-gradient(circle, rgba(79, 195, 247, 0.8) 0%, rgba(79, 195, 247, 0) 70%);
+}
+
+.badges-flash {
+  background: radial-gradient(circle, rgba(124, 77, 255, 0.8) 0%, rgba(124, 77, 255, 0) 70%);
+}
+
+.games-flash {
+  background: radial-gradient(circle, rgba(255, 64, 129, 0.8) 0%, rgba(255, 64, 129, 0) 70%);
+}
+
+.profile-flash {
+  background: radial-gradient(circle, rgba(29, 233, 182, 0.8) 0%, rgba(29, 233, 182, 0) 70%);
+}
+
+@keyframes flashEffect {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 /* Effet d'animation lors d'un nouvel accomplissement */
 .achievements-unlocked {
   background: radial-gradient(circle at center, #1a237e 0%, #121240 100%);
@@ -462,7 +676,17 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  transition: all 0.3s ease;
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  perspective: 1000px;
+  z-index: 10;
+}
+
+.section:hover {
+  transform: scale(1.1);
+}
+
+.section:active {
+  transform: scale(0.95);
 }
 
 .formations {
@@ -470,9 +694,17 @@ export default {
   left: 20%;
 }
 
+.formations .section-content {
+  background: linear-gradient(135deg, rgba(30, 30, 45, 0.7) 0%, rgba(30, 50, 80, 0.7) 100%);
+}
+
 .badges {
   top: 20%;
   right: 20%;
+}
+
+.badges .section-content {
+  background: linear-gradient(135deg, rgba(30, 30, 45, 0.7) 0%, rgba(60, 30, 80, 0.7) 100%);
 }
 
 .games {
@@ -480,10 +712,18 @@ export default {
   left: 20%;
 }
 
+.games .section-content {
+  background: linear-gradient(135deg, rgba(30, 30, 45, 0.7) 0%, rgba(80, 30, 50, 0.7) 100%);
+}
+
 .profile {
   bottom: 20%;
   right: 20%;
   transition: all 0.5s ease;
+}
+
+.profile .section-content {
+  background: linear-gradient(135deg, rgba(30, 30, 45, 0.7) 0%, rgba(30, 80, 70, 0.7) 100%);
 }
 
 /* Mise en évidence spéciale pour la section profil */
@@ -498,15 +738,6 @@ export default {
   width: 100%;
   height: 100%;
   pointer-events: none;
-}
-
-.profile-particle {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  background: radial-gradient(circle, rgba(255,64,129,0.8) 0%, rgba(255,64,129,0) 70%);
-  border-radius: 50%;
-  animation: profileParticle 3s infinite;
 }
 
 @keyframes profileParticle {
@@ -544,22 +775,111 @@ export default {
 }
 
 .section-content {
-  width: 80px;
-  height: 80px;
+  width: 85px;
+  height: 85px;
   border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.1);
+  background: rgba(30, 30, 45, 0.6);
+  backdrop-filter: blur(5px);
   display: flex;
   justify-content: center;
   align-items: center;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   position: relative;
   cursor: pointer;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    0 10px 20px rgba(0, 0, 0, 0.2),
+    0 5px 15px rgba(0, 0, 0, 0.1),
+    inset 0 0 10px rgba(255, 255, 255, 0.05);
+  transform-style: preserve-3d;
+  overflow: visible;
+}
+
+.section-content:active {
+  transform: translateZ(5px) scale(0.95);
+  transition: all 0.1s ease;
+}
+
+.section-content:active .icon {
+  transform: translateZ(5px) scale(0.95);
+  transition: all 0.1s ease;
+}
+
+.section-content:before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, transparent, transparent, rgba(255, 255, 255, 0.1), transparent, transparent);
+  z-index: -1;
+  animation: gradientRotate 10s linear infinite;
+}
+
+@keyframes gradientRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .section-content.active {
-  transform: scale(1.1);
-  background-color: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+  transform: translateZ(20px) rotateX(10deg);
+  background: rgba(40, 40, 65, 0.8);
+  box-shadow: 
+    0 15px 25px rgba(0, 0, 0, 0.3),
+    0 10px 10px rgba(0, 0, 0, 0.2),
+    inset 0 0 15px rgba(255, 255, 255, 0.1);
+}
+
+.button-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  top: 0;
+  left: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.formations .button-ring {
+  border-color: rgba(79, 195, 247, 0.3);
+}
+
+.badges .button-ring {
+  border-color: rgba(124, 77, 255, 0.3);
+}
+
+.games .button-ring {
+  border-color: rgba(255, 64, 129, 0.3);
+}
+
+.profile .button-ring {
+  border-color: rgba(29, 233, 182, 0.3);
+}
+
+.section-content:hover .button-ring {
+  animation: ringExpand 1.5s infinite;
+}
+
+.section-content:hover {
+  transform: translateZ(10px) rotateX(5deg) rotateY(5deg);
+}
+
+@keyframes ringExpand {
+  0% {
+    width: 100%;
+    height: 100%;
+    top: 0%;
+    left: 0%;
+    opacity: 0.7;
+  }
+  100% {
+    width: 200%;
+    height: 200%;
+    top: -50%;
+    left: -50%;
+    opacity: 0;
+  }
 }
 
 .icon-container {
@@ -574,11 +894,39 @@ export default {
 .icon {
   color: white;
   z-index: 2;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.5));
+  transform-style: preserve-3d;
 }
 
 .section-content:hover .icon {
-  transform: scale(1.1);
+  transform: translateZ(15px) scale(1.15);
+  filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.7)) brightness(1.2);
+}
+
+/* Thematic icon colors */
+.formations .icon svg {
+  fill: none;
+  /* stroke: url(#formationsGradient); */
+  filter: drop-shadow(0 0 5px rgba(79, 195, 247, 0.5));
+}
+
+.badges .icon svg {
+  fill: none;
+  /* stroke: url(#badgesGradient); */
+  filter: drop-shadow(0 0 5px rgba(124, 77, 255, 0.5));
+}
+
+.games .icon svg {
+  fill: none;
+  /* stroke: url(#gamesGradient); */
+  filter: drop-shadow(0 0 5px rgba(255, 64, 129, 0.5));
+}
+
+.profile .icon svg {
+  fill: none;
+  /* stroke: url(#profileGradient); */
+  filter: drop-shadow(0 0 5px rgba(29, 233, 182, 0.5));
 }
 
 /* Effet de lueur amélioré */
@@ -595,11 +943,36 @@ export default {
   );
   filter: blur(8px);
   opacity: 0.6;
-  transition: all 0.3s ease;
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 1;
+}
+
+.formations .glow-effect {
+  background: radial-gradient(circle, rgba(79, 195, 247, 0.3) 0%, rgba(79, 195, 247, 0) 70%);
+  box-shadow: 0 0 20px rgba(79, 195, 247, 0.3);
+}
+
+.badges .glow-effect {
+  background: radial-gradient(circle, rgba(124, 77, 255, 0.3) 0%, rgba(124, 77, 255, 0) 70%);
+  box-shadow: 0 0 20px rgba(124, 77, 255, 0.3);
+}
+
+.games .glow-effect {
+  background: radial-gradient(circle, rgba(255, 64, 129, 0.3) 0%, rgba(255, 64, 129, 0) 70%);
+  box-shadow: 0 0 20px rgba(255, 64, 129, 0.3);
+}
+
+.profile .glow-effect {
+  background: radial-gradient(circle, rgba(29, 233, 182, 0.3) 0%, rgba(29, 233, 182, 0) 70%);
+  box-shadow: 0 0 20px rgba(29, 233, 182, 0.3);
 }
 
 .glow-effect.pulse {
-  animation: pulsate 2s infinite;
+  animation: pulsate 3s infinite;
+  filter: blur(10px);
+  opacity: 0.8;
+  width: 110%;
+  height: 110%;
 }
 
 @keyframes pulsate {
@@ -608,51 +981,168 @@ export default {
   100% { transform: scale(0.9); opacity: 0.6; filter: blur(8px); }
 }
 
+.formations .glow-effect.pulse {
+  animation: formationsPulsate 3s infinite;
+}
+
+.badges .glow-effect.pulse {
+  animation: badgesPulsate 3s infinite;
+}
+
+.games .glow-effect.pulse {
+  animation: gamesPulsate 3s infinite;
+}
+
+.profile .glow-effect.pulse {
+  animation: profilePulsate 3s infinite;
+}
+
+@keyframes formationsPulsate {
+  0% { transform: scale(0.9); opacity: 0.6; box-shadow: 0 0 20px rgba(79, 195, 247, 0.3); }
+  50% { transform: scale(1.2); opacity: 0.8; box-shadow: 0 0 30px rgba(79, 195, 247, 0.5); }
+  100% { transform: scale(0.9); opacity: 0.6; box-shadow: 0 0 20px rgba(79, 195, 247, 0.3); }
+}
+
+@keyframes badgesPulsate {
+  0% { transform: scale(0.9); opacity: 0.6; box-shadow: 0 0 20px rgba(124, 77, 255, 0.3); }
+  50% { transform: scale(1.2); opacity: 0.8; box-shadow: 0 0 30px rgba(124, 77, 255, 0.5); }
+  100% { transform: scale(0.9); opacity: 0.6; box-shadow: 0 0 20px rgba(124, 77, 255, 0.3); }
+}
+
+@keyframes gamesPulsate {
+  0% { transform: scale(0.9); opacity: 0.6; box-shadow: 0 0 20px rgba(255, 64, 129, 0.3); }
+  50% { transform: scale(1.2); opacity: 0.8; box-shadow: 0 0 30px rgba(255, 64, 129, 0.5); }
+  100% { transform: scale(0.9); opacity: 0.6; box-shadow: 0 0 20px rgba(255, 64, 129, 0.3); }
+}
+
+@keyframes profilePulsate {
+  0% { transform: scale(0.9); opacity: 0.6; box-shadow: 0 0 20px rgba(29, 233, 182, 0.3); }
+  50% { transform: scale(1.2); opacity: 0.8; box-shadow: 0 0 30px rgba(29, 233, 182, 0.5); }
+  100% { transform: scale(0.9); opacity: 0.6; box-shadow: 0 0 20px rgba(29, 233, 182, 0.3); }
+}
+
 /* Tooltip */
 .tooltip {
   position: absolute;
-  top: -30px;
-  background-color: rgba(0, 0, 0, 0.7);
+  top: -40px;
+  background: rgba(10, 10, 20, 0.9);
   color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 14px;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   white-space: nowrap;
+  transform: translateY(10px);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  z-index: 100;
 }
 
-.tooltip-profile {
-  background-color: rgba(255, 64, 129, 0.7);
+.formations .tooltip {
+  border-bottom: 2px solid #4FC3F7;
+}
+
+.badges .tooltip {
+  border-bottom: 2px solid #7C4DFF;
+}
+
+.games .tooltip {
+  border-bottom: 2px solid #FF4081;
+}
+
+.profile .tooltip {
+  border-bottom: 2px solid #1DE9B6;
 }
 
 .icon-container:hover .tooltip {
   opacity: 1;
+  transform: translateY(0);
+}
+
+.button-particles {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.button-particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.formations .button-particle {
+  background: radial-gradient(circle, rgba(79, 195, 247, 1) 0%, rgba(79, 195, 247, 0) 70%);
+  box-shadow: 0 0 10px rgba(79, 195, 247, 0.5);
+}
+
+.badges .button-particle {
+  background: radial-gradient(circle, rgba(124, 77, 255, 1) 0%, rgba(124, 77, 255, 0) 70%);
+  box-shadow: 0 0 10px rgba(124, 77, 255, 0.5);
+}
+
+.games .button-particle {
+  background: radial-gradient(circle, rgba(255, 64, 129, 1) 0%, rgba(255, 64, 129, 0) 70%);
+  box-shadow: 0 0 10px rgba(255, 64, 129, 0.5);
+}
+
+.profile .button-particle {
+  background: radial-gradient(circle, rgba(29, 233, 182, 1) 0%, rgba(29, 233, 182, 0) 70%);
+  box-shadow: 0 0 10px rgba(29, 233, 182, 0.5);
 }
 
 /* Notification */
 .notification {
   position: absolute;
-  top: 0;
-  right: 0;
-  width: 20px;
-  height: 20px;
-  background-color: #FF4081;
-  color: white;
+  top: -5px;
+  right: -5px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
   font-size: 12px;
   font-weight: bold;
-  animation: bounceIn 0.6s;
-  box-shadow: 0 0 10px rgba(255, 64, 129, 0.5);
+  z-index: 10;
+  transform: scale(0);
+  animation: notificationBounce 0.5s forwards;
 }
 
-@keyframes bounceIn {
+.formations .notification {
+  background: linear-gradient(135deg, #4FC3F7 0%, #29B6F6 100%);
+  box-shadow: 0 0 15px rgba(79, 195, 247, 0.7);
+}
+
+.badges .notification {
+  background: linear-gradient(135deg, #7C4DFF 0%, #651FFF 100%);
+  box-shadow: 0 0 15px rgba(124, 77, 255, 0.7);
+}
+
+.games .notification {
+  background: linear-gradient(135deg, #FF4081 0%, #F50057 100%);
+  box-shadow: 0 0 15px rgba(255, 64, 129, 0.7);
+}
+
+.profile .notification {
+  background: linear-gradient(135deg, #1DE9B6 0%, #00BFA5 100%);
+  box-shadow: 0 0 15px rgba(29, 233, 182, 0.7);
+}
+
+@keyframes notificationBounce {
   0% { transform: scale(0); }
   50% { transform: scale(1.2); }
+  80% { transform: scale(0.9); }
   100% { transform: scale(1); }
 }
 
