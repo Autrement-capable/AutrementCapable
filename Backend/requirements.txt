@@ -1,7 +1,5 @@
 fastapi
 uvicorn
-asyncpg
-fastapi-another-jwt-auth
 pydantic
 pydantic[email]
 python-dotenv
@@ -12,16 +10,22 @@ pillow
 pdf2image
 fillpdf
 apscheduler
-SQLModel
-# need to be replaced with psycopg2 for production you would need to rework the Dockerfile
-psycopg2-binary
+# for database
+# SQLModel
+asyncpg
+sqlalchemy[asyncio]
+psycopg2
 # for testing
 pytest
 pytest-asyncio
 httpx
-#Debugging
+# Debugging
 debugpy
 # email
 fastapi-mail
 # templates
 Jinja2
+faker
+#auth
+pyjwt
+cryptography

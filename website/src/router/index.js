@@ -24,8 +24,12 @@ import Environment from "@/components/Environment.vue";
 import ScenarioList from "@/components/ScenarioList.vue";
 import ScenarioPage from "@/components/ScenarioPage.vue";
 import GameDashboard from '@/components/GameDashboard.vue';
-import HomePage from '@/components/HomePage.vue'
-import GamePage from '@/components/GamePage.vue'
+import HomePage from '@/components/HomePage.vue';
+import GamePage from '@/components/GamePage.vue';
+import ResultsPage from '@/components/ResultsPage.vue';
+import FormationPage from "@/components/FormationPage.vue";
+import RewardsPage from "@/components/RewardsPage.vue";
+import SkillsWheelPage from "@/components/SkillsWheelPage.vue";
 
 const routes = [
   {
@@ -147,16 +151,36 @@ const routes = [
     component: ScenarioList,
   },
   {
-    path: "/scenarios/:id",
+    path: "/scenarios/:urlName",
     name: "ScenarioPage",
     component: ScenarioPage,
     props: true,
+  },
+  {
+    path: '/resultats',
+    name: 'ResultsPage',
+    component: ResultsPage
   },
   {
     path: '/dashboard',
     name: 'Dashboard',
     component: GameDashboard
   },
+  {
+    path: '/formation',
+    name: 'FormationPage',
+    component: FormationPage
+  },
+  {
+    path: '/badges',
+    name: 'RewardsPage',
+    component: RewardsPage
+  },
+  {
+    path: '/roue-des-competences',
+    name: 'SkillsWheelPage',
+    component: SkillsWheelPage
+  }
 ];
 
 const router = createRouter({

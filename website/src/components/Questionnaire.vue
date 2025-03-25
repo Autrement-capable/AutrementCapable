@@ -1,7 +1,6 @@
 <template>
   <div class="questionnaire" aria-label="Questionnaire page">
     <h1 class="title">Bonjour !</h1>
-    <!-- Affiche l'avatar sélectionné si disponible, sinon l'image par défaut -->
     <img :src="selectedAvatarUrl || require('../assets/jeunefemme.png')" alt="Avatar" :class="imageClass" />
 
     <div v-if="currentQuestionIndex < questions.length" class="question-container">
@@ -10,7 +9,6 @@
         <button class="small-button" @click="repeatQuestion">Écouter le texte</button>
       </div>
 
-      <!-- Affichage des inputs en fonction du type de question -->
       <input
         v-if="questions[currentQuestionIndex].type === 'text'"
         type="text"
@@ -29,13 +27,10 @@
       />
       <button class="small-button" @click="startRecognition">🎙️ Parler</button>
 
-      <!-- Bloc de sélection d'avatar pour la question "passions" -->
       <div v-if="questions[currentQuestionIndex].key === 'passions'">
-        <!-- Indicateur de chargement pendant la génération -->
         <div v-if="isLoadingImages" class="loading">
           <p>Chargement des avatars...</p>
         </div>
-        <!-- Affichage des avatars une fois chargés -->
         <div v-else-if="generatedImages.length > 0 && !selectedAvatarUrl" class="avatar-selection">
           <h2>Choisissez votre avatar :</h2>
           <div class="avatars-grid">
@@ -73,17 +68,13 @@ export default {
   data() {
     return {
       currentQuestionIndex: 0,
-      // Tableau pour stocker les URL des images générées
       generatedImages: [],
-      // URL de l'avatar sélectionné par l'utilisateur
       selectedAvatarUrl: '',
-      // Indicateur de chargement pour la génération des images
       isLoadingImages: false,
       backgroundColors: ['#e0f7fa', '#e8f5e9', '#fce4ec', '#fff3e0', '#ede7f6', '#f9fbe7'],
       questions: [
-        // Vous pouvez décommenter ou ajouter d'autres questions si nécessaire
-        // { text: '🎂 Quel âge as-tu ?', key: 'age', type: 'number' },
-        // { text: '👤 Comment voudrais-tu qu\'on t\'appelle ?', key: 'name', type: 'text' },
+        { text: '🎂 Quel âge as-tu ?', key: 'age', type: 'number' },
+        { text: '👤 Comment voudrais-tu qu\'on t\'appelle ?', key: 'name', type: 'text' },
         { text: '🎨 Quelles sont tes passions ?', key: 'passions', type: 'text', icon: 'passion-icon.png' }
       ],
       responses: {
@@ -143,15 +134,11 @@ export default {
         alert("Veuillez répondre à la question avant de passer à la suivante.");
         return;
       }
-      // Pour la question des passions, générer 3 images puis forcer la sélection
       if (this.questions[this.currentQuestionIndex].key === 'passions') {
-        // Si aucune image n'a encore été générée, appeler l'API
         if (this.generatedImages.length === 0) {
           await this.generatePicture(this.responses.passions);
-          // Après génération, laisser l'utilisateur choisir (ne pas avancer automatiquement)
           return;
         }
-        // Si les images sont générées mais aucune n'a été choisie, empêcher le passage à la question suivante
         if (!this.selectedAvatarUrl) {
           alert("Veuillez choisir un avatar parmi les images proposées.");
           return;
@@ -163,16 +150,12 @@ export default {
     async generatePicture(passions) {
       const url = process.env.VUE_APP_AZURE_OPENAI_ENDPOINT;
       const apiKey = process.env.VUE_APP_AZURE_OPENAI_API_KEY;
-      // Construction du prompt
       const prompt = `Un avatar conçu pour accompagner un utilisateur en situation de handicap neurodéveloppemental (ADHD, autisme, etc.). Il est vu de face, avec une expression amicale et engageante, prêt à poser des questions. Son apparence et son langage corporel montrent son enthousiasme pour ${passions}, avec des vêtements, accessoires ou éléments visuels directement liés à cet univers. L’avatar doit dégager de la bienveillance et de la curiosité, avec un regard expressif et captivant. Le fond est neutre et ne contient AUCUN éléments, afin de ne pas distraire du personnage principal. L’éclairage est doux et professionnel, adapté à une utilisation digitale. `;
       console.log("Envoi de la requête à l'API Azure OpenAI...");
-      console.log("Prompt :", prompt);
 
-      // Réinitialiser les images et afficher le chargement
       this.generatedImages = [];
       this.isLoadingImages = true;
 
-      // Effectuer 3 requêtes consécutives
       for (let i = 0; i < 3; i++) {
         try {
           const response = await axios.post(
@@ -194,7 +177,6 @@ export default {
       }
       this.isLoadingImages = false;
     },
-    // Méthode appelée lorsque l'utilisateur clique sur une image pour choisir son avatar
     selectAvatar(imgUrl) {
       this.selectedAvatarUrl = imgUrl;
       console.log("Avatar sélectionné :", imgUrl);

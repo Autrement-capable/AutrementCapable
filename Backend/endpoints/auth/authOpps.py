@@ -1,18 +1,16 @@
 from fastapi import APIRouter, Depends, Request, HTTPException
-from fastapi.responses import RedirectResponse
-from fastapi_another_jwt_auth import AuthJWT
+from server.jwt_config.token_creation import create_token, decode_token, JWTBearer
 from pydantic import BaseModel, Field
 from utils.jwt_exceptions import create_response_dict
-from database.postgress.config import GetSession
-from database.postgress.actions.unverified_user import verify_user
-from database.postgress.actions.revoked_jwt_tokens import revoke_token, get_revoked_token_by_jti
+from database.postgress.config import getSession
+from database.postgress.actions.revoked_jwt_tokens import revoke_token
 from server.server import AddRouter
-from sqlmodel.ext.asyncio.session import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
-
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
+# Response Models
 class LogoutResponse(BaseModel):
     msg: str = Field(..., description="The message")
 
@@ -20,66 +18,51 @@ class RefreshResponse(BaseModel):
     access_token: str = Field(..., description="The new access token")
 
 class LogoutForm(BaseModel):
-    refresh_token: str = Field(..., description="The refresh token. Putting 'Bearer' is optional")
+    refresh_token: str = Field(..., description="The refresh token. 'Bearer' is optional")
 
-@router.post("/refresh", response_model=RefreshResponse,
+@router.post("/refresh",
+             response_model=RefreshResponse,
              responses=create_response_dict(AccessToken=False),
              tags=["Auth_refresh"])
-async def refresh(request: Request, Authorize: AuthJWT = Depends(), session: AsyncSession = Depends(GetSession)):
+async def refresh(
+    jwt: dict = Depends(JWTBearer(is_refresh=True))
+):
     """
-    This endpoint is used to refresh the access token.
+    Refresh the access token. Requires a valid refresh token.
 
-    Note: Send the refresh token in the Authorization header as a Bearer token.
+    - The refresh token is sent in the Authorization header as Bearer {refresh_token}
     """
-    Authorize.jwt_refresh_token_required()
-    user_id = Authorize.get_jwt_subject()
-    access_token = Authorize.create_access_token(subject=user_id, fresh=False)
+    jwt = jwt["payload"]
+    access_token = create_token(jwt["sub"], jwt["role"], refresh=False)
     return {"access_token": access_token}
-
 
 @router.post("/logout",
              responses=create_response_dict(),
              response_model=LogoutResponse,
              tags=["Auth", "Auth_refresh"])
-async def logout(request: Request, form: LogoutForm, Authorize: AuthJWT = Depends(), session: AsyncSession = Depends(GetSession)):
+async def logout(request: Request, form: LogoutForm = Depends(), session: AsyncSession = Depends(getSession), JWT: dict = Depends(JWTBearer())):
     """
-    This endpoint is used to revoke the access token and refresh token.
+    Revoke access and refresh tokens to log out the user.
     """
 
-    # Revoke the access token
-    Authorize.jwt_required()
-    print("gets to here")
-    jti_access = Authorize.get_raw_jwt()["jti"]
-    expires_access = datetime.utcfromtimestamp(Authorize.get_raw_jwt()["exp"])
+    access_payload = JWT["payload"]
+    jti_access = access_payload["jti"]
+    expires_access = datetime.utcfromtimestamp(access_payload["exp"])
 
-    # Revoke the access token
     is_ok = await revoke_token(session, jti_access, expires_access, "access", commit=False)
     if not is_ok:
-        print("Error here: Access token already revoked")
-        raise HTTPException(status_code=401, detail="Invalid access token") # most likely the token is already revoked
+        raise HTTPException(status_code=401, detail="Invalid access token (Already Revoked)")
 
-
+    # Revoke Refresh Token
     refresh_token = form.refresh_token.replace("Bearer ", "")
-    # Verify the refresh token
     try:
-        decoded_token = Authorize.get_raw_jwt(refresh_token)
-        jti_refresh = decoded_token["jti"]
-        expires_refresh = datetime.utcfromtimestamp(decoded_token["exp"])
+        refresh_payload = await decode_token(session, refresh_token, is_refresh=True)
+        jti_refresh = refresh_payload["jti"]
+        expires_refresh = datetime.utcfromtimestamp(refresh_payload["exp"])
         await revoke_token(session, jti_refresh, expires_refresh, "refresh")
-    except Exception as e:
-        print(e)
+    except Exception:
         raise HTTPException(status_code=401, detail="Invalid refresh token")
 
     return {"msg": "Successfully logged out"}
 
-@router.get("/verify")
-async def verify_users(request: Request, code: str, session: AsyncSession = Depends(GetSession)):
-    """
-    Verify a user using their verification code.
-    """
-    user = await verify_user(session, code)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found or the token has expired.")
-    return RedirectResponse(url="/docs") # tmp redirect
-
-AddRouter(router)  # Add the router to the server
+AddRouter(router)

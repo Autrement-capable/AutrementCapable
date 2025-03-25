@@ -449,91 +449,97 @@ export const scenarios = [
     {
         id: 1,
         titre: "Un inconnu en difficulté",
+        urlName: "inconnu-en-difficulte",
         contexteIntro: "Tu rentres tranquillement chez toi après une longue journée. Soudain, tu remarques qu'une personne âgée trébuche et tombe sur le trottoir. Quelques passants hésitent à intervenir.",
         contexte: [
           { personnage: "Passant 1", avatar: "femme-daffaires.png", texte: "Oh… Elle est tombée !" },
-          { personnage: "Passant 2", avatar: "passant2.png", texte: "Quelqu’un devrait faire quelque chose..." },
-          { personnage: "Personne âgée", avatar: "personne_agee.png", texte: "Aïe... J’ai mal au poignet..." }
+          { personnage: "Passant 2", avatar: "passant2.png", texte: "Quelqu'un devrait faire quelque chose..." },
+          { personnage: "Personne âgée", avatar: "personne_agee.png", texte: "Aïe... J'ai mal au poignet..." }
         ],
         question: "Que fais-tu ?",
         reponses: [
           { id: "A", texte: "Tu aides immédiatement la personne à se relever.", skills: { empathie: 5, initiative: 4 } },
           { id: "B", texte: "Tu appelles les secours et attends avec elle.", skills: { responsabilite: 4, espritEquipe: 3 } },
-          { id: "C", texte: "Tu observes si quelqu’un d’autre intervient.", skills: { observation: 4 }, penalties: { initiative: 2, empathie: 1 } },
-          { id: "D", texte: "Tu continues ta route.", skills: { indifference: 5 }, penalties: { empathie: 5, responsabilite: 4 } }
+          { id: "C", texte: "Tu observes si quelqu'un d'autre intervient.", skills: { observation: 4 }, penalties: { initiative: 2, empathie: 1 } },
+          { id: "D", texte: "Tu continues ta route.", skills: { }, penalties: { empathie: 5, responsabilite: 4 } }
         ]
     },
     {
         id: 2,
         titre: "Conflit au supermarché",
-        contexteIntro: "Tu fais des courses dans un supermarché bondé. Après plusieurs minutes dans la file d’attente, quelqu’un passe devant toi. D’autres clients semblent mécontents, mais personne n’ose parler.",
+        urlName: "conflit-au-supermarche",
+        contexteIntro: "Tu fais des courses dans un supermarché bondé. Après plusieurs minutes dans la file d'attente, quelqu'un passe devant toi. D'autres clients semblent mécontents, mais personne n'ose parler.",
         contexte: [
           { personnage: "Client derrière", avatar: "femme.png", texte: "Vous avez vu ? Il passe devant tout le monde !" },
-          { personnage: "Caissier", avatar: "femme-caissiere.png", texte: "Veuillez respecter la file, s’il vous plaît." }
+          { personnage: "Caissier", avatar: "femme-caissiere.png", texte: "Veuillez respecter la file, s'il vous plaît." }
         ],
         question: "Comment réagis-tu ?",
         reponses: [
-          { id: "A", texte: "Tu fais remarquer calmement la file d’attente.", skills: { assertivite: 5, diplomatie: 4 } },
-          { id: "B", texte: "Tu attends que quelqu’un d’autre réagisse.", skills: { patience: 4 }, penalties: { assertivite: 3, espritEquipe: 2 } },
-          { id: "C", texte: "Tu fais une remarque sèche.", skills: { franchise: 4 }, penalties: { diplomatie: 3 } },
-          { id: "D", texte: "Tu ignores la situation.", skills: { detachement: 5 }, penalties: { assertivite: 4, empathie: 2 } }
+          { id: "A", texte: "Tu fais remarquer calmement la file d'attente.", skills: { assertivite: 5, diplomatie: 4 } },
+          { id: "B", texte: "Tu attends que quelqu'un d'autre réagisse.", skills: { patience: 4 }, penalties: { assertivite: 3, espritEquipe: 2 } },
+          { id: "C", texte: "Tu fais une remarque sèche.", skills: { assertivite: 4 }, penalties: { diplomatie: 3 } },
+          { id: "D", texte: "Tu ignores la situation.", skills: { patience: 3 }, penalties: { assertivite: 4, espritEquipe: 2 } }
         ]
     },
     {
         id: 3,
         titre: "Un ami en difficulté",
-        contexteIntro: "Un ami proche t’appelle, visiblement bouleversé. Il a vécu une mauvaise journée et cherche du soutien. Tu sens qu’il a besoin de parler, mais aussi de conseils.",
+        urlName: "ami-en-difficulte",
+        contexteIntro: "Un ami proche t'appelle, visiblement bouleversé. Il a vécu une mauvaise journée et cherche du soutien. Tu sens qu'il a besoin de parler, mais aussi de conseils.",
         contexte: [
-          { personnage: "Alex", avatar: "passant2.png", texte: "Franchement, j’en peux plus… Mon stage est horrible, mon tuteur me critique tout le temps." },
-          { personnage: "Toi", avatar: "toi.png", texte: "Ça n’a pas l’air simple… Qu’est-ce qu’il s’est passé aujourd’hui ?" },
+          { personnage: "Alex", avatar: "passant2.png", texte: "Franchement, j'en peux plus… Mon stage est horrible, mon tuteur me critique tout le temps." },
+          { personnage: "Toi", avatar: "toi.png", texte: "Ça n'a pas l'air simple… Qu'est-ce qu'il s'est passé aujourd'hui ?" },
           { personnage: "Alex", avatar: "passant2.png", texte: "Je crois que je vais tout arrêter." }
         ],
         question: "Que fais-tu ?",
         reponses: [
-          { id: "A", texte: "Tu l’écoutes attentivement avant de donner ton avis.", skills: { empathie: 5, ecouteActive: 4 } },
-          { id: "B", texte: "Tu lui dis : ‘Ne te laisse pas faire, défends-toi !’", skills: { soutien: 4, motivation: 3 } },
-          { id: "C", texte: "Tu lui réponds : ‘Si c’est trop dur, arrête, tu trouveras autre chose.’", skills: { pragmatisme: 4 }, penalties: { empathie: 3, soutien: 2 } },
+          { id: "A", texte: "Tu l'écoutes attentivement avant de donner ton avis.", skills: { empathie: 5, ecouteActive: 4 } },
+          { id: "B", texte: "Tu lui dis : 'Ne te laisse pas faire, défends-toi !'", skills: { soutien: 4, assertivite: 3 } },
+          { id: "C", texte: "Tu lui réponds : 'Si c'est trop dur, arrête, tu trouveras autre chose.'", skills: { pragmatisme: 4 }, penalties: { empathie: 3, soutien: 2 } },
           { id: "D", texte: "Tu proposes de chercher ensemble des solutions.", skills: { espritEquipe: 5, coaching: 4 } }
         ]
     },
     {
         id: 4,
         titre: "Erreur au restaurant",
+        urlName: "erreur-au-restaurant",
         contexteIntro: "Tu es au restaurant avec des amis. Après avoir attendu longtemps, tu reçois un plat qui ne correspond pas à ta commande. Le serveur semble pressé.",
         contexte: [
           { personnage: "Serveur", avatar: "serveur.png", texte: "Voici votre commande !" },
-          { personnage: "Toi", avatar: "toi.png", texte: "Hmm… Ce n’est pas ce que j’avais demandé." },
+          { personnage: "Toi", avatar: "toi.png", texte: "Hmm… Ce n'est pas ce que j'avais demandé." },
           { personnage: "Serveur", avatar: "serveur.png", texte: "Oh, vraiment ? Désolé ! Vous voulez que je change ?" }
         ],
         question: "Comment réagis-tu ?",
         reponses: [
           { id: "A", texte: "Tu demandes calmement à recevoir le bon plat.", skills: { assertivite: 5, communication: 4 } },
-          { id: "B", texte: "Tu ne dis rien et manges quand même.", skills: { patience: 3, passivite: 4 }, penalties: { assertivite: 4, confianceEnSoi: 2 } },
-          { id: "C", texte: "Tu fais une remarque sèche : C’est pas sérieux !’", skills: { franchise: 4 }, penalties: { diplomatie: 3 } },
-          { id: "D", texte: "Tu demandes si un geste commercial est possible.", skills: { negociation: 5, assurance: 4 } }
+          { id: "B", texte: "Tu ne dis rien et manges quand même.", skills: { patience: 3 }, penalties: { assertivite: 4, confianceEnSoi: 2 } },
+          { id: "C", texte: "Tu fais une remarque sèche : C'est pas sérieux !'", skills: { assertivite: 4 }, penalties: { diplomatie: 3 } },
+          { id: "D", texte: "Tu demandes si un geste commercial est possible.", skills: { negociation: 5, confianceEnSoi: 4 } }
         ]
     },
     {
         id: 5,
         titre: "Panne de bus",
+        urlName: "panne-de-bus",
         contexteIntro: "Tu es dans un bus, en route pour un rendez-vous important. Soudain, le bus tombe en panne. Il reste peu de temps avant ton entretien.",
         contexte: [
           { personnage: "Conducteur", avatar: "conducteur.png", texte: "Désolé, tout le monde descend, le bus ne repartira pas." },
           { personnage: "Passager", avatar: "femme.png", texte: "On fait quoi, là ? On va être en retard !" },
-          { personnage: "Toi", avatar: "toi.png", texte: "L’entretien commence dans 15 minutes..." }
+          { personnage: "Toi", avatar: "toi.png", texte: "L'entretien commence dans 15 minutes..." }
         ],
         question: "Que fais-tu ?",
         reponses: [
           { id: "A", texte: "Tu regardes sur ton téléphone une alternative rapide.", skills: { reflexionRapide: 5, adaptabilite: 4 } },
           { id: "B", texte: "Tu appelles ton recruteur pour prévenir de ton retard.", skills: { communication: 5, anticipation: 4 } },
           { id: "C", texte: "Tu demandes à un passager de partager un taxi.", skills: { initiative: 4, espritEquipe: 4 } },
-          { id: "D", texte: "Tu attends que la situation se règle toute seule.", skills: { patience: 4, passivite: 4 }, penalties: { initiative: 4, anticipation: 3 } }
+          { id: "D", texte: "Tu attends que la situation se règle toute seule.", skills: { patience: 4 }, penalties: { initiative: 4, anticipation: 3 } }
         ]
     },
     {
         id: 6,
         titre: "Conflit en classe",
-        contexteIntro: "Pendant un travail de groupe en classe, l’un de tes camarades critique tes idées devant tout le monde. L’ambiance devient tendue.",
+        urlName: "conflit-classe",
+        contexteIntro: "Pendant un travail de groupe en classe, l'un de tes camarades critique tes idées devant tout le monde. L'ambiance devient tendue.",
         contexte: [
             { personnage: "Camarade", avatar: "passant2.png", texte: "Ton idée est nulle, on devrait faire autrement." },
             { personnage: "Autre élève", avatar: "femme.png", texte: "Euh… Calmez-vous." },
@@ -541,17 +547,18 @@ export const scenarios = [
         question: "Que fais-tu ?",
         reponses: [
             { id: "A", texte: "Tu proposes de discuter calmement.", skills: { mediation: 5, empathie: 4 } },
-            { id: "B", texte: "Tu défends tes idées avec fermeté.", skills: { assertivite: 5, confiance: 4 } },
-            { id: "C", texte: "Tu proposes à l’enseignant d’intervenir.", skills: { responsabilite: 4, decision: 3 } },
-            { id: "D", texte: "Tu restes silencieux.", skills: { observation: 4, gestionStress: 3 }, penalties: { assertivite: 4, confiance: 3, mediation: 3 } }
+            { id: "B", texte: "Tu défends tes idées avec fermeté.", skills: { assertivite: 5, confianceEnSoi: 4 } },
+            { id: "C", texte: "Tu proposes à l'enseignant d'intervenir.", skills: { responsabilite: 4, decision: 3 } },
+            { id: "D", texte: "Tu restes silencieux.", skills: { observation: 4, gestionStress: 3 }, penalties: { assertivite: 4, confianceEnSoi: 3 } }
         ]
     },
     {
         id: 7,
         titre: "Première journée de stage",
+        urlName: "premiere-journee-de-stage",
         contexteIntro: "C'est ton premier jour de stage dans une entreprise. Ton tuteur te donne une tâche que tu ne comprends pas bien.",
         contexte: [
-            { personnage: "Tuteur", avatar: "homme-daffaire.png", texte: "Voici ta première tâche, tu peux t’y mettre." },
+            { personnage: "Tuteur", avatar: "homme-daffaire.png", texte: "Voici ta première tâche, tu peux t'y mettre." },
             { personnage: "Toi", avatar: "toi.png", texte: "(Je ne suis pas sûr de tout comprendre…)" }
         ],
         question: "Que fais-tu ?",
@@ -559,22 +566,60 @@ export const scenarios = [
             { id: "A", texte: "Tu demandes des précisions au tuteur.", skills: { communication: 5, curiosite: 4 } },
             { id: "B", texte: "Tu essaies de trouver la solution seul.", skills: { autonomie: 5, initiative: 4 } },
             { id: "C", texte: "Tu observes comment font tes collègues.", skills: { observation: 4, apprentissage: 4 } },
-            { id: "D", texte: "Tu fais au mieux, même si tu n’es pas sûr.", skills: { confianceEnSoi: 4, priseDeRisque: 3 }, penalties: { communication: 3, curiosite: 2, apprentissage: 2 } }
+            { id: "D", texte: "Tu fais au mieux, même si tu n'es pas sûr.", skills: { confianceEnSoi: 4 }, penalties: { communication: 3, curiosite: 2 } }
         ]
     },
     {
         id: 8,
         titre: "Inclusion dans une activité de groupe",
-        contexteIntro: "Tu organises une activité en groupe. L’un des participants utilise une prothèse de bras et semble avoir du mal avec l’exercice manuel proposé.",
+        urlName: "inclusion-activite-groupe",
+        contexteIntro: "Tu organises une activité en groupe. L'un des participants utilise une prothèse de bras et semble avoir du mal avec l'exercice manuel proposé.",
         contexte: [
             { personnage: "Participant", avatar: "passant2.png", texte: "Je crois que je ne pourrai pas faire ça... J'ai trop mal au bras." },
+            { personnage: "Toi", avatar: "toi.png", texte: "(Je vois que tu rencontres des difficultés avec cet exercice...)" },
         ],
         question: "Comment réagis-tu ?",
         reponses: [
-            { id: "A", texte: "Tu modifies l’activité pour que tout le monde puisse participer.", skills: { creativite: 5, inclusion: 4 } },
+            { id: "A", texte: "Tu modifies l'activité pour que tout le monde puisse participer.", skills: { creativite: 5, inclusion: 4 } },
             { id: "B", texte: "Tu lui proposes une autre tâche adaptée.", skills: { adaptabilite: 5, espritEquipe: 4 } },
-            { id: "C", texte: "Tu l’encourages à essayer, en proposant de l’aider.", skills: { soutien: 4, coaching: 5 } },
-            { id: "D", texte: "Tu continues l’activité telle quelle.", skills: { pragmatisme: 4, gestionTemps: 3 }, penalties: { inclusion: 3, empathie: 3 } }
+            { id: "C", texte: "Tu l'encourages à essayer, en proposant de l'aider.", skills: { soutien: 4, coaching: 5 } },
+            { id: "D", texte: "Tu continues l'activité telle quelle.", skills: { gestionTemps: 3 }, penalties: { inclusion: 3, empathie: 3 } }
         ]
-    }    
+    },
+    {
+        id: 9,
+        titre: "Réunion d'équipe difficile",
+        urlName: "reunion-equipe-difficile",
+        contexteIntro: "Tu participes à une réunion d'équipe importante. L'un de tes collègues présente une idée que tu sais être problématique, mais qui semble enthousiasmer le reste de l'équipe. Tu as des informations qui pourraient remettre en question cette proposition.",
+        contexte: [
+            { personnage: "Collègue", avatar: "homme-daffaire.png", texte: "Je suis sûr que cette approche va doubler notre efficacité !" },
+            { personnage: "Chef d'équipe", avatar: "femme-daffaires.png", texte: "Cela semble prometteur. Quelqu'un a-t-il des questions ou remarques ?" },
+            { personnage: "Toi", avatar: "toi.png", texte: "(Je sais que ce projet pourrait poser des problèmes techniques majeurs...)" }
+        ],
+        question: "Comment réagis-tu ?",
+        reponses: [
+            { id: "A", texte: "Tu expliques calmement les problèmes potentiels, avec des faits précis.", skills: { assertivite: 4, communication: 5, diplomatie: 4 } },
+            { id: "B", texte: "Tu proposes de discuter en privé avec ton collègue après la réunion.", skills: { diplomatie: 5, responsabilite: 3 }, penalties: { assertivite: 2, communication: 1 } },
+            { id: "C", texte: "Tu restes silencieux pour ne pas créer de tension dans l'équipe.", skills: { observation: 3 }, penalties: { assertivite: 4, responsabilite: 3, espritEquipe: 2 } },
+            { id: "D", texte: "Tu suggères une phase de test avant de déployer l'idée complètement.", skills: { diplomatie: 4, pragmatisme: 5, anticipation: 4 } }
+        ]
+    },
+    {
+        id: 10,
+        titre: "Formation d'un nouveau collègue",
+        urlName: "formation-nouveau-collegue",
+        contexteIntro: "Tu es chargé de former un nouveau collègue qui rejoint votre équipe. Cette personne semble avoir du mal à comprendre certains aspects du travail et commence à se décourager après plusieurs tentatives infructueuses.",
+        contexte: [
+            { personnage: "Nouveau collègue", avatar: "passant2.png", texte: "Je n'y arrive vraiment pas... Je ne suis peut-être pas fait pour ce poste." },
+            { personnage: "Toi", avatar: "toi.png", texte: "Je vois que tu rencontres des difficultés." },
+            { personnage: "Nouveau collègue", avatar: "passant2.png", texte: "Oui, et j'ai peur de ne jamais réussir à m'adapter..." }
+        ],
+        question: "Comment poursuis-tu la formation ?",
+        reponses: [
+            { id: "A", texte: "Tu proposes une approche différente, plus adaptée à son style d'apprentissage.", skills: { adaptabilite: 5, coaching: 5, empathie: 4 } },
+            { id: "B", texte: "Tu lui montres pas à pas comment réaliser la tâche, en expliquant chaque étape.", skills: { patience: 4, communication: 5, soutien: 4 } },
+            { id: "C", texte: "Tu lui rappelles que tout le monde passe par des difficultés au début et partages ta propre expérience.", skills: { empathie: 5, soutien: 4, communication: 3 } },
+            { id: "D", texte: "Tu divises les tâches en étapes plus petites et facilement réalisables pour créer des succès rapides.", skills: { coaching: 4, creativite: 3, pragmatisme: 5 } }
+        ]
+    },
 ];
