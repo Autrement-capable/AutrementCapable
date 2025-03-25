@@ -1,6 +1,5 @@
 <template>
-  <div class="dashboard" :class="{ 'achievements-unlocked': hasNewAchievement }">
-    <!-- Effet de particules en arrière-plan -->
+  <div class="dashboard" :class="{ 'achievements-unlocked': hasNewAchievement, 'games-zoomed': gamesZoomed }">
     <div class="space-elements">
       
       <!-- Add comets randomly crossing the sky -->
@@ -80,26 +79,54 @@
 			</div>
 
       <!-- Section Jeux -->
-      <div class="section games" @mouseenter="activeSection = 'games'" @mouseleave="activeSection = null">
-				<div class="section-content" :class="{ 'active': activeSection === 'games' }">
-					<div class="button-particles" v-if="activeSection === 'games'">
-						<div v-for="i in 8" :key="'game-particle-'+i" class="button-particle" 
-								:style="generateParticleStyle()"></div>
-					</div>
-					<div class="button-ring"></div>
-					<div class="icon-container" @click="openSection('games')">
-						<div class="glow-effect" :class="{ 'pulse': activeSection === 'games' }"></div>
-						<div class="icon">
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor">
-								<path d="M17 4H7a5 5 0 0 0-5 5v6a5 5 0 0 0 5 5h10a5 5 0 0 0 5-5V9a5 5 0 0 0-5-5z" stroke-width="1.5"/>
-								<path d="M10 10H8v2H6v2h2v2h2v-2h2v-2h-2v-2zM17.5 15a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM15 11a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z" stroke-width="1.5"/>
-							</svg>
-						</div>
-						<span class="tooltip">Jeux</span>
-						<div class="notification" v-if="notifications.games > 0">{{ notifications.games }}</div>
-					</div>
-				</div>
-			</div>
+      <div class="section games" 
+           @mouseenter="!gamesZoomed && (activeSection = 'games')" 
+           @mouseleave="!gamesZoomed && (activeSection = null)"
+           :class="{ 'zoomed': gamesZoomed }">
+        <div class="section-content" :class="{ 'active': activeSection === 'games' }">
+          <div class="button-particles" v-if="activeSection === 'games' && !gamesZoomed">
+            <div v-for="i in 8" :key="'game-particle-'+i" class="button-particle" 
+                :style="generateParticleStyle()"></div>
+          </div>
+          <div class="button-ring"></div>
+          <div class="icon-container" @click="handleGamesClick">
+            <div class="glow-effect" :class="{ 'pulse': activeSection === 'games' }"></div>
+            <div class="icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor">
+                <path d="M17 4H7a5 5 0 0 0-5 5v6a5 5 0 0 0 5 5h10a5 5 0 0 0 5-5V9a5 5 0 0 0-5-5z" stroke-width="1.5"/>
+                <path d="M10 10H8v2H6v2h2v2h2v-2h2v-2h-2v-2zM17.5 15a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM15 11a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z" stroke-width="1.5"/>
+              </svg>
+            </div>
+            <span class="tooltip">Jeux</span>
+            <div class="notification" v-if="notifications.games > 0">{{ notifications.games }}</div>
+          </div>
+        </div>
+        
+        <!-- Games Zoom View -->
+        <div class="games-zoom-container" v-if="gamesZoomed">
+          <div class="game-buttons-grid">
+            <!-- Example game buttons - you can add more or customize -->
+            <div class="game-button" v-for="(game, index) in gamesList" :key="index" @click="selectGame(game)">
+              <div class="game-icon">
+                <div class="game-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <g v-html="game.icon"></g>
+                  </svg>
+                </div>
+              </div>
+              <span class="game-name">{{ game.name }}</span>
+            </div>
+          </div>
+          
+          <!-- Back button -->
+          <div class="back-button" @click="exitGamesZoom">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor">
+              <path d="M19 12H5M12 19l-7-7 7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Retour</span>
+          </div>
+        </div>
+      </div>
 
       <!-- Section Profil - Plus Immersive! -->
       <div class="section profile" 
@@ -340,6 +367,7 @@ export default {
       showAchievement: false,
       hasNewAchievement: false,
       currentAchievement: '',
+      gamesZoomed: false,
       notifications: {
         formations: 3,
         badges: 1,
@@ -352,17 +380,86 @@ export default {
         'Maître du Temps',
         'Briseur de Barrières',
         'Esprit Créatif'
+      ],
+      gamesList: [
+        { 
+          name: 'Quiz Spatial', 
+          icon: '<path d="M9 22h6a5 5 0 1 0 0-10H9A5 5 0 0 1 9 2H3"></path><path d="M9 13h6"></path>' 
+        },
+        { 
+          name: 'Puzzle Galactique', 
+          icon: '<path d="M21 16V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2z"></path><path d="M14 2v2M10 2v2M14 20v2M10 20v2M6 10h12M6 14h12"></path>' 
+        },
+        { 
+          name: 'Astéroïdes', 
+          icon: '<circle cx="12" cy="12" r="10"></circle><path d="M8 12a4 4 0 1 0 8 0"></path><circle cx="12" cy="8" r="1"></circle>' 
+        },
+        { 
+          name: 'Explorateur', 
+          icon: '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle>' 
+        },
+        { 
+          name: 'Défis Cosmiques', 
+          icon: '<path d="M5 3v18M19 9v12M14 4v17M9 4v17"></path>' 
+        },
+        { 
+          name: 'Mémoire Stellaire', 
+          icon: '<path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M3 9v10a2 2 0 0 0 2 2h4m-6-12h18M9 21h10a2 2 0 0 0 2-2V9"></path>' 
+        }
       ]
     };
   },
   methods: {
-    // Calcule l'offset pour le cercle de progression
+    handleGamesClick() {
+      if (!this.gamesZoomed) {
+        this.enterGamesZoom();
+      } else {
+        this.exitGamesZoom();
+      }
+    },
+
+    enterGamesZoom() {
+      // Create a button flash effect
+      this.createButtonFlash('games');
+      
+      // Add haptic feedback if available
+      if (window.navigator && window.navigator.vibrate) {
+        window.navigator.vibrate(50);
+      }
+      
+      // Set zoomed state
+      this.gamesZoomed = true;
+      this.activeSection = null;
+      
+      // Réduire la notification
+      if (this.notifications.games > 0) {
+        this.notifications.games--;
+      }
+    },
+
+        // Exit games zoom mode
+    exitGamesZoom() {
+      this.gamesZoomed = false;
+      
+      // Add haptic feedback if available
+      if (window.navigator && window.navigator.vibrate) {
+        window.navigator.vibrate([30, 20, 30]);
+      }
+    },
+
+    selectGame(game) {
+      // Here you would navigate to the specific game
+      console.log(`Selected game: ${game.name}`);
+      // You could trigger an achievement or other feedback
+      this.triggerAchievement('Premier pas dans les jeux');
+    },
+    
+    // Keep all existing methods
     calculateProgressOffset() {
       const circumference = 2 * Math.PI * 120;
       return circumference - (circumference * this.progress) / 100;
     },
     
-    // Calcule le niveau actuel basé sur la progression
     calculateLevel() {
       return Math.floor(this.progress / 10) + 1;
     },
@@ -409,6 +506,10 @@ export default {
     
     // Ouvre une section spécifique
     openSection(section) {
+      // Don't open a modal if we're in games zoom mode and it's games section
+      if (section === 'games' && this.gamesZoomed) {
+        return;
+      }
 			// Create a ripple effect element
 			const ripple = document.createElement('div');
 			ripple.className = 'button-ripple';
@@ -1216,6 +1317,190 @@ export default {
 @keyframes moonsOrbit {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* Games Zoom Styling */
+.games-zoomed .section.games {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
+  transform: scale(1);
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  background: radial-gradient(ellipse at center, rgba(30, 30, 45, 0.95) 0%, rgba(15, 15, 25, 0.98) 70%);
+  backdrop-filter: blur(10px);
+}
+
+.games-zoomed .dashboard-container > *:not(.games) {
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.5s ease;
+}
+
+.games-zoomed .section.games .section-content {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  transform: scale(0.8);
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 10;
+}
+
+.games-zoom-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.game-buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+  max-width: 800px;
+  padding: 20px;
+}
+
+.game-button {
+  width: 130px;
+  height: 130px;
+  background: rgba(40, 40, 65, 0.6);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    0 10px 20px rgba(0, 0, 0, 0.2),
+    inset 0 0 15px rgba(255, 255, 255, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.game-button:before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, 
+    rgba(255, 64, 129, 0.1) 0%, 
+    rgba(255, 64, 129, 0) 50%, 
+    rgba(255, 64, 129, 0.1) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.game-button:hover {
+  transform: translateY(-10px) scale(1.05);
+  border-color: rgba(255, 64, 129, 0.3);
+  box-shadow: 
+    0 15px 25px rgba(0, 0, 0, 0.3),
+    0 5px 15px rgba(255, 64, 129, 0.2),
+    inset 0 0 20px rgba(255, 255, 255, 0.1);
+}
+
+.game-button:hover:before {
+  opacity: 1;
+}
+
+.game-button:active {
+  transform: translateY(-5px) scale(0.95);
+}
+
+.game-icon {
+  width: 60px;
+  height: 60px;
+  background: rgba(255, 64, 129, 0.2);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 15px;
+  color: #FF4081;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(255, 64, 129, 0.3);
+}
+
+.game-button:hover .game-icon {
+  background: rgba(255, 64, 129, 0.3);
+  transform: scale(1.1);
+  box-shadow: 0 5px 20px rgba(255, 64, 129, 0.5);
+}
+
+.game-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.game-button:hover .game-name {
+  color: #FF4081;
+}
+
+.back-button {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(30, 30, 45, 0.8);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 30px;
+  padding: 12px 25px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 
+    0 5px 15px rgba(0, 0, 0, 0.2),
+    inset 0 0 10px rgba(255, 255, 255, 0.05);
+}
+
+.back-button:hover {
+  background: rgba(40, 40, 65, 0.9);
+  transform: translateX(-50%) translateY(-5px);
+  box-shadow: 
+    0 8px 20px rgba(0, 0, 0, 0.3),
+    inset 0 0 15px rgba(255, 255, 255, 0.1);
+}
+
+.back-button:active {
+  transform: translateX(-50%) translateY(-2px);
+}
+
+.back-button svg {
+  color: #FF4081;
+  transition: all 0.3s ease;
+}
+
+.back-button:hover svg {
+  transform: translateX(-3px);
+}
+
+.back-button span {
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.back-button:hover span {
+  color: #FF4081;
 }
 
 /* Particules en arrière-plan - Plus nombreuses et plus dynamiques */
@@ -2337,6 +2622,25 @@ export default {
   .section-content {
     width: 60px;
     height: 60px;
+  }
+
+  .game-buttons-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  
+  .game-button {
+    width: 110px;
+    height: 110px;
+  }
+  
+  .game-icon {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .game-name {
+    font-size: 12px;
   }
 }
 </style>
