@@ -14,8 +14,23 @@
       <div class="galaxy galaxy-1"></div>
       
       <!-- Add a planet with rings -->
-      <div class="planet">
+      <div class="planet planet-1">
         <div class="planet-rings"></div>
+      </div>
+      
+      <!-- Nouvelle planète rouge gazeuse -->
+      <div class="planet planet-2">
+        <div class="planet-atmosphere"></div>
+        <div class="planet-storm"></div>
+      </div>
+      
+      <!-- Nouvelle planète glacée -->
+      <div class="planet planet-3">
+        <div class="planet-ice-caps"></div>
+        <div class="planet-moons">
+          <div class="planet-moon moon-1"></div>
+          <div class="planet-moon moon-2"></div>
+        </div>
       </div>
     </div>
 
@@ -802,7 +817,7 @@ export default {
   width: 180px;
   height: 100px;
   top: 75%;
-  left: 75%;
+  left: 35%;
   background: radial-gradient(
     ellipse at center,
     rgba(220, 180, 255, 0.6) 0%,
@@ -876,12 +891,13 @@ export default {
 }
 
 /* Styles pour la planète */
-.planet {
+
+.planet-1 {
   position: absolute;
   width: 80px;
   height: 80px;
-  top: 20%;
-  right: 45%;
+  top: 15%;
+  right: 37%;
   background: 
     radial-gradient(
       circle at 30% 30%,
@@ -897,6 +913,178 @@ export default {
   z-index: 3;
   transform: rotate(-15deg);
   animation: planetFloat 120s linear infinite;
+}
+
+/* Anneaux pour la planète violette */
+.planet-1 .planet-rings {
+  position: absolute;
+  width: 130px;
+  height: 20px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-15deg);
+  border-radius: 50%;
+  box-shadow: 
+    0 0 0 4px rgba(255, 255, 255, 0.05),
+    0 0 0 8px rgba(255, 255, 255, 0.03),
+    0 0 0 12px rgba(255, 220, 255, 0.05),
+    0 0 0 16px rgba(180, 180, 255, 0.08),
+    0 0 0 20px rgba(140, 140, 230, 0.06),
+    0 0 0 24px rgba(100, 100, 200, 0.04),
+    0 0 0 28px rgba(80, 80, 180, 0.02);
+  z-index: 2;
+  animation: ringsRotate 200s linear infinite;
+}
+
+/* Styles pour la nouvelle planète rouge gazeuse */
+.planet-2 {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  top: 65%;
+  right: 5%;
+  background: 
+    radial-gradient(
+      circle at 40% 40%,
+      #ff6b5b 0%,
+      #d32f2f 30%,
+      #b71c1c 60%,
+      #7f0000 100%
+    );
+  border-radius: 50%;
+  box-shadow: 
+    inset -20px -20px 60px rgba(0, 0, 0, 0.6),
+    0 0 30px rgba(255, 100, 80, 0.4);
+  z-index: 2;
+  transform: rotate(10deg);
+  animation: planetFloat2 150s linear infinite;
+}
+
+/* Atmosphère pour la planète rouge */
+.planet-2 .planet-atmosphere {
+  position: absolute;
+  width: 110%;
+  height: 110%;
+  top: -5%;
+  left: -5%;
+  border-radius: 50%;
+  background: 
+    radial-gradient(
+      circle at 50% 50%,
+      rgba(255, 107, 91, 0.3) 0%,
+      rgba(211, 47, 47, 0.2) 50%,
+      rgba(183, 28, 28, 0.1) 70%,
+      rgba(127, 0, 0, 0) 100%
+    );
+  filter: blur(10px);
+  opacity: 0.8;
+  z-index: 1;
+  animation: atmospherePulse 8s ease-in-out infinite alternate;
+}
+
+/* Tempête sur la planète rouge */
+.planet-2 .planet-storm {
+  position: absolute;
+  width: 40%;
+  height: 40%;
+  top: 30%;
+  left: 20%;
+  border-radius: 50%;
+  background: rgba(255, 160, 140, 0.4);
+  filter: blur(5px);
+  z-index: 2;
+  animation: stormSpin 30s linear infinite;
+}
+
+/* Styles pour la nouvelle planète glacée */
+.planet-3 {
+  position: absolute;
+  width: 70px;
+  height: 70px;
+  top: 15%;
+  left: 15%;
+  background: 
+    radial-gradient(
+      circle at 50% 50%,
+      #b3e5fc 0%,
+      #81d4fa 30%,
+      #4fc3f7 60%,
+      #29b6f6 100%
+    );
+  border-radius: 50%;
+  box-shadow: 
+    inset -10px -10px 30px rgba(0, 0, 0, 0.3),
+    0 0 25px rgba(79, 195, 247, 0.5);
+  z-index: 2;
+  animation: planetFloat3 180s linear infinite;
+}
+
+/* Calottes polaires de la planète glacée */
+.planet-3 .planet-ice-caps {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+  background: 
+    radial-gradient(
+      ellipse at 50% 10%,
+      rgba(255, 255, 255, 0.9) 0%,
+      rgba(255, 255, 255, 0) 50%
+    ),
+    radial-gradient(
+      ellipse at 50% 90%,
+      rgba(255, 255, 255, 0.9) 0%,
+      rgba(255, 255, 255, 0) 50%
+    );
+  z-index: 3;
+}
+
+/* Système de lunes pour la planète glacée */
+.planet-3 .planet-moons {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  animation: moonsOrbit 60s linear infinite;
+}
+
+/* Lunes individuelles */
+.planet-moon {
+  position: absolute;
+  background: #e0e0e0;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.moon-1 {
+  width: 15px;
+  height: 15px;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: 
+    radial-gradient(
+      circle at 30% 30%,
+      #f5f5f5 0%,
+      #e0e0e0 50%,
+      #bdbdbd 100%
+    );
+}
+
+.moon-2 {
+  width: 10px;
+  height: 10px;
+  bottom: -25px;
+  left: 30%;
+  background: 
+    radial-gradient(
+      circle at 30% 30%,
+      #e0e0e0 0%,
+      #bdbdbd 50%,
+      #9e9e9e 100%
+    );
 }
 
 /* Ajouter des détails à la planète */
@@ -997,6 +1185,37 @@ export default {
   100% {
     transform: translate(-50%, -50%) rotate(345deg);
   }
+}
+
+@keyframes planetFloat2 {
+  0% { transform: translate(0, 0) rotate(10deg); }
+  25% { transform: translate(-30px, 20px) rotate(10deg); }
+  50% { transform: translate(-60px, 0) rotate(10deg); }
+  75% { transform: translate(-30px, -20px) rotate(10deg); }
+  100% { transform: translate(0, 0) rotate(10deg); }
+}
+
+@keyframes planetFloat3 {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(20px, 15px); }
+  50% { transform: translate(40px, 0); }
+  75% { transform: translate(20px, -15px); }
+  100% { transform: translate(0, 0); }
+}
+
+@keyframes atmospherePulse {
+  0% { opacity: 0.6; transform: scale(1); }
+  100% { opacity: 0.9; transform: scale(1.1); }
+}
+
+@keyframes stormSpin {
+  0% { transform: rotate(0deg) translateX(10px) rotate(0deg); }
+  100% { transform: rotate(360deg) translateX(10px) rotate(-360deg); }
+}
+
+@keyframes moonsOrbit {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* Particules en arrière-plan - Plus nombreuses et plus dynamiques */
