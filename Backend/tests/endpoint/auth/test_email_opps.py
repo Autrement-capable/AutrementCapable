@@ -5,8 +5,8 @@ from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload
 from datetime import datetime, timedelta
 
-from database.postgress.models import User, PasswordReset, UnverifiedDetails
-from database.postgress.actions.password_reset import create_password_reset
+from database.postgress.models import User, AccountRecovery, UnverifiedDetails
+from database.postgress.actions.password_reset import create_acc_recovery
 
 pytestmark = pytest.mark.endpoint
 
@@ -108,8 +108,8 @@ async def test_start_reset_password(client: AsyncClient, db_session, test_user_v
 
     # Verify reset token was created in database
     result = await db_session.execute(
-        select(PasswordReset)
-        .where(PasswordReset.user_id == test_user_verified.id)
+        select(AccountRecovery)
+        .where(AccountRecovery.user_id == test_user_verified.id)
     )
     reset = result.scalars().first()
 
@@ -132,7 +132,7 @@ async def test_start_reset_password_nonexistent_user(client: AsyncClient, db_ses
 async def test_is_valid_reset_token(client: AsyncClient, db_session, test_user_verified):
     """Test checking if reset token is valid."""
     # Create a password reset
-    reset = await create_password_reset(db_session, test_user_verified)
+    reset = await create_acc_recovery(db_session, test_user_verified)
 
     # Check if token is valid
     response = await client.get(f"/auth/is-valid-reset?token={reset.reset_token}")
@@ -168,7 +168,7 @@ async def test_is_valid_reset_token(client: AsyncClient, db_session, test_user_v
 async def test_reset_password(client: AsyncClient, db_session, test_user_verified):
     """Test resetting password."""
     # Create a password reset
-    reset = await create_password_reset(db_session, test_user_verified)
+    reset = await create_acc_recovery(db_session, test_user_verified)
 
     # Reset password
     response = await client.post("/auth/reset-password", json={
@@ -183,7 +183,7 @@ async def test_reset_password(client: AsyncClient, db_session, test_user_verifie
 
     # Verify reset token was deleted
     result = await db_session.execute(
-        select(PasswordReset).where(PasswordReset.reset_token == reset.reset_token)
+        select(AccountRecovery).where(AccountRecovery.reset_token == reset.reset_token)
     )
     assert result.scalars().first() is None
 

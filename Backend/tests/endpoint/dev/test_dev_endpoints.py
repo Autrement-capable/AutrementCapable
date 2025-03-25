@@ -110,7 +110,7 @@ async def test_all_tables(client: AsyncClient, auth_tokens):
     assert isinstance(tables, list)
 
     # Check for expected tables
-    expected_tables = ["roles", "users", "password_resets", "unverified_details", "revoked_tokens"]
+    expected_tables = ["roles", "users", "account_recovery", "unverified_details", "revoked_tokens"]
     for table in expected_tables:
         assert table in tables
 

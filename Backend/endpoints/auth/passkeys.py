@@ -301,5 +301,11 @@ async def update_profile(
         }
     }
 
+
+# WIP
+@router.post("/rec-acc-passkey", response_model=PasskeyAuthenticationResult)
+async def rec_acc_passkey():
+    pass
+
 # Add router to the server
 AddRouter(router)

@@ -54,7 +54,7 @@ async def test_base_metadata():
 
     # Check some expected tables
     table_names = [table.name for table in Base.metadata.tables.values()]
-    expected_tables = ["users", "roles", "password_resets", "unverified_details", "revoked_tokens"]
+    expected_tables = ["users", "roles", "account_recovery", "unverified_details", "revoked_tokens"]
 
     for table in expected_tables:
         assert table in table_names

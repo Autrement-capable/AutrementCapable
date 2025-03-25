@@ -31,7 +31,6 @@ class User(AsyncAttrs, Base):
     username: Mapped[Optional[str]] = mapped_column(String, unique=True, nullable=True)  # Made nullable for passkey users
     email: Mapped[Optional[str]] = mapped_column(String, unique=True, nullable=True)     # Made nullable for passkey users
     password_hash: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    is_oauth: Mapped[bool] = mapped_column(Boolean, default=False)
     is_passkey: Mapped[bool] = mapped_column(Boolean, default=False)
     first_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     last_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
@@ -50,12 +49,12 @@ class User(AsyncAttrs, Base):
     verification_details: Mapped[Optional["UnverifiedDetails"]] = relationship(
         back_populates="user", lazy="selectin", uselist=False, cascade="all, delete-orphan"
     )
-    password_resets: Mapped[list["PasswordReset"]] = relationship(back_populates="user", lazy="selectin", cascade="all, delete-orphan")
+    account_recovery: Mapped[list["AccountRecovery"]] = relationship(back_populates="user", lazy="selectin", cascade="all, delete-orphan")
     passkey_credentials: Mapped[list["PasskeyCredential"]] = relationship(back_populates="user", lazy="selectin", cascade="all, delete-orphan")
 
 
-class PasswordReset(AsyncAttrs, Base):
-    __tablename__ = "password_resets"
+class AccountRecovery(AsyncAttrs, Base):
+    __tablename__ = "account_recovery"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     reset_token: Mapped[str] = mapped_column(String, nullable=False, unique=True)
@@ -63,7 +62,8 @@ class PasswordReset(AsyncAttrs, Base):
     date_requested: Mapped[Optional[DateTime]] = mapped_column(DateTime, default=func.now())
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
-    user: Mapped["User"] = relationship(back_populates="password_resets", lazy="selectin")
+    user: Mapped["User"] = relationship(back_populates="account_recovery", lazy="selectin")
+
 
 class RevokedToken(AsyncAttrs, Base):
     __tablename__ = "revoked_tokens"

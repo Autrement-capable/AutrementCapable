@@ -91,7 +91,7 @@ async def test_get_user_by_email(db_session):
     user = await get_user_by_email(db_session, "functionuser@example.com", load_type="eager")
     assert user is not None
     assert hasattr(user, "verification_details")
-    assert hasattr(user, "password_resets")
+    assert hasattr(user, "account_recovery")
 
 @pytest.mark.asyncio
 async def test_verify_user(db_session):

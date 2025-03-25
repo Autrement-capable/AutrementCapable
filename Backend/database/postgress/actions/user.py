@@ -125,7 +125,7 @@ async def get_user_by_email(session: AsyncSession, email: str, load_type: Litera
     elif load_type == "eager":
         statement = (select(User)
         .where(User.email == email)
-        .options(joinedload(User.password_resets), joinedload(User.verification_details)))
+        .options(joinedload(User.account_recovery), joinedload(User.verification_details)))
     else:
         raise ValueError("Invalid load type")
     
@@ -152,7 +152,7 @@ async def get_user_by_id(session: AsyncSession, user_id: int, load_type: Literal
     elif load_type == "eager":
         statement = (select(User)
         .where(User.id == user_id)
-        .options(joinedload(User.password_resets), joinedload(User.verification_details), 
+        .options(joinedload(User.account_recovery), joinedload(User.verification_details), 
                  joinedload(User.passkey_credentials)))
     else:
         raise ValueError("Invalid load type")
