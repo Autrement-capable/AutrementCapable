@@ -30,6 +30,7 @@ import ResultsPage from '@/components/ResultsPage.vue';
 import FormationPage from "@/components/FormationPage.vue";
 import RewardsPage from "@/components/RewardsPage.vue";
 import SkillsWheelPage from "@/components/SkillsWheelPage.vue";
+import ImmersiveDashboard from "@/components/ImmersiveDashboard.vue";
 
 const routes = [
   {
@@ -51,6 +52,11 @@ const routes = [
     path: "/login",
     name: "Login",
     component: LoginPage,
+  },
+  {
+    path: "/immersive-dashboard",
+    name: "ImmersiveDashboard",
+    component: ImmersiveDashboard,
   },
   {
     path: "/home-page",
