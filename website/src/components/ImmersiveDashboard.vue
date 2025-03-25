@@ -1,8 +1,23 @@
 <template>
   <div class="dashboard" :class="{ 'achievements-unlocked': hasNewAchievement }">
     <!-- Effet de particules en arrière-plan -->
-    <div class="particles-container">
-      <div v-for="i in 30" :key="'particle-'+i" class="particle" :style="randomParticleStyle()"></div>
+    <div class="space-elements">
+      
+      <!-- Add comets randomly crossing the sky -->
+      <div class="comet comet-1"></div>
+      <div class="comet comet-2"></div>
+      <div class="comet comet-3"></div>
+      
+      <!-- Add a distant galaxy -->
+      <div class="galaxy galaxy-1"></div>
+      
+      <!-- Add a planet with rings -->
+      <div class="planet">
+        <div class="planet-rings"></div>
+      </div>
+      <div class="planet">
+        <div class="planet-rings"></div>
+      </div>
     </div>
 
     <!-- La structure principale -->
@@ -527,12 +542,72 @@ export default {
   position: relative;
   width: 100%;
   height: 100vh;
-  background-color: #121212;
   color: white;
   overflow: hidden;
   font-family: 'Nunito', sans-serif;
   transition: background-color 0.5s ease;
-  background: radial-gradient(circle at center, #1a1a2a 0%, #121212 70%);
+  background: radial-gradient(ellipse at center, #0f2027 0%, #090a0f 100%);
+}
+
+.dashboard::before,
+.dashboard::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  background-position: 0 0;
+  background-repeat: repeat;
+  z-index: 0;
+}
+
+.dashboard::before {
+  background-image: 
+    radial-gradient(1px 1px at 10% 30%, rgba(255, 255, 255, 0.9) 50%, transparent 100%),
+    radial-gradient(1px 1px at 20% 70%, rgba(255, 255, 255, 0.8) 50%, transparent 100%),
+    radial-gradient(1px 1px at 30% 40%, rgba(255, 255, 255, 0.7) 50%, transparent 100%),
+    radial-gradient(1px 1px at 40% 80%, rgba(255, 255, 255, 0.9) 50%, transparent 100%),
+    radial-gradient(1px 1px at 50% 20%, rgba(255, 255, 255, 0.8) 50%, transparent 100%),
+    radial-gradient(1px 1px at 60% 60%, rgba(255, 255, 255, 0.7) 50%, transparent 100%),
+    radial-gradient(1px 1px at 70% 10%, rgba(255, 255, 255, 0.9) 50%, transparent 100%),
+    radial-gradient(1px 1px at 80% 50%, rgba(255, 255, 255, 0.8) 50%, transparent 100%),
+    radial-gradient(1px 1px at 90% 90%, rgba(255, 255, 255, 0.7) 50%, transparent 100%);
+  background-size: 400% 400%;
+  animation: starsFloat 300s linear infinite;
+}
+
+.dashboard::after {
+  background-image: 
+    radial-gradient(2px 2px at 15% 25%, rgba(255, 255, 255, 0.8) 50%, transparent 100%),
+    radial-gradient(2px 2px at 35% 65%, rgba(255, 255, 255, 0.7) 50%, transparent 100%),
+    radial-gradient(2px 2px at 45% 35%, rgba(255, 255, 255, 0.9) 50%, transparent 100%),
+    radial-gradient(2px 2px at 55% 75%, rgba(255, 255, 255, 0.8) 50%, transparent 100%),
+    radial-gradient(2px 2px at 65% 15%, rgba(255, 255, 255, 0.7) 50%, transparent 100%),
+    radial-gradient(2px 2px at 75% 55%, rgba(255, 255, 255, 0.9) 50%, transparent 100%),
+    radial-gradient(2px 2px at 85% 85%, rgba(255, 255, 255, 0.8) 50%, transparent 100%);
+  background-size: 200% 200%;
+  animation: starsFloat 200s linear infinite, starsTwinkle 10s ease-in-out infinite alternate;
+}
+
+.dashboard-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 30% 40%, rgba(76, 0, 153, 0.2) 0%, rgba(76, 0, 153, 0) 50%),
+    radial-gradient(circle at 70% 60%, rgba(63, 0, 113, 0.2) 0%, rgba(63, 0, 113, 0) 60%),
+    radial-gradient(circle at 50% 50%, rgba(0, 51, 102, 0.2) 0%, rgba(0, 51, 102, 0) 70%);
+  filter: blur(30px);
+  opacity: 0.8;
+  z-index: 0;
+  animation: nebulaShift 60s ease-in-out infinite alternate;
 }
 
 .dashboard-container {
@@ -542,6 +617,294 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+/* Container principal pour tous les éléments spatiaux */
+.space-elements {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Styles pour les comètes */
+.comet {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  box-shadow: 
+    0 0 20px 2px rgba(255, 255, 255, 0.6),
+    0 0 40px 6px rgba(115, 215, 255, 0.4);
+  z-index: 2;
+  opacity: 0;
+  animation: cometAnimation 12s linear infinite;
+}
+
+.comet::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 120px;
+  height: 2px;
+  background: linear-gradient(to left, 
+    rgba(255, 255, 255, 0.8), 
+    rgba(160, 220, 255, 0.4), 
+    transparent);
+  transform: translateX(2px);
+  border-radius: 100%;
+}
+
+.comet-1 {
+  top: 15%;
+  left: -5%;
+  animation-delay: 2s;
+}
+
+/* Ajoutons plus de comètes */
+.comet-2 {
+  top: 35%;
+  left: -10%;
+  width: 3px;
+  height: 3px;
+  animation-delay: 7s;
+  animation-duration: 15s;
+}
+
+.comet-3 {
+  top: 65%;
+  left: -8%;
+  width: 5px;
+  height: 5px;
+  animation-delay: 13s;
+  animation-duration: 18s;
+}
+
+/* Animation pour les comètes */
+@keyframes cometAnimation {
+  0% {
+    transform: translate(0, 0) rotate(15deg);
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  95% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(100vw + 200px), 20vh) rotate(15deg);
+    opacity: 0;
+  }
+}
+
+/* Styles pour la galaxie */
+.galaxy {
+  position: absolute;
+  width: 180px;
+  height: 100px;
+  top: 75%;
+  left: 75%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(220, 180, 255, 0.6) 0%,
+    rgba(140, 100, 255, 0.4) 30%,
+    rgba(70, 30, 180, 0.2) 60%,
+    transparent 100%
+  );
+  border-radius: 50%;
+  transform: rotate(-25deg) scale(1);
+  filter: blur(5px);
+  opacity: 0.7;
+  z-index: 1;
+  animation: galaxyPulse 15s ease-in-out infinite alternate;
+}
+
+.galaxy::before, .galaxy::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 50%;
+  background: 
+    radial-gradient(
+      ellipse at center,
+      rgba(255, 255, 255, 0.1) 0%,
+      transparent 60%
+    ),
+    conic-gradient(
+      transparent 0%,
+      rgba(130, 90, 220, 0.1) 25%,
+      transparent 50%,
+      rgba(150, 100, 255, 0.1) 75%,
+      transparent 100%
+    );
+  transform-origin: center;
+  animation: galaxyRotate 80s linear infinite;
+}
+
+.galaxy::after {
+  transform: rotate(180deg);
+  filter: blur(8px);
+  opacity: 0.5;
+  animation-duration: 120s;
+  animation-direction: reverse;
+}
+
+@keyframes galaxyPulse {
+  0% {
+    transform: rotate(-25deg) scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: rotate(-25deg) scale(1.05);
+    opacity: 0.8;
+  }
+  100% {
+    transform: rotate(-25deg) scale(1);
+    opacity: 0.7;
+  }
+}
+
+@keyframes galaxyRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Styles pour la planète */
+.planet {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  top: 20%;
+  right: 45%;
+  background: 
+    radial-gradient(
+      circle at 30% 30%,
+      #7a4dbc 0%,
+      #522b99 30%,
+      #3c1777 60%,
+      #2c1155 100%
+    );
+  border-radius: 50%;
+  box-shadow: 
+    inset -15px -15px 40px rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(120, 70, 230, 0.3);
+  z-index: 3;
+  transform: rotate(-15deg);
+  animation: planetFloat 120s linear infinite;
+}
+
+/* Ajouter des détails à la planète */
+.planet::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+  background: 
+    radial-gradient(
+      circle at 70% 70%, 
+      transparent 0%, 
+      rgba(0, 0, 0, 0.4) 100%
+    ),
+    repeating-conic-gradient(
+      rgba(255, 255, 255, 0.03) 0deg,
+      rgba(255, 255, 255, 0) 20deg,
+      rgba(255, 255, 255, 0.03) 40deg
+    );
+  opacity: 0.7;
+  animation: planetRotate 80s linear infinite;
+}
+
+/* Styles pour les anneaux de la planète */
+.planet-rings {
+  position: absolute;
+  width: 130px;
+  height: 20px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-15deg);
+  border-radius: 50%;
+  box-shadow: 
+    0 0 0 4px rgba(255, 255, 255, 0.05),
+    0 0 0 8px rgba(255, 255, 255, 0.03),
+    0 0 0 12px rgba(255, 220, 255, 0.05),
+    0 0 0 16px rgba(180, 180, 255, 0.08),
+    0 0 0 20px rgba(140, 140, 230, 0.06),
+    0 0 0 24px rgba(100, 100, 200, 0.04),
+    0 0 0 28px rgba(80, 80, 180, 0.02);
+  z-index: 2;
+  animation: ringsRotate 200s linear infinite;
+}
+
+.planet-rings::before {
+  content: '';
+  position: absolute;
+  width: 130px;
+  height: 20px;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(200, 180, 255, 0.2) 30%,
+    rgba(220, 200, 255, 0.3) 50%,
+    rgba(200, 180, 255, 0.2) 70%,
+    transparent 100%
+  );
+  filter: blur(2px);
+}
+
+@keyframes planetFloat {
+  0% {
+    transform: translate(0, 0) rotate(-15deg);
+  }
+  25% {
+    transform: translate(-10px, 15px) rotate(-15deg);
+  }
+  50% {
+    transform: translate(-5px, 25px) rotate(-15deg);
+  }
+  75% {
+    transform: translate(5px, 15px) rotate(-15deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(-15deg);
+  }
+}
+
+@keyframes planetRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ringsRotate {
+  0% {
+    transform: translate(-50%, -50%) rotate(-15deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(345deg);
+  }
 }
 
 /* Particules en arrière-plan - Plus nombreuses et plus dynamiques */
@@ -554,11 +917,22 @@ export default {
 
 .particle {
   position: absolute;
-  width: 6px;
-  height: 6px;
-  background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+  width: 3px !important;
+  height: 3px !important;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0) 70%) !important;
   border-radius: 50%;
-  animation: float infinite;
+  animation: floatDust infinite;
+  box-shadow: 0 0 6px 2px rgba(111, 168, 220, 0.2);
+}
+
+.particle:nth-child(3n) {
+  background: radial-gradient(circle, rgba(168, 111, 220, 0.9) 0%, rgba(168, 111, 220, 0) 70%) !important;
+  box-shadow: 0 0 8px 2px rgba(168, 111, 220, 0.3);
+}
+
+.particle:nth-child(3n+1) {
+  background: radial-gradient(circle, rgba(111, 168, 220, 0.9) 0%, rgba(111, 168, 220, 0) 70%) !important;
+  box-shadow: 0 0 8px 2px rgba(111, 168, 220, 0.3);
 }
 
 @keyframes float {
@@ -654,18 +1028,6 @@ export default {
   100% {
     opacity: 0;
   }
-}
-
-/* Effet d'animation lors d'un nouvel accomplissement */
-.achievements-unlocked {
-  background: radial-gradient(circle at center, #1a237e 0%, #121240 100%);
-  animation: pulseBackground 4s ease;
-}
-
-@keyframes pulseBackground {
-  0% { background: radial-gradient(circle at center, #1a1a2a 0%, #121212 100%); }
-  20% { background: radial-gradient(circle at center, #1a237e 0%, #121240 100%); }
-  100% { background: radial-gradient(circle at center, #1a1a2a 0%, #121212 100%); }
 }
 
 /* Sections */
@@ -948,23 +1310,23 @@ export default {
 }
 
 .formations .glow-effect {
-  background: radial-gradient(circle, rgba(79, 195, 247, 0.3) 0%, rgba(79, 195, 247, 0) 70%);
-  box-shadow: 0 0 20px rgba(79, 195, 247, 0.3);
+  background: radial-gradient(circle, rgba(111, 168, 220, 0.5) 0%, rgba(111, 168, 220, 0) 70%);
+  box-shadow: 0 0 20px rgba(111, 168, 220, 0.5);
 }
 
 .badges .glow-effect {
-  background: radial-gradient(circle, rgba(124, 77, 255, 0.3) 0%, rgba(124, 77, 255, 0) 70%);
-  box-shadow: 0 0 20px rgba(124, 77, 255, 0.3);
+  background: radial-gradient(circle, rgba(168, 111, 220, 0.5) 0%, rgba(168, 111, 220, 0) 70%);
+  box-shadow: 0 0 20px rgba(168, 111, 220, 0.5);
 }
 
 .games .glow-effect {
-  background: radial-gradient(circle, rgba(255, 64, 129, 0.3) 0%, rgba(255, 64, 129, 0) 70%);
-  box-shadow: 0 0 20px rgba(255, 64, 129, 0.3);
+  background: radial-gradient(circle, rgba(220, 111, 168, 0.5) 0%, rgba(220, 111, 168, 0) 70%);
+  box-shadow: 0 0 20px rgba(220, 111, 168, 0.5);
 }
 
 .profile .glow-effect {
-  background: radial-gradient(circle, rgba(29, 233, 182, 0.3) 0%, rgba(29, 233, 182, 0) 70%);
-  box-shadow: 0 0 20px rgba(29, 233, 182, 0.3);
+  background: radial-gradient(circle, rgba(111, 220, 168, 0.5) 0%, rgba(111, 220, 168, 0) 70%);
+  box-shadow: 0 0 20px rgba(111, 220, 168, 0.5);
 }
 
 .glow-effect.pulse {
@@ -1321,30 +1683,91 @@ export default {
 }
 
 .avatar-glow {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
   background: radial-gradient(
     circle,
-    rgba(64, 196, 255, 0.4) 0%,
-    rgba(124, 77, 255, 0.4) 50%,
-    rgba(255, 64, 129, 0.4) 100%
+    rgba(111, 168, 220, 0.5) 0%,
+    rgba(168, 111, 220, 0.5) 50%,
+    rgba(220, 111, 168, 0.5) 100%
   );
-  filter: blur(15px);
-  opacity: 0.5;
-  z-index: 1;
-  transition: all 0.5s ease;
-  animation: slowRotate 8s linear infinite;
+  filter: blur(20px);
+  opacity: 0.7;
+  animation: cosmicRotate 15s linear infinite;
 }
 
-@keyframes slowRotate {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
+/* Add cosmic pulse to avatar when active */
 .avatar-glow.pulse {
-  animation: avatarGlowPulse 1s;
+  animation: cosmicPulse 1s;
+}
+
+/* Animation keyframes */
+@keyframes starsFloat {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 100% 100%; }
+}
+
+@keyframes starsTwinkle {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+@keyframes nebulaShift {
+  0% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.2) rotate(5deg); }
+  100% { transform: scale(1) rotate(10deg); }
+}
+
+@keyframes planetFloat {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(50px, 20px); }
+  50% { transform: translate(100px, 0); }
+  75% { transform: translate(50px, -20px); }
+  100% { transform: translate(0, 0); }
+}
+
+@keyframes cometPath {
+  0% { transform: translate(0, 0) rotate(15deg); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translate(120vw, 40vh) rotate(15deg); opacity: 0; }
+}
+
+@keyframes floatDust {
+  0% {
+    transform: translateY(0) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% { opacity: 0.7; }
+  90% { opacity: 0.3; }
+  100% {
+    transform: translateY(-100px) translateX(50px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes cosmicRotate {
+  0% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(90deg) scale(1.05); }
+  50% { transform: rotate(180deg) scale(1); }
+  75% { transform: rotate(270deg) scale(1.05); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes cosmicPulse {
+  0% { 
+    transform: scale(0.95);
+    opacity: 0.5;
+    filter: blur(15px);
+  }
+  50% { 
+    transform: scale(1.4);
+    opacity: 0.9;
+    filter: blur(25px);
+  }
+  100% { 
+    transform: scale(1);
+    opacity: 0.7;
+    filter: blur(20px);
+  }
 }
 
 @keyframes avatarGlowPulse {
@@ -1441,9 +1864,7 @@ export default {
   gap: 20px;
   z-index: 100;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5),
-              0 0 15px rgba(124, 77, 255, 0.4);
-  animation: enhancedDropDown 0.7s, enhancedFadeOut 0.7s 2.3s;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+              0 0 20px rgba(168, 111, 220, 0.4);
 }
 
 @keyframes enhancedDropDown {
@@ -1486,10 +1907,8 @@ export default {
 }
 
 .achievement-text h3 {
-  margin: 0 0 8px 0;
-  color: #FFD700;
-  font-size: 18px;
-  letter-spacing: 0.5px;
+  color: #a86fdc;
+  text-shadow: 0 0 10px rgba(168, 111, 220, 0.7);
 }
 
 .achievement-text p {
@@ -1526,18 +1945,10 @@ export default {
 }
 
 .modal-content {
-  background: linear-gradient(135deg, #1E1E2E 0%, #252540 100%);
-  border-radius: 16px;
-  width: 80%;
-  max-width: 600px;
-  max-height: 80vh;
-  overflow-y: auto;
-  position: relative;
-  animation: enhancedScaleIn 0.5s;
-  padding: 25px;
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3),
-              0 0 20px rgba(124, 77, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(135deg, #0f1b2a 0%, #1a1a40 100%);
+  border: 1px solid rgba(111, 168, 220, 0.2);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5),
+              0 0 20px rgba(111, 168, 220, 0.3);
 }
 
 @keyframes enhancedScaleIn {
