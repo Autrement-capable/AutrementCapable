@@ -3,7 +3,7 @@ from server.jwt_config.token_creation import create_token, JWTBearer
 from pydantic import BaseModel, Field, EmailStr
 from utils.password import hash_password
 from database.postgress.config import getSession as GetSession
-from database.postgress.actions.password_reset import get_acc_recovery_by_token, del_acc_recovery
+from database.postgress.actions.acc_recovery import get_acc_recovery_by_token, del_acc_recovery, create_acc_recovery
 
 from server.server import AddRouter
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -73,6 +73,6 @@ async def create_account_recovery(request: Request, session: AsyncSession = Depe
     recovery_code = await create_acc_recovery(session, user)
     if not recovery_code:
         raise HTTPException(status_code=500, detail="An error occurred while creating the account recovery.")
-    return {"recover_code": recovery_code} # WIP, for now just return the recovery code
+    return {"recover_code": recovery_code.reset_token}
 AddRouter(router)
 

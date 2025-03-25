@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload
 
-from database.postgress.actions.password_reset import (
+from database.postgress.actions.acc_recovery import (
     create_acc_recovery,
     get_acc_recovery_by_token,
     del_acc_recovery
@@ -134,7 +134,7 @@ async def test_del_acc_recovery(db_session, test_user):
 async def test_acc_recovery_purge_cron(db_session, test_user):
     """Test the password reset purge cron job."""
     # Import cron job class
-    from database.postgress.actions.password_reset import AccountRecoveryPurgeCron
+    from database.postgress.actions.acc_recovery import AccountRecoveryPurgeCron
 
     # Create an expired password reset
     expired_reset = AccountRecovery(

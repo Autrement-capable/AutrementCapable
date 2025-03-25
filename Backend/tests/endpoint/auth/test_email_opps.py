@@ -6,7 +6,7 @@ from sqlalchemy.orm import joinedload
 from datetime import datetime, timedelta
 
 from database.postgress.models import User, AccountRecovery, UnverifiedDetails
-from database.postgress.actions.password_reset import create_acc_recovery
+from database.postgress.actions.acc_recovery import create_acc_recovery
 
 pytestmark = pytest.mark.endpoint
 

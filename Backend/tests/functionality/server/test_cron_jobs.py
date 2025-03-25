@@ -54,16 +54,16 @@ async def test_acc_recovery_purge_cron(db_session, init_test_data):
     await db_session.commit()
 
     # Get the cron job class and create an instance
-    password_reset_purge_cron = None
+    acc_recovery_purge_cron = None
     for job_cls in CronJobRegistry.get_registered_jobs():
         if job_cls.__name__ == "AccountRecoveryPurgeCron":
-            password_reset_purge_cron = job_cls()
+            acc_recovery_purge_cron = job_cls()
             break
 
-    assert password_reset_purge_cron is not None
+    assert acc_recovery_purge_cron is not None
 
     # Run the cron job
-    await password_reset_purge_cron.run(db_session)
+    await acc_recovery_purge_cron.run(db_session)
 
     # Verify expired reset is deleted
     result = await db_session.execute(

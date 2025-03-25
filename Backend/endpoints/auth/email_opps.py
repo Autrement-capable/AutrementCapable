@@ -7,7 +7,7 @@ from utils.jwt_exceptions import create_response_dict
 from database.postgress.config import getSession as GetSession
 from database.postgress.actions.user import get_user_by_email
 from database.postgress.actions.revoked_jwt_tokens import revoke_token, get_revoked_token_by_jti
-from database.postgress.actions.password_reset import get_acc_recovery_by_token, create_acc_recovery, del_acc_recovery
+from database.postgress.actions.acc_recovery import get_acc_recovery_by_token, create_acc_recovery, del_acc_recovery
 from database.postgress.actions.user import verify_user, update_ver_details
 from mail.actions.reset_password import send_reset_password_email
 

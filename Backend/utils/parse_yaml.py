@@ -61,6 +61,6 @@ def get_property(config:dict, property_name:str, sub_propertyList:list[str]=None
 #     print(f"refresh token duration: {token_duration['refresh_token_duration']} seconds")
 
 #     # Get the mail server configuration
-#     mail_server_config = get_property(config, "verify", ["email_verification_code_duration", "password_reset_code_duration"])
+#     mail_server_config = get_property(config, "verify", ["email_verification_code_duration", "acc_recovery_code_duration"])
 #     print(f"email verification code duration: {mail_server_config['email_verification_code_duration']} seconds")
-#     print(f"password reset code duration: {mail_server_config['password_reset_code_duration']} seconds")
+#     print(f"password reset code duration: {mail_server_config['acc_recovery_code_duration']} seconds")
