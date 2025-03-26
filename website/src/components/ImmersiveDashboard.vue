@@ -1,61 +1,29 @@
 <template>
   <div class="dashboard" :class="{ 'achievements-unlocked': hasNewAchievement, 'games-zoomed': gamesZoomed }">
-    <div class="space-elements">
-      
-      <!-- Add comets randomly crossing the sky -->
-      <div class="comet comet-1"></div>
-      <div class="comet comet-2"></div>
-      <div class="comet comet-3"></div>
-      <div class="comet comet-4"></div>
-      <div class="comet comet-5"></div>
-      
-      <!-- Add a distant galaxy -->
-      <div class="galaxy galaxy-1"></div>
-      
-      <!-- Add a planet with rings -->
-      <div class="planet planet-1">
-        <div class="planet-rings"></div>
-      </div>
-      
-      <!-- Nouvelle planète rouge gazeuse -->
-      <div class="planet planet-2">
-        <div class="planet-atmosphere"></div>
-        <div class="planet-storm"></div>
-      </div>
-      
-      <!-- Nouvelle planète glacée -->
-      <div class="planet planet-3">
-        <div class="planet-ice-caps"></div>
-        <div class="planet-moons">
-          <div class="planet-moon moon-1"></div>
-          <div class="planet-moon moon-2"></div>
-        </div>
-      </div>
-    </div>
-
+    <space-background :theme="currentTheme" />
     <!-- La structure principale -->
     <div class="dashboard-container">
       <div class="click-outside-overlay" v-if="gamesZoomed" @click="exitGamesZoom"></div>
       <!-- Section Formations -->
       <div class="section formations" @mouseenter="activeSection = 'formations'" @mouseleave="activeSection = null">
         <div class="section-content" :class="{ 'active': activeSection === 'formations' }">
-            <div class="button-particles" v-if="activeSection === 'formations'">
-            <div v-for="i in 8" :key="'formation-particle-'+i" class="button-particle" 
-                :style="generateParticleStyle()"></div>
-            </div>
-            <div class="button-ring"></div>
-            <div class="icon-container" @click="openSection('formations')">
-            <div class="glow-effect" :class="{ 'pulse': activeSection === 'formations' }"></div>
-            <div class="icon">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor">
-                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 4c1.86 0 3.41 1.28 3.86 3H8.14c.45-1.72 2-3 3.86-3zm-4 6h8v2h-8v-2zm0 4h8v2h-8v-2z" stroke-width="1.5"/>
-                </svg>
-            </div>
-            <span class="tooltip">Formations</span>
-            <div class="notification" v-if="notifications.formations > 0">{{ notifications.formations }}</div>
-            </div>
+          <div class="button-particles" v-if="activeSection === 'formations'">
+          <div v-for="i in 8" :key="'formation-particle-'+i" class="button-particle" 
+            :style="generateParticleStyle()"></div>
+          </div>
+          <div class="button-ring"></div>
+          <div class="icon-container" @click="openSection('formations')">
+          <div class="glow-effect" :class="{ 'pulse': activeSection === 'formations' }"></div>
+          <div class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor">
+            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 4c1.86 0 3.41 1.28 3.86 3H8.14c.45-1.72 2-3 3.86-3zm-4 6h8v2h-8v-2zm0 4h8v2h-8v-2z" stroke-width="1.5"/>
+            </svg>
+          </div>
+          <span class="tooltip">Formations</span>
+          <div class="notification" v-if="notifications.formations > 0">{{ notifications.formations }}</div>
+          </div>
         </div>
-    </div>
+      </div>
 
       <!-- Section Badges -->
       <div class="section badges" @mouseenter="activeSection = 'badges'" @mouseleave="activeSection = null">
@@ -125,21 +93,21 @@
 				<div class="button-particles" v-if="activeSection === 'profile'">
 					<div v-for="i in 8" :key="'profile-particle-'+i" class="button-particle" 
 							:style="generateParticleStyle()"></div>
-				</div>
-				<div class="button-ring"></div>
-				<div class="icon-container" @click="openSection('profile')">
-					<div class="glow-effect" :class="{ 'pulse': activeSection === 'profile' }"></div>
-					<div class="icon profile-icon" :class="{ 'profile-active': activeSection === 'profile' }">
-						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor">
-							<circle cx="12" cy="8" r="5" stroke-width="1.5"/>
-							<path d="M20 21v-2a6 6 0 0 0-6-6H10a6 6 0 0 0-6 6v2" stroke-width="1.5"/>
-						</svg>
-					</div>
-					<span class="tooltip tooltip-profile">Profil</span>
-					<div class="notification" v-if="notifications.profile > 0">{{ notifications.profile }}</div>
-				</div>
-			</div>
-		</div>
+          </div>
+          <div class="button-ring"></div>
+          <div class="icon-container" @click="openSection('profile')">
+            <div class="glow-effect" :class="{ 'pulse': activeSection === 'profile' }"></div>
+            <div class="icon profile-icon" :class="{ 'profile-active': activeSection === 'profile' }">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor">
+                <circle cx="12" cy="8" r="5" stroke-width="1.5"/>
+                <path d="M20 21v-2a6 6 0 0 0-6-6H10a6 6 0 0 0-6 6v2" stroke-width="1.5"/>
+              </svg>
+            </div>
+            <span class="tooltip tooltip-profile">Profil</span>
+            <div class="notification" v-if="notifications.profile > 0">{{ notifications.profile }}</div>
+          </div>
+        </div>
+      </div>
 
       <!-- Avatar central avec cercle de progression amélioré -->
       <div class="avatar-container" @click="interactWithAvatar" :class="{ 'avatar-pulse': avatarAnimating }">
@@ -338,15 +306,36 @@
           </div>
         </div>
       </div>
+      <div class="theme-selector">
+        <div class="theme-option" 
+             v-for="theme in availableThemes" 
+             :key="theme.value"
+             @click="changeTheme(theme.value)"
+             :class="{ 'active': currentTheme === theme.value }">
+          <div class="theme-icon" :class="theme.value"></div>
+          <span>{{ theme.label }}</span>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import SpaceBackground from '@/components/SpaceBackground.vue';
+
 export default {
   name: 'ImmersiveDashboard',
+  components: {
+    SpaceBackground
+  },
   data() {
     return {
+      currentTheme: 'cosmic',
+      availableThemes: [
+        { value: 'cosmic', label: 'Cosmic' },
+        { value: 'ocean', label: 'Ocean' },
+        { value: 'cyberpunk', label: 'Cyberpunk' }
+      ],
       progress: 37, // Progression globale en pourcentage
       activeSection: null,
       avatarAnimating: false,
@@ -385,6 +374,19 @@ export default {
         this.enterGamesZoom();
       } else {
         this.exitGamesZoom();
+      }
+    },
+
+    changeTheme(theme) {
+      this.currentTheme = theme;
+      
+      // Optional: store the selected theme in localStorage to persist across sessions
+      localStorage.setItem('dashboard-theme', theme);
+      
+      // Optional: trigger achievement for first theme change
+      if (!this.themeChangeAchieved && theme !== 'cosmic') {
+        this.triggerAchievement('Explorateur de Mondes');
+        this.themeChangeAchieved = true;
       }
     },
 
@@ -670,6 +672,15 @@ export default {
     }
   },
   mounted() {
+
+    const savedTheme = localStorage.getItem('dashboard-theme');
+    if (savedTheme && this.availableThemes.some(theme => theme.value === savedTheme)) {
+      this.currentTheme = savedTheme;
+    }
+    
+    // Flag to track theme change achievement
+    this.themeChangeAchieved = false;
+    
     // Simuler des notifications périodiques
     setInterval(() => {
       const sections = ['formations', 'badges', 'games', 'profile'];
@@ -697,55 +708,8 @@ export default {
   color: white;
   overflow: hidden;
   font-family: 'Nunito', sans-serif;
-  /* transition: background-color 0.5s ease; */
-  background: radial-gradient(ellipse at center, #0f2027 0%, #090a0f 100%);
   transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.dashboard::before,
-.dashboard::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-  background-position: 0 0;
-  background-repeat: repeat;
-  z-index: 0;
-}
-
-.dashboard::before {
-  background-image: 
-    /* Original stars */
-    radial-gradient(1px 1px at 10% 30%, rgba(255, 255, 255, 0.9) 50%, transparent 100%),
-    radial-gradient(1px 1px at 20% 70%, rgba(255, 255, 255, 0.8) 50%, transparent 100%),
-    radial-gradient(1px 1px at 30% 40%, rgba(255, 255, 255, 0.7) 50%, transparent 100%),
-    radial-gradient(1px 1px at 40% 80%, rgba(255, 255, 255, 0.9) 50%, transparent 100%),
-    radial-gradient(1px 1px at 50% 20%, rgba(255, 255, 255, 0.8) 50%, transparent 100%),
-    radial-gradient(1px 1px at 60% 60%, rgba(255, 255, 255, 0.7) 50%, transparent 100%),
-    radial-gradient(1px 1px at 70% 10%, rgba(255, 255, 255, 0.9) 50%, transparent 100%),
-    radial-gradient(1px 1px at 80% 50%, rgba(255, 255, 255, 0.8) 50%, transparent 100%),
-    radial-gradient(1px 1px at 90% 90%, rgba(255, 255, 255, 0.7) 50%, transparent 100%);
-  background-size: 400% 400%;
-  animation: starsFloat 300s linear infinite;
-}
-
-.dashboard::after {
-  background-image: 
-    /* Original larger stars */
-    radial-gradient(2px 2px at 15% 25%, rgba(255, 255, 255, 0.8) 50%, transparent 100%),
-    radial-gradient(2px 2px at 35% 65%, rgba(255, 255, 255, 0.7) 50%, transparent 100%),
-    radial-gradient(2px 2px at 45% 35%, rgba(255, 255, 255, 0.9) 50%, transparent 100%),
-    radial-gradient(2px 2px at 55% 75%, rgba(255, 255, 255, 0.8) 50%, transparent 100%),
-    radial-gradient(2px 2px at 65% 15%, rgba(255, 255, 255, 0.7) 50%, transparent 100%),
-    radial-gradient(2px 2px at 75% 55%, rgba(255, 255, 255, 0.9) 50%, transparent 100%),
-    radial-gradient(2px 2px at 85% 85%, rgba(255, 255, 255, 0.8) 50%, transparent 100%);
-  background-size: 200% 200%;
-  animation: starsFloat 200s linear infinite, starsTwinkle 10s ease-in-out infinite alternate;
+  background: transparent;
 }
 
 .dashboard-container::before {
@@ -772,6 +736,94 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 10;
+}
+
+.theme-selector {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  display: flex;
+  gap: 15px;
+  background: rgba(30, 30, 45, 0.7);
+  border-radius: 12px;
+  padding: 10px 15px;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  z-index: 20;
+}
+
+.theme-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+.theme-option:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-3px);
+}
+
+.theme-option.active {
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 15px rgba(124, 77, 255, 0.5);
+}
+
+.theme-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-bottom: 5px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.theme-option:hover .theme-icon {
+  transform: scale(1.1);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.theme-option.active .theme-icon {
+  border-color: white;
+  transform: scale(1.1);
+}
+
+.theme-icon.cosmic {
+  background: linear-gradient(135deg, #7C4DFF 0%, #0D47A1 100%);
+  box-shadow: 0 0 10px rgba(124, 77, 255, 0.5);
+}
+
+.theme-icon.ocean {
+  background: linear-gradient(135deg, #4FC3F7 0%, #0D47A1 100%);
+  box-shadow: 0 0 10px rgba(79, 195, 247, 0.5);
+}
+
+.theme-icon.cyberpunk {
+  background: linear-gradient(135deg, #FF4081 0%, #AB47BC 100%);
+  box-shadow: 0 0 10px rgba(255, 64, 129, 0.5);
+}
+
+.theme-option span {
+  font-size: 12px;
+  opacity: 0.8;
+  transition: all 0.3s ease;
+}
+
+.theme-option:hover span,
+.theme-option.active span {
+  opacity: 1;
+}
+
+/* Add animation for changing themes */
+@keyframes nebulaShift {
+  0% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.2) rotate(5deg); }
+  100% { transform: scale(1) rotate(10deg); }
 }
 
 /* Container principal pour tous les éléments spatiaux */
@@ -784,498 +836,6 @@ export default {
   overflow: hidden;
   pointer-events: none;
   z-index: 1;
-}
-
-/* Styles pour les comètes */
-.comet {
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 50%;
-  box-shadow: 
-    0 0 20px 2px rgba(255, 255, 255, 0.6),
-    0 0 40px 6px rgba(115, 215, 255, 0.4);
-  z-index: 2;
-  opacity: 0;
-  animation: cometAnimation 12s linear infinite;
-}
-
-.comet::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 120px;
-  height: 2px;
-  background: linear-gradient(to left, 
-    rgba(255, 255, 255, 0.8), 
-    rgba(160, 220, 255, 0.4), 
-    transparent);
-  transform: translateX(2px);
-  border-radius: 100%;
-}
-
-.comet-1 {
-  top: 15%;
-  left: -5%;
-  animation-delay: 2s;
-}
-
-/* Ajoutons plus de comètes */
-.comet-2 {
-  top: 35%;
-  left: -10%;
-  width: 3px;
-  height: 3px;
-  animation-delay: 7s;
-  animation-duration: 15s;
-}
-
-.comet-3 {
-  top: 65%;
-  left: -8%;
-  width: 5px;
-  height: 5px;
-  animation-delay: 13s;
-  animation-duration: 18s;
-}
-
-.comet-4 {
-  top: 62%;
-  left: -18%;
-  animation-delay: 11s;
-}
-
-.comet-5 {
-  top: 70%;
-  left: -18%;
-  animation-delay: 4s;
-}
-
-/* Animation pour les comètes */
-@keyframes cometAnimation {
-  0% {
-    transform: translate(0, 0) rotate(15deg);
-    opacity: 0;
-  }
-  5% {
-    opacity: 1;
-  }
-  95% {
-    opacity: 1;
-  }
-  100% {
-    transform: translate(calc(100vw + 200px), 20vh) rotate(15deg);
-    opacity: 0;
-  }
-}
-
-/* Styles pour la galaxie */
-.galaxy {
-  position: absolute;
-  width: 180px;
-  height: 100px;
-  top: 75%;
-  left: 35%;
-  background: radial-gradient(
-    ellipse at center,
-    rgba(220, 180, 255, 0.6) 0%,
-    rgba(140, 100, 255, 0.4) 30%,
-    rgba(70, 30, 180, 0.2) 60%,
-    transparent 100%
-  );
-  border-radius: 50%;
-  transform: rotate(-25deg) scale(1);
-  filter: blur(5px);
-  opacity: 0.7;
-  z-index: 1;
-  animation: galaxyPulse 15s ease-in-out infinite alternate;
-}
-
-.galaxy::before, .galaxy::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border-radius: 50%;
-  background: 
-    radial-gradient(
-      ellipse at center,
-      rgba(255, 255, 255, 0.1) 0%,
-      transparent 60%
-    ),
-    conic-gradient(
-      transparent 0%,
-      rgba(130, 90, 220, 0.1) 25%,
-      transparent 50%,
-      rgba(150, 100, 255, 0.1) 75%,
-      transparent 100%
-    );
-  transform-origin: center;
-  animation: galaxyRotate 80s linear infinite;
-}
-
-.galaxy::after {
-  transform: rotate(180deg);
-  filter: blur(8px);
-  opacity: 0.5;
-  animation-duration: 120s;
-  animation-direction: reverse;
-}
-
-@keyframes galaxyPulse {
-  0% {
-    transform: rotate(-25deg) scale(1);
-    opacity: 0.7;
-  }
-  50% {
-    transform: rotate(-25deg) scale(1.05);
-    opacity: 0.8;
-  }
-  100% {
-    transform: rotate(-25deg) scale(1);
-    opacity: 0.7;
-  }
-}
-
-@keyframes galaxyRotate {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-/* Styles pour la planète */
-
-.planet-1 {
-  position: absolute;
-  width: 80px;
-  height: 80px;
-  top: 15%;
-  right: 37%;
-  background: 
-    radial-gradient(
-      circle at 30% 30%,
-      #7a4dbc 0%,
-      #522b99 30%,
-      #3c1777 60%,
-      #2c1155 100%
-    );
-  border-radius: 50%;
-  box-shadow: 
-    inset -15px -15px 40px rgba(0, 0, 0, 0.5),
-    0 0 20px rgba(120, 70, 230, 0.3);
-  z-index: 3;
-  transform: rotate(-15deg);
-  animation: planetFloat 120s linear infinite;
-}
-
-/* Anneaux pour la planète violette */
-.planet-1 .planet-rings {
-  position: absolute;
-  width: 130px;
-  height: 20px;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) rotate(-15deg);
-  border-radius: 50%;
-  box-shadow: 
-    0 0 0 4px rgba(255, 255, 255, 0.05),
-    0 0 0 8px rgba(255, 255, 255, 0.03),
-    0 0 0 12px rgba(255, 220, 255, 0.05),
-    0 0 0 16px rgba(180, 180, 255, 0.08),
-    0 0 0 20px rgba(140, 140, 230, 0.06),
-    0 0 0 24px rgba(100, 100, 200, 0.04),
-    0 0 0 28px rgba(80, 80, 180, 0.02);
-  z-index: 2;
-  animation: ringsRotate 200s linear infinite;
-}
-
-/* Styles pour la nouvelle planète rouge gazeuse */
-.planet-2 {
-  position: absolute;
-  width: 100px;
-  height: 100px;
-  top: 65%;
-  right: 5%;
-  background: 
-    radial-gradient(
-      circle at 40% 40%,
-      #ff6b5b 0%,
-      #d32f2f 30%,
-      #b71c1c 60%,
-      #7f0000 100%
-    );
-  border-radius: 50%;
-  box-shadow: 
-    inset -20px -20px 60px rgba(0, 0, 0, 0.6),
-    0 0 30px rgba(255, 100, 80, 0.4);
-  z-index: 2;
-  transform: rotate(10deg);
-  animation: planetFloat2 150s linear infinite;
-}
-
-/* Atmosphère pour la planète rouge */
-.planet-2 .planet-atmosphere {
-  position: absolute;
-  width: 110%;
-  height: 110%;
-  top: -5%;
-  left: -5%;
-  border-radius: 50%;
-  background: 
-    radial-gradient(
-      circle at 50% 50%,
-      rgba(255, 107, 91, 0.3) 0%,
-      rgba(211, 47, 47, 0.2) 50%,
-      rgba(183, 28, 28, 0.1) 70%,
-      rgba(127, 0, 0, 0) 100%
-    );
-  filter: blur(10px);
-  opacity: 0.8;
-  z-index: 1;
-  animation: atmospherePulse 8s ease-in-out infinite alternate;
-}
-
-/* Tempête sur la planète rouge */
-.planet-2 .planet-storm {
-  position: absolute;
-  width: 40%;
-  height: 40%;
-  top: 30%;
-  left: 20%;
-  border-radius: 50%;
-  background: rgba(255, 160, 140, 0.4);
-  filter: blur(5px);
-  z-index: 2;
-  animation: stormSpin 30s linear infinite;
-}
-
-/* Styles pour la nouvelle planète glacée */
-.planet-3 {
-  position: absolute;
-  width: 70px;
-  height: 70px;
-  top: 15%;
-  left: 15%;
-  background: 
-    radial-gradient(
-      circle at 50% 50%,
-      #b3e5fc 0%,
-      #81d4fa 30%,
-      #4fc3f7 60%,
-      #29b6f6 100%
-    );
-  border-radius: 50%;
-  box-shadow: 
-    inset -10px -10px 30px rgba(0, 0, 0, 0.3),
-    0 0 25px rgba(79, 195, 247, 0.5);
-  z-index: 2;
-  animation: planetFloat3 180s linear infinite;
-}
-
-/* Calottes polaires de la planète glacée */
-.planet-3 .planet-ice-caps {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  border-radius: 50%;
-  background: 
-    radial-gradient(
-      ellipse at 50% 10%,
-      rgba(255, 255, 255, 0.9) 0%,
-      rgba(255, 255, 255, 0) 50%
-    ),
-    radial-gradient(
-      ellipse at 50% 90%,
-      rgba(255, 255, 255, 0.9) 0%,
-      rgba(255, 255, 255, 0) 50%
-    );
-  z-index: 3;
-}
-
-/* Système de lunes pour la planète glacée */
-.planet-3 .planet-moons {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-  animation: moonsOrbit 60s linear infinite;
-}
-
-/* Lunes individuelles */
-.planet-moon {
-  position: absolute;
-  background: #e0e0e0;
-  border-radius: 50%;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-}
-
-.moon-1 {
-  width: 15px;
-  height: 15px;
-  top: -30px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: 
-    radial-gradient(
-      circle at 30% 30%,
-      #f5f5f5 0%,
-      #e0e0e0 50%,
-      #bdbdbd 100%
-    );
-}
-
-.moon-2 {
-  width: 10px;
-  height: 10px;
-  bottom: -25px;
-  left: 30%;
-  background: 
-    radial-gradient(
-      circle at 30% 30%,
-      #e0e0e0 0%,
-      #bdbdbd 50%,
-      #9e9e9e 100%
-    );
-}
-
-/* Ajouter des détails à la planète */
-.planet::after {
-  content: '';
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  border-radius: 50%;
-  background: 
-    radial-gradient(
-      circle at 70% 70%, 
-      transparent 0%, 
-      rgba(0, 0, 0, 0.4) 100%
-    ),
-    repeating-conic-gradient(
-      rgba(255, 255, 255, 0.03) 0deg,
-      rgba(255, 255, 255, 0) 20deg,
-      rgba(255, 255, 255, 0.03) 40deg
-    );
-  opacity: 0.7;
-  animation: planetRotate 80s linear infinite;
-}
-
-/* Styles pour les anneaux de la planète */
-.planet-rings {
-  position: absolute;
-  width: 130px;
-  height: 20px;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) rotate(-15deg);
-  border-radius: 50%;
-  box-shadow: 
-    0 0 0 4px rgba(255, 255, 255, 0.05),
-    0 0 0 8px rgba(255, 255, 255, 0.03),
-    0 0 0 12px rgba(255, 220, 255, 0.05),
-    0 0 0 16px rgba(180, 180, 255, 0.08),
-    0 0 0 20px rgba(140, 140, 230, 0.06),
-    0 0 0 24px rgba(100, 100, 200, 0.04),
-    0 0 0 28px rgba(80, 80, 180, 0.02);
-  z-index: 2;
-  animation: ringsRotate 200s linear infinite;
-}
-
-.planet-rings::before {
-  content: '';
-  position: absolute;
-  width: 130px;
-  height: 20px;
-  top: 0;
-  left: 0;
-  border-radius: 50%;
-  background: linear-gradient(
-    to right,
-    transparent 0%,
-    rgba(200, 180, 255, 0.2) 30%,
-    rgba(220, 200, 255, 0.3) 50%,
-    rgba(200, 180, 255, 0.2) 70%,
-    transparent 100%
-  );
-  filter: blur(2px);
-}
-
-@keyframes planetFloat {
-  0% {
-    transform: translate(0, 0) rotate(-15deg);
-  }
-  25% {
-    transform: translate(-10px, 15px) rotate(-15deg);
-  }
-  50% {
-    transform: translate(-5px, 25px) rotate(-15deg);
-  }
-  75% {
-    transform: translate(5px, 15px) rotate(-15deg);
-  }
-  100% {
-    transform: translate(0, 0) rotate(-15deg);
-  }
-}
-
-@keyframes planetRotate {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes ringsRotate {
-  0% {
-    transform: translate(-50%, -50%) rotate(-15deg);
-  }
-  100% {
-    transform: translate(-50%, -50%) rotate(345deg);
-  }
-}
-
-@keyframes planetFloat2 {
-  0% { transform: translate(0, 0) rotate(10deg); }
-  25% { transform: translate(-30px, 20px) rotate(10deg); }
-  50% { transform: translate(-60px, 0) rotate(10deg); }
-  75% { transform: translate(-30px, -20px) rotate(10deg); }
-  100% { transform: translate(0, 0) rotate(10deg); }
-}
-
-@keyframes planetFloat3 {
-  0% { transform: translate(0, 0); }
-  25% { transform: translate(20px, 15px); }
-  50% { transform: translate(40px, 0); }
-  75% { transform: translate(20px, -15px); }
-  100% { transform: translate(0, 0); }
-}
-
-@keyframes atmospherePulse {
-  0% { opacity: 0.6; transform: scale(1); }
-  100% { opacity: 0.9; transform: scale(1.1); }
-}
-
-@keyframes stormSpin {
-  0% { transform: rotate(0deg) translateX(10px) rotate(0deg); }
-  100% { transform: rotate(360deg) translateX(10px) rotate(-360deg); }
-}
-
-@keyframes moonsOrbit {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
 }
 
 .click-outside-overlay {
@@ -1398,28 +958,6 @@ export default {
   text-overflow: ellipsis;
   max-width: 100%;
   opacity: 0.8;
-}
-
-/* Media queries for smaller screens */
-@media (max-width: 768px) {
-  .game-orbit-button {
-    width: 60px;
-    height: 60px;
-  }
-  
-  .game-orbit-content {
-    width: 50px;
-    height: 50px;
-  }
-  
-  .game-icon {
-    font-size: 18px;
-    margin-bottom: 2px;
-  }
-  
-  .game-title {
-    font-size: 8px;
-  }
 }
 
 .games-zoomed .section.games {
@@ -2292,77 +1830,6 @@ export default {
   animation: cosmicPulse 1s;
 }
 
-/* Animation keyframes */
-@keyframes starsFloat {
-  0% { background-position: 0% 0%; }
-  100% { background-position: 100% 100%; }
-}
-
-@keyframes starsTwinkle {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 1; }
-}
-
-@keyframes nebulaShift {
-  0% { transform: scale(1) rotate(0deg); }
-  50% { transform: scale(1.2) rotate(5deg); }
-  100% { transform: scale(1) rotate(10deg); }
-}
-
-@keyframes planetFloat {
-  0% { transform: translate(0, 0); }
-  25% { transform: translate(50px, 20px); }
-  50% { transform: translate(100px, 0); }
-  75% { transform: translate(50px, -20px); }
-  100% { transform: translate(0, 0); }
-}
-
-@keyframes cometPath {
-  0% { transform: translate(0, 0) rotate(15deg); opacity: 0; }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
-  100% { transform: translate(120vw, 40vh) rotate(15deg); opacity: 0; }
-}
-
-@keyframes floatDust {
-  0% {
-    transform: translateY(0) translateX(0) rotate(0deg);
-    opacity: 0;
-  }
-  10% { opacity: 0.7; }
-  90% { opacity: 0.3; }
-  100% {
-    transform: translateY(-100px) translateX(50px) rotate(360deg);
-    opacity: 0;
-  }
-}
-
-@keyframes cosmicRotate {
-  0% { transform: rotate(0deg) scale(1); }
-  25% { transform: rotate(90deg) scale(1.05); }
-  50% { transform: rotate(180deg) scale(1); }
-  75% { transform: rotate(270deg) scale(1.05); }
-  100% { transform: rotate(360deg) scale(1); }
-}
-
-@keyframes cosmicPulse {
-  0% { 
-    transform: scale(0.95);
-    opacity: 0.5;
-    filter: blur(15px);
-  }
-  50% { 
-    transform: scale(1.4);
-    opacity: 0.9;
-    filter: blur(25px);
-  }
-  100% { 
-    transform: scale(1);
-    opacity: 0.7;
-    filter: blur(20px);
-  }
-}
-
 @keyframes avatarGlowPulse {
   0% { 
     transform: scale(0.95);
@@ -2638,6 +2105,41 @@ export default {
   
   .game-name {
     font-size: 12px;
+  }
+
+  .game-orbit-button {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .game-orbit-content {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .game-icon {
+    font-size: 18px;
+    margin-bottom: 2px;
+  }
+  
+  .game-title {
+    font-size: 8px;
+  }
+
+  .theme-selector {
+    bottom: 10px;
+    right: 10px;
+    padding: 5px 10px;
+    gap: 10px;
+  }
+  
+  .theme-icon {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .theme-option span {
+    font-size: 10px;
   }
 }
 </style>
