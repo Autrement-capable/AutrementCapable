@@ -398,9 +398,11 @@ export default {
       
       // Set zoomed state
       this.gamesZoomed = true;
-      this.activeSection = null;
-      
-      // Réduire la notification
+      this.activeSection = 'games';
+
+      this.showGamesOrbit = true;
+  
+      // Reduce notification if any
       if (this.notifications.games > 0) {
         this.notifications.games--;
       }
@@ -409,6 +411,7 @@ export default {
         // Exit games zoom mode
     exitGamesZoom() {
       this.gamesZoomed = false;
+      this.showGamesOrbit = false;
       
       // Add haptic feedback if available
       if (window.navigator && window.navigator.vibrate) {
@@ -476,12 +479,10 @@ export default {
         }
       }
       
-      // Toggle the games orbit
-      this.showGamesOrbit = !this.showGamesOrbit;
-      
-      // If hiding orbit and there are notifications, reduce them
-      if (!this.showGamesOrbit && this.notifications.games > 0) {
-        this.notifications.games--;
+      if (!this.gamesZoomed) {
+        this.enterGamesZoom();
+      } else {
+        this.exitGamesZoom();
       }
       
       // Create a flash effect
@@ -695,8 +696,9 @@ export default {
   color: white;
   overflow: hidden;
   font-family: 'Nunito', sans-serif;
-  transition: background-color 0.5s ease;
+  /* transition: background-color 0.5s ease; */
   background: radial-gradient(ellipse at center, #0f2027 0%, #090a0f 100%);
+  transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .dashboard::before,
@@ -1484,6 +1486,85 @@ export default {
   
   .game-title {
     font-size: 8px;
+  }
+}
+
+.games-zoomed .section.games {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1.5);
+  z-index: 50;
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.games-zoomed .section:not(.games) {
+  opacity: 0.3;
+  filter: blur(3px);
+  transform: scale(0.8);
+  pointer-events: none;
+}
+
+/* Dim avatar when games are zoomed */
+.games-zoomed .avatar-container {
+  opacity: 0.4;
+  transform: scale(0.8);
+  filter: blur(2px);
+  pointer-events: none;
+}
+
+/* Adjust game orbit positioning when zoomed */
+.games-zoomed .game-orbit {
+  position: fixed;
+  top: 25%;
+  left: 25%;
+  transform: translate(-50%, -50%);
+  z-index: 60;
+}
+
+.games-zoomed .game-orbit-button {
+  transform: translate(-50%, -50%) scale(1.2);
+  transition-delay: 0.2s;
+}
+
+.games-zoomed .game-orbit-button:nth-child(1) { transform: translate(-50%, -50%) translateY(-180px) scale(1.2); }
+.games-zoomed .game-orbit-button:nth-child(2) { transform: translate(-50%, -50%) translateX(155px) translateY(-90px) scale(1.2); }
+.games-zoomed .game-orbit-button:nth-child(3) { transform: translate(-50%, -50%) translateX(155px) translateY(90px) scale(1.2); }
+.games-zoomed .game-orbit-button:nth-child(4) { transform: translate(-50%, -50%) translateY(180px) scale(1.2); }
+.games-zoomed .game-orbit-button:nth-child(5) { transform: translate(-50%, -50%) translateX(-155px) translateY(90px) scale(1.2); }
+
+.games-zoomed:before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at center, rgba(30, 30, 60, 0.3) 0%, rgba(10, 10, 30, 0.8) 100%);
+  z-index: 40;
+  pointer-events: none;
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.games-zoomed .game-orbit-content {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4),
+              0 0 20px rgba(255, 64, 129, 0.6);
+  border-color: rgba(255, 64, 129, 0.8);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
   }
 }
 
