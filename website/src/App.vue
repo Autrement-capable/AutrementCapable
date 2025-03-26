@@ -263,6 +263,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 5px;
+  z-index: 9999;
 }
 
 button {
