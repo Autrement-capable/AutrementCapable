@@ -365,7 +365,6 @@ export default {
   left: -10%;
   width: 3px;
   height: 3px;
-  animation-delay: 7s;
   animation-duration: 15s;
 }
 
@@ -374,14 +373,14 @@ export default {
   left: -8%;
   width: 5px;
   height: 5px;
-  animation-delay: 13s;
+  animation-delay: 1s;
   animation-duration: 18s;
 }
 
 .comet-4 {
   top: 62%;
   left: -18%;
-  animation-delay: 11s;
+  animation-delay: 3s;
 }
 
 .comet-5 {
