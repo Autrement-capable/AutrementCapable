@@ -1012,7 +1012,7 @@ export default {
   right: 0;
   bottom: 0;
   background: radial-gradient(circle at center, rgba(30, 30, 60, 0.3) 0%, rgba(10, 10, 30, 0.8) 100%);
-  z-index: 34;
+  z-index: 10;
   animation: fadeIn 0.5s ease-out forwards;
 }
 
