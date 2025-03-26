@@ -12,6 +12,13 @@ from webauthn import (
     generate_authentication_options,
     verify_authentication_response
 )
+from webauthn.helpers.structs import (
+    AuthenticatorAttachment,
+    AuthenticatorSelectionCriteria,
+    ResidentKeyRequirement,
+    UserVerificationRequirement,
+    AttestationConveyancePreference
+)
 from os import getenv
 from datetime import datetime, timedelta
 
@@ -20,36 +27,165 @@ RP_ID = getenv("RP_ID", "localhost")
 RP_NAME = getenv("RP_NAME", "Autrement Capable")
 ORIGIN = getenv("ORIGIN", f"https://{RP_ID}")
 
-def generate_passkey_registration_options(user_id: str, username: str) -> Dict[str, Any]:
+def generate_passkey_registration_options(user_id, username) -> Dict[str, Any]:
     """
     Generate registration options for WebAuthn/Passkey.
 
     Args:
-        user_id (str): User ID
+        user_id (str or int): User ID
         username (str): Username or display name
 
     Returns:
         Dict[str, Any]: Registration options
     """
-    # Convert user_id to string if it's not already
+    # Convert user_id to string and then to bytes as required by the WebAuthn library
     user_id_str = str(user_id)
+    user_id_bytes = user_id_str.encode('utf-8')
 
-    # Generate registration options
+    # Generate registration options using proper class instances
     options = generate_registration_options(
         rp_id=RP_ID,
         rp_name=RP_NAME,
-        user_id=user_id_str,
+        user_id=user_id_bytes,
         user_name=username,
-        attestation="direct",
-        authenticator_selection={
-            "authenticatorAttachment": "platform",  # platform = passkey, cross-platform = security key
-            "residentKey": "preferred",
-            "userVerification": "preferred"
-        }
+        attestation=AttestationConveyancePreference.DIRECT,
+        authenticator_selection=AuthenticatorSelectionCriteria(
+            authenticator_attachment=AuthenticatorAttachment.PLATFORM,
+            resident_key=ResidentKeyRequirement.PREFERRED,
+            user_verification=UserVerificationRequirement.PREFERRED
+        )
     )
 
-    # Encode challenge as base64url (required for serialization)
-    options_dict = options.asdict()
+    # Convert options to dictionary
+    try:
+        if hasattr(options, 'to_dict'):
+            options_dict = options.to_dict()
+        elif hasattr(options, 'serialize'):
+            options_dict = options.serialize()
+        elif hasattr(options, 'asdict'):
+            options_dict = options.asdict()
+        elif hasattr(options, '__dict__'):
+            options_dict = {k: v for k, v in options.__dict__.items() 
+                           if not k.startswith('_')}
+        else:
+            # Manual conversion
+            options_dict = {
+                'challenge': options.challenge,
+                'rp': getattr(options, 'rp', {'name': RP_NAME, 'id': RP_ID}),
+                'user': getattr(options, 'user', {'id': user_id_bytes, 'name': username, 'displayName': username}),
+                'pubKeyCredParams': getattr(options, 'pub_key_cred_params', []),
+                'timeout': getattr(options, 'timeout', 60000),
+                'attestation': getattr(options, 'attestation', 'direct'),
+                'authenticatorSelection': getattr(options, 'authenticator_selection', {})
+            }
+    except Exception as e:
+        # If conversion fails, create a minimal dictionary with the essentials
+        print(f"Error converting options: {e}")
+        options_dict = {
+            'challenge': options.challenge,
+            'rp': {
+                'name': RP_NAME,
+                'id': RP_ID
+            },
+            'user': {
+                'id': user_id_bytes,
+                'name': username,
+                'displayName': username
+            },
+            'pubKeyCredParams': [
+                {'type': 'public-key', 'alg': -7},  # ES256
+                {'type': 'public-key', 'alg': -257}  # RS256
+            ],
+            'timeout': 60000,
+            'attestation': 'direct',
+            'authenticatorSelection': {
+                'authenticatorAttachment': 'platform',
+                'residentKey': 'preferred',
+                'userVerification': 'preferred'
+            }
+        }
+
+    # Encode challenge as base64url
+    options_dict["challenge"] = bytes_to_base64url(options.challenge)
+
+    # Create a new dictionary for the output with the correct structure
+    result = {
+        'challenge': bytes_to_base64url(options.challenge),
+        'rp': {
+            'name': options.rp.name,
+            'id': options.rp.id
+        },
+        'user': {
+            'id': bytes_to_base64url(options.user.id),
+            'name': options.user.name,
+            'displayName': options.user.display_name if hasattr(options.user, 'display_name') else options.user.name
+        },
+        'pubKeyCredParams': [
+            {'type': param.type, 'alg': param.alg.value if hasattr(param.alg, 'value') else param.alg}
+            for param in options.pub_key_cred_params
+        ],
+        'timeout': options.timeout,
+        'excludeCredentials': [],  # No credentials to exclude for a new user
+        'authenticatorSelection': {
+            'authenticatorAttachment': options.authenticator_selection.authenticator_attachment.value
+                if hasattr(options.authenticator_selection.authenticator_attachment, 'value')
+                else options.authenticator_selection.authenticator_attachment,
+            'residentKey': options.authenticator_selection.resident_key.value
+                if hasattr(options.authenticator_selection.resident_key, 'value')
+                else options.authenticator_selection.resident_key,
+            'requireResidentKey': options.authenticator_selection.require_resident_key,
+            'userVerification': options.authenticator_selection.user_verification.value
+                if hasattr(options.authenticator_selection.user_verification, 'value')
+                else options.authenticator_selection.user_verification
+        },
+        'attestation': options.attestation.value if hasattr(options.attestation, 'value') else options.attestation
+    }
+    return result
+
+def generate_passkey_authentication_options() -> Dict[str, Any]:
+    """
+    Generate authentication options for WebAuthn/Passkey.
+
+    Returns:
+        Dict[str, Any]: Authentication options
+    """
+    options = generate_authentication_options(
+        rp_id=RP_ID,
+        user_verification=UserVerificationRequirement.PREFERRED
+    )
+
+    # Convert options to dictionary
+    try:
+        if hasattr(options, 'to_dict'):
+            options_dict = options.to_dict()
+        elif hasattr(options, 'serialize'):
+            options_dict = options.serialize()
+        elif hasattr(options, 'asdict'):
+            options_dict = options.asdict()
+        elif hasattr(options, '__dict__'):
+            options_dict = {k: v for k, v in options.__dict__.items() 
+                           if not k.startswith('_')}
+        else:
+            # Manual conversion
+            options_dict = {
+                'challenge': options.challenge,
+                'timeout': getattr(options, 'timeout', 60000),
+                'rpId': RP_ID,
+                'userVerification': str(UserVerificationRequirement.PREFERRED),
+                'allowCredentials': getattr(options, 'allow_credentials', [])
+            }
+    except Exception as e:
+        # Fallback if conversion fails
+        print(f"Error converting authentication options: {e}")
+        options_dict = {
+            'challenge': options.challenge,
+            'timeout': 60000,
+            'rpId': RP_ID,
+            'userVerification': 'preferred',
+            'allowCredentials': []
+        }
+
+    # Encode challenge as base64url
     options_dict["challenge"] = bytes_to_base64url(options.challenge)
 
     return options_dict
@@ -71,9 +207,6 @@ def verify_passkey_registration(
         Optional[Dict[str, Any]]: Verified credential data if successful, None if failed
     """
     try:
-        # Convert user_id to string if it's not already
-        user_id_str = str(user_id)
-
         # Convert base64url challenge to bytes
         challenge_bytes = base64url_to_bytes(options_challenge)
 
@@ -97,24 +230,6 @@ def verify_passkey_registration(
     except Exception as e:
         print(f"Error verifying passkey registration: {e}")
         return None
-
-def generate_passkey_authentication_options() -> Dict[str, Any]:
-    """
-    Generate authentication options for WebAuthn/Passkey.
-
-    Returns:
-        Dict[str, Any]: Authentication options
-    """
-    options = generate_authentication_options(
-        rp_id=RP_ID,
-        user_verification="preferred"
-    )
-
-    # Encode challenge as base64url
-    options_dict = options.asdict()
-    options_dict["challenge"] = bytes_to_base64url(options.challenge)
-
-    return options_dict
 
 def verify_passkey_authentication(
     credential_id: str,

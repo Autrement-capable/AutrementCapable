@@ -247,66 +247,88 @@ async def complete_passkey_authentication(
         "onboarding_complete": user.onboarding_complete
     }
 
-@router.put("/user/{user_id}/profile", tags=["Passkey User Profile"])
-async def update_profile(
-    user_id: int,
-    data: UpdateUserProfile,
-    session: AsyncSession = Depends(getSession),
-    jwt: dict = Depends(JWTBearer())
-):
-    """
-    Update a user's profile information.
-    """
-    # Get the user from JWT
-    if user_id != jwt["payload"]["sub"]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Unauthorized"
-        )
-    from database.postgress.actions.user import get_user_by_id
-    user = await get_user_by_id(session, user_id)
+## stupid why you need user_id when you get it from JWT also wrong route as well
+# @router.put("/user/{user_id}/profile", tags=["Passkey User Profile"])
+# async def update_profile(
+#     user_id: int,
+#     data: UpdateUserProfile,
+#     session: AsyncSession = Depends(getSession),
+#     jwt: dict = Depends(JWTBearer())
+# ):
+#     """
+#     Update a user's profile information.
+#     """
+#     # Get the user from JWT
+#     if user_id != jwt["payload"]["sub"]:
+#         raise HTTPException(
+#             status_code=status.HTTP_403_FORBIDDEN,
+#             detail="Unauthorized"
+#         )
+#     from database.postgress.actions.user import get_user_by_id
+#     user = await get_user_by_id(session, user_id)
 
-    if not user:
+#     if not user:
+#         raise HTTPException(
+#             status_code=status.HTTP_404_NOT_FOUND,
+#             detail="User not found"
+#         )
+
+#     # Update user profile
+#     updated_user = await update_user_profile(
+#         session=session,
+#         user=user,
+#         username=data.username,
+#         email=data.email,
+#         phone_number=data.phone_number,
+#         address=data.address,
+#         onboarding_complete=data.onboarding_complete
+#     )
+
+#     if not updated_user:
+#         raise HTTPException(
+#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+#             detail="Failed to update user profile"
+#         )
+
+#     return {
+#         "success": True,
+#         "user": {
+#             "id": updated_user.id,
+#             "username": updated_user.username,
+#             "email": updated_user.email,
+#             "first_name": updated_user.first_name,
+#             "last_name": updated_user.last_name,
+#             "age": updated_user.age,
+#             "onboarding_complete": updated_user.onboarding_complete
+#         }
+#     }
+
+
+# handle the passkeys registration to an exstion account
+@router.post("/rec-acc-passkey", response_model=PasskeyRegistrationOptions)
+async def rec_acc_passkey(
+    code: str):
+    """
+    Create a new passkey for existing account using a recovery code.
+    you must follow up with a call to /auth/passkey/registration/complete to
+    complete the registration of new passkey (old passkey does not get deleted)
+    """
+    # Get the user from the recovery code
+    recovery = await get_acc_recovery_by_token(session, code)
+    if not recovery:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
+            detail="Recovery code not found"
         )
+    user = recovery.user
 
-    # Update user profile
-    updated_user = await update_user_profile(
-        session=session,
-        user=user,
-        username=data.username,
-        email=data.email,
-        phone_number=data.phone_number,
-        address=data.address,
-        onboarding_complete=data.onboarding_complete
-    )
-
-    if not updated_user:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to update user profile"
-        )
+    # Generate registration options
+    options = generate_passkey_registration_options(user.id, user.first_name)
 
     return {
-        "success": True,
-        "user": {
-            "id": updated_user.id,
-            "username": updated_user.username,
-            "email": updated_user.email,
-            "first_name": updated_user.first_name,
-            "last_name": updated_user.last_name,
-            "age": updated_user.age,
-            "onboarding_complete": updated_user.onboarding_complete
-        }
+        "options": options,
+        "user_id": user.id
     }
-
-
-# WIP
-@router.post("/rec-acc-passkey", response_model=PasskeyAuthenticationResult)
-async def rec_acc_passkey():
-    pass
 
 # Add router to the server
 AddRouter(router)

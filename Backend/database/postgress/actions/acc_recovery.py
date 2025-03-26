@@ -56,7 +56,7 @@ async def create_acc_recovery(session: AsyncSession, user: User, commit=True, fr
         return None
 
 async def get_acc_recovery_by_token(session: AsyncSession, reset_token: str) -> AccountRecovery | None:
-    """ Get a password reset entry by its token. """
+    """ Get a password reset entry by its token. (LOADS USER) """
     try:
         statement = select(AccountRecovery).where(AccountRecovery.reset_token == reset_token).options(joinedload(AccountRecovery.user))
         result = await session.execute(statement)

@@ -20,7 +20,7 @@ async def create_passkey_user(
     fresh: bool = True
 ) -> User:
     """
-    Create a new user with minimal information for passkey registration.
+    Create a new user with minimal information for passkey registration(does not set a passkey yet).
 
     Args:
         session (AsyncSession): Database session
