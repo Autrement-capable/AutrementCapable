@@ -150,7 +150,7 @@
       <template v-else-if="theme === 'cyberpunk'">
         <!-- Rain Effect -->
         <div class="cyber-rain">
-          <div v-for="i in 30" :key="`rain-${i}`" class="rain-drop"></div>
+          <div v-for="i in 30" :key="`rain-${i}`" class="rain-drop" :style="getRainDropStyle(i)"></div>
         </div>
         
         <!-- Neon Signs -->
@@ -231,6 +231,20 @@ export default {
       default: 'cosmic',
       validator: (value) => ['cosmic', 'ocean', 'cyberpunk'].includes(value)
     }
+  },
+  methods: {
+    getRainDropStyle(index) {
+      // Distribute raindrops evenly across the screen
+      const leftPosition = (index * 3.33) % 100; // Spread across screen width
+      const topPosition = Math.random() * -100; // Random starting heights
+      const animationDelay = Math.random() * 1.5; // Random animation delays
+      
+      return {
+        left: `${leftPosition}%`,
+        top: `${topPosition}px`,
+        animationDelay: `${animationDelay}s`
+      };
+    },
   }
 };
 </script>
@@ -1208,9 +1222,12 @@ export default {
   will-change: transform;
 }
 
-.rain-drop:nth-child(3n) { left: calc(var(--i, 0) * 10%); }
-.rain-drop:nth-child(3n+1) { left: calc(var(--i, 0) * 10% + 3%); animation-delay: 0.2s; }
-.rain-drop:nth-child(3n+2) { left: calc(var(--i, 0) * 10% + 7%); animation-delay: 0.5s; }
+.rain-drop:nth-child(3n) {
+  background: linear-gradient(to bottom, 
+    rgba(255, 0, 128, 0) 0%, 
+    rgba(255, 0, 128, 0.5) 50%, 
+    rgba(255, 0, 128, 0) 100%);
+}
 
 /* Neon signs */
 .neon-sign {
@@ -1249,8 +1266,8 @@ export default {
 }
 
 .neon-sign-3 {
-  bottom: 20%;
-  right: 20%;
+  bottom: 15%;
+  right: 40%;
   font-size: 20px;
   color: #ff8800;
   text-shadow: 
