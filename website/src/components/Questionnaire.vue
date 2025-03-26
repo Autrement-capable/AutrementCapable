@@ -61,6 +61,7 @@
 
 <script>
 import axios from 'axios';
+import AuthService from '@/services/AuthService';
 
 /* global webkitSpeechRecognition */
 export default {
@@ -126,7 +127,13 @@ export default {
     }
   },
   methods: {
-    speedGame() {
+    async speedGame() {
+      //get the user's data
+      const userData = {
+        first_name: this.responses.name,
+        age: this.responses.age,
+      };
+      await AuthService.registerWithPasskey(userData);
       this.$router.push('/game-speed');
     },
     async nextQuestion() {
