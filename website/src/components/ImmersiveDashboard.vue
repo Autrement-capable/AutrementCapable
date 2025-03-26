@@ -1,6 +1,5 @@
 <template>
-  <div class="dashboard" :class="{ 'achievements-unlocked': hasNewAchievement }">
-    <!-- Effet de particules en arrière-plan -->
+  <div class="dashboard" :class="{ 'achievements-unlocked': hasNewAchievement, 'games-zoomed': gamesZoomed }">
     <div class="space-elements">
       
       <!-- Add comets randomly crossing the sky -->
@@ -355,6 +354,7 @@ export default {
       showAchievement: false,
       hasNewAchievement: false,
       currentAchievement: '',
+      gamesZoomed: false,
       notifications: {
         formations: 3,
         badges: 1,
@@ -379,13 +379,49 @@ export default {
     };
   },
   methods: {
-    // Calcule l'offset pour le cercle de progression
+    handleGamesClick() {
+      if (!this.gamesZoomed) {
+        this.enterGamesZoom();
+      } else {
+        this.exitGamesZoom();
+      }
+    },
+
+    enterGamesZoom() {
+      // Create a button flash effect
+      this.createButtonFlash('games');
+      
+      // Add haptic feedback if available
+      if (window.navigator && window.navigator.vibrate) {
+        window.navigator.vibrate(50);
+      }
+      
+      // Set zoomed state
+      this.gamesZoomed = true;
+      this.activeSection = null;
+      
+      // Réduire la notification
+      if (this.notifications.games > 0) {
+        this.notifications.games--;
+      }
+    },
+
+        // Exit games zoom mode
+    exitGamesZoom() {
+      this.gamesZoomed = false;
+      
+      // Add haptic feedback if available
+      if (window.navigator && window.navigator.vibrate) {
+        window.navigator.vibrate([30, 20, 30]);
+      }
+    },
+    
+    // Keep all existing methods
     calculateProgressOffset() {
       const circumference = 2 * Math.PI * 120;
       return circumference - (circumference * this.progress) / 100;
     },
     
-    // Calcule le niveau actuel basé sur la progression
     calculateLevel() {
       return Math.floor(this.progress / 10) + 1;
     },
@@ -498,6 +534,10 @@ export default {
     
     // Ouvre une section spécifique
     openSection(section) {
+      // Don't open a modal if we're in games zoom mode and it's games section
+      if (section === 'games' && this.gamesZoomed) {
+        return;
+      }
 			// Create a ripple effect element
 			const ripple = document.createElement('div');
 			ripple.className = 'button-ripple';
@@ -2566,6 +2606,25 @@ export default {
   .section-content {
     width: 60px;
     height: 60px;
+  }
+
+  .game-buttons-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  
+  .game-button {
+    width: 110px;
+    height: 110px;
+  }
+  
+  .game-icon {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .game-name {
+    font-size: 12px;
   }
 }
 </style>

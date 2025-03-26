@@ -4,9 +4,10 @@
       <router-view></router-view>
     </div>
     <div class="accessibility-widget" @click="toggleWidget">
-      <i class="icon-accessibility"></i>
+      <img src="@/assets/inclusive_icon.png" alt="Accessibility" class="inclusive-icon" />
     </div>
-    <AppFooter />
+
+    <!-- <AppFooter /> -->
     <div v-if="showWidget" class="accessibility-options">
       <button @click="toggleTextToSpeech">Lire la page</button>
       <button @click="toggleVoiceNavigation">Navigation vocale</button>
@@ -25,12 +26,12 @@
 </template>
 
 <script>
-import AppFooter from './components/Footer.vue'
+// import AppFooter from './components/Footer.vue'
 
 export default {
   name: 'App',
   components: {
-    AppFooter
+    // AppFooter
   },
   data() {
     return {
@@ -86,14 +87,14 @@ export default {
     updateGuidePosition(event) {
       const guide = document.querySelector('.reading-guide');
       if (guide) {
-        const guideHeight = 30; // Adjust the height of the reading guide to be shorter
-        const guideWidth = window.innerWidth * 0.5; // Set guide width to 50% of the window width
+        const guideHeight = 30;
+        const guideWidth = window.innerWidth * 0.5;
         const guideTop = event.clientY - guideHeight / 2;
-        const guideLeft = event.clientX - guideWidth / 2; // Adjust left position based on the mouse movement
+        const guideLeft = event.clientX - guideWidth / 2;
 
         guide.style.top = `${guideTop}px`;
-        guide.style.left = `${guideLeft}px`; // Allow the guide to move horizontally
-        guide.style.width = `${guideWidth}px`; // Set the width of the guide
+        guide.style.left = `${guideLeft}px`;
+        guide.style.width = `${guideWidth}px`;
       }
     },
 
@@ -139,7 +140,7 @@ export default {
     },
 
     updateMaskPosition(event) {
-      const maskHeight = 150; // Adjust the height of the reading mask here
+      const maskHeight = 150;
       const maskTopPosition = event.clientY - maskHeight / 2;
 
       const maskTop = document.querySelector('.mask-top');
@@ -151,7 +152,6 @@ export default {
       maskBottom.style.top = `${maskTopPosition + maskHeight}px`;
       maskBottom.style.height = `${window.innerHeight - (maskTopPosition + maskHeight)}px`;
 
-      // Mask left and right regions
       maskLeft.style.height = `${maskHeight}px`;
       maskLeft.style.top = `${maskTopPosition}px`;
       maskRight.style.height = `${maskHeight}px`;
@@ -221,7 +221,7 @@ body {
   display: flex;
   flex-direction: column;
   position: relative;
-  padding-bottom: 60px; /* Ajustez cette valeur selon la hauteur exacte de votre footer */
+  /* padding-bottom: 60px; */
 }
 
 .content-wrapper {
@@ -234,23 +234,31 @@ body {
 
 .accessibility-widget {
   position: absolute;
-  bottom: 80px;
+  bottom: 20px;
   right: 20px;
   background-color: #007BFF;
   color: white;
-  padding: 10px;
+  padding: 4px;
   border-radius: 50%;
   cursor: pointer;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.inclusive-icon {
+  width: 50px;
+  height: 50px;
 }
 
 .accessibility-options {
   position: absolute;
-  bottom: 140px;
+  bottom: 100px;
   right: 20px;
   background-color: #FFF;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  padding: 20px;
+  padding: 5px;
   border-radius: 8px;
   display: flex;
   flex-direction: column;
@@ -258,7 +266,7 @@ body {
 }
 
 button {
-  padding: 10px;
+  padding: 12px;
   background-color: #007BFF;
   color: white;
   border: none;
