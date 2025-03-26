@@ -753,31 +753,7 @@ export default {
     radial-gradient(1px 1px at 62% 32%, rgba(255, 255, 255, 0.8) 50%, transparent 100%),
     radial-gradient(1px 1px at 72% 22%, rgba(255, 255, 255, 0.7) 50%, transparent 100%),
     radial-gradient(1px 1px at 82% 12%, rgba(255, 255, 255, 0.9) 50%, transparent 100%),
-    radial-gradient(1px 1px at 92% 7%, rgba(255, 255, 255, 0.8) 50%, transparent 100%),
-    
-    /* Additional small stars - third layer */
-    radial-gradient(1px 1px at 3% 47%, rgba(255, 255, 255, 0.8) 50%, transparent 100%),
-    radial-gradient(1px 1px at 13% 58%, rgba(255, 255, 255, 0.7) 50%, transparent 100%),
-    radial-gradient(1px 1px at 23% 36%, rgba(255, 255, 255, 0.9) 50%, transparent 100%),
-    radial-gradient(1px 1px at 33% 94%, rgba(255, 255, 255, 0.8) 50%, transparent 100%),
-    radial-gradient(1px 1px at 43% 18%, rgba(255, 255, 255, 0.7) 50%, transparent 100%),
-    radial-gradient(1px 1px at 53% 76%, rgba(255, 255, 255, 0.9) 50%, transparent 100%),
-    radial-gradient(1px 1px at 63% 27%, rgba(255, 255, 255, 0.8) 50%, transparent 100%),
-    radial-gradient(1px 1px at 73% 83%, rgba(255, 255, 255, 0.7) 50%, transparent 100%),
-    radial-gradient(1px 1px at 83% 44%, rgba(255, 255, 255, 0.9) 50%, transparent 100%),
-    radial-gradient(1px 1px at 93% 68%, rgba(255, 255, 255, 0.8) 50%, transparent 100%),
-    
-    /* Additional small stars - fourth layer */
-    radial-gradient(1px 1px at 8% 38%, rgba(255, 255, 255, 0.7) 50%, transparent 100%),
-    radial-gradient(1px 1px at 18% 26%, rgba(255, 255, 255, 0.9) 50%, transparent 100%),
-    radial-gradient(1px 1px at 28% 88%, rgba(255, 255, 255, 0.8) 50%, transparent 100%),
-    radial-gradient(1px 1px at 38% 16%, rgba(255, 255, 255, 0.7) 50%, transparent 100%),
-    radial-gradient(1px 1px at 48% 64%, rgba(255, 255, 255, 0.9) 50%, transparent 100%),
-    radial-gradient(1px 1px at 58% 39%, rgba(255, 255, 255, 0.8) 50%, transparent 100%),
-    radial-gradient(1px 1px at 68% 77%, rgba(255, 255, 255, 0.7) 50%, transparent 100%),
-    radial-gradient(1px 1px at 78% 22%, rgba(255, 255, 255, 0.9) 50%, transparent 100%),
-    radial-gradient(1px 1px at 88% 63%, rgba(255, 255, 255, 0.8) 50%, transparent 100%),
-    radial-gradient(1px 1px at 98% 33%, rgba(255, 255, 255, 0.7) 50%, transparent 100%);
+    radial-gradient(1px 1px at 92% 7%, rgba(255, 255, 255, 0.8) 50%, transparent 100%);
   background-size: 400% 400%;
   animation: starsFloat 300s linear infinite;
 }
@@ -815,14 +791,7 @@ export default {
     
     radial-gradient(2.5px 2.5px at 22% 35%, rgba(255, 223, 186, 0.8) 50%, transparent 100%),
     radial-gradient(2.5px 2.5px at 52% 85%, rgba(255, 223, 186, 0.7) 50%, transparent 100%),
-    radial-gradient(2.5px 2.5px at 82% 25%, rgba(255, 223, 186, 0.9) 50%, transparent 100%),
-    
-    /* A few bright stars (slightly larger) */
-    radial-gradient(3px 3px at 17% 17%, rgba(255, 255, 255, 1) 50%, transparent 100%),
-    radial-gradient(3px 3px at 47% 47%, rgba(255, 255, 255, 1) 50%, transparent 100%),
-    radial-gradient(3px 3px at 77% 77%, rgba(255, 255, 255, 1) 50%, transparent 100%),
-    radial-gradient(3px 3px at 33% 66%, rgba(255, 255, 255, 1) 50%, transparent 100%),
-    radial-gradient(3px 3px at 66% 33%, rgba(255, 255, 255, 1) 50%, transparent 100%);
+    radial-gradient(2.5px 2.5px at 82% 25%, rgba(255, 223, 186, 0.9) 50%, transparent 100%);
   background-size: 200% 200%;
   animation: starsFloat 200s linear infinite, starsTwinkle 10s ease-in-out infinite alternate;
 }
