@@ -36,8 +36,6 @@
 
       <!-- Ocean theme elements -->
       <template v-else-if="theme === 'ocean'">
-        <!-- Water Surface Effect -->
-        <div class="water-surface"></div>
         
         <!-- Light Rays -->
         <div class="light-ray light-ray-1"></div>
@@ -152,7 +150,7 @@
       <template v-else-if="theme === 'cyberpunk'">
         <!-- Rain Effect -->
         <div class="cyber-rain">
-          <div v-for="i in 100" :key="`rain-${i}`" class="rain-drop"></div>
+          <div v-for="i in 30" :key="`rain-${i}`" class="rain-drop" :style="getRainDropStyle(i)"></div>
         </div>
         
         <!-- Neon Signs -->
@@ -162,13 +160,13 @@
         
         <!-- Grid lines - Enhanced 3D -->
         <div class="grid-container">
-          <div class="grid-horizontal" v-for="i in 20" :key="`h-${i}`"></div>
-          <div class="grid-vertical" v-for="i in 20" :key="`v-${i}`"></div>
+          <div class="grid-horizontal" v-for="i in 8" :key="`h-${i}`"></div>
+          <div class="grid-vertical" v-for="i in 8" :key="`v-${i}`"></div>
         </div>
         
         <!-- City Silhouette -->
         <div class="cyber-city">
-          <div v-for="i in 15" :key="`building-${i}`" class="city-building"></div>
+          <div v-for="i in 8" :key="`building-${i}`" class="city-building"></div>
         </div>
         
         <!-- Flying data cubes - Enhanced -->
@@ -190,15 +188,6 @@
           <div class="cube-face"></div>
         </div>
         
-        <div class="data-cube data-cube-3">
-          <div class="cube-face"></div>
-          <div class="cube-face"></div>
-          <div class="cube-face"></div>
-          <div class="cube-face"></div>
-          <div class="cube-face"></div>
-          <div class="cube-face"></div>
-        </div>
-        
         <!-- Data Stream -->
         <div class="data-stream data-stream-1"></div>
         <div class="data-stream data-stream-2"></div>
@@ -206,32 +195,21 @@
         
         <!-- Circuit paths - Enhanced -->
         <div class="circuit circuit-1">
-          <div class="circuit-node" v-for="i in 5" :key="`circuit-1-node-${i}`"></div>
+          <div class="circuit-node" v-for="i in 3" :key="`circuit-1-node-${i}`"></div>
         </div>
         
         <div class="circuit circuit-2">
-          <div class="circuit-node" v-for="i in 7" :key="`circuit-2-node-${i}`"></div>
-        </div>
-        
-        <div class="circuit circuit-3">
-          <div class="circuit-node" v-for="i in 4" :key="`circuit-3-node-${i}`"></div>
+          <div class="circuit-node" v-for="i in 4" :key="`circuit-2-node-${i}`"></div>
         </div>
         
         <!-- Holographic displays - Enhanced -->
         <div class="hologram hologram-1">
           <div class="hologram-content">
-            <div class="hologram-line" v-for="i in 5" :key="`hologram-1-line-${i}`"></div>
-          </div>
-        </div>
-        
-        <div class="hologram hologram-2">
-          <div class="hologram-content">
-            <div class="hologram-line" v-for="i in 8" :key="`hologram-2-line-${i}`"></div>
+            <div class="hologram-line" v-for="i in 3" :key="`hologram-1-line-${i}`"></div>
           </div>
         </div>
         
         <div class="hologram hologram-3">
-          <div class="hologram-ring"></div>
           <div class="hologram-ring"></div>
           <div class="hologram-ring"></div>
         </div>
@@ -253,6 +231,20 @@ export default {
       default: 'cosmic',
       validator: (value) => ['cosmic', 'ocean', 'cyberpunk'].includes(value)
     }
+  },
+  methods: {
+    getRainDropStyle(index) {
+      // Distribute raindrops evenly across the screen
+      const leftPosition = (index * 3.33) % 100; // Spread across screen width
+      const topPosition = Math.random() * -100; // Random starting heights
+      const animationDelay = Math.random() * 1.5; // Random animation delays
+      
+      return {
+        left: `${leftPosition}%`,
+        top: `${topPosition}px`,
+        animationDelay: `${animationDelay}s`
+      };
+    },
   }
 };
 </script>
@@ -669,41 +661,6 @@ export default {
     radial-gradient(ellipse at center, rgba(0, 30, 60, 0.2) 0%, rgba(4, 40, 67, 0.5) 70%, rgba(0, 35, 75, 0.7) 100%);
   opacity: 0.7;
   z-index: 0;
-}
-
-/* Water surface effect */
-.water-surface {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 15%;
-  background: linear-gradient(to bottom, 
-    rgba(100, 200, 255, 0.2) 0%, 
-    rgba(50, 150, 220, 0.15) 50%, 
-    rgba(0, 100, 180, 0.1) 100%);
-  z-index: 5;
-  transform-origin: center top;
-  animation: waterSurface 8s ease-in-out infinite alternate;
-}
-
-.water-surface::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: 
-    repeating-linear-gradient(
-      90deg, 
-      transparent, 
-      transparent 50px, 
-      rgba(255, 255, 255, 0.1) 50px, 
-      rgba(255, 255, 255, 0.1) 100px
-    );
-  opacity: 0.3;
-  animation: waterSurfaceLines 15s linear infinite;
 }
 
 /* Light rays */
@@ -1221,8 +1178,7 @@ export default {
   background: 
     linear-gradient(rgba(33, 33, 66, 0.2) 1px, transparent 1px),
     linear-gradient(90deg, rgba(33, 33, 66, 0.2) 1px, transparent 1px);
-  background-size: 20px 20px;
-  animation: gridPulse 5s infinite alternate;
+  background-size: 40px 40px;
   z-index: 1;
 }
 
@@ -1263,6 +1219,14 @@ export default {
     rgba(0, 255, 255, 0.6) 50%, 
     rgba(0, 255, 255, 0) 100%);
   animation: rainFall 1.5s linear infinite;
+  will-change: transform;
+}
+
+.rain-drop:nth-child(3n) {
+  background: linear-gradient(to bottom, 
+    rgba(255, 0, 128, 0) 0%, 
+    rgba(255, 0, 128, 0.5) 50%, 
+    rgba(255, 0, 128, 0) 100%);
 }
 
 /* Neon signs */
@@ -1302,8 +1266,8 @@ export default {
 }
 
 .neon-sign-3 {
-  bottom: 20%;
-  right: 20%;
+  bottom: 15%;
+  right: 40%;
   font-size: 20px;
   color: #ff8800;
   text-shadow: 
@@ -1330,7 +1294,6 @@ export default {
 .grid-horizontal, .grid-vertical {
   position: absolute;
   background: rgba(0, 255, 255, 0.15);
-  box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
 }
 
 .grid-horizontal {
@@ -1369,7 +1332,7 @@ export default {
 .city-building {
   position: relative;
   bottom: 0;
-  width: calc(100% / 15);
+  width: calc(100% / 8);
   height: 100%;
   background: linear-gradient(to top, 
     rgba(0, 0, 20, 0.9) 0%, 
@@ -1388,15 +1351,9 @@ export default {
     transparent 85%, 
     rgba(0, 255, 255, 0.3) 85.5%, 
     transparent 86%,
-    transparent 88%, 
-    rgba(255, 0, 128, 0.3) 88.5%, 
-    transparent 89%,
     transparent 92%, 
-    rgba(0, 255, 255, 0.3) 92.5%, 
-    transparent 93%,
-    transparent 96%, 
-    rgba(255, 0, 128, 0.3) 96.5%, 
-    transparent 97%);
+    rgba(255, 0, 128, 0.3) 92.5%, 
+    transparent 93%);
   background-size: 100% 20px;
   animation: buildingWindowsScroll 30s linear infinite;
 }
@@ -1409,13 +1366,6 @@ export default {
 .city-building:nth-child(6) { height: 80%; animation-delay: 0.6s; }
 .city-building:nth-child(7) { height: 75%; animation-delay: 0.7s; }
 .city-building:nth-child(8) { height: 95%; animation-delay: 0.8s; }
-.city-building:nth-child(9) { height: 55%; animation-delay: 0.9s; }
-.city-building:nth-child(10) { height: 75%; animation-delay: 1.0s; }
-.city-building:nth-child(11) { height: 85%; animation-delay: 1.1s; }
-.city-building:nth-child(12) { height: 65%; animation-delay: 1.2s; }
-.city-building:nth-child(13) { height: 90%; animation-delay: 1.3s; }
-.city-building:nth-child(14) { height: 70%; animation-delay: 1.4s; }
-.city-building:nth-child(15) { height: 80%; animation-delay: 1.5s; }
 
 /* Enhanced data cubes */
 .data-cube {
@@ -1423,8 +1373,9 @@ export default {
   width: 40px;
   height: 40px;
   transform-style: preserve-3d;
-  animation: cubeFly 15s linear infinite;
+  animation: cubeFly 20s linear infinite;
   z-index: 4;
+  will-change: transform;
 }
 
 .data-cube-1 {
@@ -1476,8 +1427,7 @@ export default {
     rgba(0, 255, 255, 0.8) 50%, 
     rgba(0, 255, 255, 0) 100%);
   z-index: 3;
-  box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
-  animation: dataStreamPulse 5s infinite;
+  animation: dataStreamPulse 8s infinite;
 }
 
 .data-stream-1 {
@@ -1513,7 +1463,7 @@ export default {
     rgba(0, 255, 255, 1) 50%, 
     rgba(0, 255, 255, 0) 100%);
   z-index: 3;
-  animation: circuitPulse 5s infinite alternate;
+  animation: circuitPulse 8s infinite alternate;
 }
 
 .circuit-1 {
@@ -1548,7 +1498,6 @@ export default {
   border-radius: 50%;
   top: 50%;
   transform: translateY(-50%);
-  box-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
   animation: nodeFlash 2s ease-in-out infinite alternate;
 }
 
@@ -1576,7 +1525,7 @@ export default {
   position: absolute;
   border-radius: 5px;
   z-index: 4;
-  animation: hologramFlicker 3s infinite alternate;
+  animation: hologramFlicker 5s infinite alternate;
 }
 
 .hologram-1 {
@@ -1608,7 +1557,6 @@ export default {
   height: 100%;
   background: rgba(0, 255, 255, 0.1);
   border: 1px solid rgba(0, 255, 255, 0.5);
-  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
   display: flex;
   flex-direction: column;
   justify-content: space-around;
@@ -1629,7 +1577,6 @@ export default {
   transform: translate(-50%, -50%);
   border-radius: 50%;
   border: 1px solid rgba(0, 255, 255, 0.5);
-  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
   animation: hologramRingExpand 3s infinite;
 }
 
@@ -1659,7 +1606,7 @@ export default {
   background-size: 100% 4px;
   z-index: 10;
   pointer-events: none;
-  opacity: 0.5;
+  opacity: 0.3;
   animation: glitchEffect 10s infinite;
 }
 
@@ -1824,11 +1771,8 @@ export default {
 }
 
 @keyframes neonFlicker {
-  0%, 100% { opacity: 1; text-shadow: var(--text-shadow, 0 0 5px currentColor); }
-  5%, 10% { opacity: 0.8; text-shadow: none; }
-  15% { opacity: 1; text-shadow: var(--text-shadow, 0 0 5px currentColor); }
-  80% { opacity: 1; text-shadow: var(--text-shadow, 0 0 5px currentColor); }
-  85%, 95% { opacity: 0.9; text-shadow: none; }
+  0%, 92%, 100% { opacity: 1; }
+  90%, 96% { opacity: 0.8; }
 }
 
 @keyframes buildingLights {
@@ -2010,5 +1954,104 @@ export default {
 @keyframes starsTwinkle {
   0%, 100% { opacity: 0.4; }
   50% { opacity: 1; }
+}
+
+@keyframes cometAnimation {
+  0% {
+    transform: translate(0, 0) rotate(15deg);
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  95% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(100vw + 200px), 20vh) rotate(15deg);
+    opacity: 0;
+  }
+}
+
+@keyframes galaxyPulse {
+  0% {
+    transform: rotate(-25deg) scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: rotate(-25deg) scale(1.05);
+    opacity: 0.8;
+  }
+  100% {
+    transform: rotate(-25deg) scale(1);
+    opacity: 0.7;
+  }
+}
+
+@keyframes galaxyRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes planetFloat {
+  0% {
+    transform: translate(0, 0) rotate(-15deg);
+  }
+  25% {
+    transform: translate(-10px, 15px) rotate(-15deg);
+  }
+  50% {
+    transform: translate(-5px, 25px) rotate(-15deg);
+  }
+  75% {
+    transform: translate(5px, 15px) rotate(-15deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(-15deg);
+  }
+}
+
+@keyframes ringsRotate {
+  0% {
+    transform: translate(-50%, -50%) rotate(-15deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(345deg);
+  }
+}
+
+@keyframes planetFloat2 {
+  0% { transform: translate(0, 0) rotate(10deg); }
+  25% { transform: translate(-30px, 20px) rotate(10deg); }
+  50% { transform: translate(-60px, 0) rotate(10deg); }
+  75% { transform: translate(-30px, -20px) rotate(10deg); }
+  100% { transform: translate(0, 0) rotate(10deg); }
+}
+
+@keyframes atmospherePulse {
+  0% { opacity: 0.6; transform: scale(1); }
+  100% { opacity: 0.9; transform: scale(1.1); }
+}
+
+@keyframes stormSpin {
+  0% { transform: rotate(0deg) translateX(10px) rotate(0deg); }
+  100% { transform: rotate(360deg) translateX(10px) rotate(-360deg); }
+}
+
+@keyframes planetFloat3 {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(20px, 15px); }
+  50% { transform: translate(40px, 0); }
+  75% { transform: translate(20px, -15px); }
+  100% { transform: translate(0, 0); }
+}
+
+@keyframes moonsOrbit {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 </style>
