@@ -1,4 +1,4 @@
-yimport axios from 'axios';
+import axios from 'axios';
 import {
   startRegistration,
   startAuthentication
