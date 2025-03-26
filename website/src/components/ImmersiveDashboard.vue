@@ -35,6 +35,7 @@
 
     <!-- La structure principale -->
     <div class="dashboard-container">
+      <div class="click-outside-overlay" v-if="gamesZoomed" @click="exitGamesZoom"></div>
       <!-- Section Formations -->
       <div class="section formations" @mouseenter="activeSection = 'formations'" @mouseleave="activeSection = null">
         <div class="section-content" :class="{ 'active': activeSection === 'formations' }">
@@ -105,7 +106,7 @@
               class="game-orbit-button"
               :class="{'game-orbit-appear': showGamesOrbit}"
               :style="calculateOrbitPosition(index, gamesList.length)">
-            <div class="game-orbit-content" @click="selectGame(game)">
+            <div class="game-orbit-content" @click.stop="selectGame(game)">
               <div class="game-icon">
                 <i :class="game.icon"></i>
               </div>
@@ -1356,6 +1357,17 @@ export default {
   100% { transform: rotate(360deg); }
 }
 
+.click-outside-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 35; /* Below game orbit buttons but above other elements */
+  cursor: pointer;
+  background: transparent;
+}
+
 .game-orbit {
   position: absolute;
   width: 0;
@@ -1541,8 +1553,7 @@ export default {
   right: 0;
   bottom: 0;
   background: radial-gradient(circle at center, rgba(30, 30, 60, 0.3) 0%, rgba(10, 10, 30, 0.8) 100%);
-  z-index: 40;
-  pointer-events: none;
+  z-index: 34;
   animation: fadeIn 0.5s ease-out forwards;
 }
 
