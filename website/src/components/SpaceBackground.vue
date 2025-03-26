@@ -150,7 +150,7 @@
       <template v-else-if="theme === 'cyberpunk'">
         <!-- Rain Effect -->
         <div class="cyber-rain">
-          <div v-for="i in 100" :key="`rain-${i}`" class="rain-drop"></div>
+          <div v-for="i in 30" :key="`rain-${i}`" class="rain-drop"></div>
         </div>
         
         <!-- Neon Signs -->
@@ -160,13 +160,13 @@
         
         <!-- Grid lines - Enhanced 3D -->
         <div class="grid-container">
-          <div class="grid-horizontal" v-for="i in 20" :key="`h-${i}`"></div>
-          <div class="grid-vertical" v-for="i in 20" :key="`v-${i}`"></div>
+          <div class="grid-horizontal" v-for="i in 8" :key="`h-${i}`"></div>
+          <div class="grid-vertical" v-for="i in 8" :key="`v-${i}`"></div>
         </div>
         
         <!-- City Silhouette -->
         <div class="cyber-city">
-          <div v-for="i in 15" :key="`building-${i}`" class="city-building"></div>
+          <div v-for="i in 8" :key="`building-${i}`" class="city-building"></div>
         </div>
         
         <!-- Flying data cubes - Enhanced -->
@@ -188,15 +188,6 @@
           <div class="cube-face"></div>
         </div>
         
-        <div class="data-cube data-cube-3">
-          <div class="cube-face"></div>
-          <div class="cube-face"></div>
-          <div class="cube-face"></div>
-          <div class="cube-face"></div>
-          <div class="cube-face"></div>
-          <div class="cube-face"></div>
-        </div>
-        
         <!-- Data Stream -->
         <div class="data-stream data-stream-1"></div>
         <div class="data-stream data-stream-2"></div>
@@ -204,32 +195,21 @@
         
         <!-- Circuit paths - Enhanced -->
         <div class="circuit circuit-1">
-          <div class="circuit-node" v-for="i in 5" :key="`circuit-1-node-${i}`"></div>
+          <div class="circuit-node" v-for="i in 3" :key="`circuit-1-node-${i}`"></div>
         </div>
         
         <div class="circuit circuit-2">
-          <div class="circuit-node" v-for="i in 7" :key="`circuit-2-node-${i}`"></div>
-        </div>
-        
-        <div class="circuit circuit-3">
-          <div class="circuit-node" v-for="i in 4" :key="`circuit-3-node-${i}`"></div>
+          <div class="circuit-node" v-for="i in 4" :key="`circuit-2-node-${i}`"></div>
         </div>
         
         <!-- Holographic displays - Enhanced -->
         <div class="hologram hologram-1">
           <div class="hologram-content">
-            <div class="hologram-line" v-for="i in 5" :key="`hologram-1-line-${i}`"></div>
-          </div>
-        </div>
-        
-        <div class="hologram hologram-2">
-          <div class="hologram-content">
-            <div class="hologram-line" v-for="i in 8" :key="`hologram-2-line-${i}`"></div>
+            <div class="hologram-line" v-for="i in 3" :key="`hologram-1-line-${i}`"></div>
           </div>
         </div>
         
         <div class="hologram hologram-3">
-          <div class="hologram-ring"></div>
           <div class="hologram-ring"></div>
           <div class="hologram-ring"></div>
         </div>
@@ -1184,8 +1164,7 @@ export default {
   background: 
     linear-gradient(rgba(33, 33, 66, 0.2) 1px, transparent 1px),
     linear-gradient(90deg, rgba(33, 33, 66, 0.2) 1px, transparent 1px);
-  background-size: 20px 20px;
-  animation: gridPulse 5s infinite alternate;
+  background-size: 40px 40px;
   z-index: 1;
 }
 
@@ -1226,7 +1205,12 @@ export default {
     rgba(0, 255, 255, 0.6) 50%, 
     rgba(0, 255, 255, 0) 100%);
   animation: rainFall 1.5s linear infinite;
+  will-change: transform;
 }
+
+.rain-drop:nth-child(3n) { left: calc(var(--i, 0) * 10%); }
+.rain-drop:nth-child(3n+1) { left: calc(var(--i, 0) * 10% + 3%); animation-delay: 0.2s; }
+.rain-drop:nth-child(3n+2) { left: calc(var(--i, 0) * 10% + 7%); animation-delay: 0.5s; }
 
 /* Neon signs */
 .neon-sign {
@@ -1293,7 +1277,6 @@ export default {
 .grid-horizontal, .grid-vertical {
   position: absolute;
   background: rgba(0, 255, 255, 0.15);
-  box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
 }
 
 .grid-horizontal {
@@ -1332,7 +1315,7 @@ export default {
 .city-building {
   position: relative;
   bottom: 0;
-  width: calc(100% / 15);
+  width: calc(100% / 8);
   height: 100%;
   background: linear-gradient(to top, 
     rgba(0, 0, 20, 0.9) 0%, 
@@ -1351,15 +1334,9 @@ export default {
     transparent 85%, 
     rgba(0, 255, 255, 0.3) 85.5%, 
     transparent 86%,
-    transparent 88%, 
-    rgba(255, 0, 128, 0.3) 88.5%, 
-    transparent 89%,
     transparent 92%, 
-    rgba(0, 255, 255, 0.3) 92.5%, 
-    transparent 93%,
-    transparent 96%, 
-    rgba(255, 0, 128, 0.3) 96.5%, 
-    transparent 97%);
+    rgba(255, 0, 128, 0.3) 92.5%, 
+    transparent 93%);
   background-size: 100% 20px;
   animation: buildingWindowsScroll 30s linear infinite;
 }
@@ -1372,13 +1349,6 @@ export default {
 .city-building:nth-child(6) { height: 80%; animation-delay: 0.6s; }
 .city-building:nth-child(7) { height: 75%; animation-delay: 0.7s; }
 .city-building:nth-child(8) { height: 95%; animation-delay: 0.8s; }
-.city-building:nth-child(9) { height: 55%; animation-delay: 0.9s; }
-.city-building:nth-child(10) { height: 75%; animation-delay: 1.0s; }
-.city-building:nth-child(11) { height: 85%; animation-delay: 1.1s; }
-.city-building:nth-child(12) { height: 65%; animation-delay: 1.2s; }
-.city-building:nth-child(13) { height: 90%; animation-delay: 1.3s; }
-.city-building:nth-child(14) { height: 70%; animation-delay: 1.4s; }
-.city-building:nth-child(15) { height: 80%; animation-delay: 1.5s; }
 
 /* Enhanced data cubes */
 .data-cube {
@@ -1386,8 +1356,9 @@ export default {
   width: 40px;
   height: 40px;
   transform-style: preserve-3d;
-  animation: cubeFly 15s linear infinite;
+  animation: cubeFly 20s linear infinite;
   z-index: 4;
+  will-change: transform;
 }
 
 .data-cube-1 {
@@ -1439,8 +1410,7 @@ export default {
     rgba(0, 255, 255, 0.8) 50%, 
     rgba(0, 255, 255, 0) 100%);
   z-index: 3;
-  box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
-  animation: dataStreamPulse 5s infinite;
+  animation: dataStreamPulse 8s infinite;
 }
 
 .data-stream-1 {
@@ -1476,7 +1446,7 @@ export default {
     rgba(0, 255, 255, 1) 50%, 
     rgba(0, 255, 255, 0) 100%);
   z-index: 3;
-  animation: circuitPulse 5s infinite alternate;
+  animation: circuitPulse 8s infinite alternate;
 }
 
 .circuit-1 {
@@ -1511,7 +1481,6 @@ export default {
   border-radius: 50%;
   top: 50%;
   transform: translateY(-50%);
-  box-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
   animation: nodeFlash 2s ease-in-out infinite alternate;
 }
 
@@ -1539,7 +1508,7 @@ export default {
   position: absolute;
   border-radius: 5px;
   z-index: 4;
-  animation: hologramFlicker 3s infinite alternate;
+  animation: hologramFlicker 5s infinite alternate;
 }
 
 .hologram-1 {
@@ -1571,7 +1540,6 @@ export default {
   height: 100%;
   background: rgba(0, 255, 255, 0.1);
   border: 1px solid rgba(0, 255, 255, 0.5);
-  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
   display: flex;
   flex-direction: column;
   justify-content: space-around;
@@ -1592,7 +1560,6 @@ export default {
   transform: translate(-50%, -50%);
   border-radius: 50%;
   border: 1px solid rgba(0, 255, 255, 0.5);
-  box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
   animation: hologramRingExpand 3s infinite;
 }
 
@@ -1622,7 +1589,7 @@ export default {
   background-size: 100% 4px;
   z-index: 10;
   pointer-events: none;
-  opacity: 0.5;
+  opacity: 0.3;
   animation: glitchEffect 10s infinite;
 }
 
@@ -1787,11 +1754,8 @@ export default {
 }
 
 @keyframes neonFlicker {
-  0%, 100% { opacity: 1; text-shadow: var(--text-shadow, 0 0 5px currentColor); }
-  5%, 10% { opacity: 0.8; text-shadow: none; }
-  15% { opacity: 1; text-shadow: var(--text-shadow, 0 0 5px currentColor); }
-  80% { opacity: 1; text-shadow: var(--text-shadow, 0 0 5px currentColor); }
-  85%, 95% { opacity: 0.9; text-shadow: none; }
+  0%, 92%, 100% { opacity: 1; }
+  90%, 96% { opacity: 0.8; }
 }
 
 @keyframes buildingLights {
