@@ -81,25 +81,40 @@
 
       <!-- Section Jeux -->
       <div class="section games" @mouseenter="activeSection = 'games'" @mouseleave="activeSection = null">
-				<div class="section-content" :class="{ 'active': activeSection === 'games' }">
-					<div class="button-particles" v-if="activeSection === 'games'">
-						<div v-for="i in 8" :key="'game-particle-'+i" class="button-particle" 
-								:style="generateParticleStyle()"></div>
-					</div>
-					<div class="button-ring"></div>
-					<div class="icon-container" @click="openSection('games')">
-						<div class="glow-effect" :class="{ 'pulse': activeSection === 'games' }"></div>
-						<div class="icon">
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor">
-								<path d="M17 4H7a5 5 0 0 0-5 5v6a5 5 0 0 0 5 5h10a5 5 0 0 0 5-5V9a5 5 0 0 0-5-5z" stroke-width="1.5"/>
-								<path d="M10 10H8v2H6v2h2v2h2v-2h2v-2h-2v-2zM17.5 15a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM15 11a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z" stroke-width="1.5"/>
-							</svg>
-						</div>
-						<span class="tooltip">Jeux</span>
-						<div class="notification" v-if="notifications.games > 0">{{ notifications.games }}</div>
-					</div>
-				</div>
-			</div>
+        <div class="section-content" :class="{ 'active': activeSection === 'games' }">
+          <div class="button-particles" v-if="activeSection === 'games'">
+            <div v-for="i in 8" :key="'game-particle-'+i" class="button-particle" 
+              :style="generateParticleStyle()"></div>
+          </div>
+          <div class="button-ring"></div>
+          <div class="icon-container" @click="toggleGamesOrbit">
+            <div class="glow-effect" :class="{ 'pulse': activeSection === 'games' }"></div>
+            <div class="icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor">
+                <path d="M17 4H7a5 5 0 0 0-5 5v6a5 5 0 0 0 5 5h10a5 5 0 0 0 5-5V9a5 5 0 0 0-5-5z" stroke-width="1.5"/>
+                <path d="M10 10H8v2H6v2h2v2h2v-2h2v-2h-2v-2zM17.5 15a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM15 11a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z" stroke-width="1.5"/>
+              </svg>
+            </div>
+            <span class="tooltip">Jeux</span>
+            <div class="notification" v-if="notifications.games > 0">{{ notifications.games }}</div>
+          </div>
+        </div>
+
+        <!-- Games Orbit Buttons -->
+        <div class="game-orbit" v-if="showGamesOrbit">
+          <div v-for="(game, index) in gamesList" :key="game.id"
+              class="game-orbit-button"
+              :class="{'game-orbit-appear': showGamesOrbit}"
+              :style="calculateOrbitPosition(index, gamesList.length)">
+            <div class="game-orbit-content" @click="selectGame(game)">
+              <div class="game-icon">
+                <i :class="game.icon"></i>
+              </div>
+              <div class="game-title">{{ game.title }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- Section Profil - Plus Immersive! -->
       <div class="section profile" 
@@ -352,6 +367,14 @@ export default {
         'Maître du Temps',
         'Briseur de Barrières',
         'Esprit Créatif'
+      ],
+      showGamesOrbit: false,
+      gamesList: [
+        { id: 1, title: 'Quiz Spatial', icon: 'game-icon-quiz' },
+        { id: 2, title: 'Puzzle Cosmos', icon: 'game-icon-puzzle' },
+        { id: 3, title: 'Memory Stars', icon: 'game-icon-memory' },
+        { id: 4, title: 'Asteroid Rush', icon: 'game-icon-asteroid' },
+        { id: 5, title: 'Galaxy Match', icon: 'game-icon-galaxy' },
       ]
     };
   },
@@ -395,6 +418,72 @@ export default {
         transform: `scale(${0.5 + Math.random() * 1.5})`
       };
     },
+
+    toggleGamesOrbit() {
+      // Create a ripple effect element
+      const ripple = document.createElement('div');
+      ripple.className = 'button-ripple';
+      
+      // Find the section element
+      const sectionEl = document.querySelector(`.section.games .section-content`);
+      if (sectionEl) {
+        sectionEl.appendChild(ripple);
+        
+        // Trigger ripple animation
+        setTimeout(() => {
+          ripple.remove();
+        }, 600);
+        
+        // Add haptic feedback if available
+        if (window.navigator && window.navigator.vibrate) {
+          window.navigator.vibrate(50);
+        }
+      }
+      
+      // Toggle the games orbit
+      this.showGamesOrbit = !this.showGamesOrbit;
+      
+      // If hiding orbit and there are notifications, reduce them
+      if (!this.showGamesOrbit && this.notifications.games > 0) {
+        this.notifications.games--;
+      }
+      
+      // Create a flash effect
+      this.createButtonFlash('games');
+    },
+
+    selectGame(game) {
+      // If a game is selected, hide the orbit
+      this.showGamesOrbit = false;
+      
+      // Open the modal with game details
+      this.activeModal = 'game-' + game.id;
+      
+      // Show achievement for first game played
+      if (Math.random() > 0.5) {
+        this.triggerAchievement('Joueur Stellaire');
+      }
+    },
+
+    calculateOrbitPosition(index, total) {
+      // Calculate the angle for this item
+      const angle = (index / total) * Math.PI * 2;
+      
+      // Calculate radius - distance from center
+      const radius = 120; // Adjust as needed
+      
+      // Calculate x and y position using sine and cosine
+      const x = Math.cos(angle) * radius;
+      const y = Math.sin(angle) * radius;
+      
+      // Delay for sequential appearance animation
+      const delay = index * 0.08;
+      
+      return {
+        transform: `translate(${x}px, ${y}px)`,
+        transitionDelay: `${delay}s`
+      };
+    },
     
     // Interaction avec l'avatar - Animation améliorée
     interactWithAvatar() {
@@ -429,12 +518,19 @@ export default {
 				}
 			}
 			
-			this.activeModal = section;
-			
-			// Animation speciale pour le profil
-			if (section === 'profile') {
-				this.triggerProfileAnimation();
-			}
+			// Special handling for games section
+      if (section === 'games') {
+        this.toggleGamesOrbit();
+        return;
+      }
+      
+      // Normal modal opening for other sections
+      this.activeModal = section;
+      
+      // Animation speciale pour le profil
+      if (section === 'profile') {
+        this.triggerProfileAnimation();
+      }
 			
 			// Create a flash effect
 			this.createButtonFlash(section);
@@ -1216,6 +1312,139 @@ export default {
 @keyframes moonsOrbit {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+.game-orbit {
+  position: absolute;
+  width: 0;
+  height: 0;
+  top: 25%;
+  left: 25%;
+  z-index: 50;
+  pointer-events: none;
+}
+
+.game-orbit-button {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  transform: translate(-50%, -50%);
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  opacity: 0;
+  pointer-events: all;
+  perspective: 1000px;
+}
+
+.game-orbit-button.game-orbit-appear {
+  opacity: 1;
+}
+
+.game-orbit-content {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: rgba(30, 30, 45, 0.7);
+  backdrop-filter: blur(5px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: 2px solid rgba(255, 64, 129, 0.3);
+  box-shadow: 
+    0 5px 15px rgba(0, 0, 0, 0.3),
+    0 0 10px rgba(255, 64, 129, 0.3);
+  transform-style: preserve-3d;
+  transform: scale(0);
+  animation: gameButtonAppear 0.5s forwards;
+}
+
+@keyframes gameButtonAppear {
+  0% { transform: scale(0) rotate(-45deg); }
+  50% { transform: scale(1.1) rotate(15deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.game-orbit-content:hover {
+  transform: translateZ(10px) scale(1.1);
+  box-shadow: 
+    0 8px 20px rgba(0, 0, 0, 0.4),
+    0 0 15px rgba(255, 64, 129, 0.5);
+  border-color: rgba(255, 64, 129, 0.6);
+}
+
+.game-orbit-content:active {
+  transform: translateZ(5px) scale(0.95);
+}
+
+.game-icon {
+  font-size: 24px;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 5px;
+}
+
+.game-icon i {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.game-icon-quiz {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24' fill='none' stroke='white' stroke-width='2'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z'/%3E%3Cpath d='M12 16v-1'/%3E%3Cpath d='M12 13c.5 0 1-.5 1-1v-1c0-.5-.5-1-1-1s-1 .5-1 1v1c0 .5.5 1 1 1z'/%3E%3C/svg%3E");
+}
+
+.game-icon-puzzle {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24' fill='none' stroke='white' stroke-width='2'%3E%3Cpath d='M4 9h5V4H4v5z'/%3E%3Cpath d='M9 9h5V4H9v5z'/%3E%3Cpath d='M14 9h5V4h-5v5z'/%3E%3Cpath d='M4 14h5V9H4v5z'/%3E%3Cpath d='M14 14h5V9h-5v5z'/%3E%3Cpath d='M4 19h5v-5H4v5z'/%3E%3Cpath d='M9 19h5v-5H9v5z'/%3E%3Cpath d='M14 19h5v-5h-5v5z'/%3E%3C/svg%3E");
+}
+
+.game-icon-memory {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24' fill='none' stroke='white' stroke-width='2'%3E%3Cpath d='M3 6l9 4 9-4-9-4-9 4z'/%3E%3Cpath d='M3 10l9 4 9-4'/%3E%3Cpath d='M3 14l9 4 9-4'/%3E%3C/svg%3E");
+}
+
+.game-icon-asteroid {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24' fill='none' stroke='white' stroke-width='2'%3E%3Cpath d='M15 11.5c0 1.38-1.12 2.5-2.5 2.5S10 12.88 10 11.5 11.12 9 12.5 9s2.5 1.12 2.5 2.5z'/%3E%3Cpath d='M10 8l2-4 2 4'/%3E%3Cpath d='M14 8l2-3 2 3'/%3E%3Cpath d='M6 8l2-3 2 3'/%3E%3Cpath d='M20 15c-1-1-2.5-1-3.5 0s-2.5 1-3.5 0-2.5-1-3.5 0-2.5 1-3.5 0-2.5-1-3.5 0'/%3E%3C/svg%3E");
+}
+
+.game-icon-galaxy {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='24' height='24' fill='none' stroke='white' stroke-width='2'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Ccircle cx='12' cy='12' r='4'/%3E%3Cpath d='M5 5l3 3'/%3E%3Cpath d='M5 19l3-3'/%3E%3Cpath d='M19 5l-3 3'/%3E%3Cpath d='M19 19l-3-3'/%3E%3C/svg%3E");
+}
+
+.game-title {
+  font-size: 10px;
+  color: white;
+  text-align: center;
+  padding: 0 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  opacity: 0.8;
+}
+
+/* Media queries for smaller screens */
+@media (max-width: 768px) {
+  .game-orbit-button {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .game-orbit-content {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .game-icon {
+    font-size: 18px;
+    margin-bottom: 2px;
+  }
+  
+  .game-title {
+    font-size: 8px;
+  }
 }
 
 /* Particules en arrière-plan - Plus nombreuses et plus dynamiques */
