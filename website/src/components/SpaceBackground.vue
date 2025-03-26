@@ -1974,4 +1974,103 @@ export default {
   0%, 100% { opacity: 0.4; }
   50% { opacity: 1; }
 }
+
+@keyframes cometAnimation {
+  0% {
+    transform: translate(0, 0) rotate(15deg);
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  95% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(100vw + 200px), 20vh) rotate(15deg);
+    opacity: 0;
+  }
+}
+
+@keyframes galaxyPulse {
+  0% {
+    transform: rotate(-25deg) scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: rotate(-25deg) scale(1.05);
+    opacity: 0.8;
+  }
+  100% {
+    transform: rotate(-25deg) scale(1);
+    opacity: 0.7;
+  }
+}
+
+@keyframes galaxyRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes planetFloat {
+  0% {
+    transform: translate(0, 0) rotate(-15deg);
+  }
+  25% {
+    transform: translate(-10px, 15px) rotate(-15deg);
+  }
+  50% {
+    transform: translate(-5px, 25px) rotate(-15deg);
+  }
+  75% {
+    transform: translate(5px, 15px) rotate(-15deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(-15deg);
+  }
+}
+
+@keyframes ringsRotate {
+  0% {
+    transform: translate(-50%, -50%) rotate(-15deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(345deg);
+  }
+}
+
+@keyframes planetFloat2 {
+  0% { transform: translate(0, 0) rotate(10deg); }
+  25% { transform: translate(-30px, 20px) rotate(10deg); }
+  50% { transform: translate(-60px, 0) rotate(10deg); }
+  75% { transform: translate(-30px, -20px) rotate(10deg); }
+  100% { transform: translate(0, 0) rotate(10deg); }
+}
+
+@keyframes atmospherePulse {
+  0% { opacity: 0.6; transform: scale(1); }
+  100% { opacity: 0.9; transform: scale(1.1); }
+}
+
+@keyframes stormSpin {
+  0% { transform: rotate(0deg) translateX(10px) rotate(0deg); }
+  100% { transform: rotate(360deg) translateX(10px) rotate(-360deg); }
+}
+
+@keyframes planetFloat3 {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(20px, 15px); }
+  50% { transform: translate(40px, 0); }
+  75% { transform: translate(20px, -15px); }
+  100% { transform: translate(0, 0); }
+}
+
+@keyframes moonsOrbit {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 </style>
