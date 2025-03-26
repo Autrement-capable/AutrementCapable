@@ -36,8 +36,6 @@
 
       <!-- Ocean theme elements -->
       <template v-else-if="theme === 'ocean'">
-        <!-- Water Surface Effect -->
-        <div class="water-surface"></div>
         
         <!-- Light Rays -->
         <div class="light-ray light-ray-1"></div>
@@ -669,41 +667,6 @@ export default {
     radial-gradient(ellipse at center, rgba(0, 30, 60, 0.2) 0%, rgba(4, 40, 67, 0.5) 70%, rgba(0, 35, 75, 0.7) 100%);
   opacity: 0.7;
   z-index: 0;
-}
-
-/* Water surface effect */
-.water-surface {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 15%;
-  background: linear-gradient(to bottom, 
-    rgba(100, 200, 255, 0.2) 0%, 
-    rgba(50, 150, 220, 0.15) 50%, 
-    rgba(0, 100, 180, 0.1) 100%);
-  z-index: 5;
-  transform-origin: center top;
-  animation: waterSurface 8s ease-in-out infinite alternate;
-}
-
-.water-surface::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: 
-    repeating-linear-gradient(
-      90deg, 
-      transparent, 
-      transparent 50px, 
-      rgba(255, 255, 255, 0.1) 50px, 
-      rgba(255, 255, 255, 0.1) 100px
-    );
-  opacity: 0.3;
-  animation: waterSurfaceLines 15s linear infinite;
 }
 
 /* Light rays */
