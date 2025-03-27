@@ -103,7 +103,7 @@
                 <path d="M20 21v-2a6 6 0 0 0-6-6H10a6 6 0 0 0-6 6v2" stroke-width="1.5"/>
               </svg>
             </div>
-            <span class="tooltip tooltip-profile">Profil</span>
+            <span class="tooltip">Profil</span>
             <div class="notification" v-if="notifications.profile > 0">{{ notifications.profile }}</div>
           </div>
         </div>
@@ -334,7 +334,8 @@ export default {
       availableThemes: [
         { value: 'cosmic', label: 'Cosmic' },
         { value: 'ocean', label: 'Ocean' },
-        { value: 'cyberpunk', label: 'Cyberpunk' }
+        { value: 'cyberpunk', label: 'Cyberpunk' },
+        { value: 'forest', label: 'Forêt' }
       ],
       progress: 37, // Progression globale en pourcentage
       activeSection: null,
@@ -806,6 +807,11 @@ export default {
 .theme-icon.cyberpunk {
   background: linear-gradient(135deg, #FF4081 0%, #AB47BC 100%);
   box-shadow: 0 0 10px rgba(255, 64, 129, 0.5);
+}
+
+.theme-icon.forest {
+  background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
+  box-shadow: 0 0 10px rgba(46, 125, 50, 0.5);
 }
 
 .theme-option span {
@@ -1527,13 +1533,15 @@ export default {
   pointer-events: none;
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   white-space: nowrap;
-  transform: translateY(10px);
   backdrop-filter: blur(5px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   font-weight: 500;
   letter-spacing: 0.5px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
   z-index: 100;
+  visibility: visible;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
 }
 
 .formations .tooltip {
@@ -1554,7 +1562,10 @@ export default {
 
 .icon-container:hover .tooltip {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateX(-50%) translateY(0);
+  visibility: visible;
+  display: block;
+
 }
 
 .button-particles {

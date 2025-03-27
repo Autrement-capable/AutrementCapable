@@ -217,6 +217,154 @@
         <!-- Glitch Effect Overlay -->
         <div class="glitch-overlay"></div>
       </template>
+
+      <!-- Forest theme elements -->
+      <template v-else-if="theme === 'forest'">
+        <!-- Rayons de soleil filtrant à travers les feuilles -->
+        <div class="sunbeam sunbeam-1"></div>
+        <div class="sunbeam sunbeam-2"></div>
+        <div class="sunbeam sunbeam-3"></div>
+        
+        <!-- Brouillard forestier -->
+        <div class="forest-mist forest-mist-1"></div>
+        <div class="forest-mist forest-mist-2"></div>
+        <div class="forest-mist forest-mist-3"></div>
+        
+        <!-- Feuilles qui tombent -->
+        <div class="leaves-container">
+          <div v-for="i in 15" :key="`leaf-${i}`" class="falling-leaf" :style="getFallingLeafStyle(i)"></div>
+        </div>
+        
+        <!-- Arbres en arrière-plan -->
+        <div class="tree-layer tree-layer-bg">
+          <div class="tree tree-bg-1">
+            <div class="tree-trunk"></div>
+            <div class="tree-canopy"></div>
+          </div>
+          <div class="tree tree-bg-2">
+            <div class="tree-trunk"></div>
+            <div class="tree-canopy"></div>
+          </div>
+          <div class="tree tree-bg-3">
+            <div class="tree-trunk"></div>
+            <div class="tree-canopy"></div>
+          </div>
+          <div class="tree tree-bg-4">
+            <div class="tree-trunk"></div>
+            <div class="tree-canopy"></div>
+          </div>
+          <div class="tree tree-bg-5">
+            <div class="tree-trunk"></div>
+            <div class="tree-canopy"></div>
+          </div>
+        </div>
+        
+        <!-- Arbres au premier plan -->
+        <div class="tree-layer tree-layer-fg">
+          <div class="tree tree-fg-1">
+            <div class="tree-trunk"></div>
+            <div class="tree-canopy"></div>
+          </div>
+          <div class="tree tree-fg-2">
+            <div class="tree-trunk"></div>
+            <div class="tree-canopy"></div>
+          </div>
+        </div>
+        
+        <!-- Papillons -->
+        <div class="butterfly butterfly-1">
+          <div class="butterfly-wing wing-left"></div>
+          <div class="butterfly-wing wing-right"></div>
+        </div>
+        <div class="butterfly butterfly-2">
+          <div class="butterfly-wing wing-left"></div>
+          <div class="butterfly-wing wing-right"></div>
+        </div>
+        <div class="butterfly butterfly-3">
+          <div class="butterfly-wing wing-left"></div>
+          <div class="butterfly-wing wing-right"></div>
+        </div>
+        
+        <!-- Oiseaux volants -->
+        <div class="bird bird-1"></div>
+        <div class="bird bird-2"></div>
+        <div class="bird bird-3"></div>
+        
+        <!-- Fleurs et champignons -->
+        <div class="forest-floor">
+          <div class="mushroom mushroom-1">
+            <div class="mushroom-cap"></div>
+            <div class="mushroom-stem"></div>
+          </div>
+          <div class="mushroom mushroom-2">
+            <div class="mushroom-cap"></div>
+            <div class="mushroom-stem"></div>
+          </div>
+          <div class="mushroom mushroom-3">
+            <div class="mushroom-cap"></div>
+            <div class="mushroom-stem"></div>
+          </div>
+          
+          <div class="flower flower-1">
+            <div class="flower-center"></div>
+            <div class="flower-petal"></div>
+            <div class="flower-petal"></div>
+            <div class="flower-petal"></div>
+            <div class="flower-petal"></div>
+            <div class="flower-petal"></div>
+            <div class="flower-stem"></div>
+          </div>
+          <div class="flower flower-2">
+            <div class="flower-center"></div>
+            <div class="flower-petal"></div>
+            <div class="flower-petal"></div>
+            <div class="flower-petal"></div>
+            <div class="flower-petal"></div>
+            <div class="flower-petal"></div>
+            <div class="flower-stem"></div>
+          </div>
+          <div class="flower flower-3">
+            <div class="flower-center"></div>
+            <div class="flower-petal"></div>
+            <div class="flower-petal"></div>
+            <div class="flower-petal"></div>
+            <div class="flower-petal"></div>
+            <div class="flower-petal"></div>
+            <div class="flower-stem"></div>
+          </div>
+          
+          <!-- Herbes et fougères -->
+          <div class="grass-patch grass-patch-1">
+            <div class="grass-blade" v-for="i in 8" :key="`grass-1-${i}`"></div>
+          </div>
+          <div class="grass-patch grass-patch-2">
+            <div class="grass-blade" v-for="i in 10" :key="`grass-2-${i}`"></div>
+          </div>
+          <div class="grass-patch grass-patch-3">
+            <div class="grass-blade" v-for="i in 6" :key="`grass-3-${i}`"></div>
+          </div>
+          
+          <div class="fern fern-1">
+            <div class="fern-stem"></div>
+            <div class="fern-leaf fern-leaf-1"></div>
+            <div class="fern-leaf fern-leaf-2"></div>
+            <div class="fern-leaf fern-leaf-3"></div>
+            <div class="fern-leaf fern-leaf-4"></div>
+          </div>
+          <div class="fern fern-2">
+            <div class="fern-stem"></div>
+            <div class="fern-leaf fern-leaf-1"></div>
+            <div class="fern-leaf fern-leaf-2"></div>
+            <div class="fern-leaf fern-leaf-3"></div>
+            <div class="fern-leaf fern-leaf-4"></div>
+          </div>
+        </div>
+        
+        <!-- Lucioles scintillantes -->
+        <div class="firefly-container">
+          <div v-for="i in 15" :key="`firefly-${i}`" class="firefly" :style="getFireflyStyle(i)"></div>
+        </div>
+      </template>
     </div>
   </div>
 </template>
@@ -225,11 +373,11 @@
 export default {
   name: 'SpaceBackground',
   props: {
-    // Available themes: 'cosmic', 'ocean', 'cyberpunk'
+    // Available themes: 'cosmic', 'ocean', 'cyberpunk', 'forest'
     theme: {
       type: String,
       default: 'cosmic',
-      validator: (value) => ['cosmic', 'ocean', 'cyberpunk'].includes(value)
+      validator: (value) => ['cosmic', 'ocean', 'cyberpunk', 'forest'].includes(value)
     }
   },
   methods: {
@@ -245,6 +393,42 @@ export default {
         animationDelay: `${animationDelay}s`
       };
     },
+
+    getFallingLeafStyle(index) {
+      const leafTypes = ['maple', 'oak', 'aspen', 'elm'];
+      const leafType = leafTypes[index % leafTypes.length];
+      const leftPosition = (index * 3.33) % 100;
+      const topPosition = (index * -15) % -100;
+      const animationDelay = Math.random() * 10;
+      const rotationStart = Math.random() * 360;
+      const scale = 0.5 + Math.random() * 0.5;
+      
+      return {
+        left: `${leftPosition}%`,
+        top: `${topPosition}px`,
+        animationDelay: `${animationDelay}s`,
+        transform: `rotate(${rotationStart}deg) scale(${scale})`,
+        '--leaf-type': `'${leafType}'`
+      };
+    },
+    
+    getFireflyStyle() {
+      const leftPosition = Math.random() * 100;
+      const topPosition = Math.random() * 100;
+      const size = 2 + Math.random() * 4;
+      const duration = 5 + Math.random() * 10;
+      const delay = Math.random() * 10;
+      
+      return {
+        left: `${leftPosition}%`,
+        top: `${topPosition}%`,
+        width: `${size}px`,
+        height: `${size}px`,
+        animationDuration: `${duration}s`,
+        animationDelay: `${delay}s`
+      };
+    }
+
   }
 };
 </script>
@@ -948,7 +1132,7 @@ export default {
   width: 30px;
   height: 15px;
   top: 45%;
-  left: -30px;
+  left: -40px;
   background: linear-gradient(to right, 
     rgba(255, 165, 0, 0.9) 0%, 
     rgba(255, 165, 0, 0.8) 60%, 
@@ -961,7 +1145,7 @@ export default {
   width: 50px;
   height: 25px;
   top: 60%;
-  left: -50px;
+  left: -60px;
   background: linear-gradient(to right, 
     rgba(255, 105, 180, 0.9) 0%, 
     rgba(255, 105, 180, 0.8) 60%, 
@@ -974,7 +1158,7 @@ export default {
   width: 45px;
   height: 22px;
   top: 75%;
-  left: -45px;
+  left: -55px;
   background: linear-gradient(to right, 
     rgba(120, 220, 255, 0.9) 0%, 
     rgba(100, 200, 240, 0.8) 60%, 
@@ -1610,6 +1794,748 @@ export default {
 }
 
 /* 
+ * Forest theme styles
+ */
+
+ .forest {
+  background: linear-gradient(to bottom, #123519 0%, #071b0c 100%);
+  overflow: hidden;
+}
+
+.forest::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 50% 100%, rgba(20, 70, 30, 0.6) 0%, rgba(5, 30, 10, 0.2) 70%),
+    linear-gradient(rgba(5, 25, 10, 0.5) 0%, rgba(10, 40, 20, 0.3) 100%);
+  z-index: 0;
+}
+
+/* Rayons de soleil */
+.sunbeam {
+  position: absolute;
+  top: -20%;
+  width: 80px;
+  height: 150%;
+  background: linear-gradient(to bottom, 
+    rgba(255, 255, 200, 0.7) 0%, 
+    rgba(255, 255, 200, 0.4) 30%, 
+    rgba(255, 255, 200, 0.1) 70%, 
+    transparent 100%);
+  transform-origin: top center;
+  filter: blur(10px);
+  opacity: 0.4;
+  z-index: 2;
+  animation: sunbeamFlicker 12s ease-in-out infinite alternate;
+}
+
+.sunbeam-1 {
+  left: 25%;
+  transform: rotate(20deg) translateX(-50%);
+  animation-delay: 0s;
+}
+
+.sunbeam-2 {
+  left: 60%;
+  transform: rotate(-15deg) translateX(-50%);
+  animation-delay: 3s;
+}
+
+.sunbeam-3 {
+  left: 80%;
+  width: 60px;
+  transform: rotate(-25deg) translateX(-50%);
+  animation-delay: 6s;
+}
+
+/* Brouillard forestier */
+.forest-mist {
+  position: absolute;
+  height: 40%;
+  width: 100%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 255, 255, 0.15) 0%,
+    rgba(255, 255, 255, 0.05) 60%,
+    transparent 100%
+  );
+  filter: blur(15px);
+  z-index: 2;
+  animation: mistFloat 30s ease-in-out infinite alternate;
+}
+
+.forest-mist-1 {
+  bottom: 25%;
+  left: -10%;
+  height: 20%;
+  animation-delay: 0s;
+}
+
+.forest-mist-2 {
+  bottom: 5%;
+  left: 30%;
+  height: 15%;
+  animation-delay: 5s;
+}
+
+.forest-mist-3 {
+  bottom: 15%;
+  left: -20%;
+  height: 30%;
+  animation-delay: 10s;
+}
+
+/* Feuilles qui tombent */
+.leaves-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.falling-leaf {
+  position: absolute;
+  width: 25px;
+  height: 25px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.8;
+  animation: leafFall 15s linear infinite;
+}
+
+.falling-leaf:nth-child(4n+1) {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%2374a12e' d='M50,0 C60,30 80,50 100,50 C80,60 60,80 50,100 C40,80 20,60 0,50 C20,50 40,30 50,0'/%3E%3C/svg%3E");
+}
+
+.falling-leaf:nth-child(4n+2) {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%2392b93b' d='M20,0 C60,15 80,40 100,50 C80,70 60,90 50,100 C25,90 10,70 0,50 C10,35 15,15 20,0'/%3E%3C/svg%3E");
+}
+
+.falling-leaf:nth-child(4n+3) {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%235a8a23' d='M50,0 C70,20 90,40 100,50 C70,70 60,90 50,100 C40,80 20,60 0,50 C10,40 30,20 50,0'/%3E%3C/svg%3E");
+}
+
+.falling-leaf:nth-child(4n+4) {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%23aec74a' d='M30,0 C60,20 90,30 100,50 C90,70 70,90 50,100 C30,70 10,40 0,50 C20,30 25,10 30,0'/%3E%3C/svg%3E");
+}
+
+.falling-leaf:nth-child(3n) {
+  animation-duration: 18s;
+}
+
+.falling-leaf:nth-child(3n+1) {
+  animation-duration: 12s;
+}
+
+/* Couches d'arbres */
+.tree-layer {
+  position: absolute;
+  width: 100%;
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+}
+
+.tree-layer-bg {
+  height: 70%;
+  filter: blur(2px);
+  opacity: 0.7;
+  z-index: 1;
+}
+
+.tree-layer-fg {
+  height: 85%;
+  z-index: 3;
+}
+
+/* Arbres */
+.tree {
+  position: absolute;
+  bottom: 0;
+}
+
+.tree-trunk {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(to top, 
+    #4d2b13 0%, 
+    #6b3d1c 50%, 
+    #5a331a 100%);
+  border-radius: 10px 10px 0 0;
+  z-index: 1;
+}
+
+.tree-canopy {
+  position: absolute;
+  border-radius: 50%;
+  z-index: 2;
+}
+
+/* Arbres en arrière-plan */
+.tree-bg-1 {
+  left: 5%;
+  height: 75%;
+  width: 150px;
+}
+
+.tree-bg-1 .tree-trunk {
+  width: 18px;
+  height: 30%;
+}
+
+.tree-bg-1 .tree-canopy {
+  width: 130px;
+  height: 200px;
+  bottom: 25%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    ellipse at center,
+    #5d982d 0%,
+    #496c1e 70%,
+    #3a5618 100%
+  );
+}
+
+.tree-bg-2 {
+  left: 25%;
+  height: 65%;
+  width: 120px;
+}
+
+.tree-bg-2 .tree-trunk {
+  width: 15px;
+  height: 35%;
+}
+
+.tree-bg-2 .tree-canopy {
+  width: 100px;
+  height: 160px;
+  bottom: 30%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    ellipse at center,
+    #6ba835 0%,
+    #538029 70%,
+    #3a5618 100%
+  );
+}
+
+.tree-bg-3 {
+  left: 45%;
+  height: 70%;
+  width: 140px;
+}
+
+.tree-bg-3 .tree-trunk {
+  width: 16px;
+  height: 32%;
+}
+
+.tree-bg-3 .tree-canopy {
+  width: 120px;
+  height: 180px;
+  bottom: 28%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    ellipse at center,
+    #7abb3b 0%,
+    #5d982d 70%,
+    #496c1e 100%
+  );
+}
+
+.tree-bg-4 {
+  left: 70%;
+  height: 60%;
+  width: 110px;
+}
+
+.tree-bg-4 .tree-trunk {
+  width: 14px;
+  height: 38%;
+}
+
+.tree-bg-4 .tree-canopy {
+  width: 90px;
+  height: 140px;
+  bottom: 32%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    ellipse at center,
+    #6ba835 0%,
+    #5d982d 70%,
+    #496c1e 100%
+  );
+}
+
+.tree-bg-5 {
+  left: 85%;
+  height: 68%;
+  width: 130px;
+}
+
+.tree-bg-5 .tree-trunk {
+  width: 17px;
+  height: 33%;
+}
+
+.tree-bg-5 .tree-canopy {
+  width: 110px;
+  height: 170px;
+  bottom: 28%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    ellipse at center,
+    #5d982d 0%,
+    #496c1e 70%,
+    #3a5618 100%
+  );
+}
+
+/* Arbres au premier plan */
+.tree-fg-1 {
+  left: 12%;
+  height: 100%;
+  width: 160px;
+}
+
+.tree-fg-1 .tree-trunk {
+  width: 25px;
+  height: 40%;
+}
+
+.tree-fg-1 .tree-canopy {
+  width: 150px;
+  height: 220px;
+  bottom: 35%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    ellipse at center,
+    #7abb3b 0%,
+    #5d982d 70%,
+    #3a5618 100%
+  );
+}
+
+.tree-fg-1 .branch-1 {
+  width: 60px;
+  top: 40%;
+  left: 25%;
+  transform: rotate(-15deg);
+}
+
+.tree-fg-1 .branch-2 {
+  width: 55px;
+  top: 50%;
+  left: 70%;
+  transform: rotate(20deg);
+}
+
+.tree-fg-1 .branch-3 {
+  width: 50px;
+  top: 35%;
+  left: 60%;
+  transform: rotate(5deg);
+}
+
+.tree-fg-2 {
+  right: 15%;
+  height: 95%;
+  width: 180px;
+}
+
+.tree-fg-2 .tree-trunk {
+  width: 30px;
+  height: 45%;
+}
+
+.tree-fg-2 .tree-canopy {
+  width: 170px;
+  height: 250px;
+  bottom: 40%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    ellipse at center,
+    #6ba835 0%,
+    #5d982d 70%,
+    #3a5618 100%
+  );
+}
+
+.tree-fg-2 .branch-1 {
+  width: 70px;
+  top: 45%;
+  left: 20%;
+  transform: rotate(-20deg);
+}
+
+.tree-fg-2 .branch-2 {
+  width: 65px;
+  top: 40%;
+  left: 75%;
+  transform: rotate(15deg);
+}
+
+/* Papillons */
+.butterfly {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  z-index: 4;
+  animation: butterflyFlight 30s linear infinite;
+}
+
+.butterfly-1 {
+  top: 30%;
+  left: -20px;
+  animation-delay: 0s;
+}
+
+.butterfly-2 {
+  top: 45%;
+  left: -20px;
+  animation-delay: 5s;
+}
+
+.butterfly-3 {
+  top: 60%;
+  left: -20px;
+  animation-delay: 10s;
+}
+
+.butterfly-wing {
+  position: absolute;
+  width: 10px;
+  height: 15px;
+  background: #ffc266;
+  border-radius: 100% 100% 0 100%;
+  transform-origin: 100% 50%;
+}
+
+.butterfly-1 .butterfly-wing {
+  background: linear-gradient(to bottom, #ff9933, #ffcc00);
+}
+
+.butterfly-2 .butterfly-wing {
+  background: linear-gradient(to bottom, #66ccff, #99ffff);
+}
+
+.butterfly-3 .butterfly-wing {
+  background: linear-gradient(to bottom, #ff66b3, #ff99cc);
+}
+
+.wing-left {
+  left: 0;
+  transform: scaleX(-1) rotate(-30deg);
+  animation: wingBeatLeft 0.3s ease-in-out infinite alternate;
+}
+
+.wing-right {
+  right: 0;
+  transform: rotate(30deg);
+  animation: wingBeatRight 0.3s ease-in-out infinite alternate;
+}
+
+/* Oiseaux */
+.bird {
+  position: absolute;
+  width: 30px;
+  height: 8px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 30'%3E%3Cpath fill='%23333' d='M50,0 C40,0 25,15 0,20 C25,25 40,30 50,30 C60,30 75,25 100,20 C75,15 60,0 50,0'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  z-index: 4;
+  animation: birdFlight 40s linear infinite;
+}
+
+.bird-1 {
+  top: 20%;
+  left: -30px;
+  animation-delay: 0s;
+}
+
+.bird-2 {
+  top: 15%;
+  left: -30px;
+  animation-delay: 15s;
+}
+
+.bird-3 {
+  top: 25%;
+  left: -30px;
+  animation-delay: 30s;
+}
+
+/* Fleurs, champignons, herbes et fougères */
+.forest-floor {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 20%;
+  z-index: 3;
+}
+
+/* Champignons */
+.mushroom {
+  position: absolute;
+  bottom: 0;
+  z-index: 4;
+}
+
+.mushroom-1 {
+  left: 38%;
+  height: 40px;
+}
+
+.mushroom-2 {
+  left: 65%;
+  height: 35px;
+}
+
+.mushroom-3 {
+  left: 25%;
+  height: 45px;
+}
+
+.mushroom-cap {
+  position: absolute;
+  width: 30px;
+  height: 15px;
+  background: #e05d5d;
+  border-radius: 100% 100% 0 0;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.mushroom-stem {
+  position: absolute;
+  width: 10px;
+  height: 20px;
+  background: #f5e9d9;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 30% 30% 0 0;
+}
+
+.mushroom-1 .mushroom-cap {
+  background: linear-gradient(to bottom, #e05d5d, #b33f3f);
+}
+
+.mushroom-2 .mushroom-cap {
+  background: linear-gradient(to bottom, #e08a5d, #b36a3f);
+}
+
+.mushroom-3 .mushroom-cap {
+  background: linear-gradient(to bottom, #5d9de0, #3f7db3);
+}
+
+/* Fleurs */
+.flower {
+  position: absolute;
+  bottom: 0;
+  z-index: 3;
+}
+
+.flower-1 {
+  left: 50%;
+  height: 50px;
+}
+
+.flower-2 {
+  left: 75%;
+  height: 45px;
+}
+
+.flower-3 {
+  left: 15%;
+  height: 40px;
+}
+
+.flower-center {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #ffd633;
+  border-radius: 50%;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
+.flower-petal {
+  position: absolute;
+  width: 12px;
+  height: 15px;
+  background: #ff80bf;
+  border-radius: 50%;
+  bottom: 30px;
+  left: 50%;
+  transform-origin: center bottom;
+  z-index: 1;
+}
+
+.flower-petal:nth-child(2) { transform: translateX(-50%) rotate(0deg); }
+.flower-petal:nth-child(3) { transform: translateX(-50%) rotate(72deg); }
+.flower-petal:nth-child(4) { transform: translateX(-50%) rotate(144deg); }
+.flower-petal:nth-child(5) { transform: translateX(-50%) rotate(216deg); }
+.flower-petal:nth-child(6) { transform: translateX(-50%) rotate(288deg); }
+
+.flower-stem {
+  position: absolute;
+  width: 3px;
+  height: 30px;
+  background: #5c9e31;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.flower-1 .flower-petal {
+  background: linear-gradient(to bottom, #ff80bf, #ff1a8c);
+}
+
+.flower-2 .flower-petal {
+  background: linear-gradient(to bottom, #80bfff, #1a8cff);
+}
+
+.flower-3 .flower-petal {
+  background: linear-gradient(to bottom, #ffbf80, #ff8c1a);
+}
+
+/* Herbes */
+.grass-patch {
+  position: absolute;
+  bottom: 0;
+  width: 80px;
+  height: 40px;
+  z-index: 3;
+}
+
+.grass-patch-1 { left: 5%; }
+.grass-patch-2 { left: 30%; }
+.grass-patch-3 { left: 60%; }
+
+.grass-blade {
+  position: absolute;
+  bottom: 0;
+  width: 5px;
+  height: 30px;
+  background: linear-gradient(to top, #5c9e31, #7bc143);
+  border-radius: 0 100% 0 0;
+  transform-origin: bottom center;
+  animation: grassSway 3s ease-in-out infinite alternate;
+}
+
+.grass-patch-1 .grass-blade:nth-child(1) { left: 10%; animation-delay: 0s; }
+.grass-patch-1 .grass-blade:nth-child(2) { left: 20%; animation-delay: 0.2s; }
+.grass-patch-1 .grass-blade:nth-child(3) { left: 30%; animation-delay: 0.4s; }
+.grass-patch-1 .grass-blade:nth-child(4) { left: 40%; animation-delay: 0.1s; }
+.grass-patch-1 .grass-blade:nth-child(5) { left: 50%; animation-delay: 0.3s; }
+.grass-patch-1 .grass-blade:nth-child(6) { left: 60%; animation-delay: 0.5s; }
+.grass-patch-1 .grass-blade:nth-child(7) { left: 70%; animation-delay: 0.2s; }
+.grass-patch-1 .grass-blade:nth-child(8) { left: 80%; animation-delay: 0.4s; }
+
+.grass-patch-2 .grass-blade:nth-child(1) { left: 5%; animation-delay: 0.3s; }
+.grass-patch-2 .grass-blade:nth-child(2) { left: 15%; animation-delay: 0.5s; }
+.grass-patch-2 .grass-blade:nth-child(3) { left: 25%; animation-delay: 0.2s; }
+.grass-patch-2 .grass-blade:nth-child(4) { left: 35%; animation-delay: 0.4s; }
+.grass-patch-2 .grass-blade:nth-child(5) { left: 45%; animation-delay: 0.1s; }
+.grass-patch-2 .grass-blade:nth-child(6) { left: 55%; animation-delay: 0.3s; }
+.grass-patch-2 .grass-blade:nth-child(7) { left: 65%; animation-delay: 0.5s; }
+.grass-patch-2 .grass-blade:nth-child(8) { left: 75%; animation-delay: 0.2s; }
+.grass-patch-2 .grass-blade:nth-child(9) { left: 85%; animation-delay: 0.4s; }
+.grass-patch-2 .grass-blade:nth-child(10) { left: 95%; animation-delay: 0.1s; }
+
+.grass-patch-3 .grass-blade:nth-child(1) { left: 15%; animation-delay: 0.5s; }
+.grass-patch-3 .grass-blade:nth-child(2) { left: 30%; animation-delay: 0.2s; }
+.grass-patch-3 .grass-blade:nth-child(3) { left: 45%; animation-delay: 0.4s; }
+.grass-patch-3 .grass-blade:nth-child(4) { left: 60%; animation-delay: 0.1s; }
+.grass-patch-3 .grass-blade:nth-child(5) { left: 75%; animation-delay: 0.3s; }
+.grass-patch-3 .grass-blade:nth-child(6) { left: 90%; animation-delay: 0.5s; }
+
+/* Fougères */
+.fern {
+  position: absolute;
+  bottom: 0;
+  height: 60px;
+  width: 50px;
+  z-index: 3;
+}
+
+.fern-1 { left: 40%; }
+.fern-2 { left: 85%; }
+
+.fern-stem {
+  position: absolute;
+  width: 3px;
+  height: 100%;
+  background: #5c9e31;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.fern-leaf {
+  position: absolute;
+  width: 20px;
+  height: 10px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 50'%3E%3Cpath fill='%235c9e31' d='M0,0 C20,10 40,25 60,20 C80,15 90,0 100,0 C100,10 80,40 60,45 C40,50 20,30 0,50 L0,0'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  left: 50%;
+  transform-origin: left center;
+}
+
+.fern-leaf-1 { top: 10%; transform: translateX(0) rotate(-30deg); }
+.fern-leaf-2 { top: 30%; transform: translateX(0) rotate(-20deg); }
+.fern-leaf-3 { top: 50%; transform: translateX(0) scaleX(-1) rotate(20deg); }
+.fern-leaf-4 { top: 70%; transform: translateX(0) scaleX(-1) rotate(30deg); }
+
+/* Lucioles scintillantes */
+.firefly-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.firefly {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: #ffff99;
+  border-radius: 50%;
+  filter: blur(1px);
+  box-shadow: 0 0 10px 2px rgba(255, 255, 153, 0.8);
+  animation: fireflyGlow 3s ease-in-out infinite alternate, fireflyHover 20s linear infinite;
+}
+
+/* 
  * ANIMATIONS 
  */
 
@@ -2053,4 +2979,109 @@ export default {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+
+/* Animations pour le thème forêt */
+@keyframes sunbeamFlicker {
+  0%, 100% { opacity: 0.4; filter: blur(10px); }
+  50% { opacity: 0.6; filter: blur(8px); }
+}
+
+@keyframes mistFloat {
+  0% { transform: translateX(0) translateY(0); }
+  50% { transform: translateX(20px) translateY(-10px); }
+  100% { transform: translateX(0) translateY(0); }
+}
+
+@keyframes leafFall {
+  0% {
+    transform: translateY(0) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  90% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(calc(100vh + 50px)) translateX(100px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes butterflyFlight {
+  0% {
+    transform: translateX(0) translateY(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  40% {
+    transform: translateX(40vw) translateY(-20vh) rotate(5deg);
+  }
+  60% {
+    transform: translateX(60vw) translateY(10vh) rotate(-5deg);
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(calc(100vw + 50px)) translateY(0) rotate(0deg);
+    opacity: 0;
+  }
+}
+
+@keyframes wingBeatLeft {
+  0% { transform: scaleX(-1) rotate(-30deg); }
+  100% { transform: scaleX(-1) rotate(-80deg); }
+}
+
+@keyframes wingBeatRight {
+  0% { transform: rotate(30deg); }
+  100% { transform: rotate(80deg); }
+}
+
+@keyframes birdFlight {
+  0% {
+    transform: translateX(0) translateY(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  30% {
+    transform: translateX(30vw) translateY(10vh);
+  }
+  70% {
+    transform: translateX(70vw) translateY(-5vh);
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(calc(100vw + 30px)) translateY(0);
+    opacity: 0;
+  }
+}
+
+@keyframes grassSway {
+  0% { transform: rotate(-5deg); }
+  100% { transform: rotate(5deg); }
+}
+
+@keyframes fireflyGlow {
+  0%, 100% { opacity: 0.3; box-shadow: 0 0 5px 1px rgba(255, 255, 153, 0.5); }
+  50% { opacity: 0.8; box-shadow: 0 0 15px 3px rgba(255, 255, 153, 0.8); }
+}
+
+@keyframes fireflyHover {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(20px, -15px); }
+  50% { transform: translate(5px, -25px); }
+  75% { transform: translate(-10px, -10px); }
+  100% { transform: translate(0, 0); }
+}
+
 </style>
