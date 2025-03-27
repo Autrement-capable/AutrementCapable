@@ -81,7 +81,32 @@
         <div class="fish-school fish-school-2">
           <div v-for="i in 12" :key="`school-2-fish-${i}`" class="school-fish"></div>
         </div>
-        
+
+        <div class="shark">
+          <div class="shark-body">
+            <!-- Éléments du visage -->
+            <div class="shark-eye"></div>
+            <div class="shark-eye shark-eye-shine"></div>
+            <div class="shark-gill gill-1"></div>
+            <div class="shark-gill gill-2"></div>
+            <div class="shark-gill gill-3"></div>
+            <div class="shark-mouth"></div>
+          </div>
+          <div class="shark-dorsal-fin"></div>
+          <div class="shark-pectoral-fin"></div>
+          <div class="shark-pelvic-fin"></div>
+          <div class="shark-tail">
+            <div class="shark-tail-fin"></div>
+          </div>
+          <!-- Ombre du requin -->
+          <div class="shark-shadow"></div>
+          <!-- Bulles occasionnelles -->
+          <div class="shark-bubbles">
+            <div class="shark-bubble bubble-shark-1"></div>
+            <div class="shark-bubble bubble-shark-2"></div>
+            <div class="shark-bubble bubble-shark-3"></div>
+          </div>
+        </div>
         <!-- Individual Fish - Enhanced -->
         <div class="fish fish-1">
           <div class="fish-tail"></div>
@@ -817,6 +842,267 @@ export default {
     radial-gradient(ellipse at center, rgba(0, 30, 60, 0.2) 0%, rgba(4, 40, 67, 0.5) 70%, rgba(0, 35, 75, 0.7) 100%);
   opacity: 0.7;
   z-index: 0;
+}
+
+/* Requin amélioré */
+.shark {
+  position: absolute;
+  width: 220px;
+  height: 80px;
+  top: 35%;
+  right: -250px;
+  z-index: 4;
+  animation: sharkSwimImproved 60s linear infinite;
+  transform-style: preserve-3d;
+}
+
+.shark-body {
+  position: absolute;
+  width: 150px;
+  height: 60px;
+  left: 20px;
+  top: 10px;
+  background: linear-gradient(to bottom,
+    #2c3e50 0%,
+    #34495e 40%,
+    #7f8c8d 80%,
+    #ecf0f1 100%);
+  border-radius: 80% 40% 40% 80% / 50%;
+  z-index: 2;
+  transform-origin: center;
+  animation: sharkBodyMove 4s ease-in-out infinite;
+}
+
+/* Yeux du requin */
+.shark-eye {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #000;
+  border-radius: 50%;
+  top: 15px;
+  left: 30px;
+  z-index: 3;
+}
+
+.shark-eye-shine {
+  width: 4px;
+  height: 4px;
+  background: #fff;
+  left: 33px;
+  top: 13px;
+  opacity: 0.7;
+}
+
+/* Branchies */
+.shark-gill {
+  position: absolute;
+  width: 2px;
+  height: 15px;
+  background: rgba(0, 0, 0, 0.2);
+  transform: rotate(15deg);
+  z-index: 3;
+}
+
+.gill-1 { top: 20px; left: 50px; }
+.gill-2 { top: 20px; left: 55px; }
+.gill-3 { top: 20px; left: 60px; }
+
+/* Bouche */
+.shark-mouth {
+  position: absolute;
+  width: 30px;
+  height: 5px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  transform: rotate(-5deg);
+  top: 30px;
+  left: 10px;
+}
+
+/* Nageoire dorsale */
+.shark-dorsal-fin {
+  position: absolute;
+  width: 50px;
+  height: 40px;
+  background: #2c3e50;
+  top: -35px;
+  left: 80px;
+  clip-path: polygon(0 100%, 60% 0, 100% 100%);
+  z-index: 1;
+  animation: sharkDorsalFinMove 3s ease-in-out infinite;
+}
+
+/* Nageoire pectorale */
+.shark-pectoral-fin {
+  position: absolute;
+  width: 40px;
+  height: 30px;
+  background: #34495e;
+  transform-origin: top left;
+  top: 40px;
+  left: 70px;
+  clip-path: polygon(0 0, 100% 30%, 80% 100%, 0 70%);
+  z-index: 1;
+  animation: sharkPectoralFinMove 3s ease-in-out infinite alternate;
+}
+
+/* Nageoire pelvienne */
+.shark-pelvic-fin {
+  position: absolute;
+  width: 25px;
+  height: 20px;
+  background: #34495e;
+  transform-origin: top left;
+  top: 45px;
+  left: 110px;
+  clip-path: polygon(0 0, 100% 30%, 80% 100%, 0 70%);
+  z-index: 1;
+  animation: sharkPelvicFinMove 3s ease-in-out infinite alternate;
+  animation-delay: 0.5s;
+}
+
+/* Queue */
+.shark-tail {
+  position: absolute;
+  width: 60px;
+  height: 50px;
+  top: 15px;
+  right: 0;
+  z-index: 2;
+  animation: sharkTailWagImproved 1.5s ease-in-out infinite alternate;
+}
+
+.shark-tail-fin {
+  position: absolute;
+  width: 60px;
+  height: 50px;
+  background: #34495e;
+  clip-path: polygon(0 40%, 50% 0, 50% 100%, 0 60%);
+}
+
+/* Ombre du requin */
+.shark-shadow {
+  position: absolute;
+  width: 180px;
+  height: 60px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 50%;
+  top: 85px;
+  left: 30px;
+  filter: blur(10px);
+  transform: scaleX(1.2);
+  z-index: 1;
+  opacity: 0.5;
+}
+
+/* Bulles du requin */
+.shark-bubbles {
+  position: absolute;
+  top: 25px;
+  left: 40px;
+}
+
+.shark-bubble {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.5), inset 0 0 5px rgba(255, 255, 255, 0.5);
+  animation: sharkBubbleRise 3s ease-in-out infinite;
+  opacity: 0;
+}
+
+.bubble-shark-1 {
+  width: 8px;
+  height: 8px;
+  left: 0;
+  animation-delay: 0s;
+}
+
+.bubble-shark-2 {
+  width: 6px;
+  height: 6px;
+  left: 10px;
+  animation-delay: 1s;
+}
+
+.bubble-shark-3 {
+  width: 4px;
+  height: 4px;
+  left: 5px;
+  animation-delay: 2s;
+}
+
+/* Animations améliorées */
+@keyframes sharkSwimImproved {
+  0% { 
+    transform: translateX(0) translateY(0) rotate(0deg); 
+    opacity: 0; 
+  }
+  3% { opacity: 1; }
+  15% { 
+    transform: translateX(-15vw) translateY(5vh) rotate(2deg);
+  }
+  30% { 
+    transform: translateX(-30vw) translateY(-2vh) rotate(-1deg);
+  }
+  48% { 
+    transform: translateX(-48vw) translateY(3vh) rotate(0deg);
+  }
+  50% {
+    transform: translateX(-50vw) translateY(0) rotateY(180deg);
+  }
+  65% { 
+    transform: translateX(-65vw) translateY(-5vh) rotateY(180deg) rotate(-2deg);
+  }
+  80% { 
+    transform: translateX(-80vw) translateY(2vh) rotateY(180deg) rotate(1deg);
+  }
+  97% { 
+    transform: translateX(-97vw) translateY(-3vh) rotateY(180deg) rotate(0deg);
+    opacity: 1; 
+  }
+  100% { 
+    transform: translateX(-100vw) translateY(0) rotateY(180deg);
+    opacity: 0; 
+  }
+}
+
+@keyframes sharkBodyMove {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+@keyframes sharkTailWagImproved {
+  0% { transform: rotate(-10deg); }
+  100% { transform: rotate(10deg); }
+}
+
+@keyframes sharkDorsalFinMove {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(2deg); }
+}
+
+@keyframes sharkPectoralFinMove {
+  0% { transform: rotate(-5deg); }
+  100% { transform: rotate(15deg); }
+}
+
+@keyframes sharkPelvicFinMove {
+  0% { transform: rotate(-3deg); }
+  100% { transform: rotate(10deg); }
+}
+
+@keyframes sharkBubbleRise {
+  0% { 
+    transform: translateY(0) translateX(0); 
+    opacity: 0;
+  }
+  10% { opacity: 0.8; }
+  100% { 
+    transform: translateY(-40px) translateX(-10px);
+    opacity: 0;
+  }
 }
 
 /* Rayons de lumière */

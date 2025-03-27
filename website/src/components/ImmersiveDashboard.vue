@@ -587,6 +587,17 @@ export default {
         return;
       }
 
+      if (section === 'profile') {
+        // Si vous utilisez Vue Router
+        this.$router.push('/user-profile');
+        
+        // Réduire la notification
+        if (this.notifications[section] > 0) {
+          this.notifications[section]--;
+        }
+        return;
+      }
+
       if (section === 'badges') {
         // Si vous utilisez Vue Router
         this.$router.push('/badges');
