@@ -361,11 +361,11 @@ export default {
       ],
       showGamesOrbit: false,
       gamesList: [
-        { id: 1, title: 'Quiz Spatial', icon: 'game-icon-quiz' },
-        { id: 2, title: 'Puzzle Cosmos', icon: 'game-icon-puzzle' },
-        { id: 3, title: 'Memory Stars', icon: 'game-icon-memory' },
+        { id: 1, title: 'Roue Competences', icon: 'game-icon-galaxy', url: '/roue-des-competences' },
+        { id: 2, title: 'Scenarios', icon: 'game-icon-puzzle', url: '/scenarios' },
+        { id: 3, title: 'Métiers', icon: 'game-icon-memory', url: '/metier/soudeur' },
         { id: 4, title: 'Asteroid Rush', icon: 'game-icon-asteroid' },
-        { id: 5, title: 'Galaxy Match', icon: 'game-icon-galaxy' },
+        { id: 5, title: 'Galaxy Match', icon: 'game-icon-quiz' },
       ]
     };
   },
@@ -499,6 +499,16 @@ export default {
     selectGame(game) {
       // If a game is selected, hide the orbit
       this.showGamesOrbit = false;
+
+      if (game.url) {
+        // Si vous utilisez Vue Router
+        this.$router.push(game.url);
+
+        // Show achievement for first game played
+        if (Math.random() > 0.5) {
+          this.triggerAchievement('Joueur Stellaire');
+        }
+      }
       
       // Open the modal with game details
       this.activeModal = 'game-' + game.id;
@@ -565,6 +575,28 @@ export default {
 					window.navigator.vibrate(50);
 				}
 			}
+
+      if (section === 'formations') {
+        // Si vous utilisez Vue Router
+        this.$router.push('/formation');
+
+        // Réduire la notification
+        if (this.notifications[section] > 0) {
+          this.notifications[section]--;
+        }
+        return;
+      }
+
+      if (section === 'badges') {
+        // Si vous utilisez Vue Router
+        this.$router.push('/badges');
+ 
+        // Réduire la notification
+        if (this.notifications[section] > 0) {
+          this.notifications[section]--;
+        }
+        return;
+      }
 			
 			// Special handling for games section
       if (section === 'games') {
