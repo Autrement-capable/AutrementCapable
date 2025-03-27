@@ -391,33 +391,37 @@ export default {
       }
     },
 
-    enterGamesZoom() {
-      // Create a button flash effect
-      this.createButtonFlash('games');
-      
-      // Add haptic feedback if available
-      if (window.navigator && window.navigator.vibrate) {
-        window.navigator.vibrate(50);
-      }
-      
-      // Set zoomed state
-      this.gamesZoomed = true;
-      this.activeSection = 'games';
-
-      this.showGamesOrbit = true;
-  
-      // Reduce notification if any
-      if (this.notifications.games > 0) {
-        this.notifications.games--;
-      }
+    enterGamesZoom() {      
+      // Ajouter une classe pour l'animation de zoom au lieu de manipuler le DOM
+      this.$nextTick(() => {
+        // Utiliser Vue nextTick pour s'assurer que le DOM est mis à jour
+        document.querySelector('.section.games').classList.add('games-button-active');
+        
+        // Utiliser haptic feedback si disponible
+        if (window.navigator && window.navigator.vibrate) {
+          window.navigator.vibrate(50);
+        }
+        
+        // Mettre à jour l'état
+        this.gamesZoomed = true;
+        this.activeSection = 'games';
+        this.showGamesOrbit = true;
+        
+        // Réduire la notification si présente
+        if (this.notifications.games > 0) {
+          this.notifications.games--;
+        }
+      });
     },
 
-        // Exit games zoom mode
+    // Exit games zoom mode
     exitGamesZoom() {
+      document.querySelector('.section.games').classList.remove('games-button-active');
+      
       this.gamesZoomed = false;
       this.showGamesOrbit = false;
       
-      // Add haptic feedback if available
+      // Haptic feedback léger pour la sortie
       if (window.navigator && window.navigator.vibrate) {
         window.navigator.vibrate([30, 20, 30]);
       }
@@ -463,35 +467,34 @@ export default {
     },
 
     toggleGamesOrbit() {
-      // Create a ripple effect element
-      const ripple = document.createElement('div');
-      ripple.className = 'button-ripple';
-      
-      // Find the section element
+      // Utiliser une classe CSS au lieu d'ajouter/supprimer des éléments DOM
       const sectionEl = document.querySelector(`.section.games .section-content`);
       if (sectionEl) {
-        sectionEl.appendChild(ripple);
+        // Ajouter la classe pour l'animation et la supprimer après l'animation
+        sectionEl.classList.add('button-animate');
         
-        // Trigger ripple animation
-        setTimeout(() => {
-          ripple.remove();
-        }, 600);
-        
-        // Add haptic feedback if available
-        if (window.navigator && window.navigator.vibrate) {
-          window.navigator.vibrate(50);
-        }
+        // Utiliser requestAnimationFrame pour une animation plus fluide
+        requestAnimationFrame(() => {
+          // Utiliser haptic feedback si disponible
+          if (window.navigator && window.navigator.vibrate) {
+            window.navigator.vibrate(50);
+          }
+          
+          // Supprimer la classe après l'animation
+          setTimeout(() => {
+            sectionEl.classList.remove('button-animate');
+          }, 400); // Réduit de 600ms à 400ms pour une animation plus rapide
+        });
       }
       
+      // Basculer l'état des jeux
       if (!this.gamesZoomed) {
         this.enterGamesZoom();
       } else {
         this.exitGamesZoom();
       }
-      
-      // Create a flash effect
-      this.createButtonFlash('games');
     },
+
 
     selectGame(game) {
       // If a game is selected, hide the orbit
@@ -578,25 +581,10 @@ export default {
       }
 			
 			// Create a flash effect
-			this.createButtonFlash(section);
 			
 			// Réduire la notification
 			if (this.notifications[section] > 0) {
 				this.notifications[section]--;
-			}
-		},
-
-		createButtonFlash(section) {
-			const flash = document.createElement('div');
-			flash.className = `button-flash ${section}-flash`;
-			
-			const sectionEl = document.querySelector(`.section.${section}`);
-			if (sectionEl) {
-				sectionEl.appendChild(flash);
-				
-				setTimeout(() => {
-					flash.remove();
-				}, 500);
 			}
 		},
     
@@ -972,7 +960,74 @@ export default {
   left: 50%;
   transform: translate(-50%, -50%) scale(1.5);
   z-index: 50;
-  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.button-animate {
+  position: relative;
+  overflow: visible;
+}
+
+.button-animate::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 64, 129, 0.8) 0%, rgba(255, 64, 129, 0) 70%);
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  pointer-events: none;
+  /* Utiliser une animation GPU-accelerated */
+  animation: optimizedButtonFlash 0.4s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
+}
+
+.button-animate::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: white;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0.7;
+  pointer-events: none;
+  /* Animation plus courte et optimisée */
+  animation: optimizedRippleEffect 0.4s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
+}
+
+.games-button-active {
+  transform: scale(1.1);
+  z-index: 50;
+}
+
+@keyframes optimizedButtonFlash {
+  0% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 0;
+  }
+}
+
+@keyframes optimizedRippleEffect {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(15);
+    opacity: 0;
+  }
 }
 
 .games-zoomed .section:not(.games) {

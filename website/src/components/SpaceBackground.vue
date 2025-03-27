@@ -150,7 +150,7 @@
       <template v-else-if="theme === 'cyberpunk'">
         <!-- Rain Effect -->
         <div class="cyber-rain">
-          <div v-for="i in 30" :key="`rain-${i}`" class="rain-drop" :style="getRainDropStyle(i)"></div>
+          <div v-for="i in 15" :key="`rain-${i}`" class="rain-drop" :style="getRainDropStyle(i)"></div>
         </div>
         
         <!-- Neon Signs -->
@@ -160,13 +160,13 @@
         
         <!-- Grid lines - Enhanced 3D -->
         <div class="grid-container">
-          <div class="grid-horizontal" v-for="i in 8" :key="`h-${i}`"></div>
-          <div class="grid-vertical" v-for="i in 8" :key="`v-${i}`"></div>
+          <div class="grid-horizontal" v-for="i in 6" :key="`h-${i}`"></div>
+          <div class="grid-vertical" v-for="i in 6" :key="`v-${i}`"></div>
         </div>
         
         <!-- City Silhouette -->
         <div class="cyber-city">
-          <div v-for="i in 8" :key="`building-${i}`" class="city-building"></div>
+          <div v-for="i in 7" :key="`building-${i}`" class="city-building"></div>
         </div>
         
         <!-- Flying data cubes - Enhanced -->
@@ -232,7 +232,7 @@
         
         <!-- Feuilles qui tombent -->
         <div class="leaves-container">
-          <div v-for="i in 15" :key="`leaf-${i}`" class="falling-leaf" :style="getFallingLeafStyle(i)"></div>
+          <div v-for="i in 8" :key="`leaf-${i}`" class="falling-leaf" :style="getFallingLeafStyle(i)"></div>
         </div>
         
         <!-- Arbres en arrière-plan -->
