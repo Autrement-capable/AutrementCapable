@@ -7,7 +7,7 @@ from fastapi_mail import MessageSchema
 
 from mail.actions.verify_account import send_verification_email
 from mail.actions.reset_password import send_reset_password_email
-from database.postgress.models import User, UnverifiedDetails, PasswordReset
+from database.postgress.models import User, UnverifiedDetails, AccountRecovery
 
 pytestmark = pytest.mark.functionality
 
@@ -106,7 +106,7 @@ async def test_send_reset_password_email(mock_mail):
         role_id=1
     )
 
-    reset = PasswordReset(
+    reset = AccountRecovery(
         user_id=999,
         reset_token="test_reset_token",
         token_expires=datetime.utcnow() + timedelta(hours=1)
@@ -143,7 +143,7 @@ async def test_send_reset_password_email_alternate_address(mock_mail):
         role_id=1
     )
 
-    reset = PasswordReset(
+    reset = AccountRecovery(
         user_id=999,
         reset_token="test_reset_token",
         token_expires=datetime.utcnow() + timedelta(hours=1)

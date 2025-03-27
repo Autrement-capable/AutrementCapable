@@ -6,7 +6,6 @@ from fastapi import FastAPI, Depends
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi.openapi.utils import get_openapi
 from server.cors.config import init_cors
-from server.jwt_config.exception_handlers import authjwt_exception_handler
 from server.role_config.roles import init_roles
 from utils.singleton import singleton
 from database.postgress.config import postgress
@@ -134,6 +133,16 @@ async def start_scheduler():
 
 @server.app.on_event("shutdown")
 async def stop_scheduler():
-    await server.scheduler.shutdown()
+    if hasattr(server, 'scheduler') and server.scheduler is not None:
+        await server.scheduler.shutdown()
+    else:
+        print("Scheduler was already shut down or was None")
+
+@server.app.on_event("shutdown")
+async def cleanup_db_connections():
+    """Properly close all database connections on shutdown."""
+    if hasattr(server.postgress, 'engine') and server.postgress.engine is not None:
+        print("Closing database connections...")
+        await server.postgress.close()
 
 __all__ = ["server", "AddRouter", "AddCronJob"]

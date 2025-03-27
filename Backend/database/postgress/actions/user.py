@@ -125,7 +125,35 @@ async def get_user_by_email(session: AsyncSession, email: str, load_type: Litera
     elif load_type == "eager":
         statement = (select(User)
         .where(User.email == email)
-        .options(joinedload(User.password_resets), joinedload(User.verification_details)))
+        .options(joinedload(User.account_recovery), joinedload(User.verification_details)))
+    else:
+        raise ValueError("Invalid load type")
+    
+    result = await session.execute(statement)
+    result = result.scalars().first()
+    if not result:
+        print("User not found")
+        return None
+    return result
+
+async def get_user_by_id(session: AsyncSession, user_id: int, load_type: Literal["lazy", "eager"] = "lazy") -> User | None:
+    """ Get a user by their ID asynchronously
+
+    Args:
+        session (AsyncSession): The database session
+        user_id (int): The user's ID
+        load_type (Literal["lazy", "eager"], optional): The type of loading to use. Defaults to "lazy".
+
+    Returns:
+        User | None: The user object if found, None otherwise
+    """
+    if load_type == "lazy":
+        statement = select(User).where(User.id == user_id)
+    elif load_type == "eager":
+        statement = (select(User)
+        .where(User.id == user_id)
+        .options(joinedload(User.account_recovery), joinedload(User.verification_details), 
+                 joinedload(User.passkey_credentials)))
     else:
         raise ValueError("Invalid load type")
     
@@ -214,6 +242,10 @@ async def login_user(session: AsyncSession, password: str, username_or_email: st
 
     if not verify_password(password, user.password_hash):
         return None
+
+    # Update last login timestamp
+    user.last_login = datetime.utcnow()
+    await session.commit()
 
     return user
 

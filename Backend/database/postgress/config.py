@@ -47,7 +47,10 @@ async def getSession() -> AsyncSession:
 
 # async def getSession() -> AsyncSession:
 #     async with postgress.Session() as session:
-#         yield session
+#        try:
+#           yield session
+#        finally:
+#           await session.close()
 
 Base = postgress.Base
 

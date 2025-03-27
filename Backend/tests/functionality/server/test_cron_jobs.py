@@ -6,14 +6,14 @@ from datetime import datetime, timedelta
 from sqlalchemy.future import select
 
 from server.cron_jobs.base_cron import CronJobRegistry
-from database.postgress.models import PasswordReset, RevokedToken, User, UnverifiedDetails
+from database.postgress.models import AccountRecovery, RevokedToken, User, UnverifiedDetails
 from database.postgress.actions.user import create_user
 from database.postgress.actions.role import get_role_by_name, create_role
 
 pytestmark = pytest.mark.functionality
 
 @pytest.mark.asyncio
-async def test_password_reset_purge_cron(db_session, init_test_data):
+async def test_acc_recovery_purge_cron(db_session, init_test_data):
     """Test the password reset purge cron job."""
     # Create a test user if needed
     role = await get_role_by_name(db_session, "Young Person")
@@ -36,7 +36,7 @@ async def test_password_reset_purge_cron(db_session, init_test_data):
         user, _ = user_data
 
     # Create an expired password reset
-    expired_reset = PasswordReset(
+    expired_reset = AccountRecovery(
         user_id=user.id,
         reset_token="expired_token",
         token_expires=datetime.utcnow() - timedelta(hours=1)
@@ -44,7 +44,7 @@ async def test_password_reset_purge_cron(db_session, init_test_data):
     db_session.add(expired_reset)
 
     # Create a valid password reset
-    valid_reset = PasswordReset(
+    valid_reset = AccountRecovery(
         user_id=user.id,
         reset_token="valid_token",
         token_expires=datetime.utcnow() + timedelta(hours=1)
@@ -54,26 +54,26 @@ async def test_password_reset_purge_cron(db_session, init_test_data):
     await db_session.commit()
 
     # Get the cron job class and create an instance
-    password_reset_purge_cron = None
+    acc_recovery_purge_cron = None
     for job_cls in CronJobRegistry.get_registered_jobs():
-        if job_cls.__name__ == "PasswordResetPurgeCron":
-            password_reset_purge_cron = job_cls()
+        if job_cls.__name__ == "AccountRecoveryPurgeCron":
+            acc_recovery_purge_cron = job_cls()
             break
 
-    assert password_reset_purge_cron is not None
+    assert acc_recovery_purge_cron is not None
 
     # Run the cron job
-    await password_reset_purge_cron.run(db_session)
+    await acc_recovery_purge_cron.run(db_session)
 
     # Verify expired reset is deleted
     result = await db_session.execute(
-        select(PasswordReset).where(PasswordReset.reset_token == "expired_token")
+        select(AccountRecovery).where(AccountRecovery.reset_token == "expired_token")
     )
     assert result.scalars().first() is None
 
     # Verify valid reset is still there
     result = await db_session.execute(
-        select(PasswordReset).where(PasswordReset.reset_token == "valid_token")
+        select(AccountRecovery).where(AccountRecovery.reset_token == "valid_token")
     )
     assert result.scalars().first() is not None
 

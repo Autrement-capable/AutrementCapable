@@ -4,7 +4,7 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy.future import select
 from datetime import datetime, timedelta
 import yaml
-from database.postgress.models import User, PasswordReset
+from database.postgress.models import User, AccountRecovery
 from database.postgress.config import postgress
 from utils.verifcation_code import generate_verification_code
 from server.server import AddCronJob
@@ -18,16 +18,16 @@ except Exception as e: # if the config file is not found
     print(f"Error loading config: {e}")
 # is_config_loaded = False
 
-@register_cron_job("PasswordResetPurgeCron")
-class PasswordResetPurgeCron(BaseCronJob):
+@register_cron_job("AccountRecoveryPurgeCron")
+class AccountRecoveryPurgeCron(BaseCronJob):
     """Cron job to delete expired password resets from the database."""
     def __init__(self):
-        super().__init__("PasswordResetPurgeCron", "verify", ["password_reset_purge_interval"])
+        super().__init__("AccountRecoveryPurgeCron", "verify", ["password_reset_purge_interval"])
 
     async def run(self, session: AsyncSession):
         """ Delete all expired password resets from the database asynchronously """
         try:
-            statement = select(PasswordReset).where(PasswordReset.token_expires < datetime.utcnow())
+            statement = select(AccountRecovery).where(AccountRecovery.token_expires < datetime.utcnow())
             result = await session.execute(statement)
             resets = result.scalars().all()
             for reset in resets:
@@ -37,11 +37,11 @@ class PasswordResetPurgeCron(BaseCronJob):
             print(f"Error deleting expired password resets: {e}")
             await session.rollback()
 
-async def create_password_reset(session: AsyncSession, user: User, commit=True, fresh=True) -> PasswordReset | None:
+async def create_acc_recovery(session: AsyncSession, user: User, commit=True, fresh=True) -> AccountRecovery | None:
     """ Create a password reset entry for a user. """
     try:
         reset_token, token_expire = generate_verification_code(32, password_reset_code_duration)
-        password_reset = PasswordReset(user_id=user.id, reset_token=reset_token, token_expires=token_expire)
+        password_reset = AccountRecovery(user_id=user.id, reset_token=reset_token, token_expires=token_expire)
         session.add(password_reset)
         if commit:
             await session.commit()
@@ -55,17 +55,17 @@ async def create_password_reset(session: AsyncSession, user: User, commit=True, 
         await session.rollback()
         return None
 
-async def get_password_reset_by_token(session: AsyncSession, reset_token: str) -> PasswordReset | None:
-    """ Get a password reset entry by its token. """
+async def get_acc_recovery_by_token(session: AsyncSession, reset_token: str) -> AccountRecovery | None:
+    """ Get a password reset entry by its token. (LOADS USER) """
     try:
-        statement = select(PasswordReset).where(PasswordReset.reset_token == reset_token).options(joinedload(PasswordReset.user))
+        statement = select(AccountRecovery).where(AccountRecovery.reset_token == reset_token).options(joinedload(AccountRecovery.user))
         result = await session.execute(statement)
         return result.scalars().first()
     except Exception as e:
         print(f"Error getting password reset by token: {e}")
         return None
 
-async def del_password_reset(session: AsyncSession, reset: PasswordReset, commit=True):
+async def del_acc_recovery(session: AsyncSession, reset: AccountRecovery, commit=True):
     """ Delete a password reset entry from the database. """
     try:
         await session.delete(reset)
