@@ -1050,20 +1050,20 @@ export default {
     transform: translateX(-48vw) translateY(3vh) rotate(0deg);
   }
   50% {
-    transform: translateX(-50vw) translateY(0) rotateY(180deg);
+    transform: translateX(-50vw) translateY(0);
   }
   65% { 
-    transform: translateX(-65vw) translateY(-5vh) rotateY(180deg) rotate(-2deg);
+    transform: translateX(-65vw) translateY(-5vh) rotate(-2deg);
   }
   80% { 
-    transform: translateX(-80vw) translateY(2vh) rotateY(180deg) rotate(1deg);
+    transform: translateX(-80vw) translateY(2vh) rotate(1deg);
   }
   97% { 
-    transform: translateX(-97vw) translateY(-3vh) rotateY(180deg) rotate(0deg);
+    transform: translateX(-97vw) translateY(-3vh) rotate(0deg);
     opacity: 1; 
   }
   100% { 
-    transform: translateX(-100vw) translateY(0) rotateY(180deg);
+    transform: translateX(-100vw) translateY(0);
     opacity: 0; 
   }
 }
