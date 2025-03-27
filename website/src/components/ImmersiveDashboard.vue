@@ -103,7 +103,7 @@
                 <path d="M20 21v-2a6 6 0 0 0-6-6H10a6 6 0 0 0-6 6v2" stroke-width="1.5"/>
               </svg>
             </div>
-            <span class="tooltip tooltip-profile">Profil</span>
+            <span class="tooltip">Profil</span>
             <div class="notification" v-if="notifications.profile > 0">{{ notifications.profile }}</div>
           </div>
         </div>
@@ -334,7 +334,8 @@ export default {
       availableThemes: [
         { value: 'cosmic', label: 'Cosmic' },
         { value: 'ocean', label: 'Ocean' },
-        { value: 'cyberpunk', label: 'Cyberpunk' }
+        { value: 'cyberpunk', label: 'Cyberpunk' },
+        { value: 'forest', label: 'Forêt' }
       ],
       progress: 37, // Progression globale en pourcentage
       activeSection: null,
@@ -360,11 +361,11 @@ export default {
       ],
       showGamesOrbit: false,
       gamesList: [
-        { id: 1, title: 'Quiz Spatial', icon: 'game-icon-quiz' },
-        { id: 2, title: 'Puzzle Cosmos', icon: 'game-icon-puzzle' },
-        { id: 3, title: 'Memory Stars', icon: 'game-icon-memory' },
+        { id: 1, title: 'Roue Competences', icon: 'game-icon-galaxy', url: '/roue-des-competences' },
+        { id: 2, title: 'Scenarios', icon: 'game-icon-puzzle', url: '/scenarios' },
+        { id: 3, title: 'Métiers', icon: 'game-icon-memory', url: '/metier/soudeur' },
         { id: 4, title: 'Asteroid Rush', icon: 'game-icon-asteroid' },
-        { id: 5, title: 'Galaxy Match', icon: 'game-icon-galaxy' },
+        { id: 5, title: 'Galaxy Match', icon: 'game-icon-quiz' },
       ]
     };
   },
@@ -390,33 +391,37 @@ export default {
       }
     },
 
-    enterGamesZoom() {
-      // Create a button flash effect
-      this.createButtonFlash('games');
-      
-      // Add haptic feedback if available
-      if (window.navigator && window.navigator.vibrate) {
-        window.navigator.vibrate(50);
-      }
-      
-      // Set zoomed state
-      this.gamesZoomed = true;
-      this.activeSection = 'games';
-
-      this.showGamesOrbit = true;
-  
-      // Reduce notification if any
-      if (this.notifications.games > 0) {
-        this.notifications.games--;
-      }
+    enterGamesZoom() {      
+      // Ajouter une classe pour l'animation de zoom au lieu de manipuler le DOM
+      this.$nextTick(() => {
+        // Utiliser Vue nextTick pour s'assurer que le DOM est mis à jour
+        document.querySelector('.section.games').classList.add('games-button-active');
+        
+        // Utiliser haptic feedback si disponible
+        if (window.navigator && window.navigator.vibrate) {
+          window.navigator.vibrate(50);
+        }
+        
+        // Mettre à jour l'état
+        this.gamesZoomed = true;
+        this.activeSection = 'games';
+        this.showGamesOrbit = true;
+        
+        // Réduire la notification si présente
+        if (this.notifications.games > 0) {
+          this.notifications.games--;
+        }
+      });
     },
 
-        // Exit games zoom mode
+    // Exit games zoom mode
     exitGamesZoom() {
+      document.querySelector('.section.games').classList.remove('games-button-active');
+      
       this.gamesZoomed = false;
       this.showGamesOrbit = false;
       
-      // Add haptic feedback if available
+      // Haptic feedback léger pour la sortie
       if (window.navigator && window.navigator.vibrate) {
         window.navigator.vibrate([30, 20, 30]);
       }
@@ -462,39 +467,48 @@ export default {
     },
 
     toggleGamesOrbit() {
-      // Create a ripple effect element
-      const ripple = document.createElement('div');
-      ripple.className = 'button-ripple';
-      
-      // Find the section element
+      // Utiliser une classe CSS au lieu d'ajouter/supprimer des éléments DOM
       const sectionEl = document.querySelector(`.section.games .section-content`);
       if (sectionEl) {
-        sectionEl.appendChild(ripple);
+        // Ajouter la classe pour l'animation et la supprimer après l'animation
+        sectionEl.classList.add('button-animate');
         
-        // Trigger ripple animation
-        setTimeout(() => {
-          ripple.remove();
-        }, 600);
-        
-        // Add haptic feedback if available
-        if (window.navigator && window.navigator.vibrate) {
-          window.navigator.vibrate(50);
-        }
+        // Utiliser requestAnimationFrame pour une animation plus fluide
+        requestAnimationFrame(() => {
+          // Utiliser haptic feedback si disponible
+          if (window.navigator && window.navigator.vibrate) {
+            window.navigator.vibrate(50);
+          }
+          
+          // Supprimer la classe après l'animation
+          setTimeout(() => {
+            sectionEl.classList.remove('button-animate');
+          }, 400); // Réduit de 600ms à 400ms pour une animation plus rapide
+        });
       }
       
+      // Basculer l'état des jeux
       if (!this.gamesZoomed) {
         this.enterGamesZoom();
       } else {
         this.exitGamesZoom();
       }
-      
-      // Create a flash effect
-      this.createButtonFlash('games');
     },
+
 
     selectGame(game) {
       // If a game is selected, hide the orbit
       this.showGamesOrbit = false;
+
+      if (game.url) {
+        // Si vous utilisez Vue Router
+        this.$router.push(game.url);
+
+        // Show achievement for first game played
+        if (Math.random() > 0.5) {
+          this.triggerAchievement('Joueur Stellaire');
+        }
+      }
       
       // Open the modal with game details
       this.activeModal = 'game-' + game.id;
@@ -561,6 +575,28 @@ export default {
 					window.navigator.vibrate(50);
 				}
 			}
+
+      if (section === 'formations') {
+        // Si vous utilisez Vue Router
+        this.$router.push('/formation');
+
+        // Réduire la notification
+        if (this.notifications[section] > 0) {
+          this.notifications[section]--;
+        }
+        return;
+      }
+
+      if (section === 'badges') {
+        // Si vous utilisez Vue Router
+        this.$router.push('/badges');
+ 
+        // Réduire la notification
+        if (this.notifications[section] > 0) {
+          this.notifications[section]--;
+        }
+        return;
+      }
 			
 			// Special handling for games section
       if (section === 'games') {
@@ -577,25 +613,10 @@ export default {
       }
 			
 			// Create a flash effect
-			this.createButtonFlash(section);
 			
 			// Réduire la notification
 			if (this.notifications[section] > 0) {
 				this.notifications[section]--;
-			}
-		},
-
-		createButtonFlash(section) {
-			const flash = document.createElement('div');
-			flash.className = `button-flash ${section}-flash`;
-			
-			const sectionEl = document.querySelector(`.section.${section}`);
-			if (sectionEl) {
-				sectionEl.appendChild(flash);
-				
-				setTimeout(() => {
-					flash.remove();
-				}, 500);
 			}
 		},
     
@@ -808,6 +829,11 @@ export default {
   box-shadow: 0 0 10px rgba(255, 64, 129, 0.5);
 }
 
+.theme-icon.forest {
+  background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
+  box-shadow: 0 0 10px rgba(46, 125, 50, 0.5);
+}
+
 .theme-option span {
   font-size: 12px;
   opacity: 0.8;
@@ -966,7 +992,74 @@ export default {
   left: 50%;
   transform: translate(-50%, -50%) scale(1.5);
   z-index: 50;
-  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.button-animate {
+  position: relative;
+  overflow: visible;
+}
+
+.button-animate::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 64, 129, 0.8) 0%, rgba(255, 64, 129, 0) 70%);
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  pointer-events: none;
+  /* Utiliser une animation GPU-accelerated */
+  animation: optimizedButtonFlash 0.4s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
+}
+
+.button-animate::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: white;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0.7;
+  pointer-events: none;
+  /* Animation plus courte et optimisée */
+  animation: optimizedRippleEffect 0.4s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
+}
+
+.games-button-active {
+  transform: scale(1.1);
+  z-index: 50;
+}
+
+@keyframes optimizedButtonFlash {
+  0% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 0;
+  }
+}
+
+@keyframes optimizedRippleEffect {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(15);
+    opacity: 0;
+  }
 }
 
 .games-zoomed .section:not(.games) {
@@ -1164,8 +1257,8 @@ export default {
 /* Sections */
 .section {
   position: absolute;
-  width: 150px;
-  height: 150px;
+  width: 170px;
+  height: 170px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1183,8 +1276,8 @@ export default {
 }
 
 .formations {
-  top: 20%;
-  left: 20%;
+  top: 18%;
+  left: 18%;
 }
 
 .formations .section-content {
@@ -1192,8 +1285,8 @@ export default {
 }
 
 .badges {
-  top: 20%;
-  right: 20%;
+  top: 18%;
+  right: 18%;
 }
 
 .badges .section-content {
@@ -1201,8 +1294,8 @@ export default {
 }
 
 .games {
-  bottom: 20%;
-  left: 20%;
+  bottom: 18%;
+  left: 18%;
 }
 
 .games .section-content {
@@ -1210,9 +1303,8 @@ export default {
 }
 
 .profile {
-  bottom: 20%;
-  right: 20%;
-  transition: all 0.5s ease;
+  bottom: 18%;
+  right: 18%;
 }
 
 .profile .section-content {
@@ -1268,8 +1360,8 @@ export default {
 }
 
 .section-content {
-  width: 85px;
-  height: 85px;
+  width: 110px;
+  height: 110px;
   border-radius: 50%;
   background: rgba(30, 30, 45, 0.6);
   backdrop-filter: blur(5px);
@@ -1397,6 +1489,11 @@ export default {
   filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.7)) brightness(1.2);
 }
 
+.icon svg {
+  width: 80px; /* Augmenté de 64px (implicite dans le HTML) à 80px */
+  height: 80px; /* Augmenté de 64px (implicite dans le HTML) à 80px */
+}
+
 /* Thematic icon colors */
 .formations .icon svg {
   fill: none;
@@ -1425,8 +1522,8 @@ export default {
 /* Effet de lueur amélioré */
 .glow-effect {
   position: absolute;
-  width: 100%;
-  height: 100%;
+  width: 110%;
+  height: 110%;
   border-radius: 50%;
   background: radial-gradient(
     circle,
@@ -1434,7 +1531,7 @@ export default {
     rgba(124, 77, 255, 0.3) 50%,
     rgba(255, 64, 129, 0.3) 100%
   );
-  filter: blur(8px);
+  filter: blur(10px);
   opacity: 0.6;
   transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   z-index: 1;
@@ -1527,13 +1624,15 @@ export default {
   pointer-events: none;
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   white-space: nowrap;
-  transform: translateY(10px);
   backdrop-filter: blur(5px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   font-weight: 500;
   letter-spacing: 0.5px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
   z-index: 100;
+  visibility: visible;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
 }
 
 .formations .tooltip {
@@ -1554,7 +1653,10 @@ export default {
 
 .icon-container:hover .tooltip {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateX(-50%) translateY(0);
+  visibility: visible;
+  display: block;
+
 }
 
 .button-particles {
@@ -2084,6 +2186,16 @@ export default {
   }
   
   .section-content {
+    width: 80px;
+    height: 80px;
+  }
+
+  .section {
+    width: 130px;
+    height: 130px;
+  }
+  
+  .icon svg {
     width: 60px;
     height: 60px;
   }
