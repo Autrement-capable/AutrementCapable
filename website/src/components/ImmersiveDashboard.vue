@@ -1170,8 +1170,8 @@ export default {
 /* Sections */
 .section {
   position: absolute;
-  width: 150px;
-  height: 150px;
+  width: 170px;
+  height: 170px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1189,8 +1189,8 @@ export default {
 }
 
 .formations {
-  top: 20%;
-  left: 20%;
+  top: 18%;
+  left: 18%;
 }
 
 .formations .section-content {
@@ -1198,8 +1198,8 @@ export default {
 }
 
 .badges {
-  top: 20%;
-  right: 20%;
+  top: 18%;
+  right: 18%;
 }
 
 .badges .section-content {
@@ -1207,8 +1207,8 @@ export default {
 }
 
 .games {
-  bottom: 20%;
-  left: 20%;
+  bottom: 18%;
+  left: 18%;
 }
 
 .games .section-content {
@@ -1216,9 +1216,8 @@ export default {
 }
 
 .profile {
-  bottom: 20%;
-  right: 20%;
-  transition: all 0.5s ease;
+  bottom: 18%;
+  right: 18%;
 }
 
 .profile .section-content {
@@ -1274,8 +1273,8 @@ export default {
 }
 
 .section-content {
-  width: 85px;
-  height: 85px;
+  width: 110px;
+  height: 110px;
   border-radius: 50%;
   background: rgba(30, 30, 45, 0.6);
   backdrop-filter: blur(5px);
@@ -1403,6 +1402,11 @@ export default {
   filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.7)) brightness(1.2);
 }
 
+.icon svg {
+  width: 80px; /* Augmenté de 64px (implicite dans le HTML) à 80px */
+  height: 80px; /* Augmenté de 64px (implicite dans le HTML) à 80px */
+}
+
 /* Thematic icon colors */
 .formations .icon svg {
   fill: none;
@@ -1431,8 +1435,8 @@ export default {
 /* Effet de lueur amélioré */
 .glow-effect {
   position: absolute;
-  width: 100%;
-  height: 100%;
+  width: 110%;
+  height: 110%;
   border-radius: 50%;
   background: radial-gradient(
     circle,
@@ -1440,7 +1444,7 @@ export default {
     rgba(124, 77, 255, 0.3) 50%,
     rgba(255, 64, 129, 0.3) 100%
   );
-  filter: blur(8px);
+  filter: blur(10px);
   opacity: 0.6;
   transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   z-index: 1;
@@ -2095,6 +2099,16 @@ export default {
   }
   
   .section-content {
+    width: 80px;
+    height: 80px;
+  }
+
+  .section {
+    width: 130px;
+    height: 130px;
+  }
+  
+  .icon svg {
     width: 60px;
     height: 60px;
   }
