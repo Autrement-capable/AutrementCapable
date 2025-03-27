@@ -8,9 +8,9 @@
         <!-- Comets -->
         <div class="comet comet-1"></div>
         <div class="comet comet-2"></div>
-        <div class="comet comet-3"></div>
+        <div class="cometInverse comet-3"></div>
         <div class="comet comet-4"></div>
-        <div class="comet comet-5"></div>
+        <div class="cometInverse comet-5"></div>
         
         <!-- Galaxy -->
         <div class="galaxy galaxy-1"></div>
@@ -542,9 +542,38 @@ export default {
   border-radius: 100%;
 }
 
+.cometInverse {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  box-shadow: 
+    0 0 20px 2px rgba(255, 255, 255, 0.6),
+    0 0 40px 6px rgba(115, 215, 255, 0.4);
+  z-index: 2;
+  opacity: 0;
+  animation: cometAnimationInverse 12s linear infinite;
+}
+
+.cometInverse::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 120px;
+  height: 2px;
+  background: linear-gradient(to left, 
+    rgba(255, 255, 255, 0.8), 
+    rgba(160, 220, 255, 0.4), 
+    transparent);
+  transform: translateX(2px);
+  border-radius: 100%;
+}
+
 .comet-1 { top: 15%; left: -5%; animation-delay: 2s; }
 .comet-2 { top: 35%; left: -10%; width: 3px; height: 3px; animation-duration: 15s; }
-.comet-3 { top: 65%; left: -8%; width: 5px; height: 5px; animation-delay: 1s; animation-duration: 18s; }
+.comet-3 { top: 35%; left: -8%; width: 5px; height: 5px; animation-delay: 1s; animation-duration: 18s; }
 .comet-4 { top: 62%; left: -18%; animation-delay: 3s; }
 .comet-5 { top: 70%; left: -18%; animation-delay: 4s; }
 
@@ -2138,13 +2167,26 @@ export default {
 
 @keyframes cometAnimation {
   0% {
-    transform: translate(0, 0) rotate(15deg);
+    transform: translate(0, 0) rotate(5deg);
     opacity: 0;
   }
   5% { opacity: 1; }
   95% { opacity: 1; }
   100% {
-    transform: translate(calc(100vw + 200px), 20vh) rotate(15deg);
+    transform: translate(calc(100vw + 200px), 20vh) rotate(5deg);
+    opacity: 0;
+  }
+}
+
+@keyframes cometAnimationInverse {
+  0% {
+    transform: translate(calc(100vw + 200px), 20vh) rotate(185deg);
+    opacity: 0;
+  }
+  5% { opacity: 1; }
+  95% { opacity: 1; }
+  100% {
+    transform: translate(0, 0) rotate(185deg);
     opacity: 0;
   }
 }
