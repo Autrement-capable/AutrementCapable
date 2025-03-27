@@ -1843,7 +1843,7 @@ export default {
   );
 }
 
-.tree-fg-1 { left: 10%; height: 85%; width: 160px; }
+.tree-fg-1 { left: 60%; height: 85%; width: 160px; }
 .tree-fg-1 .tree-trunk { width: 20px; height: 35%; }
 .tree-fg-1 .tree-canopy {
   width: 140px;
