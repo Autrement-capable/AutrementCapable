@@ -118,6 +118,13 @@
           </button>
           <span class="option-description">Crée un espace visuel calme en cas de surcharge</span>
         </div>
+        <div class="option-item">
+          <button @click="toggleAudioFeedback" :class="{ 'active-option': audioFeedbackEnabled }">
+            <span class="option-icon">🔊</span>
+            <span class="option-text">Retour sonore</span>
+          </button>
+          <span class="option-description">Sons doux pour confirmer les actions</span>
+        </div>
       </div>
       
       <!-- Reading Tab -->
@@ -235,7 +242,12 @@ export default {
       
       // Speech synthesis
       speechSynthesis: null,
-      speechUtterance: null
+      speechUtterance: null,
+      
+      // Audio context for feedback sounds
+      audioContext: null,
+      // Audio feedback preferences
+      audioFeedbackEnabled: true
     };
   },
   
@@ -281,11 +293,16 @@ export default {
   
   methods: {
     toggleWidget() {
+      const wasOpen = this.showWidget;
       this.showWidget = !this.showWidget;
       
       // Play a soft sound for feedback if audio is enabled
-      if (this.showWidget && this.isAutismMode) {
-        this.playAudioFeedback('open');
+      if (this.audioFeedbackEnabled) {
+        if (this.showWidget) {
+          this.playAudioFeedback('open');
+        } else if (wasOpen) {
+          this.playAudioFeedback('close');
+        }
       }
     },
     
@@ -376,8 +393,18 @@ export default {
         this.isPredictableLayout = true;
         document.body.classList.add('autism-friendly');
         this.applyAutismFriendlyStyles();
+        
+        // Play audio feedback
+        if (this.audioFeedbackEnabled) {
+          this.playAudioFeedback('toggle-on');
+        }
       } else {
         document.body.classList.remove('autism-friendly');
+        
+        // Play audio feedback
+        if (this.audioFeedbackEnabled) {
+          this.playAudioFeedback('toggle-off');
+        }
       }
       
       this.saveUserPreferences();
@@ -455,14 +482,131 @@ export default {
         if (this.speechSynthesis && this.speechSynthesis.speaking) {
           this.speechSynthesis.cancel();
         }
+        
+        // Play a very gentle calming sound
+        if (this.audioFeedbackEnabled) {
+          this.playAudioFeedback('quit-zone');
+        }
       }
     },
     
-    // playAudioFeedback(action) {
-      // Play soft audio feedback for UI interactions
-      // Implementation would use the Web Audio API for gentle sounds
-      // This is just a placeholder for actual implementation
-    // },
+    playAudioFeedback(action) {
+      // Create AudioContext only when needed (to avoid autoplay restrictions)
+      if (!this.audioContext) {
+        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      
+      // Different sound profiles based on action type
+      let frequency, duration, type, volume;
+      
+      switch (action) {
+        case 'open':
+          // Gentle rising tone for opening panel
+          frequency = 440; // A4 note (Hz)
+          duration = 0.3;  // seconds
+          type = 'sine';   // smooth waveform
+          volume = 0.1;    // quiet (max is 1.0)
+          this.playTone(frequency, frequency + 200, duration, type, volume);
+          break;
+          
+        case 'close':
+          // Gentle falling tone for closing panel
+          frequency = 440;
+          duration = 0.3;
+          type = 'sine';
+          volume = 0.1;
+          this.playTone(frequency + 100, frequency, duration, type, volume);
+          break;
+          
+        case 'toggle-on':
+          // Short pleasant tone for enabling a feature
+          frequency = 523.25; // C5 note (Hz)
+          duration = 0.15;
+          type = 'sine';
+          volume = 0.1;
+          this.playTone(frequency, frequency, duration, type, volume);
+          break;
+          
+        case 'toggle-off':
+          // Very soft tone for disabling a feature
+          frequency = 392; // G4 note (Hz)
+          duration = 0.15;
+          type = 'sine';
+          volume = 0.08;
+          this.playTone(frequency, frequency, duration, type, volume);
+          break;
+          
+        case 'error':
+          // Gentle low tone for errors (non-jarring)
+          frequency = 330; // E4 note (Hz)
+          duration = 0.2;
+          type = 'sine';
+          volume = 0.1;
+          this.playTone(frequency, frequency - 30, duration, type, volume);
+          break;
+          
+        case 'quit-zone':
+          // Very soft, calming tone for entering quiet zone
+          frequency = 294; // D4 note (Hz)
+          duration = 0.5;
+          type = 'sine';
+          volume = 0.05;
+          this.playTone(frequency, frequency, duration, type, volume);
+          break;
+          
+        default:
+          // Default gentle feedback
+          frequency = 440;
+          duration = 0.2;
+          type = 'sine';
+          volume = 0.08;
+          this.playTone(frequency, frequency, duration, type, volume);
+      }
+    },
+    
+    playTone(startFreq, endFreq, duration, type = 'sine', volume = 0.1) {
+      // Safety check - make sure audioContext exists
+      if (!this.audioContext) return;
+      
+      try {
+        // Create oscillator and gain nodes
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+        
+        // Set initial values
+        oscillator.type = type;
+        oscillator.frequency.setValueAtTime(startFreq, this.audioContext.currentTime);
+        
+        // If start and end frequencies are different, create a frequency ramp
+        if (startFreq !== endFreq) {
+          oscillator.frequency.linearRampToValueAtTime(
+            endFreq, 
+            this.audioContext.currentTime + duration
+          );
+        }
+        
+        // Set volume with fade in/out to avoid clicks
+        gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
+        gainNode.gain.linearRampToValueAtTime(volume, this.audioContext.currentTime + 0.05);
+        gainNode.gain.linearRampToValueAtTime(0, this.audioContext.currentTime + duration);
+        
+        // Connect nodes
+        oscillator.connect(gainNode);
+        gainNode.connect(this.audioContext.destination);
+        
+        // Play and automatically stop
+        oscillator.start();
+        oscillator.stop(this.audioContext.currentTime + duration);
+        
+        // Cleanup when done
+        oscillator.onended = () => {
+          oscillator.disconnect();
+          gainNode.disconnect();
+        };
+      } catch (error) {
+        console.error('Error playing audio feedback:', error);
+      }
+    },
     
     // ===== Reading Settings =====
     toggleDyslexiaMode() {
@@ -647,6 +791,17 @@ export default {
       this.saveUserPreferences();
     },
     
+    toggleAudioFeedback() {
+      this.audioFeedbackEnabled = !this.audioFeedbackEnabled;
+      
+      // Play feedback only if turning it ON (not when turning it off)
+      if (this.audioFeedbackEnabled) {
+        this.playAudioFeedback('toggle-on');
+      }
+      
+      this.saveUserPreferences();
+    },
+    
     // ===== User Preferences =====
     saveUserPreferences() {
       // Save all user preferences to localStorage
@@ -661,7 +816,8 @@ export default {
         isLargeCursor: this.isLargeCursor,
         isHighlightClickable: this.isHighlightClickable,
         textAlignment: this.textAlignment,
-        colorTheme: this.colorTheme
+        colorTheme: this.colorTheme,
+        audioFeedbackEnabled: this.audioFeedbackEnabled
       };
       
       localStorage.setItem('accessibilityPreferences', JSON.stringify(preferences));
