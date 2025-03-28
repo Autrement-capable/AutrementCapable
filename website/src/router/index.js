@@ -15,6 +15,7 @@ import Post from '../components/forum/PostPage.vue';
 import Forum from '../components/forum/ForumPage.vue';
 import CoursePage from "../components/CoursePage.vue";
 import ShapeSequenceGame from "../components/ShapeSequenceGame.vue";
+import SkillWheel from "@/components/SkillWheel.vue";
 
 const routes = [
   {
@@ -99,6 +100,11 @@ const routes = [
     name: "CoursePage",
     component: CoursePage,
   },
+  {
+    path: "/skill-wheel",
+    name: "SkillWheel",
+    component: SkillWheel,
+  }
 ];
 
 const router = createRouter({
