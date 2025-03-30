@@ -901,10 +901,12 @@ export default {
   width: 80px;
   height: 80px;
   transform: translate(-50%, -50%);
-  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+              opacity 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   opacity: 0;
   pointer-events: all;
   perspective: 1000px;
+  will-change: transform, opacity;
 }
 
 .game-orbit-button.game-orbit-appear {
@@ -921,7 +923,7 @@ export default {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
   border: 2px solid rgba(255, 64, 129, 0.3);
   box-shadow: 
@@ -930,6 +932,7 @@ export default {
   transform-style: preserve-3d;
   transform: scale(0);
   animation: gameButtonAppear 0.5s forwards;
+  will-change: transform;
 }
 
 @keyframes gameButtonAppear {
@@ -1023,7 +1026,7 @@ export default {
   transform: translate(-50%, -50%) scale(0);
   opacity: 0;
   pointer-events: none;
-  /* Utiliser une animation GPU-accelerated */
+  will-change: transform, opacity;
   animation: optimizedButtonFlash 0.4s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
 }
 
@@ -1039,7 +1042,7 @@ export default {
   transform: translate(-50%, -50%) scale(0);
   opacity: 0.7;
   pointer-events: none;
-  /* Animation plus courte et optimisée */
+  will-change: transform, opacity;
   animation: optimizedRippleEffect 0.4s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
 }
 
@@ -1214,6 +1217,7 @@ export default {
   animation: rippleEffect 0.6s ease-out;
   opacity: 0.7;
   pointer-events: none;
+  will-change: transform, opacity;
 }
 
 @keyframes rippleEffect {
@@ -1379,7 +1383,9 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+              background 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+              box-shadow 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   position: relative;
   cursor: pointer;
   border: 2px solid rgba(255, 255, 255, 0.1);
@@ -1389,6 +1395,14 @@ export default {
     inset 0 0 10px rgba(255, 255, 255, 0.05);
   transform-style: preserve-3d;
   overflow: visible;
+  will-change: transform;
+}
+
+.formations .glow-effect.pulse,
+.badges .glow-effect.pulse,
+.games .glow-effect.pulse,
+.profile .glow-effect.pulse {
+  will-change: transform, opacity, box-shadow;
 }
 
 .section-content:active {
@@ -1435,6 +1449,7 @@ export default {
   left: 0;
   opacity: 0;
   pointer-events: none;
+  will-change: opacity;
 }
 
 .formations .button-ring {
@@ -1463,17 +1478,11 @@ export default {
 
 @keyframes ringExpand {
   0% {
-    width: 100%;
-    height: 100%;
-    top: 0%;
-    left: 0%;
+    transform: scale(1);
     opacity: 0.7;
   }
   100% {
-    width: 200%;
-    height: 200%;
-    top: -50%;
-    left: -50%;
+    transform: scale(2);
     opacity: 0;
   }
 }
@@ -1490,9 +1499,11 @@ export default {
 .icon {
   color: white;
   z-index: 2;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+              filter 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.5));
   transform-style: preserve-3d;
+  will-change: transform, filter;
 }
 
 .section-content:hover .icon {
@@ -1544,8 +1555,10 @@ export default {
   );
   filter: blur(10px);
   opacity: 0.6;
-  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+              opacity 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   z-index: 1;
+  will-change: transform, opacity;
 }
 
 .formations .glow-effect {
@@ -1570,16 +1583,13 @@ export default {
 
 .glow-effect.pulse {
   animation: pulsate 3s infinite;
-  filter: blur(10px);
-  opacity: 0.8;
-  width: 110%;
-  height: 110%;
+  will-change: transform, opacity;
 }
 
 @keyframes pulsate {
-  0% { transform: scale(0.9); opacity: 0.6; filter: blur(8px); }
-  50% { transform: scale(1.1); opacity: 0.8; filter: blur(10px); }
-  100% { transform: scale(0.9); opacity: 0.6; filter: blur(8px); }
+  0% { transform: scale(0.9); opacity: 0.6; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+  100% { transform: scale(0.9); opacity: 0.6; }
 }
 
 .formations .glow-effect.pulse {
@@ -1685,6 +1695,8 @@ export default {
   border-radius: 50%;
   opacity: 0;
   pointer-events: none;
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 
 .formations .button-particle {

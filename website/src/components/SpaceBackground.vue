@@ -474,6 +474,7 @@ export default {
   height: 100%;
   z-index: 0;
   overflow: hidden;
+  contain: layout paint style;
 }
 
 /* Container pour tous les éléments spatiaux */
@@ -486,6 +487,7 @@ export default {
   overflow: hidden;
   pointer-events: none;
   z-index: 1;
+  will-change: transform;
 }
 
 /* 
@@ -550,6 +552,7 @@ export default {
   z-index: 2;
   opacity: 0;
   animation: cometAnimation 12s linear infinite;
+  will-change: transform, opacity;
 }
 
 .comet::after {
@@ -622,6 +625,7 @@ export default {
   opacity: 0.7;
   z-index: 1;
   animation: galaxyPulse 15s ease-in-out infinite alternate;
+  will-change: opacity, transform;
 }
 
 .galaxy::before, .galaxy::after {
@@ -659,6 +663,7 @@ export default {
   border-radius: 50%;
   z-index: 3;
   box-shadow: inset -15px -15px 40px rgba(0, 0, 0, 0.5);
+  will-change: transform;
 }
 
 /* Planète violette avec anneaux */
@@ -1121,6 +1126,7 @@ export default {
   opacity: 0.4;
   z-index: 2;
   animation: lightRayFlicker 8s ease-in-out infinite alternate;
+  will-change: opacity;
 }
 
 .light-ray-1 { left: 25%; transform: rotate(20deg) translateX(-50%); }
@@ -1143,6 +1149,7 @@ export default {
   opacity: 0;
   z-index: 3;
   backdrop-filter: blur(2px);
+  will-change: transform, opacity;
 }
 
 .bubble::after {
@@ -1283,7 +1290,7 @@ export default {
 .fish-school-2 {
   top: 55%;
   left: -200px;
-  animation-delay: 15s;
+  animation-delay: 12s;
 }
 
 .school-fish {
@@ -1308,7 +1315,15 @@ export default {
 .fish-school-1 .school-fish:nth-child(8n+7) { top: 45%; left: 50%; animation-delay: 1.2s; }
 .fish-school-1 .school-fish:nth-child(8n+8) { top: 65%; left: 45%; animation-delay: 1.4s; }
 
-/* Les poissons du second banc peuvent être générés de manière similaire */
+.fish-school-2 .school-fish:nth-child(8n+1) { top: 20%; left: 10%; animation-delay: 0s; }
+.fish-school-2 .school-fish:nth-child(8n+2) { top: 50%; left: 20%; animation-delay: 0.2s; }
+.fish-school-2 .school-fish:nth-child(8n+3) { top: 80%; left: 15%; animation-delay: 0.4s; }
+.fish-school-2 .school-fish:nth-child(8n+4) { top: 35%; left: 50%; animation-delay: 0.6s; }
+.fish-school-2 .school-fish:nth-child(8n+5) { top: 65%; left: 60%; animation-delay: 0.8s; }
+.fish-school-2 .school-fish:nth-child(8n+6) { top: 25%; left: 70%; animation-delay: 1.0s; }
+.fish-school-2 .school-fish:nth-child(8n+7) { top: 55%; left: 40%; animation-delay: 1.2s; }
+.fish-school-2 .school-fish:nth-child(8n+8) { top: 75%; left: 35%; animation-delay: 1.4s; }
+
 
 /* Poissons individuels */
 .fish {
@@ -1316,6 +1331,7 @@ export default {
   z-index: 3;
   border-radius: 70% 30% 30% 70% / 50%;
   animation: fishSwim 25s linear infinite;
+  will-change: transform;
 }
 
 .fish-1 {
@@ -1375,6 +1391,7 @@ export default {
   border-radius: 0 50% 50% 0 / 50%;
   transform-origin: left center;
   animation: fishTailWag 0.6s ease-in-out infinite alternate;
+  will-change: transform;
 }
 
 /* Algues */
@@ -1402,6 +1419,7 @@ export default {
   transform-origin: bottom center;
   position: relative;
   animation: seaweedSway 10s ease-in-out infinite alternate;
+  will-change: transform;
 }
 
 .seaweed-strand::after {
@@ -1591,6 +1609,7 @@ export default {
   letter-spacing: 2px;
   z-index: 5;
   animation: neonFlicker 3s infinite alternate;
+  will-change: opacity;
 }
 
 .neon-sign-1 {
@@ -1642,6 +1661,7 @@ export default {
   transform-style: preserve-3d;
   animation: gridRotate 60s linear infinite;
   z-index: 3;
+  will-change: transform;
 }
 
 .grid-horizontal, .grid-vertical {
@@ -1690,6 +1710,7 @@ export default {
     rgba(0, 0, 20, 0.9) 0%, 
     rgba(20, 20, 40, 0.8) 100%);
   animation: buildingLights 4s infinite alternate;
+  will-change: background;
 }
 
 .city-building::before {
@@ -1963,6 +1984,7 @@ export default {
   opacity: 0.4;
   z-index: 2;
   animation: sunbeamFlicker 12s ease-in-out infinite alternate;
+  will-change: opacity;
 }
 
 .sunbeam-1 { left: 25%; transform: rotate(20deg) translateX(-50%); }
@@ -1983,6 +2005,7 @@ export default {
   filter: blur(15px);
   z-index: 2;
   animation: mistFloat 30s ease-in-out infinite alternate;
+  will-change: transform;
 }
 
 .forest-mist-1 { bottom: 25%; left: -10%; height: 20%; }
@@ -2009,6 +2032,8 @@ export default {
   background-position: center;
   opacity: 0.8;
   animation: leafFall 15s linear infinite;
+  will-change: transform, opacity;
+  top: -20px;
 }
 
 /* Types de feuilles */
@@ -2199,6 +2224,7 @@ export default {
   height: 20px;
   z-index: 4;
   animation: butterflyFlight 30s linear infinite;
+  will-change: transform, opacity;
 }
 
 .butterfly-1 { top: 30%; left: -20px; }
@@ -2221,12 +2247,14 @@ export default {
   left: 0;
   transform: scaleX(-1) rotate(-30deg);
   animation: wingBeatLeft 0.3s ease-in-out infinite alternate;
+  will-change: transform;
 }
 
 .wing-right {
   right: 0;
   transform: rotate(30deg);
   animation: wingBeatRight 0.3s ease-in-out infinite alternate;
+  will-change: transform;
 }
 
 /* Oiseaux */
@@ -2240,6 +2268,7 @@ export default {
   background-position: center;
   z-index: 4;
   animation: birdFlight 40s linear infinite;
+  will-change: transform, opacity;
 }
 
 .bird-1 { top: 20%; left: -30px; }
@@ -2368,6 +2397,7 @@ export default {
   border-radius: 0 100% 0 0;
   transform-origin: bottom center;
   animation: grassSway 3s ease-in-out infinite alternate;
+  will-change: transform;
 }
 
 /* Fougères */
@@ -2428,6 +2458,7 @@ export default {
   filter: blur(1px);
   box-shadow: 0 0 10px 2px rgba(255, 255, 153, 0.8);
   animation: fireflyGlow 3s ease-in-out infinite alternate, fireflyHover 20s linear infinite;
+  will-change: opacity, transform;
 }
 
 /* 
