@@ -6,7 +6,7 @@
       <div class="click-outside-overlay" v-if="gamesZoomed" @click="exitGamesZoom"></div>
       <!-- Section Formations -->
       <div class="section formations" @mouseenter="activeSection = 'formations'" @mouseleave="activeSection = null">
-        <div class="section-content" :class="{ 'active': activeSection === 'formations' }">
+        <div class="section-content" ref="formationsContent" :class="{ 'active': activeSection === 'formations' }">
           <div class="button-particles" v-if="activeSection === 'formations'">
           <div v-for="i in 8" :key="'formation-particle-'+i" class="button-particle" 
             :style="generateParticleStyle()"></div>
@@ -27,7 +27,7 @@
 
       <!-- Section Badges -->
       <div class="section badges" @mouseenter="activeSection = 'badges'" @mouseleave="activeSection = null">
-				<div class="section-content" :class="{ 'active': activeSection === 'badges' }">
+				<div class="section-content" ref="badgesContent" :class="{ 'active': activeSection === 'badges' }">
 					<div class="button-particles" v-if="activeSection === 'badges'">
 						<div v-for="i in 8" :key="'badge-particle-'+i" class="button-particle" 
 								:style="generateParticleStyle()"></div>
@@ -49,7 +49,7 @@
 
       <!-- Section Jeux -->
       <div class="section games" @mouseenter="activeSection = 'games'" @mouseleave="activeSection = null">
-        <div class="section-content" :class="{ 'active': activeSection === 'games' }">
+        <div class="section-content" ref="gamesContent" :class="{ 'active': activeSection === 'games' }">
           <div class="button-particles" v-if="activeSection === 'games'">
             <div v-for="i in 8" :key="'game-particle-'+i" class="button-particle" 
               :style="generateParticleStyle()"></div>
@@ -85,14 +85,11 @@
       </div>
 
       <!-- Section Profil - Plus Immersive! -->
-      <div class="section profile" 
-				@mouseenter="activeSection = 'profile'" 
-				@mouseleave="activeSection = null"
-				:class="{ 'profile-highlight': activeSection === 'profile' }">
-			<div class="section-content" :class="{ 'active': activeSection === 'profile' }">
-				<div class="button-particles" v-if="activeSection === 'profile'">
-					<div v-for="i in 8" :key="'profile-particle-'+i" class="button-particle" 
-							:style="generateParticleStyle()"></div>
+      <div class="section profile" @mouseenter="activeSection = 'profile'" @mouseleave="activeSection = null" :class="{ 'profile-highlight': activeSection === 'profile' }">
+        <div class="section-content" ref="profileContent" :class="{ 'active': activeSection === 'profile' }">
+          <div class="button-particles" v-if="activeSection === 'profile'">
+            <div v-for="i in 8" :key="'profile-particle-'+i" class="button-particle" 
+                :style="generateParticleStyle()"></div>
           </div>
           <div class="button-ring"></div>
           <div class="icon-container" @click="openSection('profile')">
@@ -366,7 +363,7 @@ export default {
         { id: 3, title: 'Métiers', icon: 'game-icon-memory', url: '/metier/soudeur' },
         { id: 4, title: 'Asteroid Rush', icon: 'game-icon-asteroid' },
         { id: 5, title: 'Galaxy Match', icon: 'game-icon-quiz' },
-      ]
+      ],
     };
   },
   methods: {
@@ -438,20 +435,21 @@ export default {
     },
 
     generateParticleStyle() {
-			const duration = 1 + Math.random() * 1.5;
-			const delay = Math.random() * 0.5;
-			const size = 3 + Math.random() * 4;
-			
-			return {
-				left: 'calc(50% - ' + (size / 2) + 'px)',
-				top: 'calc(50% - ' + (size / 2) + 'px)',
-				width: size + 'px',
-				height: size + 'px',
-				transform: 'scale(0)',
-				opacity: '0',
-				animation: `particleExpand ${duration}s ease ${delay}s infinite`
-			};
-		},
+      const duration = 1 + Math.random() * 1.5;
+      const delay = Math.random() * 0.5;
+      const size = 3 + Math.random() * 4;
+      const halfSize = size / 2;
+      
+      return {
+        left: `calc(50% - ${halfSize}px)`,
+        top: `calc(50% - ${halfSize}px)`,
+        width: `${size}px`,
+        height: `${size}px`,
+        transform: 'scale(0)',
+        opacity: '0',
+        animation: `particleExpand ${duration}s ease ${delay}s infinite`
+      };
+    },
 
     
     // Génère un style aléatoire pour les particules d'arrière-plan
@@ -467,10 +465,10 @@ export default {
     },
 
     toggleGamesOrbit() {
-      // Utiliser une classe CSS au lieu d'ajouter/supprimer des éléments DOM
-      const sectionEl = document.querySelector(`.section.games .section-content`);
+      const sectionEl = this.$refs.gamesContent;
+  
       if (sectionEl) {
-        // Ajouter la classe pour l'animation et la supprimer après l'animation
+
         sectionEl.classList.add('button-animate');
         
         // Utiliser requestAnimationFrame pour une animation plus fluide
@@ -479,11 +477,11 @@ export default {
           if (window.navigator && window.navigator.vibrate) {
             window.navigator.vibrate(50);
           }
-          
-          // Supprimer la classe après l'animation
+
+          // Remove the class after animation completes
           setTimeout(() => {
             sectionEl.classList.remove('button-animate');
-          }, 400); // Réduit de 600ms à 400ms pour une animation plus rapide
+          }, 400);
         });
       }
       
@@ -557,27 +555,32 @@ export default {
         return;
       }
 			// Create a ripple effect element
-			const ripple = document.createElement('div');
-			ripple.className = 'button-ripple';
-			
-			// Find the section element
-			const sectionEl = document.querySelector(`.section.${section} .section-content`);
-			if (sectionEl) {
-				sectionEl.appendChild(ripple);
-				
-				// Trigger ripple animation
-				setTimeout(() => {
-					ripple.remove();
-				}, 600);
-				
-				// Add haptic feedback if available
-				if (window.navigator && window.navigator.vibrate) {
-					window.navigator.vibrate(50);
-				}
-			}
+			const sectionEl = this.$refs[`${section}Content`] || 
+                    document.querySelector(`.section.${section} .section-content`);
+      if (sectionEl) {
+        const ripple = document.createElement('div');
+        ripple.className = 'button-ripple';
+        
+        // Add the ripple to the section
+        sectionEl.appendChild(ripple);
+        
+        // Use requestAnimationFrame for smoother animation
+        requestAnimationFrame(() => {
+          // Add haptic feedback if available
+          if (window.navigator && window.navigator.vibrate) {
+            window.navigator.vibrate(50);
+          }
+          
+          // Remove the ripple after animation completes
+          setTimeout(() => {
+            if (ripple.parentNode === sectionEl) {
+              sectionEl.removeChild(ripple);
+            }
+          }, 600);
+        });
+      }
 
       if (section === 'formations') {
-        // Si vous utilisez Vue Router
         this.$router.push('/formation');
 
         // Réduire la notification
@@ -588,7 +591,6 @@ export default {
       }
 
       if (section === 'profile') {
-        // Si vous utilisez Vue Router
         this.$router.push('/user-profile');
         
         // Réduire la notification
@@ -599,7 +601,6 @@ export default {
       }
 
       if (section === 'badges') {
-        // Si vous utilisez Vue Router
         this.$router.push('/badges');
  
         // Réduire la notification
@@ -622,8 +623,6 @@ export default {
       if (section === 'profile') {
         this.triggerProfileAnimation();
       }
-			
-			// Create a flash effect
 			
 			// Réduire la notification
 			if (this.notifications[section] > 0) {
@@ -713,7 +712,7 @@ export default {
     // Flag to track theme change achievement
     this.themeChangeAchieved = false;
     
-    // Simuler des notifications périodiques
+    // Simulate notifications periodically
     setInterval(() => {
       const sections = ['formations', 'badges', 'games', 'profile'];
       const randomSection = sections[Math.floor(Math.random() * sections.length)];
@@ -723,7 +722,7 @@ export default {
       }
     }, 30000);
     
-    // Simuler une récompense après un certain temps
+    // Simulate a reward after a certain time
     setTimeout(() => {
       const randomAchievement = this.achievements[Math.floor(Math.random() * this.achievements.length)];
       this.triggerAchievement(randomAchievement);
