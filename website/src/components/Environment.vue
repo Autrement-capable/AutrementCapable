@@ -281,12 +281,30 @@
                 </div>
                 
                 <div class="control-item">
-                  <label>Niveau de détails/objets:</label>
-                  <div class="radio-group">
-                    <label><input type="radio" v-model="clutterLevel" value="minimal" @change="updateClutterLevel"> Minimal</label>
-                    <label><input type="radio" v-model="clutterLevel" value="moderate" @change="updateClutterLevel"> Modéré</label>
-                    <label><input type="radio" v-model="clutterLevel" value="detailed" @change="updateClutterLevel"> Détaillé</label>
+                  <label>Catégorie d'objets:</label>
+                  <div class="object-categories">
+                    <div v-for="category in objectCategories" 
+                        :key="category.id"
+                        @click="selectedObjectCategory = category.id; updateClutterLevel();"
+                        :class="['category-option', { selected: selectedObjectCategory === category.id }]">
+                      <div class="category-icon">
+                        <!-- Vous pouvez ajouter des icônes spécifiques pour chaque catégorie -->
+                        <span v-if="category.id === 'minimal'">🪑</span>
+                        <span v-else-if="category.id === 'moderate'">🪑📚</span>
+                        <span v-else-if="category.id === 'detailed'">🪑📚🛋️</span>
+                        <span v-else-if="category.id === 'bedroom'">🛏️</span>
+                        <span v-else-if="category.id === 'livingroom'">🛋️</span>
+                        <span v-else-if="category.id === 'office'">💼</span>
+                      </div>
+                      <div class="category-label">{{ category.label }}</div>
+                    </div>
                   </div>
+                </div>
+                <div v-if="modelsLoading" class="loading-indicator">
+                  <div class="loading-bar">
+                    <div class="loading-progress" :style="{ width: loadingProgress + '%' }"></div>
+                  </div>
+                  <div class="loading-text">Chargement des objets...</div>
                 </div>
                 
                 <div class="tab-navigation">
@@ -399,7 +417,19 @@ export default {
         title: '',
         description: ''
       },
-      
+      objectCategories: [
+        { id: 'minimal', label: 'Minimal' },
+        { id: 'moderate', label: 'Modéré' },
+        { id: 'detailed', label: 'Détaillé' },
+        { id: 'bedroom', label: 'Chambre' },
+        { id: 'livingroom', label: 'Salon' },
+        { id: 'office', label: 'Bureau' }
+      ],
+
+      selectedObjectCategory: 'minimal',
+      modelsLoading: false,
+      loadingProgress: 0,
+
       // Onglets de contrôle
       controlTabs: [
         { id: 'light', label: 'Lumière', order: 1 },
@@ -1219,38 +1249,88 @@ export default {
       if (!this.renderer || !this.rendererInitialized) return;
       
       try {
-        // D'abord, effacer tous les meubles existants
-        this.renderer.clearFurniture();
+        // Indiquer que le chargement est en cours
+        this.modelsLoading = true;
+        this.loadingProgress = 0;
         
-        // Ajouter des meubles en fonction du niveau de détail
-        switch(this.clutterLevel) {
-          case "minimal":
-            // Juste 1-2 éléments essentiels
-            this.renderer.addFurniture('desk');
-            this.renderer.addFurniture('chair');
-            break;
-          case "moderate":
-            // Quantité modérée
-            this.renderer.addFurniture('desk');
-            this.renderer.addFurniture('chair');
-            this.renderer.addFurniture('bookshelf');
-            break;
-          case "detailed":
-            // Plus d'objets pour plus de complexité visuelle
-            this.renderer.addFurniture('desk');
-            this.renderer.addFurniture('chair');
-            this.renderer.addFurniture('bookshelf');
-            this.renderer.addFurniture('sofa');
-            this.renderer.addFurniture('chair');
-            break;
-        }
+        // Effacer tous les objets existants
+        this.renderer.clearRoomObjects();
         
-        // Synchroniser les données de meubles
-        this.syncFurnitureData();
-        this.saveCurrentCustomization('space');
+        // Charger les nouveaux objets selon la catégorie sélectionnée
+        this.renderer.loadObjectsByCategory(this.selectedObjectCategory)
+          .then(() => {
+            // Chargement terminé
+            this.modelsLoading = false;
+            this.loadingProgress = 100;
+            
+            // Synchroniser les données
+            this.syncFurnitureData();
+            this.saveCurrentCustomization('space');
+          })
+          .catch(error => {
+            console.error("Erreur lors du chargement des objets 3D:", error);
+            this.modelsLoading = false;
+            
+            // En cas d'erreur, revenir à la méthode traditionnelle d'ajout de meubles
+            this.fallbackToTraditionalFurniture();
+          });
+        
       } catch (error) {
         console.error("Erreur lors de la mise à jour du niveau de détail:", error);
+        this.modelsLoading = false;
+        this.fallbackToTraditionalFurniture();
       }
+    },
+
+    fallbackToTraditionalFurniture() {
+      if (!this.renderer || !this.rendererInitialized) return;
+      
+      // Effacer tous les meubles existants
+      this.renderer.clearFurniture();
+      
+      // Ajouter des meubles en fonction de la catégorie sélectionnée
+      switch(this.selectedObjectCategory) {
+        case "minimal":
+          // Juste 1-2 éléments essentiels
+          this.renderer.addFurniture('desk');
+          this.renderer.addFurniture('chair');
+          this.renderer.addFurniture('lightbulb');
+          break;
+        case "moderate":
+        case "office":
+          // Quantité modérée
+          this.renderer.addFurniture('desk');
+          this.renderer.addFurniture('chair');
+          this.renderer.addFurniture('bookshelf');
+          this.renderer.addFurniture('lightbulb');
+          break;
+        case "detailed":
+          // Plus d'objets pour plus de complexité visuelle
+          this.renderer.addFurniture('desk');
+          this.renderer.addFurniture('chair');
+          this.renderer.addFurniture('bookshelf');
+          this.renderer.addFurniture('sofa');
+          this.renderer.addFurniture('chair');
+          this.renderer.addFurniture('lightbulb');
+          break;
+        case "bedroom":
+          // Mobilier de chambre
+          this.renderer.addFurniture('sofa'); // Représente un lit
+          this.renderer.addFurniture('desk'); // Représente une commode
+          this.renderer.addFurniture('lightbulb');
+          break;
+        case "livingroom":
+          // Mobilier de salon
+          this.renderer.addFurniture('sofa');
+          this.renderer.addFurniture('sofa');
+          this.renderer.addFurniture('desk'); // Représente une table basse
+          this.renderer.addFurniture('lightbulb');
+          break;
+      }
+      
+      // Synchroniser les données de meubles
+      this.syncFurnitureData();
+      this.saveCurrentCustomization('space');
     },
 
     // Enregistrer le feedback et marquer l'environnement comme complété
@@ -1663,6 +1743,72 @@ export default {
   margin-bottom: 30px;
   color: #555;
   line-height: 1.5;
+}
+
+.object-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.category-option {
+  width: calc(33% - 7px);
+  background: #f8f8f8;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.category-option:hover {
+  background: #f0f0f0;
+  transform: translateY(-2px);
+}
+
+.category-option.selected {
+  border-color: #2b6bff;
+  background: #e6f0ff;
+}
+
+.category-icon {
+  font-size: 24px;
+  margin-bottom: 5px;
+}
+
+.category-label {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.loading-indicator {
+  margin-top: 15px;
+  padding: 10px;
+  background: #f8f8f8;
+  border-radius: 8px;
+}
+
+.loading-bar {
+  height: 8px;
+  background: #eee;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 5px;
+}
+
+.loading-progress {
+  height: 100%;
+  background: #2b6bff;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.loading-text {
+  font-size: 0.8rem;
+  color: #666;
+  text-align: center;
 }
 
 .activity-explanation {
