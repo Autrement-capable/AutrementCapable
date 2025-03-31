@@ -115,10 +115,7 @@
               v-for="tab in controlTabs" 
               :key="tab.id"
               @click="selectTab(tab.id)"
-              :class="['tab-button', { 
-                active: activeControlTab === tab.id,
-                completed: completedTabs.includes(tab.id),
-              }]"
+              :class="'tab-button'"
             >
               {{ tab.label }}
             </button>
@@ -407,8 +404,8 @@ export default {
       controlTabs: [
         { id: 'light', label: 'Lumière', order: 1 },
         { id: 'colors', label: 'Couleurs', order: 2 },
-        { id: 'sounds', label: 'Sons', order: 3 },
-        { id: 'space', label: 'Espace', order: 4 },
+        { id: 'space', label: 'Espace', order: 3 },
+        { id: 'sounds', label: 'Sons', order: 4 },
         { id: 'feedback', label: 'Ressenti', order: 5 }
       ],
       

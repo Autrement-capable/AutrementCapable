@@ -361,7 +361,7 @@ export default {
         { id: 1, title: 'Roue Competences', icon: 'game-icon-galaxy', url: '/roue-des-competences' },
         { id: 2, title: 'Scenarios', icon: 'game-icon-puzzle', url: '/scenarios' },
         { id: 3, title: 'Métiers', icon: 'game-icon-memory', url: '/metier/soudeur' },
-        { id: 4, title: 'Asteroid Rush', icon: 'game-icon-asteroid' },
+        { id: 4, title: 'Environnement', icon: 'game-icon-asteroid', url: '/environment' },
         { id: 5, title: 'Galaxy Match', icon: 'game-icon-quiz' },
       ],
     };

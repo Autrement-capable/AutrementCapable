@@ -13,7 +13,7 @@ export default class RoomRenderer {
       this.furnitureMeshes = [];
       this.directionalLight = null;
       this.light = null;
-      this.lightHelper = null;
+      this.light2 = null;
       this.ambientLight = null;
       this.peopleMeshes = [];
       
@@ -103,13 +103,14 @@ export default class RoomRenderer {
     
     setupLighting() {
       const { THREE } = this;
-      const { width, height,  } = this.room;
+      const { width, height, depth  } = this.room;
       const { color, intensity, ambient } = this.lighting;
 
-      this.light = new THREE.PointLight(0xffffff, 20, 500, 0.2);
-      this.light.position.set(width/2, height/2, 0.2);
-      this.lightHelper = new THREE.PointLightHelper(this.light, 0.5);
-      this.scene.add(this.light, this.lightHelper);
+      this.light = new THREE.PointLight(0xffffff, 1, 500, 0.2);
+      this.light.position.set(width/2, height, depth/2);
+      this.light2 = new THREE.PointLight(0xffffff, 1, 500, 0.2);
+      this.light2.position.set(width/2, height/2, 0.2);
+      this.scene.add(this.light, this.light2);
       
       // Ambient light
       this.ambientLight = new THREE.AmbientLight(color, intensity * 0.5);
