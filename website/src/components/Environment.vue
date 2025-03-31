@@ -3,7 +3,7 @@
     <!-- Écran de bienvenue optimisé et plus compact -->
     <div v-if="!activityStarted" class="welcome-screen">
       <div class="welcome-content">
-        <h1>Découvre tes sensations</h1>
+        <h1>Découvre ton environnement préféré</h1>
         
         <p class="intro-text">Tu vas découvrir ce que tu aimes et ce que tu n'aimes pas.</p>
         
@@ -14,8 +14,8 @@
             <div class="explanation-step">
               <div class="step-number">1</div>
               <div class="step-content">
-                <h3>Visite 5 endroits</h3>
-                <div class="step-image2">
+                <h3>Choisi 1 endroit parmi 5</h3>
+                <div class="step-image">
                   <img src="/images/maison_coloré.png" alt="Maisons colorées" />
                 </div>
               </div>
@@ -59,39 +59,29 @@
     </div>
     
     <!-- Section principale avec les environnements -->
-    <div v-else class="main-interface">
-      <!-- Progression du parcours -->
-      <div class="progress-bar-container">
-        <div class="progress-steps">
-          <div 
-            v-for="(env, index) in environments" 
-            :key="index"
-            :class="['progress-step', { 
-              'completed': completedEnvironments.includes(index),
-              'current': currentEnvironmentIndex === index 
-            }]"
-            @click="goToEnvironment(index)"
-          >
-            <div class="step-dot"></div>
-            <div class="step-label">{{ env.name }}</div>
+    <div v-else class="main-interface">      
+      <!-- Sélecteur d'environnement (désormais visible) -->
+      <div v-if="showEnvironmentSelector" class="environment-selector-overlay">
+        <div class="environment-selector-container">
+          <h2>Choisis ton espace</h2>
+          <div class="environment-selector">
+            <div 
+              v-for="(env, index) in environments" 
+              :key="index"
+              @click="selectEnvironment(index); hideEnvironmentSelector();"
+              :class="['environment-card', { active: currentEnvironmentIndex === index }]"
+            >
+              <div class="env-card-header">
+                <div class="env-icon">{{ env.icon }}</div>
+                <div class="env-card-color" :style="{ backgroundColor: env.previewColor }"></div>
+              </div>
+              <h3>{{ env.name }}</h3>
+              <p>{{ env.shortDescription }}</p>
+            </div>
           </div>
-        </div>
-        <div class="progress-line">
-          <div class="progress-filled" :style="{ width: progressPercentage + '%' }"></div>
-        </div>
-      </div>
-      
-      <!-- Sélection d'environnement (masqué visuellement mais gardé pour la structure) -->
-      <div class="environment-selector" style="display: none;">
-        <div 
-          v-for="(env, index) in environments" 
-          :key="index"
-          @click="selectEnvironment(index)"
-          :class="['environment-card', { active: currentEnvironmentIndex === index }]"
-        >
-          <div class="env-card-color" :style="{ backgroundColor: env.previewColor }"></div>
-          <h3>{{ env.name }}</h3>
-          <p>{{ env.shortDescription }}</p>
+          <button @click="hideEnvironmentSelector" class="secondary-button">
+            Fermer
+          </button>
         </div>
       </div>
       
@@ -112,16 +102,9 @@
         <div class="environment-controls">
           <div class="environment-header">
             <h2>{{ currentEnvironment.name }}</h2>
-            <div class="step-indicator">
-              <span>Étape {{ currentStep }} sur 5</span>
-              <div class="step-dots">
-                <div 
-                  v-for="step in 5" 
-                  :key="step"
-                  :class="['step-dot', { active: currentStep >= step }]"
-                ></div>
-              </div>
-            </div>
+            <button @click="toggleEnvironmentSelector" class="guide-button">
+              Changer
+            </button> 
           </div>
           
           <p class="env-description">{{ currentEnvironment.description }}</p>
@@ -135,9 +118,7 @@
               :class="['tab-button', { 
                 active: activeControlTab === tab.id,
                 completed: completedTabs.includes(tab.id),
-                disabled: !isTabAccessible(tab.id)
               }]"
-              :disabled="!isTabAccessible(tab.id)"
             >
               {{ tab.label }}
             </button>
@@ -158,7 +139,7 @@
                     type="range" 
                     v-model.number="lightIntensity" 
                     min="0.2" 
-                    max="3" 
+                    max="8" 
                     step="0.1" 
                     @change="updateLighting" 
                   />
@@ -187,8 +168,8 @@
                 </div>
                 
                 <div class="tab-navigation">
-                  <button @click="completeCurrentTab" class="next-button">
-                    Continuer vers les couleurs
+                  <button @click="saveCurrentCustomization('light')" class="guide-button">
+                    Sauvegarder
                   </button>
                 </div>
               </div>
@@ -224,11 +205,8 @@
                 </div>
                 
                 <div class="tab-navigation">
-                  <button @click="goToPreviousTab" class="prev-button">
-                    Retour
-                  </button>
-                  <button @click="completeCurrentTab" class="next-button">
-                    Continuer vers les sons
+                  <button @click="saveCurrentCustomization('colors')" class="guide-button">
+                    Sauvegarder
                   </button>
                 </div>
               </div>
@@ -268,18 +246,15 @@
                     type="range" 
                     v-model.number="peopleCount" 
                     min="0" 
-                    max="20" 
+                    max="15" 
                     step="1" 
                     @change="updatePeopleCount" 
                   />
                 </div>
                 
                 <div class="tab-navigation">
-                  <button @click="goToPreviousTab" class="prev-button">
-                    Retour
-                  </button>
-                  <button @click="completeCurrentTab" class="next-button">
-                    Continuer vers l'espace
+                  <button @click="saveCurrentCustomization('sounds')" class="guide-button">
+                    Sauvegarder
                   </button>
                 </div>
               </div>
@@ -318,11 +293,8 @@
                 </div>
                 
                 <div class="tab-navigation">
-                  <button @click="goToPreviousTab" class="prev-button">
-                    Retour
-                  </button>
-                  <button @click="completeCurrentTab" class="next-button">
-                    Continuer vers le ressenti
+                  <button @click="saveCurrentCustomization('space')" class="guide-button">
+                    Sauvegarder
                   </button>
                 </div>
               </div>
@@ -356,15 +328,17 @@
                 </div>
                 
                 <div class="tab-navigation">
-                  <button @click="goToPreviousTab" class="prev-button">
-                    Retour
-                  </button>
-                  <button @click="completeEnvironment" class="next-button" :disabled="!getCurrentFeedback().mood">
-                    {{ isLastEnvironment ? 'Terminer le parcours' : 'Passer à l\'environnement suivant' }}
+                  <button @click="saveFeedback" class="primary-button2" :disabled="!getCurrentFeedback().mood">
+                    Enregistrer mon ressenti
                   </button>
                 </div>
               </div>
             </div>
+          </div>
+          <div class="finish-exploration">
+            <button @click="showFeedbackMessage = true" class="primary-button">
+              Terminer et voir mes préférences
+            </button>
           </div>
         </div>
       </div>
@@ -374,7 +348,7 @@
     <div v-if="showFeedbackMessage" class="feedback-overlay">
       <div class="feedback-message">
         <h3>Félicitations!</h3>
-        <p>Vous avez terminé l'exploration de tous les environnements sensoriels.</p>
+        <p>Vous avez exploré l'environnement sensoriel.</p>
         <div class="preference-summary">
           <h4>Résumé de vos préférences:</h4>
           <p><strong>Environnement préféré:</strong> {{ getFavoriteEnvironment() }}</p>
@@ -391,6 +365,7 @@
             <li>{{ getPersonalizedRecommendation(3) }}</li>
           </ul>
         </div>
+        <button @click="showFeedbackMessage = false" class="secondary-button">Retour à l'exploration</button>
         <button @click="restartExploration" class="primary-button">Recommencer l'exploration</button>
       </div>
     </div>
@@ -414,6 +389,7 @@ export default {
       activeControlTab: 'light',
       showFeedbackMessage: false,
       rendererInitialized: false,
+      showEnvironmentSelector: false,
       
       // Progression du parcours
       currentStep: 1,
@@ -449,6 +425,7 @@ export default {
           shortDescription: "Environnement optimisé pour le travail intellectuel",
           description: "Un espace conçu pour favoriser la concentration avec un éclairage adapté, des couleurs apaisantes et un minimum de distractions.",
           previewColor: "#4A90E2",
+          icon: "🧠",
           defaultSettings: {
             room: {
               width: 9, 
@@ -476,6 +453,7 @@ export default {
           shortDescription: "Zone calme pour se ressourcer",
           description: "Un environnement tranquille conçu pour apaiser les sens avec des tons doux, un éclairage tamisé et une ambiance sonore relaxante.",
           previewColor: "#66BB6A",
+          icon: "🌿",
           defaultSettings: {
             room: {
               width: 8, 
@@ -503,6 +481,7 @@ export default {
           shortDescription: "Pour les interactions en petit groupe",
           description: "Un espace conçu pour des interactions sociales maîtrisées avec un niveau de stimulation modéré et des zones de repli.",
           previewColor: "#FFA726",
+          icon: "👥",
           defaultSettings: {
             room: {
               width: 10, 
@@ -530,6 +509,7 @@ export default {
           shortDescription: "Stimulation sensorielle contrôlée",
           description: "Un environnement avec des stimuli sensoriels variés mais régulables, idéal pour explorer vos préférences sensorielles de façon sécurisée.",
           previewColor: "#AB47BC",
+          icon: "✨",
           defaultSettings: {
             room: {
               width: 11, 
@@ -557,6 +537,7 @@ export default {
           shortDescription: "Simulation d'espace public modéré",
           description: "Cet environnement simule un espace de transition comme un couloir ou un petit espace public avec un niveau de stimulation ajustable.",
           previewColor: "#26C6DA",
+          icon: "🚶",
           defaultSettings: {
             room: {
               width: 12, 
@@ -765,17 +746,22 @@ export default {
       if (!this.rendererInitialized) {
         this.initRenderer();
       }
+
+      this.showEnvironmentSelector = true;
       
       // Attendre un court délai avant de sélectionner l'environnement
       setTimeout(() => {
-        this.selectEnvironment(0);
-        
-        // Afficher le guide d'introduction à l'environnement
-        this.showGuideMessage({
-          title: "Bienvenue dans " + this.currentEnvironment.name,
-          description: "Commençons par ajuster la lumière de cet environnement. Utilisez les contrôles pour trouver l'éclairage qui vous convient le mieux."
-        });
+        this.createBasicRoom();
       }, 300);
+    },
+
+    toggleEnvironmentSelector() {
+      this.showEnvironmentSelector = !this.showEnvironmentSelector;
+    },
+    
+    // Masquer le sélecteur d'environnements
+    hideEnvironmentSelector() {
+      this.showEnvironmentSelector = false;
     },
     
     // Sélectionner un environnement
@@ -825,6 +811,12 @@ export default {
       } else {
         this.applyEnvironmentChanges();
       }
+
+      // Afficher le guide pour le nouvel environnement
+      this.showGuideMessage({
+        title: "Bienvenue dans " + this.currentEnvironment.name,
+        description: "Personnalisez cet environnement selon vos préférences en utilisant les onglets de contrôle."
+      });
     },
     
     // Naviguer vers un environnement spécifique
@@ -867,10 +859,8 @@ export default {
     
     // Sélectionner un onglet
     selectTab(tabId) {
-      if (this.isTabAccessible(tabId)) {
-        this.activeControlTab = tabId;
-        this.currentStep = this.controlTabs.find(tab => tab.id === tabId).order;
-      }
+      this.activeControlTab = tabId;
+      this.currentStep = this.controlTabs.find(tab => tab.id === tabId).order;
     },
     
     // Compléter l'onglet actuel et passer au suivant
@@ -1265,11 +1255,32 @@ export default {
         console.error("Erreur lors de la mise à jour du niveau de détail:", error);
       }
     },
+
+    // Enregistrer le feedback et marquer l'environnement comme complété
+    saveFeedback() {
+      const feedback = this.getCurrentFeedback();
+
+      console.log("Feedback enregistré:", feedback);
+      
+      if (!this.completedEnvironments.includes(this.currentEnvironmentIndex)) {
+        this.completedEnvironments.push(this.currentEnvironmentIndex);
+      }
+      
+      // Afficher un message de confirmation
+      this.showGuideMessage({
+        title: "Ressenti enregistré",
+        description: "Votre feedback sur cet environnement a été sauvegardé. Vous pouvez explorer d'autres environnements ou terminer l'activité."
+      });
+    },
     
     // Enregistrer les personnalisations actuelles
     saveCurrentCustomization(category) {
       const feedback = this.getCurrentFeedback();
       
+      if (!this.completedTabs.includes(category)) {
+        this.completedTabs.push(category);
+      }
+
       if (!feedback.customizations) {
         feedback.customizations = {};
       }
@@ -1510,14 +1521,16 @@ export default {
         };
       });
       
-      // Sélectionner le premier environnement
-      this.selectEnvironment(0);
+      this.showEnvironmentSelector = true;
+
+      // // Sélectionner le premier environnement
+      // this.selectEnvironment(0);
       
-      // Afficher le guide d'introduction
-      this.showGuideMessage({
-        title: "Bienvenue dans " + this.currentEnvironment.name,
-        description: "Commençons par ajuster la lumière de cet environnement. Utilisez les contrôles pour trouver l'éclairage qui vous convient le mieux."
-      });
+      // // Afficher le guide d'introduction
+      // this.showGuideMessage({
+      //   title: "Bienvenue dans " + this.currentEnvironment.name,
+      //   description: "Commençons par ajuster la lumière de cet environnement. Utilisez les contrôles pour trouver l'éclairage qui vous convient le mieux."
+      // });
     },
     
     // Méthodes de mise à jour du renderer
@@ -1604,12 +1617,9 @@ export default {
 
 <style scoped>
 .environment-container {
-  display: flex;
   height: 100vh;
-  width: 100%;
-  position: relative;
-  font-family: 'Glacial Indifference', sans-serif;
-}
+  overflow: hidden
+;}
 
 /* Écran de bienvenue */
 .welcome-screen {
@@ -1725,12 +1735,6 @@ export default {
 .step-image {
   align-self: center;
   margin-top: 8px;
-  width: 40%;
-}
-
-.step-image2 {
-  align-self: center;
-  margin-top: 8px;
   width: 50%;
 }
 
@@ -1784,10 +1788,10 @@ export default {
 
 /* Interface principale */
 .main-interface {
+  height: 100vh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  width: 100%;
-  height: 100%;
 }
 
 /* Barre de progression */
@@ -1866,18 +1870,20 @@ export default {
 
 /* Sélecteur d'environnement (masqué mais gardé pour la structure) */
 .environment-selector {
-  width: 220px;
-  background: #f8f9fa;
-  padding: 20px 10px;
-  overflow-y: auto;
-  border-right: 1px solid #e9ecef;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  margin: 15px 0;
+  width: 100%;
 }
 
 /* Vue de l'environnement */
 .environment-view {
-  flex-grow: 1;
+  height: calc(100vh); /* Hauteur totale de la fenêtre moins une marge de sécurité */
+  overflow: hidden;
   display: flex;
-  position: relative;
 }
 
 .room-visualization {
@@ -1892,38 +1898,89 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.3);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   z-index: 10;
+  padding-top: 10%; /* Espace en haut */
+  backdrop-filter: blur(3px); /* Effet de flou léger */
+  animation: fadeIn 0.3s ease-out;
+  will-change: opacity;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .guide-content {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  max-width: 80%;
+  background: linear-gradient(to bottom, #ffffff, #f7f9ff);
+  padding: 20px 25px;
+  border-radius: 20px;
+  max-width: 500px;
+  width: 90%;
   text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(58, 87, 232, 0.1);
+  border-top: 4px solid #4caf50;
+  position: relative;
+  animation: slideDown 0.4s ease-out;
+  transform-origin: top center;
+  will-change: transform, opacity;
+}
+
+@keyframes slideDown {
+  from { 
+    transform: translateY(-20px) scale(0.95);
+    opacity: 0; 
+  }
+  to { 
+    transform: translateY(0) scale(1);
+    opacity: 1; 
+  }
+}
+
+.guide-content::before {
+  content: "💡";  /* Icône d'ampoule */
+  position: absolute;
+  top: -15px;
+  left: 20px;
+  font-size: 24px;
+  background: white;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .guide-content h3 {
-  margin: 0 0 10px;
-  color: #3a57e8;
+  margin: 0 0 12px;
+  color: #2b6bff;
+  font-size: 1.3rem;
+  font-weight: bold;
 }
 
 .guide-content p {
   margin: 0 0 20px;
   color: #555;
+  font-size: 1.05rem;
+  line-height: 1.4;
 }
 
 .guide-button {
-  padding: 8px 15px;
-  background: #3a57e8;
+  padding: 10px 20px;
+  background: #4caf50;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 50px;
   cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: transform 0.2s, background 0.2s;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
 }
 
 /* Contrôles de l'environnement */
@@ -1931,7 +1988,7 @@ export default {
   width: 320px;
   background: white;
   box-shadow: -2px 0 10px rgba(0, 0, 0, 0.05);
-  padding: 20px;
+  padding: 10px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -2002,10 +2059,9 @@ export default {
   color: #666;
   transition: all 0.2s;
   margin-right: 5px;
-  position: relative;
 }
 
-.tab-button:hover:not(.disabled) {
+.tab-button:hover {
   color: #333;
 }
 
@@ -2037,7 +2093,6 @@ export default {
 
 /* Contenu des onglets */
 .control-panel {
-  margin-bottom: 20px;
   padding-top: 20px;
 }
 
@@ -2286,6 +2341,22 @@ select, textarea, input[type="text"] {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
+.primary-button2 {
+  width: auto;
+  height: 60%;
+  padding: 12px 20px;
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  font-weight: bold;
+  transition: transform 0.2s, background 0.2s;
+  margin: 15px auto 0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
 .primary-button:hover {
   background: #3d8b40;
   transform: scale(1.05);
@@ -2372,6 +2443,170 @@ select, textarea, input[type="text"] {
 .recommendation-box li {
   margin-bottom: 10px;
   color: #333;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background: white;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.main-title {
+  margin: 0;
+  color: #2b6bff;
+  font-size: 1.5rem;
+}
+
+.change-env-button {
+  padding: 8px 15px;
+  background: #3a57e8;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.change-env-button:hover {
+  background: #304dc9;
+}
+
+.change-env-button-small {
+  padding: 5px 10px;
+  background: #f0f0f0;
+  color: #555;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.change-env-button-small:hover {
+  background: #e0e0e0;
+}
+
+.environment-selector-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  backdrop-filter: blur(3px);
+}
+
+.environment-selector-container {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 900px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.environment-selector-container h2 {
+  color: #2b6bff;
+  margin-top: 0;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.environment-selector {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  margin: 15px 0;
+}
+
+.environment-card {
+  flex: 0 1 calc(33.333% - 20px); /* Pour avoir 3 cartes par ligne */
+  min-width: 220px; /* Largeur minimale pour les petits écrans */
+  max-width: 280px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  margin-bottom: 15px;
+}
+
+.environment-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.environment-card.active {
+  border: 2px solid #3a57e8;
+}
+
+.env-card-color {
+  height: 100px;
+  width: 100%;
+}
+
+.environment-card h3 {
+  margin: 10px 15px;
+  color: #333;
+}
+
+.environment-card p {
+  margin: 0 15px 15px;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.env-card-header {
+  position: relative;
+}
+
+.env-icon {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 24px;
+  background: rgba(255, 255, 255, 0.9);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.secondary-button {
+  padding: 10px 15px;
+  background: #f0f0f0;
+  color: #555;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  display: block;
+  margin: 0 auto;
+}
+
+.secondary-button:hover {
+  background: #e0e0e0;
+}
+
+.finish-exploration {
+  text-align: center;
 }
 
 /* Responsive */
