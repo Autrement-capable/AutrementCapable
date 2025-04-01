@@ -1,6 +1,6 @@
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, status, Response
 from pydantic import BaseModel, EmailStr
-from server.jwt_config.token_creation import create_token, JWTBearer
+from server.jwt_config.token_creation import create_token, JWTBearer, set_refresh_cookie
 from database.postgress.actions.user import create_user, login_user, get_available_usernames, del_uvf_user
 from mail.actions.verify_account import send_verification_email
 from server.server import AddRouter
@@ -18,7 +18,7 @@ class LoginForm(BaseModel):
 
 class LoginResponse(BaseModel):
     access_token: str
-    refresh_token: str
+    message: str = "Login successful"
 
 class RegisterForm(BaseModel):
     first_name: str
@@ -30,24 +30,30 @@ class RegisterForm(BaseModel):
     password: str
 
 @router.post("/login", response_model=LoginResponse)
-async def login(form: LoginForm, session: AsyncSession = Depends(GetSession)):
+async def login(form: LoginForm, response: Response, session: AsyncSession = Depends(GetSession)):
     """
-    Login a user and return an access token and a refresh token
+    Login a user and return an access token.
+    The refresh token is automatically stored in an HTTP-only cookie.
     """
-
     user = await login_user(session, form.password, form.username_or_email)
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     if user.verification_details is not None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account not verified")
+
+    # Create tokens
     access_token = create_token(user.id, user.role_id, refresh=False, fresh=True)
     refresh_token = create_token(user.id, user.role_id, refresh=True, fresh=True)
-    return {"access_token": access_token, "refresh_token": refresh_token}
+
+    # Set refresh token in HTTP-only cookie
+    set_refresh_cookie(response, refresh_token)
+
+    return {"access_token": access_token, "message": "Login successful"}
 
 @router.post("/register")
 async def register(form: RegisterForm, session: AsyncSession = Depends(GetSession)):
     """
-    Register a new user and return an access token and a refresh token
+    Register a new user and send verification email
     """
     test,_ = await get_available_usernames(session, form.username, 0)
     if not test:
@@ -68,7 +74,6 @@ async def register(form: RegisterForm, session: AsyncSession = Depends(GetSessio
             raise # propagate the error
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to send verification email")
     return {"message": "Verification email sent"}
-
 
 @router.get("/check_username")
 async def check_username(username: str, session:AsyncSession = Depends(GetSession)):

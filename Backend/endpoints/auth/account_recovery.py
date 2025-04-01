@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, Request, HTTPException
-from server.jwt_config.token_creation import create_token, JWTBearer
+from fastapi import APIRouter, Depends, Request, HTTPException, Response
+from server.jwt_config.token_creation import create_token, JWTBearer, set_refresh_cookie
 from pydantic import BaseModel, Field, EmailStr
 from utils.password import hash_password
 from database.postgress.config import getSession as GetSession
 from database.postgress.actions.acc_recovery import get_acc_recovery_by_token, del_acc_recovery, create_acc_recovery
+from database.postgress.actions.user import get_user_by_id
 
 from server.server import AddRouter
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,7 +19,7 @@ class ResetForm(BaseModel):
 
 class TokenResponse(BaseModel):
     access_token: str = Field(..., title="The access token.", description="The access token for the user.")
-    refresh_token: str = Field(..., title="The refresh token.", description="The refresh token for the user.")
+    message: str = Field("Password reset successful", description="Success message")
 
 @router.get("/is-valid-reset", response_model=dict, responses={200: {"valid": True}, 404: {"valid": False}})
 async def is_valid_reset(request: Request, token: str, session: AsyncSession = Depends(GetSession)):
@@ -32,9 +33,16 @@ async def is_valid_reset(request: Request, token: str, session: AsyncSession = D
     return {"valid": True}
 
 @router.post("/reset-password", response_model=TokenResponse)
-async def reset_password(request: Request, form: ResetForm, session: AsyncSession = Depends(GetSession)):
+async def reset_password(
+    request: Request, 
+    form: ResetForm, 
+    response: Response,
+    session: AsyncSession = Depends(GetSession)
+):
     """
     Reset a user's password.
+
+    The refresh token is automatically stored in an HTTP-only cookie.
     """
     reset = await get_acc_recovery_by_token(session, form.token)
     if not reset or reset.token_expires < datetime.now():
@@ -52,16 +60,22 @@ async def reset_password(request: Request, form: ResetForm, session: AsyncSessio
 
     access_token = create_token(user.id, user.role_id, refresh=False, fresh=True)
     refresh_token = create_token(user.id, user.role_id, refresh=True, fresh=True)
-    await del_acc_recovery(session, reset)
-    return {"access_token": access_token, "refresh_token": refresh_token}
 
-## WIP in the future will require fresh access token. i need to figure out how to make
-## that work with passkeys
+    # Set refresh token in HTTP-only cookie
+    set_refresh_cookie(response, refresh_token)
+
+    await del_acc_recovery(session, reset)
+    return {"access_token": access_token, "message": "Password reset successful"}
+
 @router.get("/create-account-recovery", response_model=dict,
 responses={200: {"message": "Account recovery created."}}, tags=["Auth"])
-async def create_account_recovery(request: Request, session: AsyncSession = Depends(GetSession), JWT: dict = Depends(JWTBearer())):
+async def create_account_recovery(
+    request: Request, 
+    session: AsyncSession = Depends(GetSession), 
+    JWT: dict = Depends(JWTBearer())
+):
     """
-    Create an account recovery for a user. (Used when tranfering to a new device that does not have registered passkeys)
+    Create an account recovery for a user. (Used when transferring to a new device that does not have registered passkeys)
     """
     payload = JWT["payload"]
     user_id = payload["sub"]
@@ -74,5 +88,5 @@ async def create_account_recovery(request: Request, session: AsyncSession = Depe
     if not recovery_code:
         raise HTTPException(status_code=500, detail="An error occurred while creating the account recovery.")
     return {"recover_code": recovery_code.reset_token}
-AddRouter(router)
 
+AddRouter(router)
