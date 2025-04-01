@@ -1161,7 +1161,6 @@ export default {
         this.loadingProgress = 0;
         
         // Effacer tous les objets existants
-        this.renderer.clearRoomObjects();
         
         // Charger les nouveaux objets selon la catégorie sélectionnée
         this.renderer.loadObjectsByCategory(this.selectedObjectCategory)
@@ -1177,113 +1176,12 @@ export default {
           .catch(error => {
             console.error("Erreur lors du chargement des objets 3D:", error);
             this.modelsLoading = false;
-            
-            // En cas d'erreur, revenir à la méthode traditionnelle d'ajout de meubles
-            this.fallbackToTraditionalFurniture();
           });
         
       } catch (error) {
         console.error("Erreur lors de la mise à jour du niveau de détail:", error);
         this.modelsLoading = false;
-        this.fallbackToTraditionalFurniture();
       }
-    },
-
-    fallbackToTraditionalFurniture() {
-      if (!this.renderer || !this.rendererInitialized) return;
-      
-      // Effacer tous les meubles existants
-      this.renderer.clearFurniture();
-      
-      // Ajouter des meubles en fonction de la catégorie sélectionnée
-      switch(this.selectedObjectCategory) {
-        case "minimal":
-          // Juste 1-2 éléments essentiels
-          this.renderer.addFurniture('desk');
-          this.renderer.addFurniture('chair');
-          this.renderer.addFurniture('lightbulb');
-          break;
-        case "moderate":
-        case "office":
-          // Quantité modérée
-          this.renderer.addFurniture('desk');
-          this.renderer.addFurniture('chair');
-          this.renderer.addFurniture('bookshelf');
-          this.renderer.addFurniture('lightbulb');
-          break;
-        case "detailed":
-          // Plus d'objets pour plus de complexité visuelle
-          this.renderer.addFurniture('desk');
-          this.renderer.addFurniture('chair');
-          this.renderer.addFurniture('bookshelf');
-          this.renderer.addFurniture('sofa');
-          this.renderer.addFurniture('chair');
-          this.renderer.addFurniture('lightbulb');
-          break;
-        case "bedroom":
-          // Mobilier de chambre
-          this.renderer.addFurniture('sofa'); // Représente un lit
-          this.renderer.addFurniture('desk'); // Représente une commode
-          this.renderer.addFurniture('lightbulb');
-          break;
-        case "livingroom":
-          // Mobilier de salon
-          this.renderer.addFurniture('sofa');
-          this.renderer.addFurniture('sofa');
-          this.renderer.addFurniture('desk'); // Représente une table basse
-          this.renderer.addFurniture('lightbulb');
-          break;
-        case "concentration":
-          this.renderer.addFurniture('desk');
-          this.renderer.addFurniture('chair');
-          this.renderer.addFurniture('bookshelf');
-          this.renderer.addFurniture('computer');
-          this.renderer.addFurniture('lightbulb');
-          this.renderer.addFurniture('plant');
-          break;
-          
-        case "detente":
-          this.renderer.addFurniture('sofa');
-          this.renderer.addFurniture('bookshelf');
-          this.renderer.addFurniture('lightbulb');
-          this.renderer.addFurniture('plant');
-          this.renderer.addFurniture('rug');
-          this.renderer.addFurniture('coffeetable');
-          this.renderer.addFurniture('beanbag');
-          this.renderer.addFurniture('tv');
-          this.renderer.addFurniture('tvstand');
-          break;
-
-        case "social":
-          this.renderer.addFurniture('sofa');
-          this.renderer.addFurniture('chair');
-          this.renderer.addFurniture('desk'); // Table basse
-          this.renderer.addFurniture('lightbulb');
-          break;
-          
-        case "sensoriel":
-          this.renderer.addFurniture('desk'); // Boîte de couleur
-          this.renderer.addFurniture('sofa');
-          this.renderer.addFurniture('lightbulb');
-          break;
-          
-        case "transition":
-          this.renderer.addFurniture('desk'); // Banc
-          this.renderer.addFurniture('desk'); // Panneau
-          this.renderer.addFurniture('lightbulb');
-          break;
-          
-        // Cas par défaut pour les anciennes catégories (pour compatibilité)
-        default:
-          this.renderer.addFurniture('desk');
-          this.renderer.addFurniture('chair');
-          this.renderer.addFurniture('lightbulb');
-          break;
-      }
-      
-      // Synchroniser les données de meubles
-      this.syncFurnitureData();
-      this.saveCurrentCustomization('space');
     },
 
     // Enregistrer le feedback et marquer l'environnement comme complété

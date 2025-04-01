@@ -28,9 +28,9 @@ export default class RoomRenderer {
         livingroom: ['sofa', 'coffeetable', 'tv', 'plant', 'rug', 'lightbulb'],
         office: ['desk', 'chair', 'bookshelf', 'computer', 'lamp', 'filing', 'lightbulb'],
 
-        concentration: ['desk', 'chair', 'bookshelf', 'computer', 'filing', 'notebook', 'whiteboard', 'lightbulb', 'plant'],
-        detente: ['sofa', 'coffeetable', 'plant', 'rug', 'bookshelf', 'lightbulb', 'beanbag', 'tv', 'tvstand'],
-        social: ['sofa', 'chair', 'coffeetable', 'plant', 'speakers', 'rug', 'coffeemaker', 'lightbulb'],
+        concentration: ['desk', 'chair', 'bookshelf', 'computer', 'filing', 'notebook', 'whiteboard', 'lamp1', 'plant'],
+        detente: ['sofa', 'coffeetable', 'plant', 'rug', 'bookshelf', 'lamp1', 'beanbag', 'tv', 'tvstand' , 'painting1', 'painting2', 'painting3'],
+        social: ['coffeetable', 'plant', 'speakers', 'ceilingFan', 'meetingTable', 'moi', 'painting1', 'painting2', 'painting3', 'tvstand'],
         sensoriel: ['colorbox', 'textureboard', 'lightpanel', 'cushion', 'plant', 'lamp', 'sofa', 'lightbulb'],
         transition: ['bench', 'plant', 'sign', 'clock', 'lightbulb']
       };
@@ -91,34 +91,38 @@ export default class RoomRenderer {
           filing: { position: [0.61, 0, 8], scale: 1.4, rotation: [0, Math.PI/2, 0] },
           notebook: { position: [6, 0, 2.4], scale: 0.1, rotation: [0, Math.PI/3, 0] },
           whiteboard: { position: [5, 1.35, 0.1], scale: 2.6, rotation: [0, 0, 0] },
-          lightbulb: { position: [0.33, 1.4, 5.55], scale: 0.03, rotation: [0, Math.PI, 0] },
+          lamp1: { position: [5.55, 2.4, 5.55], scale: 1.2, rotation: [0, Math.PI/4, 0] },
           plant: { position: [9, 0.25, 1], scale: 0.005, rotation: [0, 0, 0] }
         },
         
         // Espace de détente
         detente: {
-          sofa: { position: [8, 0, 5], scale: 0.012, rotation: [0, -Math.PI/2, 0] },
+          sofa: { position: [8, -0.1, 5], scale: 0.017, rotation: [0, -Math.PI/2, 0] },
           coffeetable: { position: [6, 0.5, 0.3], scale: 0.3, rotation: [0, 0, 0] },
           plant: { position: [9, 0.25, 1], scale: 0.005, rotation: [0, 0, 0] },
           rug: { position: [5, 0, 5], scale: 3, rotation: [0, Math.PI/2, 0] },
           bookshelf: { position: [3, 0, 0.3], scale: 0.9, rotation: [0, 0, 0] },
-          lightbulb: { position: [0.33, 1.4, 5.55], scale: 0.03, rotation: [0, Math.PI, 0] },
-          beanbag: { position: [1, 0, 9], scale: 17, rotation: [0, Math.PI - 45, 0] },
-          tv: { position: [2, 1, 5], scale: 2, rotation: [0, Math.PI/2, 0] },
+          lamp1: { position: [5.55, 2.4, 5.55], scale: 1.2, rotation: [0, Math.PI/4, 0] },
+          beanbag: { position: [1, 0, 9], scale: 20, rotation: [0, Math.PI - 45, 0] },
+          tv: { position: [2, 1, 5], scale: 1.8, rotation: [0, Math.PI/2, 0] },
           tvstand: { position: [2, 0, 5], scale: 0.021, rotation: [0, Math.PI/2, 0] },
+          painting1: { position: [0, 1.5, 2], scale: 1.7, rotation: [0, Math.PI/2, 0] },
+          painting2: { position: [0, 1.5, 9], scale: 1.7, rotation: [0, Math.PI, 0] },
+          painting3: { position: [8, 1.5, 0.05], scale: 1.7, rotation: [0, 0, 0] },
         },
         
         // Espace social contrôlé
         social: {
-          sofa: { position: [4.5, 0, 7], scale: 0.012, rotation: [0, -Math.PI/2, 0] },
-          chair: { position: [7, 0, 5], scale: 0.015, rotation: [0, -Math.PI/4, 0] },
-          chair2: { position: [2, 0, 5], scale: 0.015, rotation: [0, Math.PI/4, 0] },
-          coffeetable: { position: [4.5, 0, 5], scale: 0.7, rotation: [0, 0, 0] },
-          plant: { position: [1, 0, 1], scale: 0.5, rotation: [0, 0, 0] },
+          coffeetable: { position: [6, 1.4, 0.3], scale: 0.25, rotation: [0, 0, 0] },
+          plant: { position: [9, 0.25, 1], scale: 0.005, rotation: [0, 0, 0] },
           speakers: { position: [7, 0.8, 2], scale: 0.4, rotation: [0, -Math.PI/6, 0] },
-          rug: { position: [4.5, 0, 5], scale: 1.2, rotation: [0, 0, 0] },
-          coffeemaker: { position: [2, 0.8, 2], scale: 0.3, rotation: [0, Math.PI/6, 0] },
-          lightbulb: { position: [4.5, 2.8, 4.5], scale: 0.03, rotation: [0, 0, 0] }
+          ceilingFan: { position: [5.5, 1, 5.5], scale: 0.3, rotation: [0, Math.PI/2, 0] },
+          meetingTable: { position: [5.5, 0.35, 7], scale: 0.75, rotation: [0, Math.PI, 0] },
+          moi: { position: [0.01, 0, 0.01], scale: 0.01, rotation: [0, Math.PI/6, 0] },
+          painting1: { position: [0, 1.5, 3], scale: 1.7, rotation: [0, Math.PI/2, 0] },
+          painting2: { position: [0, 1.5, 10], scale: 1.7, rotation: [0, Math.PI, 0] },
+          painting3: { position: [3, 1.5, 0.05], scale: 1.7, rotation: [0, 0, 0] },
+          tvstand: { position: [5, 0, 0.5], scale: 0.021, rotation: [0, 0, 0] },
         },
         
         // Environnement sensoriel riche
@@ -234,11 +238,11 @@ export default class RoomRenderer {
     
     setupLighting() {
       const { THREE } = this;
-      const { height, depth  } = this.room;
+      const { width, height, depth  } = this.room;
       const { color, intensity, ambient } = this.lighting;
 
       this.light = new THREE.PointLight(0xffffff, 1, 500, 0.2);
-      this.light.position.set(0.28, height/2, depth/2);
+      this.light.position.set(width/2, height - 0.5, depth/2);
       this.scene.add(this.light);
       
       // Ambient light
@@ -344,7 +348,9 @@ export default class RoomRenderer {
         bookshelf: '/bookshelf/scene.gltf',
         sofa: '/couch/scene.gltf',
         lightbulb: '/light_bulb/scene.gltf',
-        lightbulb2: '/light_bulb/scene.gltf', 
+        lightbulb2: '/light_bulb/scene.gltf',
+        lamp1: '/lamp1/scene.gltf',
+        meetingTable: '/conference_table/thomas.gltf',
         
         beanbag: '/beanbag/scene.gltf',
         plant: '/plant/scene.gltf',
@@ -355,6 +361,10 @@ export default class RoomRenderer {
         coffeetable: '/coffemaker/scene.gltf',
         rug: '/rug/scene.gltf',
         filing: '/filing/scene.gltf',
+        painting1: '/painting1/scene.gltf',
+        painting2: '/painting2/scene.gltf',
+        painting3: '/painting3/scene.gltf',
+        ceilingFan: '/ceiling_fan/scene.gltf',
 
         notebook: '/notebook/scene.gltf',
         whiteboard: '/whiteboard/scene.gltf',
@@ -368,6 +378,7 @@ export default class RoomRenderer {
         bench2: 'furniture/bench.glb', // Même modèle mais position différente
         sign: 'decor/sign.glb',
         clock: 'decor/wall_clock.glb',
+        moi: '/conference_table/moi.gltf',
       };
       
       // Si le modèle n'est pas dans notre mapping, utiliser un modèle par défaut
@@ -447,14 +458,6 @@ export default class RoomRenderer {
       this.models3D = {};
     }
 
-    clearRoomObjects() {
-      // Supprimer les meubles
-      this.clearFurniture();
-      
-      // Supprimer les modèles 3D
-      this.clearModels();
-    }
-    
     createRoom() {
       const { THREE } = this;
       const { width, depth, height, wallColor, floorColor, ceilingColor } = this.room;
@@ -560,66 +563,6 @@ export default class RoomRenderer {
       if (this.roomMeshes.rightWall) {
         this.roomMeshes.rightWall.material.color.set(wallColor);
       }
-    }
-    
-    addFurniture(type, fixedX = false, fixedZ = false, customPosition = null) {
-      const { width, depth } = this.room;
-      let position;
-      
-      // Set properties based on furniture type
-      switch(type) {
-        case 'desk':
-          position = customPosition || [width * 0.6, 0.75, depth * 0.3];
-          break;
-        case 'chair':
-          position = customPosition || [width * 0.6, 0.5, depth * 0.5];
-          break;
-        case 'lightbulb':
-          position = customPosition || [width * 0.5, 2, depth * 0.5];
-          break;
-        case 'sofa':
-          position = customPosition || [width * 0.3, 0.5, depth * 0.8];
-          break;
-        case 'bookshelf':
-          position = customPosition || [width * 0.15, 1, depth * 0.3];
-          break;
-        default:
-          position = customPosition || [width/2, 0.5, depth/2];
-      }
-      
-      // Add to furniture data array
-      const furnitureItem = {
-        position,
-        fixedX,
-        fixedZ
-      };
-      
-      this.furniture.push(furnitureItem);
-      
-      // Return index of the added furniture
-      return this.furniture.length - 1;
-    }
-    
-    removeFurniture(index) {
-      if (index < 0 || index >= this.furniture.length) return;
-      
-      // Remove from scene
-      this.scene.remove(this.furnitureMeshes[index]);
-      
-      // Remove from arrays
-      this.furnitureMeshes.splice(index, 1);
-      this.furniture.splice(index, 1);
-    }
-    
-    clearFurniture() {
-      // Remove all furniture from scene
-      this.furnitureMeshes.forEach(mesh => {
-        this.scene.remove(mesh);
-      });
-      
-      // Clear arrays
-      this.furnitureMeshes = [];
-      this.furniture = [];
     }
     
     updateFurniturePositions() {
