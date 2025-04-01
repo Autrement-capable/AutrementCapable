@@ -1,0 +1,8 @@
+Model Information:
+* title:	Children Books
+* source:	https://sketchfab.com/3d-models/children-books-06925f444f4546b0981d0ad58f48a97a
+* author:	TVzone (https://sketchfab.com/TV_zone)
+
+Model License:
+* license type:	SKETCHFAB Standard (https://sketchfab.com/licenses)
+* requirements:	Under basic restrictions, use worldwide, on all types of media, commercially or not, and in all types of derivative works

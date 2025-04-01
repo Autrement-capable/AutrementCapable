@@ -26,7 +26,13 @@ export default class RoomRenderer {
         detailed: ['desk', 'chair', 'bookshelf', 'plant', 'lamp', 'computer', 'lightbulb'],
         bedroom: ['bed', 'nightstand', 'wardrobe', 'lamp', 'lightbulb'],
         livingroom: ['sofa', 'coffeetable', 'tv', 'plant', 'rug', 'lightbulb'],
-        office: ['desk', 'chair', 'bookshelf', 'computer', 'lamp', 'filing', 'lightbulb']
+        office: ['desk', 'chair', 'bookshelf', 'computer', 'lamp', 'filing', 'lightbulb'],
+
+        concentration: ['desk', 'chair', 'bookshelf', 'computer', 'filing', 'notebook', 'whiteboard', 'lightbulb', 'plant'],
+        detente: ['sofa', 'coffeetable', 'plant', 'rug', 'bookshelf', 'lightbulb', 'beanbag', 'tv', 'tvstand'],
+        social: ['sofa', 'chair', 'coffeetable', 'plant', 'speakers', 'rug', 'coffeemaker', 'lightbulb'],
+        sensoriel: ['colorbox', 'textureboard', 'lightpanel', 'cushion', 'plant', 'lamp', 'sofa', 'lightbulb'],
+        transition: ['bench', 'plant', 'sign', 'clock', 'lightbulb']
       };
       
       this.categoryConfigurations = {
@@ -43,8 +49,8 @@ export default class RoomRenderer {
           lightbulb: { position: [0.33, 1.4, 5.55], scale: 0.03, rotation: [0, Math.PI, 0] }
         },
         detailed: {
-          desk: { position: [5, 0, 3], scale: 0.8, rotation: [0, 0, 0] },
-          chair: { position: [5, 0, 4.2], scale: 0.7, rotation: [0, Math.PI, 0] },
+          desk: { position: [5, 0, 1], scale: 0.2, rotation: [0, 0, 0] },
+          chair: { position: [4.6, 0, 2], scale: 0.015, rotation: [0, Math.PI, 0] },
           bookshelf: { position: [2.5, 0, 2], scale: 0.7, rotation: [0, Math.PI/2, 0] },
           plant: { position: [8, 0, 2], scale: 0.5, rotation: [0, 0, 0] },
           lamp: { position: [5.8, 0, 2.8], scale: 0.4, rotation: [0, Math.PI/4, 0] },
@@ -67,13 +73,75 @@ export default class RoomRenderer {
           lightbulb: { position: [0.33, 1.4, 5.55], scale: 0.03, rotation: [0, Math.PI, 0] }
         },
         office: {
-          desk: { position: [5, 0, 3], scale: 0.8, rotation: [0, 0, 0] },
-          chair: { position: [5, 0, 4.2], scale: 0.7, rotation: [0, Math.PI, 0] },
+          desk: { position: [5, 0, 1], scale: 0.2, rotation: [0, 0, 0] },
+          chair: { position: [4.6, 0, 2], scale: 0.015, rotation: [0, Math.PI, 0] },
           bookshelf: { position: [2, 0, 2], scale: 0.7, rotation: [0, Math.PI/2, 0] },
           computer: { position: [5, 0, 2.7], scale: 0.3, rotation: [0, 0, 0] },
           lamp: { position: [5.8, 0, 2.8], scale: 0.4, rotation: [0, Math.PI/4, 0] },
           filing: { position: [8, 0, 2], scale: 0.7, rotation: [0, -Math.PI/4, 0] },
           lightbulb: { position: [0.33, 1.4, 5.55], scale: 0.03, rotation: [0, Math.PI, 0] }
+        },
+
+        // Espace de concentration
+        concentration: {
+          desk: { position: [5, 0, 1], scale: 0.2, rotation: [0, 0, 0] },
+          chair: { position: [4.6, 0, 2], scale: 0.015, rotation: [0, Math.PI, 0] },
+          bookshelf: { position: [0.19, 0, 3], scale: 0.9, rotation: [0, Math.PI/2, 0] },
+          computer: { position: [4.65, 1.28, 1.2], scale: 1, rotation: [0, Math.PI, 0] },
+          filing: { position: [0.61, 0, 8], scale: 1.4, rotation: [0, Math.PI/2, 0] },
+          notebook: { position: [6, 0, 2.4], scale: 0.1, rotation: [0, Math.PI/3, 0] },
+          whiteboard: { position: [5, 1.35, 0.1], scale: 2.6, rotation: [0, 0, 0] },
+          lightbulb: { position: [0.33, 1.4, 5.55], scale: 0.03, rotation: [0, Math.PI, 0] },
+          plant: { position: [9, 0.25, 1], scale: 0.005, rotation: [0, 0, 0] }
+        },
+        
+        // Espace de détente
+        detente: {
+          sofa: { position: [8, 0, 5], scale: 0.012, rotation: [0, -Math.PI/2, 0] },
+          coffeetable: { position: [6, 0.5, 0.3], scale: 0.3, rotation: [0, 0, 0] },
+          plant: { position: [9, 0.25, 1], scale: 0.005, rotation: [0, 0, 0] },
+          rug: { position: [5, 0, 5], scale: 3, rotation: [0, Math.PI/2, 0] },
+          bookshelf: { position: [3, 0, 0.3], scale: 0.9, rotation: [0, 0, 0] },
+          lightbulb: { position: [0.33, 1.4, 5.55], scale: 0.03, rotation: [0, Math.PI, 0] },
+          beanbag: { position: [1, 0, 9], scale: 17, rotation: [0, Math.PI - 45, 0] },
+          tv: { position: [2, 1, 5], scale: 2, rotation: [0, Math.PI/2, 0] },
+          tvstand: { position: [2, 0, 5], scale: 0.021, rotation: [0, Math.PI/2, 0] },
+        },
+        
+        // Espace social contrôlé
+        social: {
+          sofa: { position: [4.5, 0, 7], scale: 0.012, rotation: [0, -Math.PI/2, 0] },
+          chair: { position: [7, 0, 5], scale: 0.015, rotation: [0, -Math.PI/4, 0] },
+          chair2: { position: [2, 0, 5], scale: 0.015, rotation: [0, Math.PI/4, 0] },
+          coffeetable: { position: [4.5, 0, 5], scale: 0.7, rotation: [0, 0, 0] },
+          plant: { position: [1, 0, 1], scale: 0.5, rotation: [0, 0, 0] },
+          speakers: { position: [7, 0.8, 2], scale: 0.4, rotation: [0, -Math.PI/6, 0] },
+          rug: { position: [4.5, 0, 5], scale: 1.2, rotation: [0, 0, 0] },
+          coffeemaker: { position: [2, 0.8, 2], scale: 0.3, rotation: [0, Math.PI/6, 0] },
+          lightbulb: { position: [4.5, 2.8, 4.5], scale: 0.03, rotation: [0, 0, 0] }
+        },
+        
+        // Environnement sensoriel riche
+        sensoriel: {
+          colorbox: { position: [3, 0, 2], scale: 0.5, rotation: [0, Math.PI/4, 0] },
+          textureboard: { position: [6, 0, 2], scale: 0.6, rotation: [0, -Math.PI/4, 0] },
+          lightpanel: { position: [4.5, 1.5, 1], scale: 0.7, rotation: [0, 0, 0] },
+          cushion: { position: [3, 0, 6], scale: 0.3, rotation: [0, 0, 0] },
+          plant: { position: [6, 0, 6], scale: 0.5, rotation: [0, 0, 0] },
+          lamp: { position: [2, 0, 4], scale: 0.4, rotation: [0, Math.PI/6, 0] },
+          sofa: { position: [4.5, 0, 7], scale: 0.01, rotation: [0, -Math.PI/2, 0] },
+          lightbulb: { position: [4.5, 2.8, 4.5], scale: 0.03, rotation: [0, 0, 0] }
+        },
+        
+        // Espace de transition
+        transition: {
+          bench: { position: [3, 0, 3], scale: 0.6, rotation: [0, Math.PI/2, 0] },
+          bench2: { position: [9, 0, 3], scale: 0.6, rotation: [0, Math.PI/2, 0] },
+          plant: { position: [6, 0, 1], scale: 0.5, rotation: [0, 0, 0] },
+          sign: { position: [6, 1.5, 0.5], scale: 0.4, rotation: [0, 0, 0] },
+          clock: { position: [1, 2, 3], scale: 0.3, rotation: [0, 0, 0] },
+          lightbulb: { position: [3, 2.8, 3], scale: 0.03, rotation: [0, 0, 0] },
+          lightbulb2: { position: [9, 2.8, 3], scale: 0.03, rotation: [0, 0, 0] }
         }
       };
       
@@ -270,31 +338,38 @@ export default class RoomRenderer {
         // Mobilier de base
         desk: '/desk/scene.gltf',
         chair: '/chair/scene.gltf',
-        bookshelf: 'furniture/bookshelf.glb',
+        chair2: '/chair/scene.gltf',
+        bookshelf: '/bookshelf/scene.gltf',
         sofa: '/couch/scene.gltf',
         lightbulb: '/light_bulb/scene.gltf',
+        lightbulb2: '/light_bulb/scene.gltf', 
         
-        // Objets supplémentaires
-        plant: 'decor/plant.glb',
-        lamp: 'decor/desk_lamp.glb',
-        computer: 'tech/computer.glb',
-        tv: 'tech/tv.glb',
-        
-        // Mobilier de chambre
-        bed: 'furniture/bed.glb',
-        nightstand: 'furniture/nightstand.glb',
-        wardrobe: 'furniture/wardrobe.glb',
-        
-        // Mobilier de salon
-        coffeetable: 'furniture/coffee_table.glb',
-        rug: 'decor/rug.glb',
-        
-        // Objets de bureau
-        filing: 'furniture/filing_cabinet.glb'
+        beanbag: '/beanbag/scene.gltf',
+        plant: '/plant/scene.gltf',
+        lamp: '/light_bulb/scene.gltf',
+        computer: '/computer/scene.gltf',
+        tv: '/tv/scene.gltf',
+        tvstand: '/tv_stand/scene.gltf',
+        coffeetable: '/coffemaker/scene.gltf',
+        rug: '/rug/scene.gltf',
+        filing: '/filing/scene.gltf',
+
+        notebook: '/notebook/scene.gltf',
+        whiteboard: '/whiteboard/scene.gltf',
+        cushion: '/cushion/scene.gltf',
+        speakers: 'tech/speakers.glb',
+        coffeemaker: '/coffeemaker/scene.gltf',
+        colorbox: 'sensory/colorbox.glb',
+        textureboard: 'sensory/textureboard.glb',
+        lightpanel: 'sensory/lightpanel.glb',
+        bench: 'furniture/bench.glb',
+        bench2: 'furniture/bench.glb', // Même modèle mais position différente
+        sign: 'decor/sign.glb',
+        clock: 'decor/wall_clock.glb',
       };
       
       // Si le modèle n'est pas dans notre mapping, utiliser un modèle par défaut
-      const modelFile = modelPaths[modelName] || 'furniture/default_box.glb';
+      const modelFile = modelPaths[modelName];
       
       return modelFile;
     }
@@ -486,63 +561,33 @@ export default class RoomRenderer {
     }
     
     addFurniture(type, fixedX = false, fixedZ = false, customPosition = null) {
-      const { THREE } = this;
-      if (!THREE) return null;
-      
       const { width, depth } = this.room;
-      let position, size, color;
+      let position;
       
       // Set properties based on furniture type
       switch(type) {
         case 'desk':
           position = customPosition || [width * 0.6, 0.75, depth * 0.3];
-          size = [2, 0.8, 1];
-          color = '#8d6e63'; // Brown
           break;
         case 'chair':
           position = customPosition || [width * 0.6, 0.5, depth * 0.5];
-          size = [0.8, 1.2, 0.8];
-          color = '#616161'; // Dark gray
           break;
         case 'lightbulb':
           position = customPosition || [width * 0.5, 2, depth * 0.5];
-          size = [0.2, 0.2, 0.2];
-          color = '#ffeb3b'; // Yellow
           break;
         case 'sofa':
           position = customPosition || [width * 0.3, 0.5, depth * 0.8];
-          size = [2.5, 0.8, 1];
-          color = '#3949ab'; // Blue
           break;
         case 'bookshelf':
           position = customPosition || [width * 0.15, 1, depth * 0.3];
-          size = [1.2, 2, 0.4];
-          color = '#5d4037'; // Dark brown
           break;
         default:
           position = customPosition || [width/2, 0.5, depth/2];
-          size = [1, 1, 1];
-          color = '#bbbbbb'; // Light gray
       }
-      
-      // Create furniture
-      const furnitureGeometry = new THREE.BoxGeometry(size[0], size[1], size[2]);
-      const furnitureMaterial = new THREE.MeshStandardMaterial({ color });
-      const furnitureMesh = new THREE.Mesh(furnitureGeometry, furnitureMaterial);
-      
-      furnitureMesh.position.set(position[0], position[1], position[2]);
-      furnitureMesh.castShadow = true;
-      furnitureMesh.receiveShadow = true;
-      
-      // Add to scene
-      this.scene.add(furnitureMesh);
-      this.furnitureMeshes.push(furnitureMesh);
       
       // Add to furniture data array
       const furnitureItem = {
-        type,
         position,
-        size,
         fixedX,
         fixedZ
       };
@@ -712,73 +757,6 @@ export default class RoomRenderer {
             const person = this.peopleMeshes.pop();
             this.scene.remove(person);
         }
-    }
-      
-    
-    applyPreset(presetName) {
-      // Clear existing furniture
-      this.clearFurniture();
-      
-      switch(presetName) {
-        case 'bedroom':
-          this.updateRoom(8, 8, 2.8, '#d1c4e9', '#9e9e9e', '#f5f5f5');
-          this.updateLighting('#ffffff', 1.5, true);
-          
-          // Add bedroom furniture
-          var bedIndex = this.addFurniture('sofa', true, true);
-          if (bedIndex !== null) {
-            this.furniture[bedIndex].position = [4, 0.5, 4];
-            this.furnitureMeshes[bedIndex].position.set(4, 0.5, 4);
-          }
-          
-          this.addFurniture('bookshelf');
-          this.addFurniture('chair');
-          this.addFurniture('desk');
-          break;
-          
-        case 'office':
-          this.updateRoom(10, 10, 3, '#e0e0e0', '#ad8a64', '#f5f5f5');
-          this.updateLighting('#ffffff', 1.5, true);
-          
-          // Add office furniture
-          this.addFurniture('desk');
-          this.addFurniture('chair');
-          this.addFurniture('bookshelf');
-          break;
-          
-        case 'livingroom':
-          this.updateRoom(12, 10, 3.2, '#f5f5f5', '#8d6e63', '#f5f5f5');
-          this.updateLighting('#ffffff', 1.5, true);
-          
-          // Add living room furniture
-          var sofaIndex = this.addFurniture('sofa', true, true);
-          if (sofaIndex !== null) {
-            this.furniture[sofaIndex].position = [6, 0.5, 7.5];
-            this.furnitureMeshes[sofaIndex].position.set(6, 0.5, 7.5);
-          }
-          
-          var sofa2Index = this.addFurniture('sofa', true, true);
-          if (sofa2Index !== null) {
-            this.furniture[sofa2Index].position = [9, 0.5, 5];
-            this.furnitureMeshes[sofa2Index].position.set(9, 0.5, 5);
-          }
-          break;
-          
-        case 'gamingRoom':
-          this.updateRoom(11, 9, 3, '#263238', '#424242', '#424242');
-          this.updateLighting('#ff00ff', 2, true);
-          
-          // Add gaming room furniture
-          var deskIndex = this.addFurniture('desk', true, true);
-          if (deskIndex !== null) {
-            this.furniture[deskIndex].position = [5.5, 0.75, 3];
-            this.furnitureMeshes[deskIndex].position.set(5.5, 0.75, 3);
-          }
-          
-          this.addFurniture('chair');
-          this.addFurniture('sofa');
-          break;
-      }
     }
     
     startAnimation() {

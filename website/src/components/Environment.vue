@@ -14,7 +14,7 @@
             <div class="explanation-step">
               <div class="step-number">1</div>
               <div class="step-content">
-                <h3>Choisi 1 endroit parmi 5</h3>
+                <h3>Choisi 1 espace parmi 5</h3>
                 <div class="step-image">
                   <img src="/images/maison_coloré.png" alt="Maisons colorées" />
                 </div>
@@ -73,15 +73,12 @@
             >
               <div class="env-card-header">
                 <div class="env-icon">{{ env.icon }}</div>
-                <div class="env-card-color" :style="{ backgroundColor: env.previewColor }"></div>
+                <img :src="env.imageSrc" class="env-card-image" alt="Environnement" />
               </div>
               <h3>{{ env.name }}</h3>
               <p>{{ env.shortDescription }}</p>
             </div>
           </div>
-          <button @click="hideEnvironmentSelector" class="secondary-button">
-            Fermer
-          </button>
         </div>
       </div>
       
@@ -257,64 +254,6 @@
               </div>
             </div>
             
-            <!-- Onglet Espace -->
-            <div v-if="activeControlTab === 'space'" class="control-panel">
-              <div class="control-group">
-                <h3>Dimensions de l'espace</h3>
-                
-                <div class="control-item">
-                  <label>Taille de la pièce:</label>
-                  <div class="radio-group">
-                    <label><input type="radio" v-model="roomSizePreset" value="small" @change="updateRoomSize"> Petit (intime)</label>
-                    <label><input type="radio" v-model="roomSizePreset" value="medium" @change="updateRoomSize"> Moyen</label>
-                    <label><input type="radio" v-model="roomSizePreset" value="large" @change="updateRoomSize"> Grand (spacieux)</label>
-                  </div>
-                </div>
-                
-                <div class="control-item">
-                  <label>Hauteur du plafond:</label>
-                  <div class="radio-group">
-                    <label><input type="radio" v-model="ceilingHeightPreset" value="low" @change="updateRoomSize"> Bas</label>
-                    <label><input type="radio" v-model="ceilingHeightPreset" value="medium" @change="updateRoomSize"> Standard</label>
-                    <label><input type="radio" v-model="ceilingHeightPreset" value="high" @change="updateRoomSize"> Élevé</label>
-                  </div>
-                </div>
-                
-                <div class="control-item">
-                  <label>Catégorie d'objets:</label>
-                  <div class="object-categories">
-                    <div v-for="category in objectCategories" 
-                        :key="category.id"
-                        @click="selectedObjectCategory = category.id; updateClutterLevel();"
-                        :class="['category-option', { selected: selectedObjectCategory === category.id }]">
-                      <div class="category-icon">
-                        <!-- Vous pouvez ajouter des icônes spécifiques pour chaque catégorie -->
-                        <span v-if="category.id === 'minimal'">🪑</span>
-                        <span v-else-if="category.id === 'moderate'">🪑📚</span>
-                        <span v-else-if="category.id === 'detailed'">🪑📚🛋️</span>
-                        <span v-else-if="category.id === 'bedroom'">🛏️</span>
-                        <span v-else-if="category.id === 'livingroom'">🛋️</span>
-                        <span v-else-if="category.id === 'office'">💼</span>
-                      </div>
-                      <div class="category-label">{{ category.label }}</div>
-                    </div>
-                  </div>
-                </div>
-                <div v-if="modelsLoading" class="loading-indicator">
-                  <div class="loading-bar">
-                    <div class="loading-progress" :style="{ width: loadingProgress + '%' }"></div>
-                  </div>
-                  <div class="loading-text">Chargement des objets...</div>
-                </div>
-                
-                <div class="tab-navigation">
-                  <button @click="saveCurrentCustomization('space')" class="guide-button">
-                    Sauvegarder
-                  </button>
-                </div>
-              </div>
-            </div>
-            
             <!-- Onglet Feedback -->
             <div v-if="activeControlTab === 'feedback'" class="control-panel">
               <div class="control-group">
@@ -369,7 +308,6 @@
           <p><strong>Environnement préféré:</strong> {{ getFavoriteEnvironment() }}</p>
           <p><strong>Ambiance lumineuse préférée:</strong> {{ getLightPreference() }}</p>
           <p><strong>Préférence sonore:</strong> {{ getSoundPreference() }}</p>
-          <p><strong>Préférence d'espace:</strong> {{ getSpacePreference() }}</p>
         </div>
         <div class="recommendation-box">
           <h4>Recommandations personnalisées</h4>
@@ -434,9 +372,8 @@ export default {
       controlTabs: [
         { id: 'light', label: 'Lumière', order: 1 },
         { id: 'colors', label: 'Couleurs', order: 2 },
-        { id: 'space', label: 'Espace', order: 3 },
-        { id: 'sounds', label: 'Sons', order: 4 },
-        { id: 'feedback', label: 'Ressenti', order: 5 }
+        { id: 'sounds', label: 'Sons', order: 3 },
+        { id: 'feedback', label: 'Ressenti', order: 4 }
       ],
       
       // Données utilisateur
@@ -452,7 +389,9 @@ export default {
           shortDescription: "Environnement optimisé pour le travail intellectuel",
           description: "Un espace conçu pour favoriser la concentration avec un éclairage adapté, des couleurs apaisantes et un minimum de distractions.",
           previewColor: "#4A90E2",
+          imageSrc: "/images/concentration_space.png",
           icon: "🧠",
+          objectsCategory: "concentration",
           defaultSettings: {
             room: {
               width: 9, 
@@ -480,12 +419,14 @@ export default {
           shortDescription: "Zone calme pour se ressourcer",
           description: "Un environnement tranquille conçu pour apaiser les sens avec des tons doux, un éclairage tamisé et une ambiance sonore relaxante.",
           previewColor: "#66BB6A",
+          imageSrc: "/images/relaxation_space.png",
           icon: "🌿",
+          objectsCategory: "detente",
           defaultSettings: {
             room: {
-              width: 8, 
-              depth: 8, 
-              height: 2.8,
+              width: 9, 
+              depth: 9, 
+              height: 3.2,
               wallColor: "#e6f0f5",
               floorColor: "#d1dde6",
               ceilingColor: "#f0f7fa"
@@ -508,12 +449,14 @@ export default {
           shortDescription: "Pour les interactions en petit groupe",
           description: "Un espace conçu pour des interactions sociales maîtrisées avec un niveau de stimulation modéré et des zones de repli.",
           previewColor: "#FFA726",
+          imageSrc: "/images/social_space.png",
           icon: "👥",
+          objectsCategory: "social",
           defaultSettings: {
             room: {
-              width: 10, 
-              depth: 10, 
-              height: 3,
+              width: 9, 
+              depth: 9, 
+              height: 3.2,
               wallColor: "#fff9e6",
               floorColor: "#d9c298",
               ceilingColor: "#fffcf0"
@@ -536,12 +479,14 @@ export default {
           shortDescription: "Stimulation sensorielle contrôlée",
           description: "Un environnement avec des stimuli sensoriels variés mais régulables, idéal pour explorer vos préférences sensorielles de façon sécurisée.",
           previewColor: "#AB47BC",
+          imageSrc: "/images/sensory_space.png",
+          objectsCategory: "sensoriel",
           icon: "✨",
           defaultSettings: {
             room: {
-              width: 11, 
-              depth: 11, 
-              height: 3.5,
+              width: 9, 
+              depth: 9, 
+              height: 3.2,
               wallColor: "#f0e6f5",
               floorColor: "#9c7fad",
               ceilingColor: "#f7f0fa"
@@ -564,7 +509,9 @@ export default {
           shortDescription: "Simulation d'espace public modéré",
           description: "Cet environnement simule un espace de transition comme un couloir ou un petit espace public avec un niveau de stimulation ajustable.",
           previewColor: "#26C6DA",
+          imageSrc: "/images/transition_space.png",
           icon: "🚶",
+          objectsCategory: "transition",
           defaultSettings: {
             room: {
               width: 12, 
@@ -821,10 +768,7 @@ export default {
       this.selectedAmbience = settings.sound.type;
       this.soundVolume = settings.sound.volume;
       this.peopleCount = settings.sound.peopleCount;
-      
-      // Mise à jour du niveau de détail
-      this.clutterLevel = settings.clutter;
-      
+            
       // Déterminer les préréglages de taille
       this.determineSizePresets();
       
@@ -833,9 +777,11 @@ export default {
         console.warn("Le renderer n'est pas encore initialisé");
         this.initRenderer();
         setTimeout(() => {
+          this.selectedObjectCategory = env.objectsCategory || "minimal";
           this.applyEnvironmentChanges();
         }, 500);
       } else {
+        this.selectedObjectCategory = env.objectsCategory || "minimal";
         this.applyEnvironmentChanges();
       }
 
@@ -937,10 +883,6 @@ export default {
           guideMessage.title = "Ajustons l'ambiance sonore";
           guideMessage.description = "Sélectionnez le type de son et le volume qui vous conviennent. Vous pouvez aussi ajuster le nombre de personnes présentes.";
           break;
-        case 'space':
-          guideMessage.title = "Configurons l'espace";
-          guideMessage.description = "Adaptez la taille de la pièce, la hauteur du plafond et le niveau de détail selon vos préférences.";
-          break;
         case 'feedback':
           guideMessage.title = "Comment vous sentez-vous?";
           guideMessage.description = "Maintenant que vous avez personnalisé cet environnement, indiquez votre ressenti et partagez vos impressions.";
@@ -1018,41 +960,6 @@ export default {
       } else {
         this.ceilingHeightPreset = "high";
       }
-    },
-    
-    // Mettre à jour les dimensions de la pièce
-    updateRoomSize() {
-      // Ajuster la taille en fonction du préréglage
-      switch(this.roomSizePreset) {
-        case "small":
-          this.roomWidth = 7;
-          this.roomDepth = 7;
-          break;
-        case "medium":
-          this.roomWidth = 10;
-          this.roomDepth = 10;
-          break;
-        case "large":
-          this.roomWidth = 14;
-          this.roomDepth = 14;
-          break;
-      }
-      
-      // Ajuster la hauteur du plafond
-      switch(this.ceilingHeightPreset) {
-        case "low":
-          this.roomHeight = 2.5;
-          break;
-        case "medium":
-          this.roomHeight = 3;
-          break;
-        case "high":
-          this.roomHeight = 4;
-          break;
-      }
-      
-      this.updateRoom();
-      this.saveCurrentCustomization('space');
     },
     
     // Sélectionner un préréglage de lumière
@@ -1326,6 +1233,52 @@ export default {
           this.renderer.addFurniture('desk'); // Représente une table basse
           this.renderer.addFurniture('lightbulb');
           break;
+        case "concentration":
+          this.renderer.addFurniture('desk');
+          this.renderer.addFurniture('chair');
+          this.renderer.addFurniture('bookshelf');
+          this.renderer.addFurniture('computer');
+          this.renderer.addFurniture('lightbulb');
+          this.renderer.addFurniture('plant');
+          break;
+          
+        case "detente":
+          this.renderer.addFurniture('sofa');
+          this.renderer.addFurniture('bookshelf');
+          this.renderer.addFurniture('lightbulb');
+          this.renderer.addFurniture('plant');
+          this.renderer.addFurniture('rug');
+          this.renderer.addFurniture('coffeetable');
+          this.renderer.addFurniture('beanbag');
+          this.renderer.addFurniture('tv');
+          this.renderer.addFurniture('tvstand');
+          break;
+
+        case "social":
+          this.renderer.addFurniture('sofa');
+          this.renderer.addFurniture('chair');
+          this.renderer.addFurniture('desk'); // Table basse
+          this.renderer.addFurniture('lightbulb');
+          break;
+          
+        case "sensoriel":
+          this.renderer.addFurniture('desk'); // Boîte de couleur
+          this.renderer.addFurniture('sofa');
+          this.renderer.addFurniture('lightbulb');
+          break;
+          
+        case "transition":
+          this.renderer.addFurniture('desk'); // Banc
+          this.renderer.addFurniture('desk'); // Panneau
+          this.renderer.addFurniture('lightbulb');
+          break;
+          
+        // Cas par défaut pour les anciennes catégories (pour compatibilité)
+        default:
+          this.renderer.addFurniture('desk');
+          this.renderer.addFurniture('chair');
+          this.renderer.addFurniture('lightbulb');
+          break;
       }
       
       // Synchroniser les données de meubles
@@ -1480,47 +1433,6 @@ export default {
       }
     },
     
-    // Obtenir la préférence d'espace pour l'affichage
-    getSpacePreference() {
-      const allFeedbacks = this.userData.environmentFeedback;
-      const spacePreferences = Object.values(allFeedbacks)
-        .filter(fb => fb.customizations && fb.customizations.space)
-        .map(fb => fb.customizations.space);
-      
-      if (spacePreferences.length === 0) return "Non déterminé";
-      
-      // Calculer la taille moyenne préférée
-      const sizeCounts = {small: 0, medium: 0, large: 0};
-      const clutterCounts = {minimal: 0, moderate: 0, detailed: 0};
-      
-      spacePreferences.forEach(pref => {
-        sizeCounts[pref.sizePreset]++;
-        clutterCounts[pref.clutterLevel]++;
-      });
-      
-      // Déterminer la taille préférée
-      let preferredSize = Object.keys(sizeCounts).reduce((a, b) => sizeCounts[a] > sizeCounts[b] ? a : b);
-      let preferredClutter = Object.keys(clutterCounts).reduce((a, b) => clutterCounts[a] > clutterCounts[b] ? a : b);
-      
-      let sizeDesc;
-      switch(preferredSize) {
-        case "small": sizeDesc = "espaces intimes"; break;
-        case "medium": sizeDesc = "espaces moyens"; break;
-        case "large": sizeDesc = "grands espaces"; break;
-        default: sizeDesc = "espaces variés";
-      }
-      
-      let clutterDesc;
-      switch(preferredClutter) {
-        case "minimal": clutterDesc = "peu d'objets"; break;
-        case "moderate": clutterDesc = "quantité modérée d'objets"; break;
-        case "detailed": clutterDesc = "environnement riche en détails"; break;
-        default: clutterDesc = "niveau de détail variable";
-      }
-      
-      return `Préfère les ${sizeDesc} avec ${clutterDesc}`;
-    },
-    
     // Obtenir une recommandation personnalisée
     getPersonalizedRecommendation(index) {
       const recommendations = [
@@ -1547,20 +1459,6 @@ export default {
             return "Intégrez des sons de la nature dans votre environnement quotidien pour réduire le stress et améliorer votre bien-être.";
           } else {
             return "Créez des playlists adaptées à différentes activités pour vous aider à réguler votre état sensoriel.";
-          }
-        },
-        
-        // Recommandations basées sur l'espace
-        () => {
-          const spacePref = this.getSpacePreference();
-          if (spacePref.includes("intimes")) {
-            return "Aménagez un coin cocon dans votre espace personnel où vous pourrez vous ressourcer lorsque vous vous sentez surstimulé.";
-          } else if (spacePref.includes("peu d'objets")) {
-            return "Privilégiez un environnement minimaliste pour réduire la charge cognitive et le stress visuel.";
-          } else if (spacePref.includes("riche en détails")) {
-            return "Organisez votre espace en zones thématiques pour que la stimulation visuelle reste agréable et non chaotique.";
-          } else {
-            return "Créez des zones distinctes dans votre espace de vie pour différentes activités, avec des niveaux de stimulation adaptés.";
           }
         },
         
@@ -1775,7 +1673,26 @@ export default {
 
 .category-icon {
   font-size: 24px;
-  margin-bottom: 5px;
+  background: white;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.category-description {
+  flex-grow: 1;
+}
+
+.category-description p {
+  margin: 0;
+  color: #555;
+  font-size: 0.9rem;
+  line-height: 1.4;
 }
 
 .category-label {
@@ -2260,6 +2177,29 @@ export default {
   color: #555;
 }
 
+.environment-info {
+  margin-top: 20px;
+}
+
+.object-info {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 15px;
+  margin-top: 10px;
+}
+
+.environment-objects {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.object-category-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
 /* Contrôles pour la lumière */
 .light-presets {
   display: flex;
@@ -2686,9 +2626,22 @@ select, textarea, input[type="text"] {
   margin-bottom: 15px;
 }
 
+.env-card-image {
+  height: 160px;
+  width: 100%;
+  object-fit: cover; /* Pour s'assurer que l'image couvre bien l'espace sans déformation */
+  display: block;
+  transition: transform 0.3s ease;
+}
+
 .environment-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.env-card-header {
+  position: relative;
+  overflow: hidden; /* Pour masquer le débordement lors du zoom */
 }
 
 .environment-card.active {
@@ -2709,10 +2662,6 @@ select, textarea, input[type="text"] {
   margin: 0 15px 15px;
   color: #666;
   font-size: 0.9rem;
-}
-
-.env-card-header {
-  position: relative;
 }
 
 .env-icon {
