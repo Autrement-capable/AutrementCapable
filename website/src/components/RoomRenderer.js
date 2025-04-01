@@ -13,9 +13,69 @@ export default class RoomRenderer {
       this.furnitureMeshes = [];
       this.directionalLight = null;
       this.light = null;
-      this.lightHelper = null;
+      this.light2 = null;
       this.ambientLight = null;
       this.peopleMeshes = [];
+      this.models3D = {};
+      this.loaders = {};
+      this.modelMeshes = [];
+
+      this.objectCategories = {
+        minimal: ['desk', 'chair', 'lightbulb'],
+        moderate: ['desk', 'chair', 'bookshelf', 'plant', 'lightbulb'],
+        detailed: ['desk', 'chair', 'bookshelf', 'plant', 'lamp', 'computer', 'lightbulb'],
+        bedroom: ['bed', 'nightstand', 'wardrobe', 'lamp', 'lightbulb'],
+        livingroom: ['sofa', 'coffeetable', 'tv', 'plant', 'rug', 'lightbulb'],
+        office: ['desk', 'chair', 'bookshelf', 'computer', 'lamp', 'filing', 'lightbulb']
+      };
+      
+      this.categoryConfigurations = {
+        minimal: {
+          desk: { position: [5, 0, 1], scale: 0.2, rotation: [0, 0, 0] },
+          chair: { position: [4.6, 0, 2], scale: 0.015, rotation: [0, Math.PI, 0] },
+          lightbulb: { position: [0.33, 1.4, 5.55], scale: 0.03, rotation: [0, Math.PI, 0] }
+        },
+        moderate: {
+          desk: { position: [5, 0, 1], scale: 0.2, rotation: [0, 0, 0] },
+          chair: { position: [4.6, 0, 2], scale: 0.015, rotation: [0, Math.PI, 0] },
+          bookshelf: { position: [2.5, 0, 2], scale: 0.7, rotation: [0, Math.PI/2, 0] },
+          plant: { position: [8, 0, 2], scale: 0.5, rotation: [0, 0, 0] },
+          lightbulb: { position: [0.33, 1.4, 5.55], scale: 0.03, rotation: [0, Math.PI, 0] }
+        },
+        detailed: {
+          desk: { position: [5, 0, 3], scale: 0.8, rotation: [0, 0, 0] },
+          chair: { position: [5, 0, 4.2], scale: 0.7, rotation: [0, Math.PI, 0] },
+          bookshelf: { position: [2.5, 0, 2], scale: 0.7, rotation: [0, Math.PI/2, 0] },
+          plant: { position: [8, 0, 2], scale: 0.5, rotation: [0, 0, 0] },
+          lamp: { position: [5.8, 0, 2.8], scale: 0.4, rotation: [0, Math.PI/4, 0] },
+          computer: { position: [5, 0, 2.7], scale: 0.3, rotation: [0, 0, 0] },
+          lightbulb: { position: [0.33, 1.4, 5.55], scale: 0.03, rotation: [0, Math.PI, 0] }
+        },
+        bedroom: {
+          bed: { position: [5, 0, 5], scale: 0.9, rotation: [0, Math.PI/2, 0] },
+          nightstand: { position: [6.5, 0, 3.5], scale: 0.7, rotation: [0, 0, 0] },
+          wardrobe: { position: [2, 0, 2], scale: 0.8, rotation: [0, 0, 0] },
+          lamp: { position: [6.5, 0, 3], scale: 0.4, rotation: [0, 0, 0] },
+          lightbulb: { position: [0.33, 1.4, 5.55], scale: 0.03, rotation: [0, Math.PI, 0] }
+        },
+        livingroom: {
+          sofa: { position: [5, 0, 7], scale: 0.012, rotation: [0, -Math.PI/2, 0] },
+          coffeetable: { position: [5, 0, 5], scale: 0.7, rotation: [0, 0, 0] },
+          tv: { position: [5, 0, 2], scale: 0.8, rotation: [0, Math.PI/2, 0] },
+          plant: { position: [8, 0, 7], scale: 0.5, rotation: [0, 0, 0] },
+          rug: { position: [5, 0, 5], scale: 1.2, rotation: [0, 0, 0] },
+          lightbulb: { position: [0.33, 1.4, 5.55], scale: 0.03, rotation: [0, Math.PI, 0] }
+        },
+        office: {
+          desk: { position: [5, 0, 3], scale: 0.8, rotation: [0, 0, 0] },
+          chair: { position: [5, 0, 4.2], scale: 0.7, rotation: [0, Math.PI, 0] },
+          bookshelf: { position: [2, 0, 2], scale: 0.7, rotation: [0, Math.PI/2, 0] },
+          computer: { position: [5, 0, 2.7], scale: 0.3, rotation: [0, 0, 0] },
+          lamp: { position: [5.8, 0, 2.8], scale: 0.4, rotation: [0, Math.PI/4, 0] },
+          filing: { position: [8, 0, 2], scale: 0.7, rotation: [0, -Math.PI/4, 0] },
+          lightbulb: { position: [0.33, 1.4, 5.55], scale: 0.03, rotation: [0, Math.PI, 0] }
+        }
+      };
       
       this.room = {
         width: 10,
@@ -45,10 +105,13 @@ export default class RoomRenderer {
       try {
         const THREE = await import('three');
         const { OrbitControls } = await import('three/examples/jsm/controls/OrbitControls.js');
+        const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js');
         
         // Store modules
         this.THREE = THREE;
         this.OrbitControls = OrbitControls;
+
+        this.loaders.gltf = new GLTFLoader();        
         
         // Initialize scene
         this.initScene();
@@ -103,13 +166,12 @@ export default class RoomRenderer {
     
     setupLighting() {
       const { THREE } = this;
-      const { width, height,  } = this.room;
+      const { height, depth  } = this.room;
       const { color, intensity, ambient } = this.lighting;
 
-      this.light = new THREE.PointLight(0xffffff, 20, 500, 0.2);
-      this.light.position.set(width/2, height/2, 0.2);
-      this.lightHelper = new THREE.PointLightHelper(this.light, 0.5);
-      this.scene.add(this.light, this.lightHelper);
+      this.light = new THREE.PointLight(0xffffff, 1, 500, 0.2);
+      this.light.position.set(0.28, height/2, depth/2);
+      this.scene.add(this.light);
       
       // Ambient light
       this.ambientLight = new THREE.AmbientLight(color, intensity * 0.5);
@@ -141,6 +203,179 @@ export default class RoomRenderer {
           this.scene.remove(this.ambientLight);
         }
       }
+    }
+
+    loadModel(modelName, position = [0, 0, 0], scale = 1, rotation = [0, 0, 0]) {
+      // Définir le chemin du modèle basé sur son nom
+      const modelPath = this.getModelPath(modelName);
+      
+      return new Promise((resolve, reject) => {
+        // Vérifier si le loader est disponible
+        if (!this.loaders.gltf) {
+          reject("GLTFLoader n'est pas initialisé");
+          return;
+        }
+        
+        this.loaders.gltf.load(
+          modelPath,
+          (gltf) => {
+            const model = gltf.scene;
+            
+            // Appliquer l'échelle
+            model.scale.set(scale, scale, scale);
+            
+            // Appliquer la position
+            model.position.set(position[0], position[1], position[2]);
+            
+            // Appliquer la rotation (en radians)
+            model.rotation.set(rotation[0], rotation[1], rotation[2]);
+            
+            // Ajouter des ombres pour tous les objets du modèle
+            model.traverse((node) => {
+              if (node.isMesh) {
+                node.castShadow = true;
+                node.receiveShadow = true;
+              }
+            });
+            
+            // Ajouter à la scène
+            this.scene.add(model);
+            
+            // Stocker dans modelMeshes pour pouvoir le supprimer plus tard
+            this.modelMeshes.push(model);
+            
+            // Stocker la référence du modèle
+            this.models3D[modelName] = model;
+            
+            resolve(model);
+          },
+          // Fonction de progression (optionnelle)
+          (xhr) => {
+            const percentage = (xhr.loaded / xhr.total) * 100;
+            console.log(`${modelName} : ${Math.round(percentage)}% chargé`);
+          },
+          // Fonction d'erreur
+          (error) => {
+            console.error(`Erreur lors du chargement du modèle ${modelName}:`, error);
+            reject(error);
+          }
+        );
+      });
+    }
+
+    getModelPath(modelName) {
+      
+      // Mapping des noms de modèles vers leurs fichiers
+      const modelPaths = {
+        // Mobilier de base
+        desk: '/desk/scene.gltf',
+        chair: '/chair/scene.gltf',
+        bookshelf: 'furniture/bookshelf.glb',
+        sofa: '/couch/scene.gltf',
+        lightbulb: '/light_bulb/scene.gltf',
+        
+        // Objets supplémentaires
+        plant: 'decor/plant.glb',
+        lamp: 'decor/desk_lamp.glb',
+        computer: 'tech/computer.glb',
+        tv: 'tech/tv.glb',
+        
+        // Mobilier de chambre
+        bed: 'furniture/bed.glb',
+        nightstand: 'furniture/nightstand.glb',
+        wardrobe: 'furniture/wardrobe.glb',
+        
+        // Mobilier de salon
+        coffeetable: 'furniture/coffee_table.glb',
+        rug: 'decor/rug.glb',
+        
+        // Objets de bureau
+        filing: 'furniture/filing_cabinet.glb'
+      };
+      
+      // Si le modèle n'est pas dans notre mapping, utiliser un modèle par défaut
+      const modelFile = modelPaths[modelName] || 'furniture/default_box.glb';
+      
+      return modelFile;
+    }
+
+    loadObjectsByCategory(category) {
+      // D'abord, supprimer tous les modèles existants
+      this.clearModels();
+      
+      // Obtenir la liste des objets pour cette catégorie
+      const objects = this.objectCategories[category] || this.objectCategories.minimal;
+
+      const categoryConfig = this.categoryConfigurations[category] || {};
+      
+      // Charger chaque objet avec sa position prédéfinie
+      const loadPromises = objects.map((objectName) => {
+        // Utiliser la configuration prédéfinie si disponible, sinon utiliser des valeurs par défaut
+        const config = categoryConfig[objectName] || {
+          position: [this.room.width/2, 0, this.room.depth/2],
+          scale: 0.7,
+          rotation: [0, 0, 0]
+        };
+        
+        // Ajuster la position en fonction de la taille de la pièce si nécessaire
+        const position = this.adjustPositionToRoomSize(config.position);
+        
+        // Charger le modèle avec les paramètres définis
+        return this.loadModel(objectName, position, config.scale, config.rotation);
+      });
+      
+      return Promise.all(loadPromises);
+    }
+
+    adjustPositionToRoomSize(position) {
+      // Si la pièce a une taille différente de la taille standard (10x10),
+      // on peut ajuster proportionnellement les positions
+      const widthRatio = this.room.width / 10;
+      const depthRatio = this.room.depth / 10;
+      
+      return [
+        position[0] * widthRatio,
+        position[1], // la hauteur (Y) reste inchangée
+        position[2] * depthRatio
+      ];
+    }
+
+    clearModels() {
+      // Supprimer tous les modèles de la scène
+      this.modelMeshes.forEach(model => {
+        this.scene.remove(model);
+        
+        // Libérer les ressources (important pour éviter les fuites de mémoire)
+        if (model) {
+          model.traverse((node) => {
+            if (node.isMesh) {
+              if (node.geometry) node.geometry.dispose();
+              
+              if (node.material) {
+                if (Array.isArray(node.material)) {
+                  node.material.forEach(material => material.dispose());
+                } else {
+                  node.material.dispose();
+                }
+              }
+            }
+          });
+        }
+      });
+      
+      // Vider le tableau de suivi
+      this.modelMeshes = [];
+      
+      // Réinitialiser le dictionnaire des modèles
+      this.models3D = {};
+    }
+
+    clearRoomObjects() {
+      // Supprimer les meubles
+      this.clearFurniture();
+      
+      // Supprimer les modèles 3D
+      this.clearModels();
     }
     
     createRoom() {
@@ -268,6 +503,11 @@ export default class RoomRenderer {
           position = customPosition || [width * 0.6, 0.5, depth * 0.5];
           size = [0.8, 1.2, 0.8];
           color = '#616161'; // Dark gray
+          break;
+        case 'lightbulb':
+          position = customPosition || [width * 0.5, 2, depth * 0.5];
+          size = [0.2, 0.2, 0.2];
+          color = '#ffeb3b'; // Yellow
           break;
         case 'sofa':
           position = customPosition || [width * 0.3, 0.5, depth * 0.8];
@@ -579,6 +819,8 @@ export default class RoomRenderer {
       // Remove event listeners
       window.removeEventListener('resize', this.handleResize);
       
+      this.clearModels();
+
       // Dispose geometries and materials
       if (this.scene) {
         this.scene.traverse((object) => {
@@ -613,6 +855,8 @@ export default class RoomRenderer {
       this.furnitureMeshes = [];
       this.directionalLight = null;
       this.ambientLight = null;
+      this.loaders = {};
+      this.models3D = {};
     }
     
     // Get current state for Vue

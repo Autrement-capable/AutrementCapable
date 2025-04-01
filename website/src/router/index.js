@@ -31,6 +31,7 @@ import FormationPage from "@/components/FormationPage.vue";
 import RewardsPage from "@/components/RewardsPage.vue";
 import SkillsWheelPage from "@/components/SkillsWheelPage.vue";
 import ImmersiveDashboard from "@/components/ImmersiveDashboard.vue";
+import UserProfile from "@/views/UserProfile.vue";
 
 const routes = [
   {
@@ -62,6 +63,11 @@ const routes = [
     path: "/home-page",
     name: "HomePage",
     component: HomePage,
+  },
+  {
+    path: "/user-profile",
+    name: "UserProfile",
+    component: UserProfile,
   },
   {
     path: "/game-page",
