@@ -1,5 +1,15 @@
 <template>
   <div class="skills-wheel-container">
+    <!-- Animation de déblocage du badge -->
+    <div v-if="showBadgeUnlockAnimation" class="badge-unlock-overlay">
+      <div class="badge-unlock-animation">
+        <div class="badge-icon">🎯</div>
+        <h2>Badge débloqué !</h2>
+        <h3>{{ badgeData.name }}</h3>
+        <p>{{ badgeData.description }}</p>
+        <button @click="closeBadgeAnimation" class="close-animation-btn">Continuer</button>
+      </div>
+    </div>
     <!-- Header avec personnage guide -->
     <div class="guide-character" v-if="!gameStarted">
       <img src="@/assets/avatars/guide.png" alt="Guide" class="guide-avatar" />
@@ -214,6 +224,7 @@
 <script>
 import { getAllSkills } from '@/data/skills-list';
 import VueApexCharts from "vue3-apexcharts";
+import { unlockBadge, isBadgeUnlocked } from '@/utils/badges';
 
 export default {
   name: 'SkillsWheelGame',
@@ -230,6 +241,12 @@ export default {
       currentSkill: null,
       showAnswerOptions: false,
       showResults: false,
+      badgeSkillWheelId: 4,
+      showBadgeUnlockAnimation: false,
+      badgeData: {
+        name: "Explorateur de Compétences",
+        description: "Bravo ! Tu as complété la Roue des Compétences et découvert tes forces et faiblesses !"
+      },
       spinDuration: 3000, // Milliseconds
       minSpins: 2, // Minimum number of full rotations
       maxSpins: 5, // Maximum number of full rotations
@@ -605,9 +622,28 @@ export default {
       }
     },
     
+    closeBadgeAnimation() {
+      this.showBadgeUnlockAnimation = false;
+    },
+
+    // Unlock the completion badge and show animation
+    unlockCompletionBadge() {
+      if (!isBadgeUnlocked(this.badgeSkillWheelId)) {
+        const badgeUnlocked = unlockBadge(this.badgeSkillWheelId);
+        if (badgeUnlocked) {
+          setTimeout(() => {
+            this.showBadgeUnlockAnimation = true;
+          }, 1500);
+        }
+      }
+    },
+
     // End the game and show results
     endGame() {
       this.showResults = true;
+
+      // unlock badge and show animation
+      this.unlockCompletionBadge();
       
       // Save results to localStorage if needed
       this.saveResults();
@@ -853,6 +889,91 @@ export default {
   font-size: 1.1rem;
   color: #333;
   line-height: 1.5;
+}
+
+/* Ajouter ces styles dans la section <style> existante du composant */
+
+/* Animation du badge débloqué */
+.badge-unlock-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100; /* Plus élevé que les autres modales */
+  animation: fadeIn 0.5s ease-out;
+}
+
+.badge-unlock-animation {
+  background-color: #fff;
+  border-radius: 20px;
+  padding: 30px;
+  text-align: center;
+  max-width: 400px;
+  box-shadow: 0 0 30px rgba(255, 152, 0, 0.6); /* Couleur adaptée au thème Roue des Compétences */
+  animation: scaleIn 0.5s ease-out;
+}
+
+.badge-unlock-animation .badge-icon {
+  font-size: 80px;
+  margin-bottom: 20px;
+  animation: pulse 2s infinite;
+  color: #FF9800; /* Couleur adaptée au thème */
+}
+
+.badge-unlock-animation h2 {
+  color: #FF9800; /* Couleur adaptée au thème */
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.badge-unlock-animation h3 {
+  color: #333;
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+}
+
+.badge-unlock-animation p {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.close-animation-btn {
+  background-color: #FF9800; /* Couleur adaptée au thème */
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 50px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.close-animation-btn:hover {
+  background-color: #F57C00; /* Version plus foncée */
+  transform: scale(1.05);
+}
+
+/* Ces animations sont déjà définies dans votre CSS, mais je les inclus au cas où */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
 }
 
 /* Welcome Screen */
