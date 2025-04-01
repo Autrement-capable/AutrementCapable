@@ -150,14 +150,14 @@ export default {
         },
         {
           id: 4,
-          title: 'Mémoire d\'éléphant',
-          description: 'Vous avez prouvé que vous avez une mémoire exceptionnelle !',
-          icon: '🧠',
-          iconColor: '#9C27B0',
+          title: 'Explorateur de compétences',
+          description: 'Vous avez exploré et identifié vos points forts et axes de développement !',
+          icon: '🎯',
+          iconColor: '#3F51B5',
           unlocked: false,
-          hint: 'Terminez le jeu de mémoire sans aucune erreur',
-          game: 'Jeu de Mémoire',
-          gameRoute: '/game-memory',
+          hint: 'Terminez la Roulette des Compétences et découvrez vos talents',
+          game: 'Roulette des Compétences',
+          gameRoute: '/roue-des-competences',
           shareable: true
         },
         {
