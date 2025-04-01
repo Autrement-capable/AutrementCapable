@@ -333,6 +333,8 @@ export default class RoomRenderer {
 
     getModelPath(modelName) {
       
+      const basePath = '/models/';
+
       // Mapping des noms de modèles vers leurs fichiers
       const modelPaths = {
         // Mobilier de base
@@ -371,7 +373,7 @@ export default class RoomRenderer {
       // Si le modèle n'est pas dans notre mapping, utiliser un modèle par défaut
       const modelFile = modelPaths[modelName];
       
-      return modelFile;
+      return basePath + modelFile;
     }
 
     loadObjectsByCategory(category) {
