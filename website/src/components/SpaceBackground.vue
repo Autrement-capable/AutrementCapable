@@ -162,6 +162,32 @@
             <div class="tentacle"></div>
           </div>
         </div>
+
+        <!-- Whale -->
+        <div class="whale">
+          <div class="whale-body">
+            <div class="whale-head"></div>
+            <div class="whale-eye"></div>
+            <div class="whale-mouth"></div>
+            <div class="whale-fin whale-fin-dorsal"></div>
+            <div class="whale-fin whale-fin-pectoral"></div>
+            <div class="whale-fin whale-fin-tail"></div>
+            <div class="whale-pattern"></div>
+            <div class="whale-blowhole"></div>
+            <!-- Whale spout (only appears occasionally) -->
+            <div class="whale-spout"></div>
+          </div>
+          <!-- Subtle water displacement effect -->
+          <div class="whale-water-displacement"></div>
+          <!-- Bubbles trail -->
+          <div class="whale-bubbles">
+            <div class="whale-bubble bubble-whale-1"></div>
+            <div class="whale-bubble bubble-whale-2"></div>
+            <div class="whale-bubble bubble-whale-3"></div>
+            <div class="whale-bubble bubble-whale-4"></div>
+            <div class="whale-bubble bubble-whale-5"></div>
+          </div>
+        </div>
         
         <!-- Sea floor -->
         <div class="sea-floor">
@@ -1110,6 +1136,315 @@ export default {
   10% { opacity: 0.8; }
   100% { 
     transform: translateY(-40px) translateX(-10px);
+    opacity: 0;
+  }
+}
+
+/* Whale */
+.whale {
+  position: absolute;
+  width: 350px;
+  height: 120px;
+  top: 65%;
+  left: 100px;
+  z-index: 2;
+  animation: whaleSwim 90s linear infinite;
+  transform-style: preserve-3d;
+  transform: scaleX(-1);
+}
+
+.whale-body {
+  position: absolute;
+  width: 300px;
+  height: 100px;
+  background: linear-gradient(to bottom,
+    #1a3a63 0%,
+    #274875 40%,
+    #2c5188 70%,
+    #3a5fa0 85%,
+    #4a6fb0 100%);
+  border-radius: 40% 60% 60% 40% / 60% 60% 40% 40%;
+  box-shadow: inset 0 -10px 20px rgba(0, 0, 0, 0.3);
+  transform-origin: center;
+  animation: whaleBodyMove 8s ease-in-out infinite;
+  z-index: 2;
+}
+
+.whale-head {
+  position: absolute;
+  width: 120px;
+  height: 80px;
+  top: 10px;
+  left: -30px;
+  background: #274875;
+  border-radius: 40% 20% 20% 40% / 50%;
+  transform: rotate(-5deg);
+}
+
+.whale-eye {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: #000;
+  border-radius: 50%;
+  top: 30px;
+  left: 30px;
+  z-index: 3;
+}
+
+.whale-eye::after {
+  content: '';
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: #fff;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  opacity: 0.8;
+}
+
+.whale-mouth {
+  position: absolute;
+  width: 60px;
+  height: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 50%;
+  top: 70px;
+  left: 10px;
+  transform: rotate(-5deg);
+}
+
+.whale-blowhole {
+  position: absolute;
+  width: 10px;
+  height: 5px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 50%;
+  top: 5px;
+  left: 50px;
+  transform: rotate(-5deg);
+}
+
+.whale-spout {
+  position: absolute;
+  width: 5px;
+  height: 40px;
+  background: linear-gradient(to top, 
+    rgba(255, 255, 255, 0.8) 0%,
+    rgba(200, 240, 255, 0.5) 50%,
+    rgba(200, 240, 255, 0) 100%);
+  top: -40px;
+  left: 52px;
+  filter: blur(1px);
+  opacity: 0;
+  animation: whaleSpout 20s ease-in-out infinite;
+  z-index: 1;
+}
+
+.whale-fin {
+  position: absolute;
+  background: #1a3a63;
+  z-index: 1;
+}
+
+.whale-fin-dorsal {
+  width: 50px;
+  height: 40px;
+  top: -30px;
+  left: 160px;
+  border-radius: 80% 0 0 0;
+  transform-origin: bottom right;
+  animation: whaleDorsalFinMove 8s ease-in-out infinite;
+}
+
+.whale-fin-pectoral {
+  width: 70px;
+  height: 25px;
+  top: 60px;
+  left: 80px;
+  border-radius: 50% 50% 0 50%;
+  transform: rotate(-30deg);
+  transform-origin: top left;
+  animation: whalePectoralFinMove 6s ease-in-out infinite alternate;
+}
+
+.whale-fin-tail {
+  width: 70px;
+  height: 60px;
+  top: 20px;
+  right: -30px;
+  border-radius: 0 50% 0 50%;
+  transform-origin: left center;
+  animation: whaleTailMove 4s ease-in-out infinite alternate;
+}
+
+.whale-pattern {
+  position: absolute;
+  width: 200px;
+  height: 50px;
+  top: 30px;
+  left: 50px;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 5px,
+    rgba(255, 255, 255, 0.1) 5px,
+    rgba(255, 255, 255, 0.1) 10px
+  );
+  border-radius: 40% 60% 60% 40% / 60%;
+  opacity: 0.5;
+}
+
+.whale-water-displacement {
+  position: absolute;
+  width: 400px;
+  height: 30px;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 255, 255, 0.3) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 100%
+  );
+  border-radius: 50%;
+  bottom: -15px;
+  left: -50px;
+  filter: blur(8px);
+  opacity: 0.5;
+  z-index: 1;
+  transform: scaleX(1.5);
+}
+
+.whale-bubbles {
+  position: absolute;
+  top: 40px;
+  right: -20px;
+  z-index: 1;
+}
+
+.whale-bubble {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.5), inset 0 0 5px rgba(255, 255, 255, 0.5);
+  animation: whaleBubbleRise 4s ease-in-out infinite;
+  opacity: 0;
+}
+
+.bubble-whale-1 {
+  width: 12px;
+  height: 12px;
+  right: 0;
+  animation-delay: 0s;
+}
+
+.bubble-whale-2 {
+  width: 8px;
+  height: 8px;
+  right: 15px;
+  animation-delay: 0.8s;
+}
+
+.bubble-whale-3 {
+  width: 6px;
+  height: 6px;
+  right: 5px;
+  top: 10px;
+  animation-delay: 1.6s;
+}
+
+.bubble-whale-4 {
+  width: 10px;
+  height: 10px;
+  right: 20px;
+  top: -5px;
+  animation-delay: 2.4s;
+}
+
+.bubble-whale-5 {
+  width: 7px;
+  height: 7px;
+  right: 10px;
+  top: 15px;
+  animation-delay: 3.2s;
+}
+
+/* Whale animations */
+@keyframes whaleSwim {
+  0% {
+    transform: translateX(calc(100vw + 100px)) translateY(0);
+    opacity: 0;
+  }
+  5% {
+    transform: translateX(calc(100vw)) translateY(0);
+    opacity: 1;
+  }
+  45% {
+    transform: translateX(200px) translateY(-50px);
+  }
+  48% {
+    transform: translateX(150px) translateY(-30px);
+    opacity: 1;
+  }
+  50% {
+    transform: translateX(0) translateY(0);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0) translateY(0);
+    opacity: 0;
+  }
+}
+
+@keyframes whaleBodyMove {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+@keyframes whaleDorsalFinMove {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-5deg); }
+}
+
+@keyframes whalePectoralFinMove {
+  0% { transform: rotate(-20deg); }
+  100% { transform: rotate(-40deg); }
+}
+
+@keyframes whaleTailMove {
+  0% { transform: rotate(-10deg); }
+  100% { transform: rotate(10deg); }
+}
+
+@keyframes whaleSpout {
+  0%, 90%, 100% { 
+    height: 0;
+    opacity: 0;
+  }
+  92% {
+    height: 40px;
+    opacity: 0.8;
+  }
+  96% {
+    height: 60px;
+    opacity: 0.5;
+  }
+  98% {
+    height: 70px;
+    opacity: 0.2;
+  }
+}
+
+@keyframes whaleBubbleRise {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-60px) translateX(-20px);
     opacity: 0;
   }
 }
