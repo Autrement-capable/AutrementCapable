@@ -1,6 +1,6 @@
 <!-- SpaceBackground.vue -->
 <template>
-  <div class="space-background" :class="theme">
+  <div class="space-background" :class="[theme, { 'animations-disabled': !animationsEnabled }]">
     <!-- Container for all space elements -->
     <div class="space-elements">
       <!-- Dynamic space elements based on the selected theme -->
@@ -403,6 +403,10 @@ export default {
       type: String,
       default: 'cosmic',
       validator: (value) => ['cosmic', 'ocean', 'cyberpunk', 'forest'].includes(value)
+    },
+    animationsEnabled: {
+      type: Boolean,
+      default: true
     }
   },
   methods: {
@@ -2460,6 +2464,18 @@ export default {
   animation: fireflyGlow 3s ease-in-out infinite alternate, fireflyHover 20s linear infinite;
   will-change: opacity, transform;
 }
+
+.animations-disabled * {
+  animation-play-state: paused !important;
+  transition: none !important;
+}
+
+/* Optionnel: Style pour les éléments qui devraient être complètement figés */
+.animations-disabled .space-elements * {
+  animation: none !important;
+  transform: none !important;
+}
+
 
 /* 
 * ANIMATIONS 

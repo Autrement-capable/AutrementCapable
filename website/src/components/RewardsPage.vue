@@ -1,5 +1,7 @@
 <template>
-  <space-background :theme=getCurrentTheme() />
+  <space-background v-if="animationsEnabled" :theme="currentTheme" />
+  <static-backgrounds v-else :theme="currentTheme" />
+  
   <div class="rewards-container" :class="{ 'high-contrast': highContrastMode }">
     <h1 class="main-title">Mes Badges</h1>
     
@@ -7,6 +9,10 @@
     <div class="accessibility-controls">
       <button @click="toggleContrast" class="accessibility-btn" aria-label="Changer le mode contraste">
         <span v-if="highContrastMode">🌓</span><span v-else>🌑</span>
+      </button>
+      <!-- Bouton pour activer/désactiver les animations -->
+      <button @click="toggleAnimations" class="accessibility-btn" aria-label="Activer/désactiver les animations">
+        <span v-if="animationsEnabled">🎬</span><span v-else>📷</span>
       </button>
     </div>
 
@@ -109,11 +115,14 @@
 
 <script>
 import SpaceBackground from '@/components/SpaceBackground.vue';
+import StaticBackgrounds from '@/components/StaticBackgrounds.vue';
+import { BackgroundManager } from '@/utils/BackgroundManager';
 
 export default {
   name: 'RewardsPage',
   components: {
-    SpaceBackground
+    SpaceBackground,
+    StaticBackgrounds
   },
   data() {
     return {
@@ -217,7 +226,10 @@ export default {
       ],
       selectedBadge: null,
       highContrastMode: false,
-      textSizeLevel: 0
+      textSizeLevel: 0,
+
+      currentTheme: 'cosmic',
+      animationsEnabled: true
     };
   },
   computed: {
@@ -238,10 +250,16 @@ export default {
     // Chargement des préférences d'accessibilité
     this.loadAccessibilitySettings();
     
+    this.currentTheme = BackgroundManager.getCurrentTheme();
+    this.animationsEnabled = BackgroundManager.areAnimationsEnabled();
+
     // On pourrait aussi chargement les badges depuis localStorage
     this.loadBadges();
   },
   methods: {
+    toggleAnimations() {
+      this.animationsEnabled = BackgroundManager.toggleAnimations();
+    },
     getCurrentTheme() {
         return localStorage.getItem('dashboard-theme') || 'space';
     },

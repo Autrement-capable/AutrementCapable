@@ -1,6 +1,7 @@
 <template>
   <div class="dashboard" :class="{ 'achievements-unlocked': hasNewAchievement, 'games-zoomed': gamesZoomed }">
-    <space-background :theme="currentTheme" />
+    <space-background v-if="animationsEnabled" :theme="currentTheme" />
+    <static-backgrounds v-else :theme="currentTheme" />
     <!-- La structure principale -->
     <div class="dashboard-container">
       <div class="click-outside-overlay" v-if="gamesZoomed" @click="exitGamesZoom"></div>
@@ -305,12 +306,21 @@
       </div>
       <div class="theme-selector">
         <div class="theme-option" 
-             v-for="theme in availableThemes" 
-             :key="theme.value"
-             @click="changeTheme(theme.value)"
-             :class="{ 'active': currentTheme === theme.value }">
+            v-for="theme in availableThemes" 
+            :key="theme.value"
+            @click="changeTheme(theme.value)"
+            :class="{ 'active': currentTheme === theme.value }">
           <div class="theme-icon" :class="theme.value"></div>
           <span>{{ theme.label }}</span>
+        </div>
+        
+        <div class="theme-option animation-toggle"
+            @click="toggleAnimations"
+            :class="{ 'active': animationsEnabled }">
+          <div class="theme-icon animation-icon">
+            <i :class="animationsEnabled ? 'mdi-animation-play' : 'mdi-animation-play-outline'"></i>
+          </div>
+          <span>{{ animationsEnabled ? 'Animations ON' : 'Animations OFF' }}</span>
         </div>
       </div>
     </div>
@@ -319,11 +329,13 @@
 
 <script>
 import SpaceBackground from '@/components/SpaceBackground.vue';
+import StaticBackgrounds from '@/components/StaticBackgrounds.vue';
 
 export default {
   name: 'ImmersiveDashboard',
   components: {
-    SpaceBackground
+    SpaceBackground,
+    StaticBackgrounds
   },
   data() {
     return {
@@ -343,6 +355,7 @@ export default {
       hasNewAchievement: false,
       currentAchievement: '',
       gamesZoomed: false,
+      animationsEnabled: true,
       notifications: {
         formations: 3,
         badges: 1,
@@ -700,16 +713,30 @@ export default {
       setTimeout(() => {
         this.hasNewAchievement = false;
       }, 4000);
-    }
+    },
+    toggleAnimations() {
+      this.animationsEnabled = !this.animationsEnabled;
+      
+      // Sauvegarder la préférence dans localStorage
+      localStorage.setItem('dashboard-animations', this.animationsEnabled.toString());
+      
+      // Feedback tactile si disponible
+      if (window.navigator && window.navigator.vibrate) {
+        window.navigator.vibrate(50);
+      }
+    },
   },
   mounted() {
-
     const savedTheme = localStorage.getItem('dashboard-theme');
     if (savedTheme && this.availableThemes.some(theme => theme.value === savedTheme)) {
       this.currentTheme = savedTheme;
     }
+
+    const savedAnimationPref = localStorage.getItem('dashboard-animations');
+    if (savedAnimationPref !== null) {
+      this.animationsEnabled = savedAnimationPref === 'true';
+    }
     
-    // Flag to track theme change achievement
     this.themeChangeAchieved = false;
     
     // Simulate notifications periodically
@@ -853,6 +880,47 @@ export default {
 .theme-option:hover span,
 .theme-option.active span {
   opacity: 1;
+}
+
+.animation-toggle {
+  margin-left: 10px;
+  background-color: rgba(30, 30, 45, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.animation-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-3px);
+}
+
+.animation-toggle.active {
+  border-color: #4FC3F7;
+  box-shadow: 0 0 15px rgba(79, 195, 247, 0.5);
+}
+
+.animation-toggle:not(.active) {
+  opacity: 0.7;
+}
+
+.animation-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
+  color: #fff;
+}
+
+.animation-icon i {
+  transition: all 0.3s ease;
+}
+
+.animation-toggle.active .animation-icon i {
+  color: #4FC3F7;
+}
+
+.animation-toggle:not(.active) .animation-icon i {
+  color: #aaa;
 }
 
 /* Add animation for changing themes */
@@ -1949,7 +2017,6 @@ export default {
   animation: cosmicRotate 15s linear infinite;
 }
 
-/* Add cosmic pulse to avatar when active */
 .avatar-glow.pulse {
   animation: cosmicPulse 1s;
 }
@@ -1988,6 +2055,47 @@ export default {
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3),
               0 0 15px rgba(79, 195, 247, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.animation-toggle {
+  margin-left: 10px;
+  background-color: rgba(30, 30, 45, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.animation-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-3px);
+}
+
+.animation-toggle.active {
+  border-color: #4FC3F7;
+  box-shadow: 0 0 15px rgba(79, 195, 247, 0.5);
+}
+
+.animation-toggle:not(.active) {
+  opacity: 0.7;
+}
+
+.animation-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
+  color: #fff;
+}
+
+.animation-icon i {
+  transition: all 0.3s ease;
+}
+
+.animation-toggle.active .animation-icon i {
+  color: #4FC3F7;
+}
+
+.animation-toggle:not(.active) .animation-icon i {
+  color: #aaa;
 }
 
 @keyframes enhancedSlideUp {
