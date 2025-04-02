@@ -373,15 +373,15 @@ export default class RoomRenderer {
         notebook: '/notebook/scene.gltf',
         whiteboard: '/whiteboard/scene.gltf',
         cushion: '/cushion/scene.gltf',
-        speakers: 'tech/speakers.glb',
+        // speakers: 'tech/speakers.glb',
         coffeemaker: '/coffeemaker/scene.gltf',
-        colorbox: 'sensory/colorbox.glb',
-        textureboard: 'sensory/textureboard.glb',
-        lightpanel: 'sensory/lightpanel.glb',
-        bench: 'furniture/bench.glb',
-        bench2: 'furniture/bench.glb', // Même modèle mais position différente
-        sign: 'decor/sign.glb',
-        clock: 'decor/wall_clock.glb',
+        // colorbox: 'sensory/colorbox.glb',
+        // textureboard: 'sensory/textureboard.glb',
+        // lightpanel: 'sensory/lightpanel.glb',
+        // bench: 'furniture/bench.glb',
+        // bench2: 'furniture/bench.glb', // Même modèle mais position différente
+        // sign: 'decor/sign.glb',
+        // clock: 'decor/wall_clock.glb',
         moi: '/conference_table/moi.gltf',
       };
       
@@ -401,19 +401,23 @@ export default class RoomRenderer {
       
       // Obtenir la liste des objets pour cette catégorie
       const objects = this.objectCategories[category] || this.objectCategories.minimal;
-
+      console.log(`Loading ${objects.length} objects for category: ${category}`);
+    
       const categoryConfig = this.categoryConfigurations[category] || {};
       
       this.totalModelsToLoad = objects.length;
       this.loadedModelsCount = 0;
       this.loadingProgress = 0;
-
+    
       if (this.onLoadingProgressCallback) {
         this.onLoadingProgressCallback(0, this.totalModelsToLoad);
       }
-
+    
       // Charger chaque objet avec sa position prédéfinie
       const loadPromises = objects.map((objectName) => {
+        // Log which model we're trying to load
+        console.log(`Attempting to load model: ${objectName}`);
+        
         // Utiliser la configuration prédéfinie si disponible, sinon utiliser des valeurs par défaut
         const config = categoryConfig[objectName] || {
           position: [this.room.width/2, 0, this.room.depth/2],
@@ -424,23 +428,52 @@ export default class RoomRenderer {
         // Ajuster la position en fonction de la taille de la pièce si nécessaire
         const position = this.adjustPositionToRoomSize(config.position);
         
+        // Get the model path before loading to check if it's correct
+        const modelPath = this.getModelPath(objectName);
+        console.log(`Model path for ${objectName}: ${modelPath}`);
+        
         return this.loadModel(objectName, position, config.scale, config.rotation)
-        .then(model => {
-          this.loadedModelsCount++;
-          this.loadingProgress = (this.loadedModelsCount / this.totalModelsToLoad) * 100;
-          
-          // Notify the Vue component of progress
-          if (this.onLoadingProgressCallback) {
-            this.onLoadingProgressCallback(
-              this.loadingProgress, 
-              this.totalModelsToLoad,
-              objectName
-            );
-          }
-          return model;
-        });
+          .then(model => {
+            this.loadedModelsCount++;
+            this.loadingProgress = (this.loadedModelsCount / this.totalModelsToLoad) * 100;
+            
+            console.log(`Successfully loaded model: ${objectName} (${this.loadedModelsCount}/${this.totalModelsToLoad})`);
+            
+            // Notify the Vue component of progress
+            if (this.onLoadingProgressCallback) {
+              this.onLoadingProgressCallback(
+                this.loadingProgress, 
+                this.totalModelsToLoad,
+                objectName
+              );
+            }
+            return model;
+          })
+          .catch(error => {
+            // Better error handling - still count failed models as "loaded" to avoid stalling
+            console.error(`Failed to load model ${objectName}: ${error}`);
+            this.loadedModelsCount++;
+            this.loadingProgress = (this.loadedModelsCount / this.totalModelsToLoad) * 100;
+            
+            // Notify about the error but continue loading other models
+            if (this.onLoadingProgressCallback) {
+              this.onLoadingProgressCallback(
+                this.loadingProgress, 
+                this.totalModelsToLoad,
+                `${objectName} (échec)`
+              );
+            }
+            
+            // Return null for failed models instead of rejecting the promise
+            return null;
+          });
       });
+      
       return Promise.all(loadPromises)
+        .then(models => {
+          console.log(`Completed loading ${models.filter(m => m !== null).length}/${objects.length} models for category ${category}`);
+          return models.filter(m => m !== null); // Filter out failed models (null)
+        });
     }
 
     adjustPositionToRoomSize(position) {
