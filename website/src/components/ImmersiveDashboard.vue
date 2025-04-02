@@ -318,7 +318,6 @@
             @click="toggleAnimations"
             :class="{ 'active': animationsEnabled }">
           <div class="theme-icon animation-icon">
-            <i :class="animationsEnabled ? 'mdi-animation-play' : 'mdi-animation-play-outline'"></i>
           </div>
           <span>{{ animationsEnabled ? 'Animations ON' : 'Animations OFF' }}</span>
         </div>
