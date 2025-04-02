@@ -360,17 +360,15 @@ export default {
 .rewards-container {
   position: absolute;
   max-width: 1000px;
-  margin: 20px auto 30px;
-  padding: 15px 10px;
-  font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', sans-serif;
+  width: 90%;
+  padding: 20px;
   background-color: #f8f9fa;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  border-radius: 20px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 90%;
+  transition: all 0.3s ease;
   z-index: 1000;
   max-height: 90vh;
   overflow-y: auto;
@@ -442,8 +440,8 @@ export default {
 
 .close-modal-btn {
   position: absolute;
-  top: 10px;
-  right: 0px;
+  top: 15px;
+  right: 15px;
   background: transparent;
   border: none;
   color: #4A4D9E;
