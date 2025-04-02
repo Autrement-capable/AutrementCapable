@@ -1,37 +1,56 @@
+// utils/BackgroundManager.js
+import { ref } from 'vue';
+
+// Classe utilitaire
 export const BackgroundManager = {
-    // Obtenir le thème actuel depuis localStorage
-    getCurrentTheme() {
-      return localStorage.getItem('dashboard-theme') || 'cosmic';
-    },
+  getCurrentTheme() {
+    return localStorage.getItem('dashboard-theme') || 'cosmic';
+  },
   
-    // Vérifier si les animations sont activées
-    areAnimationsEnabled() {
-      const animationsEnabled = localStorage.getItem('dashboard-animations');
-      // Si null, par défaut les animations sont activées
-      return animationsEnabled === null ? true : animationsEnabled === 'true';
-    },
+  setCurrentTheme(theme) {
+    localStorage.setItem('dashboard-theme', theme);
+    return theme;
+  },
   
-    // Définir le thème actuel
-    setCurrentTheme(theme) {
-      if (theme && ['cosmic', 'ocean', 'cyberpunk', 'forest'].includes(theme)) {
-        localStorage.setItem('dashboard-theme', theme);
-        return true;
-      }
-      return false;
-    },
+  areAnimationsEnabled() {
+    const storedValue = localStorage.getItem('dashboard-animations');
+    // Si aucune valeur n'est stockée, on retourne true par défaut
+    return storedValue === null ? true : storedValue === 'true';
+  },
   
-    // Activer/désactiver les animations
-    setAnimationsEnabled(enabled) {
-      localStorage.setItem('dashboard-animations', enabled.toString());
-      return true;
-    },
+  setAnimationsEnabled(enabled) {
+    localStorage.setItem('dashboard-animations', enabled.toString());
+    return enabled;
+  },
   
-    // Basculer l'état des animations
-    toggleAnimations() {
-      const current = this.areAnimationsEnabled();
-      this.setAnimationsEnabled(!current);
-      return !current;
-    }
+  toggleAnimations() {
+    const current = this.areAnimationsEnabled();
+    return this.setAnimationsEnabled(!current);
+  }
+};
+
+// Composition function pour Vue 3
+export function useBackground() {
+  const currentTheme = ref(BackgroundManager.getCurrentTheme());
+  const animationsEnabled = ref(BackgroundManager.areAnimationsEnabled());
+  
+  const changeTheme = (theme) => {
+    currentTheme.value = BackgroundManager.setCurrentTheme(theme);
   };
   
-  export default BackgroundManager;
+  const toggleAnimations = () => {
+    animationsEnabled.value = BackgroundManager.toggleAnimations();
+  };
+  
+  const setAnimationsEnabled = (enabled) => {
+    animationsEnabled.value = BackgroundManager.setAnimationsEnabled(enabled);
+  };
+  
+  return {
+    currentTheme,
+    animationsEnabled,
+    changeTheme,
+    toggleAnimations,
+    setAnimationsEnabled
+  };
+}
