@@ -292,18 +292,21 @@
           <p>{{ currentAchievement }}</p>
         </div>
       </div>
-      
-      <!-- Écran modal pour afficher les sections -->
-      <div class="modal" v-if="activeModal" @click="closeModal">
-        <div class="modal-content" :class="activeModal" @click.stop>
-          <button class="close-button" @click="closeModal">×</button>
-          <h2>{{ getModalTitle() }}</h2>
-          <div class="modal-body">
-            <p>Contenu de la section {{ activeModal }}</p>
-            <!-- Le contenu sera dynamique selon la section -->
-          </div>
-        </div>
-      </div>
+
+      <badges-component 
+        v-if="activeModal === 'badges'"
+        :currentTheme="currentTheme"
+        :animationsEnabled="animationsEnabled"
+        @toggle-animations="toggleAnimations"
+        @close="activeModal = null"
+      />
+      <profile-component 
+        v-if="activeModal === 'profile'"
+        :currentTheme="currentTheme"
+        :animationsEnabled="animationsEnabled"
+        @toggle-animations="toggleAnimations"
+        @close="activeModal = null"
+      />
       <div class="theme-selector">
         <div class="theme-option" 
             v-for="theme in availableThemes" 
@@ -329,12 +332,16 @@
 <script>
 import SpaceBackground from '@/components/SpaceBackground.vue';
 import StaticBackgrounds from '@/components/StaticBackgrounds.vue';
+import BadgesComponent from '@/components/RewardsComponent.vue';
+import ProfileComponent from '@/components/ProfileComponent.vue';
 
 export default {
   name: 'ImmersiveDashboard',
   components: {
     SpaceBackground,
-    StaticBackgrounds
+    StaticBackgrounds,
+    BadgesComponent,
+    ProfileComponent
   },
   data() {
     return {
@@ -603,7 +610,8 @@ export default {
       }
 
       if (section === 'profile') {
-        this.$router.push('/user-profile');
+        this.activeModal = 'profile';
+        this.triggerProfileAnimation();
         
         // Réduire la notification
         if (this.notifications[section] > 0) {
@@ -613,7 +621,7 @@ export default {
       }
 
       if (section === 'badges') {
-        this.$router.push('/badges');
+        this.activeModal = 'badges';
  
         // Réduire la notification
         if (this.notifications[section] > 0) {
@@ -713,8 +721,12 @@ export default {
         this.hasNewAchievement = false;
       }, 4000);
     },
-    toggleAnimations() {
-      this.animationsEnabled = !this.animationsEnabled;
+    toggleAnimations(value) {
+      if (typeof value !== 'undefined') {
+        this.animationsEnabled = value;
+      } else {
+        this.animationsEnabled = !this.animationsEnabled;
+      }
       
       // Sauvegarder la préférence dans localStorage
       localStorage.setItem('dashboard-animations', this.animationsEnabled.toString());
@@ -723,7 +735,7 @@ export default {
       if (window.navigator && window.navigator.vibrate) {
         window.navigator.vibrate(50);
       }
-    },
+    }
   },
   mounted() {
     const savedTheme = localStorage.getItem('dashboard-theme');
@@ -2289,8 +2301,30 @@ export default {
 }
 
 .modal-body {
-  padding: 15px 0;
+  height: 100%;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
 }
+
+.modal-content.badges,
+.modal-content.profile {
+  width: 90%;
+  height: 90%;
+  max-width: 1000px;
+  max-height: 800px;
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.modal-content.badges .modal-body,
+.modal-content.profile .modal-body {
+  height: 100%;
+  padding: 0;
+  position: relative;
+}
+
 
 /* Adaptations pour les écrans plus petits */
 @media (max-width: 768px) {
