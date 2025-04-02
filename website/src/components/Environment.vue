@@ -296,6 +296,21 @@
           </div>
         </div>
       </div>
+      <!-- Loading overlay for 3D models -->
+      <div v-if="modelsLoading" class="models-loading-overlay">
+        <div class="loading-container">
+          <h3>Chargement de l'environnement</h3>
+          <div class="loading-bar">
+            <div class="loading-progress" :style="{ width: loadingProgress + '%' }"></div>
+          </div>
+          <div class="loading-text">
+            {{ Math.round(loadingProgress) }}% - Chargement des objets 3D...
+          </div>
+          <div v-if="currentLoadingItem" class="loading-item">
+            Chargement: {{ currentLoadingItem }}
+          </div>
+        </div>
+      </div>
     </div>
     
     <!-- Message de confirmation -->
@@ -343,6 +358,7 @@ export default {
       showFeedbackMessage: false,
       rendererInitialized: false,
       showEnvironmentSelector: false,
+      currentLoadingItem: '',
       
       // Progression du parcours
       currentStep: 1,
@@ -676,6 +692,19 @@ export default {
       if (this.$refs.container) {
         this.renderer = new RoomRenderer(this.$refs.container);
         
+        // Set up loading progress callback
+        this.renderer.setLoadingProgressCallback((progress, total, currentItem) => {
+          this.loadingProgress = progress;
+          this.currentLoadingItem = currentItem || '';
+          
+          // If progress is 100%, wait a moment before hiding the loading indicator
+          if (progress >= 100) {
+            setTimeout(() => {
+              this.modelsLoading = false;
+            }, 500); // Short delay to ensure everything is rendered
+          }
+        });
+        
         // Attendre un court délai pour s'assurer que le renderer est prêt
         setTimeout(() => {
           this.rendererInitialized = true;
@@ -743,6 +772,11 @@ export default {
       this.currentEnvironmentIndex = index;
       const env = this.environments[index];
       
+      // Show loading overlay
+      this.modelsLoading = true;
+      this.loadingProgress = 0;
+      this.currentLoadingItem = 'Initialisation...';
+
       // Réinitialiser les onglets complétés pour le nouvel environnement
       this.completedTabs = [];
       this.activeControlTab = 'light';
@@ -1159,16 +1193,16 @@ export default {
         // Indiquer que le chargement est en cours
         this.modelsLoading = true;
         this.loadingProgress = 0;
+        this.currentLoadingItem = '';
         
         // Effacer tous les objets existants
         
         // Charger les nouveaux objets selon la catégorie sélectionnée
         this.renderer.loadObjectsByCategory(this.selectedObjectCategory)
           .then(() => {
-            // Chargement terminé
-            this.modelsLoading = false;
-            this.loadingProgress = 100;
-            
+            setTimeout(() => {
+              this.modelsLoading = false;
+            }, 500);
             // Synchroniser les données
             this.syncFurnitureData();
             this.saveCurrentCustomization('space');
@@ -1598,6 +1632,36 @@ export default {
   color: #555;
 }
 
+.models-loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.loading-container {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+}
+
+.loading-container h3 {
+  margin-top: 0;
+  color: #2b6bff;
+  margin-bottom: 15px;
+}
+
 .loading-indicator {
   margin-top: 15px;
   padding: 10px;
@@ -1606,24 +1670,30 @@ export default {
 }
 
 .loading-bar {
-  height: 8px;
+  height: 10px;
   background: #eee;
-  border-radius: 4px;
+  border-radius: 5px;
   overflow: hidden;
-  margin-bottom: 5px;
+  margin-bottom: 10px;
 }
 
 .loading-progress {
   height: 100%;
   background: #2b6bff;
-  border-radius: 4px;
+  border-radius: 5px;
   transition: width 0.3s ease;
 }
 
 .loading-text {
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+.loading-item {
   font-size: 0.8rem;
-  color: #666;
-  text-align: center;
+  color: #888;
+  font-style: italic;
 }
 
 .activity-explanation {
