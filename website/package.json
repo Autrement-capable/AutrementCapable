@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
+    "@simplewebauthn/browser": "^13.1.0",
     "@tresjs/cientos": "^4.1.0",
     "@tresjs/core": "^4.3.3",
     "@vue/runtime-dom": "^3.5.13",
