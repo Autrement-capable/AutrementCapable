@@ -1,8 +1,10 @@
 from typing import Optional, List
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, func, LargeBinary
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, func, LargeBinary, JSON
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from database.postgress.config import Base
+
+## AUTH
 
 class Role(AsyncAttrs, Base):
     __tablename__ = "roles"
@@ -51,7 +53,8 @@ class User(AsyncAttrs, Base):
     )
     account_recovery: Mapped[list["AccountRecovery"]] = relationship(back_populates="user", lazy="selectin", cascade="all, delete-orphan")
     passkey_credentials: Mapped[list["PasskeyCredential"]] = relationship(back_populates="user", lazy="selectin", cascade="all, delete-orphan")
-
+    skills: Mapped[list["UserSkill"]] = relationship(back_populates="user", lazy="selectin", cascade="all, delete-orphan")
+    abilities: Mapped[list["UserAbilities"]] = relationship(back_populates="user", lazy="selectin", cascade="all, delete-orphan")
 
 class AccountRecovery(AsyncAttrs, Base):
     __tablename__ = "account_recovery"
@@ -86,3 +89,46 @@ class PasskeyCredential(AsyncAttrs, Base):
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     user: Mapped["User"] = relationship(back_populates="passkey_credentials", lazy="selectin")
+
+## DATA
+
+## Schema may change so we do json instead of individual columns
+## Data validation does not exist as a result
+class UserSkill(Base):
+    __tablename__ = "user_skills"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    skills_data: Mapped[dict] = mapped_column(JSON, nullable=False, default={})
+    # Example:
+    # {
+    #   "empathie": 10,
+    #   "initiative": 8,
+    #   "communication": 12,
+    #   ...
+    # }
+    last_updated: Mapped[DateTime] = mapped_column(DateTime, server_default=func.now())
+
+    # Relationships
+    user: Mapped["User"] = relationship(back_populates="skills")
+
+
+## same shit schema can change
+class UserAbilities(Base):
+    __tablename__ = "user_abilities"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    abilities_data: Mapped[dict] = mapped_column(JSON, nullable=False, default={})
+
+    # Example:
+    # {
+    #   "WantToLearn": ["Gestion du stress", ...],
+    #   "Unknow": ["Gestion du stress", ...],
+    #   "Weak": ["Gestion du stress", ...],
+    #   "Strong": ["Gestion du stress", ...],
+    #   "Skipped": ["Gestion du stress", ...],
+    # }
+
+    last_updated: Mapped[DateTime] = mapped_column(DateTime, server_default=func.now())
+    # Relationships
+    user: Mapped["User"] = relationship(back_populates="abilities")

@@ -3,6 +3,7 @@ import endpoints.auth.email_opps
 import endpoints.auth.loginRegisterEndpoint
 import endpoints.auth.passkeys
 import endpoints.auth.account_recovery
+import endpoints.data.skill_abilities
 
 
 from os import getenv
