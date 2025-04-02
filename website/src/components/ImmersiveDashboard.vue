@@ -936,8 +936,8 @@ export default {
   position: absolute;
   bottom: 20px;
   left: 20px;
-  width: 42px;
-  height: 42px;
+  width: 52px;
+  height: 52px;
   background: rgba(30, 30, 45, 0.7);
   border-radius: 50%;
   display: flex;
