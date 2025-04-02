@@ -979,8 +979,8 @@ body {
 .dashboard-button {
   position: fixed;
   bottom: 20px;
-  right: 80px; /* Positionné à gauche du bouton d'accessibilité */
-  background-color: #4CAF50; /* Couleur verte pour évoquer la maison */
+  right: 80px;
+  background-color: #4CAF50;
   color: white;
   padding: 8px;
   width: 52px;
