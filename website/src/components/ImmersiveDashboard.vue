@@ -307,7 +307,25 @@
         @toggle-animations="toggleAnimations"
         @close="activeModal = null"
       />
-      <div class="theme-selector">
+      <!-- Onglet de contrôle du thème -->
+      <div class="theme-tab" @click="toggleThemeMenu">
+        <div class="theme-tab-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5" />
+            <line x1="12" y1="1" x2="12" y2="3" />
+            <line x1="12" y1="21" x2="12" y2="23" />
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+            <line x1="1" y1="12" x2="3" y2="12" />
+            <line x1="21" y1="12" x2="23" y2="12" />
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+          </svg>
+        </div>
+      </div>
+
+      <!-- Sélecteur de thème modifié avec transition -->
+      <div class="theme-selector" :class="{ 'theme-selector-visible': themeMenuVisible }">
         <div class="theme-option" 
             v-for="theme in availableThemes" 
             :key="theme.value"
@@ -345,6 +363,7 @@ export default {
   },
   data() {
     return {
+      themeMenuVisible: false,
       currentTheme: 'cosmic',
       availableThemes: [
         { value: 'cosmic', label: 'Cosmic' },
@@ -386,6 +405,17 @@ export default {
     };
   },
   methods: {
+    toggleThemeMenu() {
+      this.themeMenuVisible = !this.themeMenuVisible;
+      
+      // Ajout d'une sensation tactile
+      if (window.navigator && window.navigator.vibrate) {
+        window.navigator.vibrate(50);
+      }
+      
+      // Stocker la préférence dans localStorage
+      localStorage.setItem('theme-menu-visible', this.themeMenuVisible.toString());
+    },
     handleGamesClick() {
       if (!this.gamesZoomed) {
         this.enterGamesZoom();
@@ -811,7 +841,7 @@ export default {
 .theme-selector {
   position: absolute;
   bottom: 20px;
-  left: 20px;
+  left: 80px;
   display: flex;
   gap: 15px;
   background: rgba(30, 30, 45, 0.7);
@@ -821,6 +851,19 @@ export default {
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
   z-index: 20;
+  transform: translateY(20px) translateX(25px);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform-origin: bottom left;
+  pointer-events: none;
+}
+
+.theme-selector-visible {
+  transform: translateY(0) translateX(0);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: all;
 }
 
 .theme-option {
@@ -891,6 +934,47 @@ export default {
 .theme-option:hover span,
 .theme-option.active span {
   opacity: 1;
+}
+
+.theme-tab {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  width: 42px;
+  height: 42px;
+  background: rgba(30, 30, 45, 0.7);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  z-index: 30;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(5px);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.theme-tab:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+  background: rgba(40, 40, 60, 0.8);
+}
+
+.theme-tab:active {
+  transform: scale(0.95);
+}
+
+.theme-tab-icon {
+  color: white;
+  width: 24px;
+  height: 24px;
+  animation: rotateIcon 10s linear infinite;
+}
+
+@keyframes rotateIcon {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .animation-toggle {
