@@ -19,6 +19,10 @@ export default class RoomRenderer {
       this.models3D = {};
       this.loaders = {};
       this.modelMeshes = [];
+      this.totalModelsToLoad = 0;
+      this.loadedModelsCount = 0;
+      this.loadingProgress = 0;
+      this.onLoadingProgressCallback = null;
 
       this.objectCategories = {
         minimal: ['desk', 'chair', 'lightbulb'],
@@ -387,6 +391,10 @@ export default class RoomRenderer {
       return basePath + modelFile;
     }
 
+    setLoadingProgressCallback(callback) {
+      this.onLoadingProgressCallback = callback;
+    }
+
     loadObjectsByCategory(category) {
       // D'abord, supprimer tous les modèles existants
       this.clearModels();
@@ -396,6 +404,14 @@ export default class RoomRenderer {
 
       const categoryConfig = this.categoryConfigurations[category] || {};
       
+      this.totalModelsToLoad = objects.length;
+      this.loadedModelsCount = 0;
+      this.loadingProgress = 0;
+
+      if (this.onLoadingProgressCallback) {
+        this.onLoadingProgressCallback(0, this.totalModelsToLoad);
+      }
+
       // Charger chaque objet avec sa position prédéfinie
       const loadPromises = objects.map((objectName) => {
         // Utiliser la configuration prédéfinie si disponible, sinon utiliser des valeurs par défaut
@@ -408,11 +424,23 @@ export default class RoomRenderer {
         // Ajuster la position en fonction de la taille de la pièce si nécessaire
         const position = this.adjustPositionToRoomSize(config.position);
         
-        // Charger le modèle avec les paramètres définis
-        return this.loadModel(objectName, position, config.scale, config.rotation);
+        return this.loadModel(objectName, position, config.scale, config.rotation)
+        .then(model => {
+          this.loadedModelsCount++;
+          this.loadingProgress = (this.loadedModelsCount / this.totalModelsToLoad) * 100;
+          
+          // Notify the Vue component of progress
+          if (this.onLoadingProgressCallback) {
+            this.onLoadingProgressCallback(
+              this.loadingProgress, 
+              this.totalModelsToLoad,
+              objectName
+            );
+          }
+          return model;
+        });
       });
-      
-      return Promise.all(loadPromises);
+      return Promise.all(loadPromises)
     }
 
     adjustPositionToRoomSize(position) {
