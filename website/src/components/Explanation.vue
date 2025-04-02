@@ -14,8 +14,7 @@ export default {
   name: 'UserExplanation',
   methods: {
     goToTest() {
-      // this.$router.push('/personal-test');
-      this.$router.push('/login');
+      this.$router.push('/personal-test');
     },
     speakText() {
       const text = "Créer un compte te permet de personnaliser tes expérience, de suivre tes progrès et d’accéder à toutes les fonctionnalités de notre plateforme de manière sécurisée.";

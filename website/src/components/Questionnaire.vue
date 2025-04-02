@@ -53,7 +53,12 @@
     </div>
 
     <div v-else class="completion-message">
-      <button @click="speedGame">Commencer le premier jeu</button>
+      <p>Nous allons maintenant créer votre compte avec une passkey pour la sécurité</p>
+      <div v-if="isRegistering" class="loading-spinner">
+        <div class="spinner"></div>
+        <p>Création de votre compte...</p>
+      </div>
+      <button v-else @click="createAccountAndStartGame" :disabled="isRegistering">Commencer le premier jeu</button>
       <p>Merci d'avoir répondu aux questions !</p>
     </div>
   </div>
@@ -72,6 +77,8 @@ export default {
       generatedImages: [],
       selectedAvatarUrl: '',
       isLoadingImages: false,
+      isRegistering: false,
+      registrationError: null,
       backgroundColors: ['#e0f7fa', '#e8f5e9', '#fce4ec', '#fff3e0', '#ede7f6', '#f9fbe7'],
       questions: [
         { text: '🎂 Quel âge as-tu ?', key: 'age', type: 'number' },
@@ -127,14 +134,44 @@ export default {
     }
   },
   methods: {
-    async speedGame() {
-      //get the user's data
-      const userData = {
-        first_name: this.responses.name,
-        age: this.responses.age,
-      };
-      await AuthService.registerWithPasskey(userData);
-      this.$router.push('/game-speed');
+    async createAccountAndStartGame() {
+      if (this.isRegistering) return;
+
+      this.isRegistering = true;
+      this.registrationError = null;
+
+      try {
+        // Prepare user data for registration
+        const userData = {
+          first_name: this.responses.name,
+          last_name: "",  // Optional
+          age: parseInt(this.responses.age)
+        };
+
+        // Save the user's data in localStorage for profile creation later
+        localStorage.setItem('user_profile', JSON.stringify({
+          name: this.responses.name,
+          age: this.responses.age,
+          passions: this.responses.passions,
+          avatar: this.selectedAvatarUrl
+        }));
+
+        // Register with passkey
+        const result = await AuthService.registerWithPasskey(userData);
+
+        console.log('Passkey registration successful:', result);
+
+        // Navigate to the first game
+        this.$router.push('/game-speed');
+      } catch (error) {
+        console.error('Registration error:', error);
+        this.registrationError = error.message || 'Failed to create account. Please try again.';
+
+        // Show error message to user
+        alert(this.registrationError);
+      } finally {
+        this.isRegistering = false;
+      }
     },
     async nextQuestion() {
       if (this.responses[this.questions[this.currentQuestionIndex].key] === '') {
@@ -157,7 +194,7 @@ export default {
     async generatePicture(passions) {
       const url = process.env.VUE_APP_AZURE_OPENAI_ENDPOINT;
       const apiKey = process.env.VUE_APP_AZURE_OPENAI_API_KEY;
-      const prompt = `Un avatar conçu pour accompagner un utilisateur en situation de handicap neurodéveloppemental (ADHD, autisme, etc.). Il est vu de face, avec une expression amicale et engageante, prêt à poser des questions. Son apparence et son langage corporel montrent son enthousiasme pour ${passions}, avec des vêtements, accessoires ou éléments visuels directement liés à cet univers. L’avatar doit dégager de la bienveillance et de la curiosité, avec un regard expressif et captivant. Le fond est neutre et ne contient AUCUN éléments, afin de ne pas distraire du personnage principal. L’éclairage est doux et professionnel, adapté à une utilisation digitale. `;
+      const prompt = `Un avatar conçu pour accompagner un utilisateur en situation de handicap neurodéveloppemental (ADHD, autisme, etc.). Il est vu de face, avec une expression amicale et engageante, prêt à poser des questions. Son apparence et son langage corporel montrent son enthousiasme pour ${passions}, avec des vêtements, accessoires ou éléments visuels directement liés à cet univers. L'avatar doit dégager de la bienveillance et de la curiosité, avec un regard expressif et captivant. Le fond est neutre et ne contient AUCUN éléments, afin de ne pas distraire du personnage principal. L'éclairage est doux et professionnel, adapté à une utilisation digitale. `;
       console.log("Envoi de la requête à l'API Azure OpenAI...");
 
       this.generatedImages = [];
@@ -296,6 +333,9 @@ export default {
 .completion-message {
   font-size: 1.2em;
   margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* Styles pour le bloc de sélection d'avatar */
@@ -329,5 +369,35 @@ export default {
   margin: 20px 0;
   font-size: 1.2em;
   color: #555;
+}
+
+/* Loading spinner styles */
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.spinner {
+  border: 4px solid rgba(0, 123, 255, 0.1);
+  border-radius: 50%;
+  border-top: 4px solid #007BFF;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1em;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  transform: none;
 }
 </style>
