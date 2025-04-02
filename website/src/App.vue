@@ -10,6 +10,19 @@
     <div class="content-wrapper">
       <router-view></router-view>
     </div>
+
+    <div 
+      v-if="!isDashboardPage"
+      class="dashboard-button" 
+      @click="goToDashboard" 
+      aria-label="Retour au tableau de bord"
+      role="button"
+      tabindex="0"
+      @keydown.enter="goToDashboard"
+    >
+      <span class="home-icon">🏠</span>
+      <span class="tooltip">Tableau de bord</span>
+    </div>
     
     <!-- Widget Button with Icon -->
     <div 
@@ -247,7 +260,9 @@ export default {
       // Audio context for feedback sounds
       audioContext: null,
       // Audio feedback preferences
-      audioFeedbackEnabled: true
+      audioFeedbackEnabled: true,
+
+      isDashboardPage: false,
     };
   },
   
@@ -272,10 +287,19 @@ export default {
     if ('speechSynthesis' in window) {
       this.speechSynthesis = window.speechSynthesis;
     }
+
+    this.checkIfDashboardPage();
   },
   
   watch: {
     $route() {
+      this.checkIfDashboardPage()
+
+      this.$nextTick(() => {
+        this.checkIfDashboardPage();
+    
+      });
+
       if (this.isHighlightClickable) {
         this.$nextTick(() => {
           this.highlightClickableElements();
@@ -292,6 +316,26 @@ export default {
   },
   
   methods: {
+    checkIfDashboardPage() {
+      const route = this.$route;
+  
+      const isDashboard = 
+        route.name === 'Dashboard' || 
+        route.name === 'ImmersiveDashboard' || 
+        route.path === '/dashboard' || 
+        route.path === '/';
+
+      this.isDashboardPage = isDashboard;
+    },
+    
+    goToDashboard() {
+      this.$router.push('/dashboard');
+      
+      if (this.audioFeedbackEnabled) {
+        this.playAudioFeedback('navigation');
+      }
+    },
+
     toggleWidget() {
       const wasOpen = this.showWidget;
       this.showWidget = !this.showWidget;
@@ -927,6 +971,41 @@ body {
   flex: 1;
 }
 
+.home-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.dashboard-button {
+  position: fixed;
+  bottom: 20px;
+  right: 80px; /* Positionné à gauche du bouton d'accessibilité */
+  background-color: #4CAF50; /* Couleur verte pour évoquer la maison */
+  color: white;
+  padding: 8px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  transition: transform 0.2s ease-in-out, background-color 0.2s ease;
+}
+
+.dashboard-button:hover {
+  transform: scale(1.1);
+  background-color: #3e8e41;
+}
+
+/* Afficher le tooltip sur hover */
+.dashboard-button:hover .tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
 /* ===== Accessibility Widget ===== */
 .accessibility-widget {
   position: fixed;
@@ -1434,6 +1513,18 @@ body {
 
 /* Responsive design for mobile */
 @media (max-width: 768px) {
+  .dashboard-button {
+    width: 36px;
+    height: 36px;
+    bottom: 10px;
+    right: 70px;
+  }
+  
+  .accessibility-widget {
+    bottom: 10px;
+    right: 10px;
+  }
+  
   .accessibility-panel {
     width: 90%;
     max-width: 320px;
