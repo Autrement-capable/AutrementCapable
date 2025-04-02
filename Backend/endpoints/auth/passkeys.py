@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, Request, status
+from fastapi import APIRouter, HTTPException, Depends, Request, status, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from typing import Dict, Any, Optional, List
@@ -20,7 +20,7 @@ from utils.webauthn_utils import (
     generate_passkey_authentication_options,
     verify_passkey_authentication
 )
-from server.jwt_config.token_creation import create_token, JWTBearer
+from server.jwt_config.token_creation import create_token, JWTBearer, set_refresh_cookie
 from server.server import AddRouter
 
 router = APIRouter(prefix="/auth/passkey", tags=["Passkey Authentication"])
@@ -43,8 +43,8 @@ class PasskeyRegistrationComplete(BaseModel):
 
 class PasskeyRegistrationResult(BaseModel):
     success: bool = Field(..., description="Whether registration was successful")
-    access_token: Optional[str] = Field(None, description="JWT access token")
-    refresh_token: Optional[str] = Field(None, description="JWT refresh token")
+    access_token: str = Field(..., description="JWT access token")
+    message: str = Field("Registration successful", description="Success message")
 
 class PasskeyAuthenticationStart(BaseModel):
     credential_id: Optional[str] = Field(None, description="Credential ID (if known)")
@@ -58,11 +58,11 @@ class PasskeyAuthenticationComplete(BaseModel):
 
 class PasskeyAuthenticationResult(BaseModel):
     success: bool = Field(..., description="Whether authentication was successful")
-    access_token: Optional[str] = Field(None, description="JWT access token")
-    refresh_token: Optional[str] = Field(None, description="JWT refresh token")
-    user_id: Optional[int] = Field(None, description="User ID")
-    is_new_user: Optional[bool] = Field(None, description="Whether this is a new user")
-    onboarding_complete: Optional[bool] = Field(None, description="Whether onboarding is complete")
+    access_token: str = Field(..., description="JWT access token")
+    user_id: int = Field(..., description="User ID")
+    is_new_user: bool = Field(..., description="Whether this is a new user")
+    onboarding_complete: bool = Field(..., description="Whether onboarding is complete")
+    message: str = Field("Authentication successful", description="Success message")
 
 class UpdateUserProfile(BaseModel):
     username: Optional[str] = Field(None, description="Username")
@@ -108,11 +108,14 @@ async def start_passkey_registration(
 @router.post("/registration/complete", response_model=PasskeyRegistrationResult)
 async def complete_passkey_registration(
     data: PasskeyRegistrationComplete,
+    response: Response,
     session: AsyncSession = Depends(getSession)
 ):
     """
     Complete the passkey registration process by verifying the registration response
     and storing the credential.
+    
+    The refresh token is automatically stored in an HTTP-only cookie.
     """
     # Verify registration response
     verification = verify_passkey_registration(
@@ -155,11 +158,14 @@ async def complete_passkey_registration(
     # Create tokens
     access_token = create_token(user.id, user.role_id, refresh=False, fresh=True)
     refresh_token = create_token(user.id, user.role_id, refresh=True, fresh=True)
+    
+    # Set refresh token in HTTP-only cookie
+    set_refresh_cookie(response, refresh_token)
 
     return {
         "success": True,
         "access_token": access_token,
-        "refresh_token": refresh_token
+        "message": "Passkey registration successful"
     }
 
 @router.post("/authentication/start", response_model=PasskeyAuthenticationOptions)
@@ -180,10 +186,13 @@ async def start_passkey_authentication(
 @router.post("/authentication/complete", response_model=PasskeyAuthenticationResult)
 async def complete_passkey_authentication(
     data: PasskeyAuthenticationComplete,
+    response: Response,
     session: AsyncSession = Depends(getSession)
 ):
     """
     Complete the passkey authentication process by verifying the authentication response.
+    
+    The refresh token is automatically stored in an HTTP-only cookie.
     """
     # Extract credential ID from authentication data
     credential_id = data.authentication_data.get("id")
@@ -237,83 +246,32 @@ async def complete_passkey_authentication(
     # Create tokens
     access_token = create_token(user.id, user.role_id, refresh=False, fresh=True)
     refresh_token = create_token(user.id, user.role_id, refresh=True, fresh=True)
+    
+    # Set refresh token in HTTP-only cookie
+    set_refresh_cookie(response, refresh_token)
 
     return {
         "success": True,
         "access_token": access_token,
-        "refresh_token": refresh_token,
         "user_id": user.id,
         "is_new_user": not user.onboarding_complete,
-        "onboarding_complete": user.onboarding_complete
+        "onboarding_complete": user.onboarding_complete,
+        "message": "Passkey authentication successful"
     }
 
-## stupid why you need user_id when you get it from JWT also wrong route as well
-# @router.put("/user/{user_id}/profile", tags=["Passkey User Profile"])
-# async def update_profile(
-#     user_id: int,
-#     data: UpdateUserProfile,
-#     session: AsyncSession = Depends(getSession),
-#     jwt: dict = Depends(JWTBearer())
-# ):
-#     """
-#     Update a user's profile information.
-#     """
-#     # Get the user from JWT
-#     if user_id != jwt["payload"]["sub"]:
-#         raise HTTPException(
-#             status_code=status.HTTP_403_FORBIDDEN,
-#             detail="Unauthorized"
-#         )
-#     from database.postgress.actions.user import get_user_by_id
-#     user = await get_user_by_id(session, user_id)
-
-#     if not user:
-#         raise HTTPException(
-#             status_code=status.HTTP_404_NOT_FOUND,
-#             detail="User not found"
-#         )
-
-#     # Update user profile
-#     updated_user = await update_user_profile(
-#         session=session,
-#         user=user,
-#         username=data.username,
-#         email=data.email,
-#         phone_number=data.phone_number,
-#         address=data.address,
-#         onboarding_complete=data.onboarding_complete
-#     )
-
-#     if not updated_user:
-#         raise HTTPException(
-#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-#             detail="Failed to update user profile"
-#         )
-
-#     return {
-#         "success": True,
-#         "user": {
-#             "id": updated_user.id,
-#             "username": updated_user.username,
-#             "email": updated_user.email,
-#             "first_name": updated_user.first_name,
-#             "last_name": updated_user.last_name,
-#             "age": updated_user.age,
-#             "onboarding_complete": updated_user.onboarding_complete
-#         }
-#     }
-
-
-# handle the passkeys registration to an exstion account
+# Handle passkeys registration to an existing account
 @router.post("/rec-acc-passkey", response_model=PasskeyRegistrationOptions)
 async def rec_acc_passkey(
-    code: str):
+    code: str,
+    session: AsyncSession = Depends(getSession)
+):
     """
     Create a new passkey for existing account using a recovery code.
     you must follow up with a call to /auth/passkey/registration/complete to
     complete the registration of new passkey (old passkey does not get deleted)
     """
     # Get the user from the recovery code
+    from database.postgress.actions.acc_recovery import get_acc_recovery_by_token
     recovery = await get_acc_recovery_by_token(session, code)
     if not recovery:
         raise HTTPException(

@@ -2,13 +2,14 @@ import jwt
 import datetime
 import os
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-from fastapi import HTTPException, status, Depends, Request
+from fastapi import HTTPException, status, Depends, Request, Response, Cookie
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from server.jwt_config.config import settings as S
 from database.postgress.config import getSession
 from database.postgress.models import RevokedToken
-from typing import Union
+from typing import Union, Optional, Dict, Any
 from uuid import uuid4
 import base64
 
@@ -101,17 +102,48 @@ def create_token(user_id: int, role_id: int, refresh: bool = False, fresh: bool 
     }
     ```
     """
+    # Set the expiration time based on token type
+    expires_delta = datetime.timedelta(seconds=S.jwt_refresh_token_expires if refresh else S.jwt_access_token_expires)
+
     payload = {
         "sub": str(user_id),
         "role": role_id,
         "iat": datetime.datetime.utcnow(),
-        "exp": datetime.datetime.utcnow() + datetime.timedelta(seconds=S.jwt_access_token_expires),
+        "exp": datetime.datetime.utcnow() + expires_delta,
         "fresh": fresh,
         "jti": base64.urlsafe_b64encode(uuid4().bytes).decode().rstrip("=")
     }
     encrypted_data = encrypt_payload(payload)
     jwt_payload = {"refresh": refresh, "payload": encrypted_data.hex()}  # Store encrypted data as hex
     return jwt.encode(jwt_payload, S.authjwt_secret_key, algorithm=S.authjwt_algorithm)
+
+def set_refresh_cookie(response: Response, refresh_token: str):
+    """
+    Set refresh token in an HTTP-only secure cookie
+
+    Args:
+        response (Response): FastAPI response object
+        refresh_token (str): The refresh token to store
+    """
+    cookie_settings = {
+        "key": "refresh_token",
+        "value": refresh_token,
+        "httponly": True,
+        "secure": S.cookie_secure,  # True in production, can be False in development
+        "samesite": "lax",  # Helps prevent CSRF
+        "max_age": S.jwt_refresh_token_expires,
+        "path": "/auth"  # Limit cookie to auth routes only
+    }
+    response.set_cookie(**cookie_settings)
+
+def clear_refresh_cookie(response: Response):
+    """
+    Clear the refresh token cookie
+
+    Args:
+        response (Response): FastAPI response object
+    """
+    response.delete_cookie(key="refresh_token", path="/auth")
 
 async def decode_token(session: AsyncSession, token_source: Union[Request, str], is_refresh: bool = False, required_fresh: bool = False) -> dict:
     """ Extract, decode, and verify JWT token from request header or JWT string
@@ -172,8 +204,8 @@ async def decode_token(session: AsyncSession, token_source: Union[Request, str],
     except Exception:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Error decoding token.")
 
-from fastapi import Request, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
+# HTTP bearer scheme for access token extraction
+http_bearer = HTTPBearer(auto_error=False)
 
 class JWTBearer:
     """ Dependency class for requiring a valid JWT token """
@@ -188,12 +220,22 @@ class JWTBearer:
         self.required_fresh = required_fresh
         self._payload = None  # Stores decoded JWT payload
 
-    async def __call__(self, request: Request, session: AsyncSession = Depends(getSession)):
+    async def __call__(
+        self, 
+        request: Request, 
+        response: Response = None,
+        credentials: Optional[HTTPAuthorizationCredentials] = Depends(http_bearer),
+        refresh_token: Optional[str] = Cookie(None, alias="refresh_token"),
+        session: AsyncSession = Depends(getSession)
+    ):
         """
-        Extract, decode, and validate JWT token.
+        Extract, decode, and validate JWT token from either header (access token) or cookie (refresh token).
 
         Args:
             request (Request): Auto-injected FastAPI request object.
+            response (Response, optional): Auto-injected FastAPI response object.
+            credentials (HTTPAuthorizationCredentials, optional): Access token extracted from header.
+            refresh_token (str, optional): Refresh token extracted from cookie.
             session (AsyncSession): Auto-injected SQLAlchemy session.
 
         Returns:
@@ -201,16 +243,29 @@ class JWTBearer:
 
         Raises:
             HTTPException: If the token is invalid, expired, revoked, or does not meet requirements.
-
-        Note:
-          dict schema:
-            ```json
-            {
-                "payload": dict,
-                "is_refresh": bool
-            }
         """
-        self._payload = await decode_token(
-            session, request, is_refresh=self.is_refresh, required_fresh=self.required_fresh
-        )
+        if self.is_refresh:
+            # For refresh tokens, check the cookie
+            if not refresh_token:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED, 
+                    detail="Refresh token missing. Please login again."
+                )
+            token = refresh_token
+            # Decode directly from the string
+            self._payload = await decode_token(
+                session, token, is_refresh=True, required_fresh=self.required_fresh
+            )
+        else:
+            # For access tokens, check the Authorization header
+            if not credentials:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED, 
+                    detail="Access token missing. Please login again."
+                )
+            # Decode from the header
+            self._payload = await decode_token(
+                session, credentials.credentials, is_refresh=False, required_fresh=self.required_fresh
+            )
+
         return {"payload": self._payload, "refresh": self.is_refresh}

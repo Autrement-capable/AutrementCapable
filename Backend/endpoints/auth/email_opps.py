@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, Request, HTTPException
+from fastapi import APIRouter, Depends, Request, HTTPException, Response, Cookie, status, Query
 from fastapi.responses import RedirectResponse
-from server.jwt_config.token_creation import create_token, decode_token, JWTBearer
+from server.jwt_config.token_creation import create_token, decode_token, JWTBearer, set_refresh_cookie, clear_refresh_cookie
 from pydantic import BaseModel, Field, EmailStr
 from utils.password import hash_password
 from utils.jwt_exceptions import create_response_dict
@@ -65,3 +65,98 @@ async def resend_verification_email(request: Request, form: ResendRequestForm, s
     return {"message": "Verification email sent."}
 
 AddRouter(router)  # Add the router to the server
+
+router = APIRouter(prefix="/auth", tags=["Email Verification"])
+
+class VerificationResponse(BaseModel):
+    message: str = Field(..., description="Verification message")
+    access_token: str = Field(None, description="JWT access token if auto-login is enabled")
+
+# Verification endpoint for email link click
+@router.get("/verify", response_model=VerificationResponse)
+async def verify_email(
+    code: str = Query(..., description="Verification code sent to user's email"),
+    auto_login: bool = Query(False, description="Whether to automatically log in the user after verification"),
+    redirect_url: str = Query(None, description="URL to redirect to after verification"),
+    session: AsyncSession = Depends(GetSession),
+    response: Response = None
+):
+    """
+    Verify a user's email address using the verification code sent to their email.
+
+    - If auto_login is True, returns access token and sets refresh token cookie
+    - If redirect_url is provided, redirects to that URL after verification
+    """
+    # Verify the user using the verification code
+    user = await verify_user(session, code)
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired verification code"
+        )
+
+    result = {"message": "Email verified successfully"}
+
+    # Auto-login if requested
+    if auto_login:
+        access_token = create_token(user.id, user.role_id, refresh=False, fresh=True)
+        refresh_token = create_token(user.id, user.role_id, refresh=True, fresh=True)
+
+        # Set refresh token in HTTP-only cookie
+        if response:
+            set_refresh_cookie(response, refresh_token)
+
+        result["access_token"] = access_token
+
+    # Redirect if URL provided
+    if redirect_url:
+        # Build redirect URL with query parameters
+        query_params = f"verified=true"
+        if auto_login and "access_token" in result:
+            query_params += f"&access_token={result['access_token']}"
+
+        redirect_to = f"{redirect_url}?{query_params}"
+        return RedirectResponse(url=redirect_to)
+
+    return result
+
+# Alternative endpoint for frontend verification (AJAX calls)
+@router.post("/verify-code", response_model=VerificationResponse)
+async def verify_email_code(
+    code: str = Query(..., description="Verification code sent to user's email"),
+    auto_login: bool = Query(True, description="Whether to automatically log in the user after verification"),
+    session: AsyncSession = Depends(GetSession),
+    response: Response = None
+):
+    """
+    Verify a user's email address using the verification code.
+    This endpoint is meant for frontend applications to verify email through AJAX calls.
+
+    If auto_login is True (default), returns access token and sets refresh token cookie.
+    """
+    # Verify the user using the verification code
+    user = await verify_user(session, code)
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired verification code"
+        )
+
+    result = {"message": "Email verified successfully"}
+
+    # Auto-login if requested
+    if auto_login:
+        access_token = create_token(user.id, user.role_id, refresh=False, fresh=True)
+        refresh_token = create_token(user.id, user.role_id, refresh=True, fresh=True)
+
+        # Set refresh token in HTTP-only cookie
+        if response:
+            set_refresh_cookie(response, refresh_token)
+
+        result["access_token"] = access_token
+
+    return result
+
+AddRouter(router)
