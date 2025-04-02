@@ -33,7 +33,8 @@ export default class RoomRenderer {
         office: ['desk', 'chair', 'bookshelf', 'computer', 'lamp', 'filing', 'lightbulb'],
 
         concentration: ['desk', 'chair', 'bookshelf', 'computer', 'filing', 'notebook', 'whiteboard', 'lamp1', 'plant'],
-        detente: ['sofa', 'coffeetable', 'plant', 'rug', 'bookshelf', 'lamp1', 'beanbag', 'tv', 'tvstand' , 'painting1', 'painting2', 'painting3'],
+        // detente: ['sofa', 'coffeetable', 'plant', 'rug', 'bookshelf', 'lamp1', 'beanbag', 'tv', 'tvstand' , 'painting1', 'painting2', 'painting3', 'toi'],
+        detente: ['bookshelf', 'toi'],
         social: ['coffeetable', 'plant', 'speakers', 'ceilingFan', 'meetingTable', 'moi', 'painting1', 'painting2', 'painting3', 'tvstand'],
         sensoriel: ['colorbox', 'textureboard', 'lightpanel', 'cushion', 'plant', 'lamp', 'sofa', 'lightbulb'],
         transition: ['bench', 'plant', 'sign', 'clock', 'lightbulb']
@@ -113,6 +114,7 @@ export default class RoomRenderer {
           painting1: { position: [0, 1.5, 2], scale: 1.7, rotation: [0, Math.PI/2, 0] },
           painting2: { position: [0, 1.5, 9], scale: 1.7, rotation: [0, Math.PI, 0] },
           painting3: { position: [8, 1.5, 0.05], scale: 1.7, rotation: [0, 0, 0] },
+          toi: { position: [3.8, 0.284, 0.3], scale: 0.027, rotation: [0, Math.PI/2, 0] },
         },
         
         // Espace social contrôlé
@@ -122,7 +124,7 @@ export default class RoomRenderer {
           speakers: { position: [7, 0.8, 2], scale: 0.4, rotation: [0, -Math.PI/6, 0] },
           ceilingFan: { position: [5.5, 1, 5.5], scale: 0.3, rotation: [0, Math.PI/2, 0] },
           meetingTable: { position: [5.5, 0.35, 7], scale: 0.75, rotation: [0, Math.PI, 0] },
-          moi: { position: [0.01, 0, 0.01], scale: 0.01, rotation: [0, Math.PI/6, 0] },
+          moi: { position: [9, 0.25, 1], scale: 0.10, rotation: [0, Math.PI/2, 0] },
           painting1: { position: [0, 1.5, 3], scale: 1.7, rotation: [0, Math.PI/2, 0] },
           painting2: { position: [0, 1.5, 10], scale: 1.7, rotation: [0, Math.PI, 0] },
           painting3: { position: [3, 1.5, 0.05], scale: 1.7, rotation: [0, 0, 0] },
@@ -382,7 +384,8 @@ export default class RoomRenderer {
         // bench2: 'furniture/bench.glb', // Même modèle mais position différente
         // sign: 'decor/sign.glb',
         // clock: 'decor/wall_clock.glb',
-        moi: '/conference_table/moi.gltf',
+        moi: '/conference_table/moi.glb',
+        toi: '/conference_table/toi.glb',
       };
       
       // Si le modèle n'est pas dans notre mapping, utiliser un modèle par défaut
