@@ -329,7 +329,7 @@
 
 <script>
 import SpaceBackground from '@/components/SpaceBackground.vue';
-import StaticBackgrounds from '@/components/StaticBackground.vue';
+import StaticBackgrounds from '@/components/StaticBackgrounds.vue';
 
 export default {
   name: 'ImmersiveDashboard',
