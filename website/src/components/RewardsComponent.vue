@@ -245,7 +245,7 @@ export default {
   methods: {
     toggleAnimations() {
       // Émettre un événement pour que le parent puisse mettre à jour son état
-      this.$emit('toggle-animations', !this.animationsEnabled);
+      this.$emit('toggle-animations');
     },
     loadBadges() {
       // Dans un cas réel, on chargerait les badges depuis localStorage
@@ -359,11 +359,11 @@ export default {
 /* Styles de base */
 .rewards-container {
   position: absolute;
-  max-width: 900px;
+  max-width: 1000px;
   margin: 20px auto 30px;
   padding: 15px 10px;
   font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', sans-serif;
-  background-color: rgba(248, 249, 250, 0.9);
+  background-color: #f8f9fa;
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
@@ -371,7 +371,7 @@ export default {
   left: 50%;
   transform: translate(-50%, -50%);
   width: 90%;
-  z-index: 10;
+  z-index: 1000;
   max-height: 90vh;
   overflow-y: auto;
 }
@@ -522,6 +522,7 @@ export default {
 .celebration-text p {
   font-size: 0.95rem;
   margin: 0;
+  color: #000000
 }
 
 /* État vide - pas de badges */

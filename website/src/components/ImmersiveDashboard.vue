@@ -352,7 +352,7 @@ export default {
         { value: 'cyberpunk', label: 'Cyberpunk' },
         { value: 'forest', label: 'Forêt' }
       ],
-      progress: 37, // Progression globale en pourcentage
+      progress: 37,
       activeSection: null,
       avatarAnimating: false,
       showAvatarInteraction: false,
@@ -721,20 +721,16 @@ export default {
         this.hasNewAchievement = false;
       }, 4000);
     },
-    toggleAnimations(value) {
-      if (typeof value !== 'undefined') {
-        this.animationsEnabled = value;
-      } else {
-        this.animationsEnabled = !this.animationsEnabled;
-      }
-      
-      // Sauvegarder la préférence dans localStorage
+    toggleAnimations() {
+      this.animationsEnabled = !this.animationsEnabled;
+
       localStorage.setItem('dashboard-animations', this.animationsEnabled.toString());
       
-      // Feedback tactile si disponible
       if (window.navigator && window.navigator.vibrate) {
         window.navigator.vibrate(50);
       }
+
+      this.$emit('toggle-animations', !this.animationsEnabled);
     }
   },
   mounted() {

@@ -284,7 +284,7 @@ export default {
     // Méthode pour activer/désactiver les animations
     toggleAnimations() {
       // Émettre un événement pour que le dashboard puisse mettre à jour son état
-      this.$emit('toggle-animations', !this.animationsEnabled);
+      this.$emit('toggle-animations');
     },
     
     // Méthodes d'édition (simulées pour l'exemple)
@@ -383,17 +383,17 @@ export default {
 .profile-container {
   position: absolute;
   font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', sans-serif;
-  max-width: 900px;
+  max-width: 1000px;
   width: 90%;
   padding: 20px;
-  background-color: rgba(245, 248, 255, 0.9);
+  background-color: #f8f9fa;
   border-radius: 20px;
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   transition: all 0.3s ease;
-  z-index: 10;
+  z-index: 1000;
   max-height: 90vh;
   overflow-y: auto;
 }
