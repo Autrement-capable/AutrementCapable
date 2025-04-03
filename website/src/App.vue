@@ -23,6 +23,23 @@
       <span class="home-icon">🏠</span>
       <span class="tooltip">Tableau de bord</span>
     </div>
+
+    <!-- Bouton Plein Écran -->
+    <div 
+      class="fullscreen-button" 
+      @click="toggleFullScreen" 
+      :class="{ 'active': isFullScreen }"
+      aria-label="Mode plein écran"
+      role="button"
+      tabindex="0"
+      @keydown.enter="toggleFullScreen"
+    >
+      <span class="fullscreen-icon">
+        <template v-if="isFullScreen">🔍</template>
+        <template v-else>🖵</template>
+      </span>
+      <span class="tooltip">Plein écran</span>
+    </div>
     
     <!-- Widget Button with Icon -->
     <div 
@@ -225,6 +242,9 @@ export default {
   name: 'App',
   data() {
     return {
+
+      isFullScreen: false,
+
       // Panel state
       showWidget: false,
       activeTab: 'general',
@@ -289,6 +309,18 @@ export default {
     }
 
     this.checkIfDashboardPage();
+    document.addEventListener('fullscreenchange', this.fullScreenChangeHandler);
+    document.addEventListener('webkitfullscreenchange', this.fullScreenChangeHandler);
+    document.addEventListener('mozfullscreenchange', this.fullScreenChangeHandler);
+    document.addEventListener('MSFullscreenChange', this.fullScreenChangeHandler);
+  },
+
+  beforeUnmount() {
+    // Nettoyage des écouteurs d'événements lors de la destruction du composant
+    document.removeEventListener('fullscreenchange', this.fullScreenChangeHandler);
+    document.removeEventListener('webkitfullscreenchange', this.fullScreenChangeHandler);
+    document.removeEventListener('mozfullscreenchange', this.fullScreenChangeHandler);
+    document.removeEventListener('MSFullscreenChange', this.fullScreenChangeHandler);
   },
   
   watch: {
@@ -316,6 +348,85 @@ export default {
   },
   
   methods: {
+    toggleFullScreen() {
+      if (!this.isFullScreen) {
+        this.enterFullScreen();
+      } else {
+        this.exitFullScreen();
+      }
+      
+      // Son de retour si activé
+      if (this.audioFeedbackEnabled) {
+        if (this.isFullScreen) {
+          this.playAudioFeedback('toggle-on');
+        } else {
+          this.playAudioFeedback('toggle-off');
+        }
+      }
+    },
+    
+    // Activer le mode plein écran
+    enterFullScreen() {
+      const docEl = document.documentElement;
+      
+      const requestFullScreen = 
+        docEl.requestFullscreen || 
+        docEl.mozRequestFullScreen || 
+        docEl.webkitRequestFullscreen || 
+        docEl.msRequestFullscreen;
+      
+      if (requestFullScreen) {
+        requestFullScreen.call(docEl);
+      }
+    },
+    
+    // Quitter le mode plein écran
+    exitFullScreen() {
+      // Vérifier d'abord si le document est en mode plein écran
+      const fullscreenElement = 
+        document.fullscreenElement || 
+        document.webkitFullscreenElement || 
+        document.mozFullScreenElement || 
+        document.msFullscreenElement;
+
+      // Ne tenter de quitter le plein écran que si nous sommes en plein écran
+      if (fullscreenElement) {
+        const exitFullScreen = 
+          document.exitFullscreen || 
+          document.mozCancelFullScreen || 
+          document.webkitExitFullscreen || 
+          document.msExitFullscreen;
+        
+        if (exitFullScreen) {
+          try {
+            exitFullScreen.call(document);
+          } catch (error) {
+            console.error('Erreur lors de la sortie du mode plein écran:', error);
+            // Forcer la mise à jour de l'état
+            this.isFullScreen = false;
+          }
+        }
+      } else {
+        // Si nous ne sommes pas en plein écran, mettre à jour l'état
+        this.isFullScreen = false;
+      }
+    },
+
+    
+    // Gestionnaire de l'événement de changement d'état de plein écran
+    fullScreenChangeHandler() {
+      const fullscreenElement = 
+        document.fullscreenElement || 
+        document.webkitFullscreenElement || 
+        document.mozFullScreenElement || 
+        document.msFullscreenElement;
+        
+      this.isFullScreen = !!fullscreenElement;
+      
+      // Enregistrer la préférence utilisateur
+      this.saveUserPreferences();
+    },
+
     checkIfDashboardPage() {
       const route = this.$route;
   
@@ -861,7 +972,8 @@ export default {
         isHighlightClickable: this.isHighlightClickable,
         textAlignment: this.textAlignment,
         colorTheme: this.colorTheme,
-        audioFeedbackEnabled: this.audioFeedbackEnabled
+        audioFeedbackEnabled: this.audioFeedbackEnabled,
+        isFullScreen: this.isFullScreen
       };
       
       localStorage.setItem('accessibilityPreferences', JSON.stringify(preferences));
@@ -891,6 +1003,7 @@ export default {
           if (this.isSpacedText) document.body.classList.add('spaced-text');
           if (this.isLargeCursor) document.body.classList.add('large-cursor');
           if (this.isHighlightClickable) this.highlightClickableElements();
+          if (this.isFullScreen) this.enterFullScreen();
           
           document.body.classList.add(`align-${this.textAlignment}`);
           document.body.classList.add(`theme-${this.colorTheme}`);
@@ -913,6 +1026,12 @@ export default {
       this.showReadingGuide = false;
       this.textAlignment = 'left';
       this.colorTheme = 'default';
+      this.isFullScreen = false;
+
+      // Exit fullscreen if active
+      if (document.fullscreenElement) {
+        this.exitFullScreen();
+      }
       
       // Remove all applied classes
       document.body.classList.remove(
@@ -974,6 +1093,44 @@ body {
 .home-icon {
   font-size: 24px;
   line-height: 1;
+}
+
+.fullscreen-button {
+  position: fixed;
+  top: 20px;
+  right: 20px; /* Positionnement à droite du bouton tableau de bord */
+  background-color: #6200EA; /* Couleur violette distinctive */
+  color: white;
+  padding: 8px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  transition: transform 0.2s ease-in-out, background-color 0.2s ease;
+}
+
+.fullscreen-button:hover {
+  transform: scale(1.1);
+  background-color: #4b00d1;
+}
+
+.fullscreen-button.active {
+  background-color: #4b00d1;
+}
+
+.fullscreen-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.fullscreen-button:hover .tooltip {
+  opacity: 1;
+  visibility: visible;
 }
 
 .dashboard-button {
@@ -1523,6 +1680,13 @@ body {
   .accessibility-widget {
     bottom: 10px;
     right: 10px;
+  }
+
+  .fullscreen-button {
+    width: 36px;
+    height: 36px;
+    bottom: 10px;
+    right: 130px;
   }
   
   .accessibility-panel {

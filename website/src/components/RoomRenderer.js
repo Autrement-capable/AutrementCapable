@@ -33,8 +33,7 @@ export default class RoomRenderer {
         office: ['desk', 'chair', 'bookshelf', 'computer', 'lamp', 'filing', 'lightbulb'],
 
         concentration: ['desk', 'chair', 'bookshelf', 'computer', 'filing', 'notebook', 'whiteboard', 'lamp1', 'plant'],
-        // detente: ['sofa', 'coffeetable', 'plant', 'rug', 'bookshelf', 'lamp1', 'beanbag', 'tv', 'tvstand' , 'painting1', 'painting2', 'painting3', 'toi'],
-        detente: ['bookshelf', 'toi'],
+        detente: ['sofa', 'coffeetable', 'plant', 'rug', 'bookshelf', 'lamp1', 'beanbag', 'tv', 'tvstand' , 'painting1', 'painting2', 'painting3', 'toi'],
         social: ['coffeetable', 'plant', 'speakers', 'ceilingFan', 'meetingTable', 'moi', 'painting1', 'painting2', 'painting3', 'tvstand'],
         sensoriel: ['colorbox', 'textureboard', 'lightpanel', 'cushion', 'plant', 'lamp', 'sofa', 'lightbulb'],
         transition: ['bench', 'plant', 'sign', 'clock', 'lightbulb']

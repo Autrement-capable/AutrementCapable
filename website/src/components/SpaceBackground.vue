@@ -280,7 +280,7 @@
         <div class="forest-mist forest-mist-1"></div>
         <div class="forest-mist forest-mist-2"></div>
         <div class="forest-mist forest-mist-3"></div>
-        
+
         <!-- Feuilles qui tombent -->
         <div class="leaves-container">
           <div v-for="i in 8" :key="`leaf-${i}`" class="falling-leaf" :style="getFallingLeafStyle(i)"></div>
