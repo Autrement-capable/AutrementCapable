@@ -255,11 +255,11 @@
         </div>
 
         <div class="avatar-image-container">
-          <div class="avatar-effects">
+          <!-- <div class="avatar-effects">
             <div class="avatar-effect-circle" v-for="i in 3" :key="'effect-'+i"></div>
-          </div>
+          </div> -->
           <img src="@/assets/jeunefemme.png" alt="Avatar" class="avatar-image" />
-          <div class="level-badge">Niveau {{ calculateLevel() }}</div>
+          <!-- <div class="level-badge">Niveau {{ calculateLevel() }}</div> -->
           <div class="avatar-glow" :class="{ 'pulse': avatarAnimating }"></div>
         </div>
         
@@ -1999,7 +1999,7 @@ export default {
   height: 200px;
   border-radius: 50%;
   overflow: hidden;
-  background-color: #333;
+  /* background-color: #333; */
   border: 5px solid rgba(255, 255, 255, 0.1);
   z-index: 2;
   transition: all 0.5s ease;
