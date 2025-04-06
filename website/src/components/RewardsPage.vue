@@ -1,4 +1,7 @@
 <template>
+  <space-background v-if="animationsEnabled" :theme="currentTheme" />
+  <static-backgrounds v-else :theme="currentTheme" />
+  
   <div class="rewards-container" :class="{ 'high-contrast': highContrastMode }">
     <h1 class="main-title">Mes Badges</h1>
     
@@ -6,6 +9,10 @@
     <div class="accessibility-controls">
       <button @click="toggleContrast" class="accessibility-btn" aria-label="Changer le mode contraste">
         <span v-if="highContrastMode">🌓</span><span v-else>🌑</span>
+      </button>
+      <!-- Bouton pour activer/désactiver les animations -->
+      <button @click="toggleAnimations" class="accessibility-btn" aria-label="Activer/désactiver les animations">
+        <span v-if="animationsEnabled">🎬</span><span v-else>📷</span>
       </button>
     </div>
 
@@ -107,8 +114,16 @@
 </template>
 
 <script>
+import SpaceBackground from '@/components/SpaceBackground.vue';
+import StaticBackgrounds from '@/components/StaticBackgrounds.vue';
+import { BackgroundManager } from '@/utils/BackgroundManager';
+
 export default {
   name: 'RewardsPage',
+  components: {
+    SpaceBackground,
+    StaticBackgrounds
+  },
   data() {
     return {
       badges: [
@@ -150,14 +165,14 @@ export default {
         },
         {
           id: 4,
-          title: 'Mémoire d\'éléphant',
-          description: 'Vous avez prouvé que vous avez une mémoire exceptionnelle !',
-          icon: '🧠',
-          iconColor: '#9C27B0',
+          title: 'Explorateur de compétences',
+          description: 'Vous avez exploré et identifié vos points forts et axes de développement !',
+          icon: '🎯',
+          iconColor: '#3F51B5',
           unlocked: false,
-          hint: 'Terminez le jeu de mémoire sans aucune erreur',
-          game: 'Jeu de Mémoire',
-          gameRoute: '/game-memory',
+          hint: 'Terminez la Roulette des Compétences et découvrez vos talents',
+          game: 'Roulette des Compétences',
+          gameRoute: '/roue-des-competences',
           shareable: true
         },
         {
@@ -211,7 +226,10 @@ export default {
       ],
       selectedBadge: null,
       highContrastMode: false,
-      textSizeLevel: 0
+      textSizeLevel: 0,
+
+      currentTheme: 'cosmic',
+      animationsEnabled: true
     };
   },
   computed: {
@@ -232,10 +250,19 @@ export default {
     // Chargement des préférences d'accessibilité
     this.loadAccessibilitySettings();
     
+    this.currentTheme = BackgroundManager.getCurrentTheme();
+    this.animationsEnabled = BackgroundManager.areAnimationsEnabled();
+
     // On pourrait aussi chargement les badges depuis localStorage
     this.loadBadges();
   },
   methods: {
+    toggleAnimations() {
+      this.animationsEnabled = BackgroundManager.toggleAnimations();
+    },
+    getCurrentTheme() {
+        return localStorage.getItem('dashboard-theme') || 'space';
+    },
     loadBadges() {
       // Dans un cas réel, on chargerait les badges depuis localStorage
       // ou depuis une API selon que l'utilisateur est connecté ou non
@@ -341,23 +368,23 @@ export default {
 /* Styles de base */
 .rewards-container {
   position: relative;
-  max-width: 1200px;
-  margin: 40px auto 60px; /* Marges réduites */
-  padding: 30px 20px; /* Padding ajusté */
+  max-width: 900px;
+  margin: 20px auto 30px;
+  padding: 15px 10px;
   font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', sans-serif;
   background-color: #f8f9fa;
-  border-radius: 20px; /* Ajout d'un rayon de bordure */
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); /* Ajout d'une ombre */
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
 }
 
 .main-title {
   text-align: center;
   color: #4A4D9E;
-  font-size: 2.5rem;
-  margin-bottom: 40px; /* Margin augmenté */
+  font-size: 1.8rem;
+  margin-bottom: 5px;
   position: relative;
-  padding-bottom: 15px; /* Padding augmenté */
+  padding-bottom: 8px;
 }
 
 .main-title::after {
@@ -366,35 +393,35 @@ export default {
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 100px;
-  height: 4px;
+  width: 60px;
+  height: 3px;
   background-color: #FFD700;
   border-radius: 2px;
 }
 
 /* Ajout d'espace en bas de la page */
 .bottom-spacer {
-  height: 60px; /* Espace supplémentaire en bas */
+  height: 30px;
 }
 
 /* Styles d'accessibilité */
 .accessibility-controls {
   position: absolute;
-  top: 15px;
-  right: 15px;
+  top: 10px;
+  right: 10px;
   display: flex;
-  gap: 10px;
+  gap: 5px;
   z-index: 10;
 }
 
 .accessibility-btn {
-  width: 40px;
-  height: 40px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   border: none;
   background-color: #fff;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  font-size: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  font-size: 0.8rem;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -403,36 +430,8 @@ export default {
 }
 
 .accessibility-btn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
-}
-
-/* Mode contraste élevé */
-.high-contrast {
-  color: #FFFFFF;
-  background-color: #000000;
-}
-
-.high-contrast .main-title {
-  color: #FFFFFF;
-}
-
-.high-contrast .badge-card {
-  background-color: #333333;
-  border: 1px solid #FFFFFF;
-}
-
-.high-contrast .badge-info h3 {
-  color: #FFFFFF;
-}
-
-.high-contrast .badge-info p {
-  color: #CCCCCC;
-}
-
-.high-contrast .badge-modal {
-  background-color: #222222;
-  border: 2px solid #FFFFFF;
+  transform: scale(1.05);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
 /* Boîte de célébration */
@@ -440,188 +439,146 @@ export default {
   display: flex;
   align-items: center;
   background-color: #FFF8E1;
-  border-radius: 15px;
-  padding: 25px; /* Padding augmenté */
-  margin-bottom: 40px; /* Marge augmentée */
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   animation: bounce 0.5s ease;
 }
 
-.high-contrast .celebration-box {
-  background-color: #333333;
-  border: 1px solid #FFFFFF;
-}
-
 .celebration-icon {
-  font-size: 3.5rem; /* Taille augmentée */
-  margin-right: 25px; /* Marge augmentée */
+  font-size: 2.2rem;
+  margin-right: 15px;
   animation: pulse 2s infinite;
 }
 
 .celebration-text h2 {
-  margin: 0 0 12px 0; /* Marge augmentée */
+  margin: 0 0 6px 0;
   color: #FF9800;
-  font-size: 1.8rem; /* Taille augmentée */
-}
-
-.high-contrast .celebration-text h2 {
-  color: #FFCC00;
+  font-size: 1.3rem;
 }
 
 .celebration-text p {
-  font-size: 1.2rem; /* Taille augmentée */
+  font-size: 0.95rem;
   margin: 0;
 }
 
 /* État vide - pas de badges */
 .empty-state {
   text-align: center;
-  padding: 50px 20px; /* Padding augmenté */
+  padding: 25px 10px;
   background-color: #FFFFFF;
-  border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  margin-bottom: 40px; /* Marge augmentée */
-}
-
-.high-contrast .empty-state {
-  background-color: #333333;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
 }
 
 .empty-badge-icon {
-  font-size: 110px; /* Taille augmentée */
-  margin-bottom: 25px; /* Marge augmentée */
+  font-size: 70px;
+  margin-bottom: 15px;
   opacity: 0.7;
 }
 
 .empty-state h2 {
-  font-size: 1.7rem; /* Taille augmentée */
-  margin-bottom: 15px; /* Marge augmentée */
+  font-size: 1.3rem;
+  margin-bottom: 8px;
   color: #757575;
 }
 
-.high-contrast .empty-state h2 {
-  color: #FFFFFF;
-}
-
 .empty-state p {
-  font-size: 1.2rem; /* Taille augmentée */
-  margin-bottom: 20px; /* Marge augmentée */
+  font-size: 0.95rem;
+  margin-bottom: 10px;
 }
 
 .start-button {
   background-color: #4CAF50;
   color: white;
   border: none;
-  border-radius: 50px;
-  padding: 12px 25px; /* Padding horizontal/vertical ajusté */
-  font-size: 1.1rem;
+  border-radius: 25px;
+  padding: 8px 16px;
+  font-size: 0.9rem;
   cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
-  margin-top: 20px;
-  display: inline-block; /* Ajout pour empêcher l'étirement */
-  line-height: normal; /* Pour normaliser la hauteur de ligne */
-  height: auto; /* Forcer la hauteur à s'adapter au contenu */
+  margin-top: 10px;
+  display: inline-block;
+  line-height: normal;
+  height: auto;
 }
 
 .start-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
-}
-
-.high-contrast .start-button {
-  background-color: #FFFFFF;
-  color: #000000;
+  transform: translateY(-2px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
 }
 
 /* Barre de progression */
 .progress-container {
   text-align: center;
-  margin-bottom: 40px; /* Marge augmentée */
+  margin-bottom: 10px;
   background-color: #FFFFFF;
-  padding: 25px; /* Padding augmenté */
-  border-radius: 15px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-}
-
-.high-contrast .progress-container {
-  background-color: #333333;
+  padding: 5px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .progress-container h2 {
   margin-top: 0;
-  margin-bottom: 20px; /* Marge augmentée */
+  margin-bottom: 10px;
   color: #333333;
-  font-size: 1.6rem; /* Taille augmentée */
-}
-
-.high-contrast .progress-container h2 {
-  color: #FFFFFF;
+  font-size: 1.2rem;
 }
 
 .progress-bar-container {
   width: 100%;
-  height: 24px; /* Hauteur augmentée */
+  height: 16px;
   background-color: #E0E0E0;
-  border-radius: 12px; /* Rayon augmenté */
+  border-radius: 8px;
   overflow: hidden;
-  margin-bottom: 15px; /* Marge augmentée */
-}
-
-.high-contrast .progress-bar-container {
-  background-color: #666666;
+  margin-bottom: 8px;
 }
 
 .progress-bar {
   height: 100%;
   background: linear-gradient(90deg, #4CAF50, #8BC34A);
-  border-radius: 12px; /* Rayon augmenté */
+  border-radius: 8px;
   transition: width 1s ease;
 }
 
-.high-contrast .progress-bar {
-  background: linear-gradient(90deg, #FFFFFF, #CCCCCC);
-}
-
 .progress-text {
-  font-size: 1.1rem; /* Taille augmentée */
+  font-size: 0.9rem;
   color: #757575;
-  margin: 5px 0 0; /* Marge ajustée */
-}
-
-.high-contrast .progress-text {
-  color: #CCCCCC;
+  margin: 3px 0 0;
 }
 
 /* Grille des badges */
 .badges-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 25px; /* Gap augmenté */
-  margin-bottom: 60px; /* Marge augmentée */
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 15px;
+  margin-bottom: 30px;
 }
 
 .badge-card {
   background-color: #FFFFFF;
-  border-radius: 15px;
+  border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 25px; /* Padding augmenté */
+  padding: 15px;
   position: relative;
 }
 
 .badge-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .badge-card.unlocked {
-  border: 2px solid #8BC34A;
+  border: 1px solid #8BC34A;
 }
 
 .badge-card.locked {
@@ -629,15 +586,11 @@ export default {
   filter: grayscale(70%);
 }
 
-.high-contrast .badge-card.unlocked {
-  border: 2px solid #FFFFFF;
-}
-
 .badge-icon {
   position: relative;
-  width: 130px; /* Taille augmentée */
-  height: 130px; /* Taille augmentée */
-  margin-bottom: 20px; /* Marge augmentée */
+  width: 80px;
+  height: 80px;
+  margin-bottom: 12px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -645,7 +598,7 @@ export default {
 }
 
 .badge-emoji {
-  font-size: 65px; /* Taille augmentée */
+  font-size: 40px;
 }
 
 .lock-overlay {
@@ -658,7 +611,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2.2rem; /* Taille augmentée */
+  font-size: 1.5rem;
   border-radius: 50%;
 }
 
@@ -669,16 +622,16 @@ export default {
 
 .badge-info h3 {
   margin-top: 0;
-  margin-bottom: 12px; /* Marge augmentée */
+  margin-bottom: 6px;
   color: #333333;
-  font-size: 1.3rem; /* Taille augmentée */
+  font-size: 1rem;
 }
 
 .badge-info p {
   margin: 0;
   color: #757575;
-  font-size: 1rem; /* Taille augmentée */
-  line-height: 1.4; /* Interligne ajouté */
+  font-size: 0.85rem;
+  line-height: 1.3;
 }
 
 /* Modal de détails de badge */
@@ -697,27 +650,27 @@ export default {
 
 .badge-modal {
   background-color: #FFFFFF;
-  border-radius: 20px;
+  border-radius: 12px;
   width: 90%;
-  max-width: 500px;
+  max-width: 400px;
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
-  padding: 35px; /* Padding augmenté */
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  padding: 20px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
   animation: scaleUp 0.3s ease;
 }
 
 .close-button {
   position: absolute;
-  top: 15px;
-  right: 15px;
+  top: 10px;
+  right: 10px;
   background: none;
   border: none;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   cursor: pointer;
-  width: 30px;
-  height: 30px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -734,9 +687,9 @@ export default {
 }
 
 .badge-detail-icon {
-  width: 160px; /* Taille augmentée */
-  height: 160px; /* Taille augmentée */
-  margin: 0 auto 25px; /* Marge augmentée */
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 15px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -744,63 +697,63 @@ export default {
 }
 
 .badge-detail-emoji {
-  font-size: 85px; /* Taille augmentée */
+  font-size: 50px;
 }
 
 .badge-detail-content h2 {
   color: #333333;
-  margin-bottom: 20px; /* Marge augmentée */
-  font-size: 1.8rem; /* Taille augmentée */
+  margin-bottom: 12px;
+  font-size: 1.3rem;
 }
 
 .badge-description {
   color: #555555;
-  margin-bottom: 25px; /* Marge augmentée */
-  line-height: 1.6; /* Interligne augmenté */
-  font-size: 1.1rem; /* Taille augmentée */
+  margin-bottom: 15px;
+  line-height: 1.4;
+  font-size: 0.9rem;
 }
 
 .badge-locked-message {
   color: #757575;
   font-style: italic;
-  margin-bottom: 25px; /* Marge augmentée */
-  font-size: 1.1rem; /* Taille augmentée */
+  margin-bottom: 15px;
+  font-size: 0.9rem;
 }
 
 .badge-achievement {
   background-color: #F5F5F5;
-  padding: 20px; /* Padding augmenté */
-  border-radius: 12px; /* Rayon augmenté */
-  margin-bottom: 25px; /* Marge augmentée */
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 15px;
 }
 
 .achievement-date {
   font-weight: bold;
-  margin-bottom: 8px; /* Marge augmentée */
+  margin-bottom: 5px;
   color: #4A4D9E;
-  font-size: 1.1rem; /* Taille augmentée */
+  font-size: 0.9rem;
 }
 
 .achievement-game {
   color: #757575;
-  font-size: 1.05rem; /* Taille augmentée */
+  font-size: 0.85rem;
 }
 
 .badge-actions {
   display: flex;
-  gap: 15px;
+  gap: 10px;
   justify-content: center;
-  margin-top: 25px; /* Marge augmentée */
+  margin-top: 15px;
 }
 
 .play-button, .share-button {
-  padding: 12px 25px; /* Padding augmenté */
+  padding: 8px 16px;
   border: none;
-  border-radius: 50px;
+  border-radius: 25px;
   cursor: pointer;
   font-weight: bold;
   transition: all 0.3s ease;
-  font-size: 1.05rem; /* Taille augmentée */
+  font-size: 0.85rem;
 }
 
 .play-button {
@@ -814,19 +767,19 @@ export default {
 }
 
 .play-button:hover, .share-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 /* Animations */
 @keyframes bounce {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  50% { transform: translateY(-5px); }
 }
 
 @keyframes pulse {
   0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
+  50% { transform: scale(1.05); }
   100% { transform: scale(1); }
 }
 
@@ -837,57 +790,56 @@ export default {
 
 /* Tailles de texte variables pour accessibilité */
 .text-small {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
 }
 
 .text-small .main-title {
-  font-size: 2rem;
-}
-
-.text-small .badge-info h3 {
-  font-size: 1rem;
-}
-
-.text-large {
-  font-size: 1.2rem;
-}
-
-.text-large .main-title {
-  font-size: 3rem;
-}
-
-.text-large .badge-info h3 {
-  font-size: 1.4rem;
-}
-
-.text-xlarge {
-  font-size: 1.4rem;
-}
-
-.text-xlarge .main-title {
-  font-size: 3.5rem;
-}
-
-.text-xlarge .badge-info h3 {
   font-size: 1.6rem;
 }
 
+.text-small .badge-info h3 {
+  font-size: 0.9rem;
+}
+
+.text-large {
+  font-size: 1rem;
+}
+
+.text-large .main-title {
+  font-size: 2.2rem;
+}
+
+.text-large .badge-info h3 {
+  font-size: 1.2rem;
+}
+
+.text-xlarge {
+  font-size: 1.2rem;
+}
+
+.text-xlarge .main-title {
+  font-size: 2.6rem;
+}
+
+.text-xlarge .badge-info h3 {
+  font-size: 1.4rem;
+}
+
 /* Media queries pour la responsivité */
-/* Section complète avec la section media query problématique */
 @media (max-width: 768px) {
   .rewards-container {
-    margin: 30px auto 50px; /* Marges réduites sur mobile */
-    padding: 25px 15px; /* Padding réduit sur mobile */
+    margin: 15px auto 25px;
+    padding: 15px 10px;
   }
   
   .badges-grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 15px; /* Gap réduit pour mobile */
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
   }
   
   .badge-detail-icon {
-    width: 120px;
-    height: 120px;
+    width: 90px;
+    height: 90px;
   }
   
   .badge-actions {
@@ -896,26 +848,26 @@ export default {
   
   .play-button, .share-button {
     width: 100%;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
   }
   
   .celebration-box {
     flex-direction: column;
     text-align: center;
-    padding: 20px;
+    padding: 5px;
   }
   
   .celebration-icon {
     margin-right: 0;
-    margin-bottom: 15px;
+    margin-bottom: 5px;
   }
 }
 
 @media (max-width: 480px) {
   .rewards-container {
-    margin: 20px auto 40px; /* Marges encore réduites pour petits écrans */
-    padding: 20px 10px; /* Padding encore réduit pour petits écrans */
-    border-radius: 15px; /* Rayon de bordure réduit */
+    margin: 10px auto 20px;
+    padding: 10px 5px;
+    border-radius: 8px;
   }
   
   .badges-grid {
@@ -923,47 +875,24 @@ export default {
   }
   
   .accessibility-controls {
-    top: 10px;
-    right: 10px;
-    gap: 5px;
+    top: 5px;
+    right: 5px;
+    gap: 3px;
   }
   
   .accessibility-btn {
-    width: 35px;
-    height: 35px;
-    font-size: 0.9rem;
+    width: 25px;
+    height: 25px;
+    font-size: 0.8rem;
   }
   
   .main-title {
-    font-size: 2rem;
-    margin-bottom: 30px;
+    font-size: 1.5rem;
+    margin-bottom: 5px;
   }
   
   .empty-badge-icon {
-    font-size: 80px;
-  }
-}
-  
-@media (max-width: 480px) {
-  .accessibility-controls {
-    top: 10px;
-    right: 10px;
-    gap: 5px;
-  }
-  
-  .accessibility-btn {
-    width: 35px;
-    height: 35px;
-    font-size: 0.9rem;
-  }
-  
-  .main-title {
-    font-size: 2rem;
-    margin-bottom: 30px;
-  }
-  
-  .empty-badge-icon {
-    font-size: 80px;
+    font-size: 60px;
   }
 }
 </style>

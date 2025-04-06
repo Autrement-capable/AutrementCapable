@@ -5,11 +5,9 @@ import Explanation from "../components/Explanation.vue";
 import LoginPage from "../components/LoginPage.vue";
 import PersonalTest from "../components/PersonalTest.vue";
 import UserQuestionnaire from "../components/Questionnaire.vue";
-// import GameLogic from "../components/GameLogic.vue";
 import GameSpeed from "../components/GameSpeed.vue";
 import GameShape from "../components/GameShape.vue";
 import GameMemory from "../components/GameMemory.vue";
-// import CompDashboard from "../components/CompDashboard.vue";
 import CvPreview from "../components/CvPreview.vue";
 import PostsList from "../components/forum/PostsList.vue";
 import Post from "../components/forum/PostPage.vue";
@@ -23,7 +21,6 @@ import CoiffeurCard from "@/components/CoiffeurCard.vue";
 import Environment from "@/components/Environment.vue";
 import ScenarioList from "@/components/ScenarioList.vue";
 import ScenarioPage from "@/components/ScenarioPage.vue";
-import GameDashboard from '@/components/GameDashboard.vue';
 import HomePage from '@/components/HomePage.vue';
 import GamePage from '@/components/GamePage.vue';
 import ResultsPage from '@/components/ResultsPage.vue';
@@ -31,6 +28,7 @@ import FormationPage from "@/components/FormationPage.vue";
 import RewardsPage from "@/components/RewardsPage.vue";
 import SkillsWheelPage from "@/components/SkillsWheelPage.vue";
 import ImmersiveDashboard from "@/components/ImmersiveDashboard.vue";
+import UserProfile from "@/views/UserProfile.vue";
 
 const routes = [
   {
@@ -54,7 +52,7 @@ const routes = [
     component: LoginPage,
   },
   {
-    path: "/immersive-dashboard",
+    path: "/dashboard",
     name: "ImmersiveDashboard",
     component: ImmersiveDashboard,
   },
@@ -62,6 +60,11 @@ const routes = [
     path: "/home-page",
     name: "HomePage",
     component: HomePage,
+  },
+  {
+    path: "/user-profile",
+    name: "UserProfile",
+    component: UserProfile,
   },
   {
     path: "/game-page",
@@ -166,11 +169,6 @@ const routes = [
     path: '/resultats',
     name: 'ResultsPage',
     component: ResultsPage
-  },
-  {
-    path: '/dashboard',
-    name: 'Dashboard',
-    component: GameDashboard
   },
   {
     path: '/formation',

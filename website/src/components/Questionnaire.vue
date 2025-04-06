@@ -130,11 +130,13 @@
     </div>
 
     <div v-else class="completion-message">
-      <h2>Merci d'avoir répondu aux questions !</h2>
-      <p>Votre profil est maintenant prêt.</p>
-      <button class="action-button start-game-button" @click="speedGame">
-        Commencer le premier jeu
-      </button>
+      <!-- <p>Nous allons maintenant créer votre compte avec une passkey pour la sécurité</p> -->
+      <div v-if="isRegistering" class="loading-spinner">
+        <div class="spinner"></div>
+        <p>Création de votre compte...</p>
+      </div>
+      <button v-else @click="createAccountAndStartGame" :disabled="isRegistering">Commencer le premier jeu</button>
+      <!-- <p>Merci d'avoir répondu aux questions !</p> -->
     </div>
   </div>
 </template>
@@ -155,8 +157,10 @@ export default {
       showAvatarSelection: false,
       showCustomInput: false,
       showNameInput: false,
-    backgroundColors: ['#e0f7fa', '#e8f5e9', '#fce4ec', '#fff3e0', '#ede7f6', '#f9fbe7'],
+      backgroundColors: ['#e0f7fa', '#e8f5e9', '#fce4ec', '#fff3e0', '#ede7f6', '#f9fbe7'],
       currentBackgroundColor: '#e0f7fa',
+      isRegistering: false,
+      registrationError: null,
       questions: [
         { text: '🎂 Quel âge as-tu ?', key: 'age', type: 'number' },
         { text: '👤 Comment voudrais-tu qu\'on t\'appelle ?', key: 'name', type: 'text' },
@@ -235,14 +239,52 @@ export default {
       }
     },
 
-    async speedGame() {
-      // get the user's data
-      const userData = {
-        first_name: this.responses.name,
-        age: this.responses.age,
-      };
-      await AuthService.registerWithPasskey(userData);
-      this.$router.push('/game-speed');
+    // async speedGame() {
+    //   // get the user's data
+    //   const userData = {
+    //     first_name: this.responses.name,
+    //     age: this.responses.age,
+    //   };
+    //   await AuthService.registerWithPasskey(userData);
+    //   this.$router.push('/game-speed');
+    async createAccountAndStartGame() {
+      if (this.isRegistering) return;
+
+      this.isRegistering = true;
+      this.registrationError = null;
+
+      try {
+        // Prepare user data for registration
+        const userData = {
+          first_name: this.responses.name,
+          last_name: "",  // Optional
+          age: parseInt(this.responses.age)
+        };
+
+        // Save the user's data in localStorage for profile creation later
+        localStorage.setItem('user_profile', JSON.stringify({
+          name: this.responses.name,
+          age: this.responses.age,
+          passions: this.responses.passions,
+          avatar: this.selectedAvatarUrl
+        }));
+
+        // Register with passkey
+        const result = await AuthService.registerWithPasskey(userData);
+
+        console.log('Passkey registration successful:', result);
+
+        // Navigate to the first game
+        this.$router.push('/game-speed');
+      } catch (error) {
+        console.error('Registration error:', error);
+        this.registrationError = error.message || 'Failed to create account. Please try again.';
+
+        // Show error message to user
+        alert(this.registrationError);
+      } finally {
+        this.isRegistering = false;
+      }
     },
 
     selectOption(key, value) {
@@ -709,6 +751,14 @@ export default {
   gap: 10px;
 }
 
+.completion-message {
+  font-size: 1.2em;
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .avatar-selection {
   margin-top: 2rem;
   width: 100%;
@@ -777,13 +827,9 @@ export default {
 }
 
 .loading-spinner {
-  width: 60px;
-  height: 60px;
-  border: 5px solid #f3f3f3;
-  border-top: 5px solid #3498db;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .completion-message {
@@ -851,5 +897,35 @@ export default {
   .options-grid {
     grid-template-columns: repeat(4, 1fr);
   }
+}
+
+/* Loading spinner styles */
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.spinner {
+  border: 4px solid rgba(0, 123, 255, 0.1);
+  border-radius: 50%;
+  border-top: 4px solid #007BFF;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1em;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  transform: none;
 }
 </style>

@@ -1,0 +1,8 @@
+Model Information:
+* title:	File Shelf
+* source:	https://sketchfab.com/3d-models/file-shelf-adcc1ab47d7c45ff9d08e0af2815458b
+* author:	Anom Purple Modelling (https://sketchfab.com/Anom404)
+
+Model License:
+* license type:	SKETCHFAB Standard (https://sketchfab.com/licenses)
+* requirements:	Under basic restrictions, use worldwide, on all types of media, commercially or not, and in all types of derivative works

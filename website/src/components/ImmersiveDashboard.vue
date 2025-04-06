@@ -1,12 +1,13 @@
 <template>
   <div class="dashboard" :class="{ 'achievements-unlocked': hasNewAchievement, 'games-zoomed': gamesZoomed }">
-    <space-background :theme="currentTheme" />
+    <space-background v-if="animationsEnabled" :theme="currentTheme" />
+    <static-backgrounds v-else :theme="currentTheme" />
     <!-- La structure principale -->
     <div class="dashboard-container">
       <div class="click-outside-overlay" v-if="gamesZoomed" @click="exitGamesZoom"></div>
       <!-- Section Formations -->
       <div class="section formations" @mouseenter="activeSection = 'formations'" @mouseleave="activeSection = null">
-        <div class="section-content" :class="{ 'active': activeSection === 'formations' }">
+        <div class="section-content" ref="formationsContent" :class="{ 'active': activeSection === 'formations' }">
           <div class="button-particles" v-if="activeSection === 'formations'">
           <div v-for="i in 8" :key="'formation-particle-'+i" class="button-particle" 
             :style="generateParticleStyle()"></div>
@@ -27,7 +28,7 @@
 
       <!-- Section Badges -->
       <div class="section badges" @mouseenter="activeSection = 'badges'" @mouseleave="activeSection = null">
-				<div class="section-content" :class="{ 'active': activeSection === 'badges' }">
+				<div class="section-content" ref="badgesContent" :class="{ 'active': activeSection === 'badges' }">
 					<div class="button-particles" v-if="activeSection === 'badges'">
 						<div v-for="i in 8" :key="'badge-particle-'+i" class="button-particle" 
 								:style="generateParticleStyle()"></div>
@@ -49,7 +50,7 @@
 
       <!-- Section Jeux -->
       <div class="section games" @mouseenter="activeSection = 'games'" @mouseleave="activeSection = null">
-        <div class="section-content" :class="{ 'active': activeSection === 'games' }">
+        <div class="section-content" ref="gamesContent" :class="{ 'active': activeSection === 'games' }">
           <div class="button-particles" v-if="activeSection === 'games'">
             <div v-for="i in 8" :key="'game-particle-'+i" class="button-particle" 
               :style="generateParticleStyle()"></div>
@@ -85,14 +86,11 @@
       </div>
 
       <!-- Section Profil - Plus Immersive! -->
-      <div class="section profile" 
-				@mouseenter="activeSection = 'profile'" 
-				@mouseleave="activeSection = null"
-				:class="{ 'profile-highlight': activeSection === 'profile' }">
-			<div class="section-content" :class="{ 'active': activeSection === 'profile' }">
-				<div class="button-particles" v-if="activeSection === 'profile'">
-					<div v-for="i in 8" :key="'profile-particle-'+i" class="button-particle" 
-							:style="generateParticleStyle()"></div>
+      <div class="section profile" @mouseenter="activeSection = 'profile'" @mouseleave="activeSection = null" :class="{ 'profile-highlight': activeSection === 'profile' }">
+        <div class="section-content" ref="profileContent" :class="{ 'active': activeSection === 'profile' }">
+          <div class="button-particles" v-if="activeSection === 'profile'">
+            <div v-for="i in 8" :key="'profile-particle-'+i" class="button-particle" 
+                :style="generateParticleStyle()"></div>
           </div>
           <div class="button-ring"></div>
           <div class="icon-container" @click="openSection('profile')">
@@ -294,26 +292,55 @@
           <p>{{ currentAchievement }}</p>
         </div>
       </div>
-      
-      <!-- Écran modal pour afficher les sections -->
-      <div class="modal" v-if="activeModal" @click="closeModal">
-        <div class="modal-content" :class="activeModal" @click.stop>
-          <button class="close-button" @click="closeModal">×</button>
-          <h2>{{ getModalTitle() }}</h2>
-          <div class="modal-body">
-            <p>Contenu de la section {{ activeModal }}</p>
-            <!-- Le contenu sera dynamique selon la section -->
-          </div>
+
+      <badges-component 
+        v-if="activeModal === 'badges'"
+        :currentTheme="currentTheme"
+        :animationsEnabled="animationsEnabled"
+        @toggle-animations="toggleAnimations"
+        @close="activeModal = null"
+      />
+      <profile-component 
+        v-if="activeModal === 'profile'"
+        :currentTheme="currentTheme"
+        :animationsEnabled="animationsEnabled"
+        @toggle-animations="toggleAnimations"
+        @close="activeModal = null"
+      />
+      <!-- Onglet de contrôle du thème -->
+      <div class="theme-tab" @click="toggleThemeMenu">
+        <div class="theme-tab-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5" />
+            <line x1="12" y1="1" x2="12" y2="3" />
+            <line x1="12" y1="21" x2="12" y2="23" />
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+            <line x1="1" y1="12" x2="3" y2="12" />
+            <line x1="21" y1="12" x2="23" y2="12" />
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+          </svg>
         </div>
       </div>
-      <div class="theme-selector">
+
+      <!-- Sélecteur de thème modifié avec transition -->
+      <div class="theme-selector" :class="{ 'theme-selector-visible': themeMenuVisible }">
         <div class="theme-option" 
-             v-for="theme in availableThemes" 
-             :key="theme.value"
-             @click="changeTheme(theme.value)"
-             :class="{ 'active': currentTheme === theme.value }">
+            v-for="theme in availableThemes" 
+            :key="theme.value"
+            @click="changeTheme(theme.value)"
+            :class="{ 'active': currentTheme === theme.value }">
           <div class="theme-icon" :class="theme.value"></div>
           <span>{{ theme.label }}</span>
+        </div>
+        
+        <div class="theme-option animation-toggle"
+            @click="toggleAnimations"
+            :class="{ 'active': animationsEnabled }">
+          <div class="theme-icon animation-icon">
+          </div>
+          <span>{{ animationsEnabled ? 'Animations ON' : 'Animations OFF' }}</span>
         </div>
       </div>
     </div>
@@ -322,14 +349,21 @@
 
 <script>
 import SpaceBackground from '@/components/SpaceBackground.vue';
+import StaticBackgrounds from '@/components/StaticBackgrounds.vue';
+import BadgesComponent from '@/components/RewardsComponent.vue';
+import ProfileComponent from '@/components/ProfileComponent.vue';
 
 export default {
   name: 'ImmersiveDashboard',
   components: {
-    SpaceBackground
+    SpaceBackground,
+    StaticBackgrounds,
+    BadgesComponent,
+    ProfileComponent
   },
   data() {
     return {
+      themeMenuVisible: false,
       currentTheme: 'cosmic',
       availableThemes: [
         { value: 'cosmic', label: 'Cosmic' },
@@ -337,7 +371,7 @@ export default {
         { value: 'cyberpunk', label: 'Cyberpunk' },
         { value: 'forest', label: 'Forêt' }
       ],
-      progress: 37, // Progression globale en pourcentage
+      progress: 37,
       activeSection: null,
       avatarAnimating: false,
       showAvatarInteraction: false,
@@ -346,6 +380,7 @@ export default {
       hasNewAchievement: false,
       currentAchievement: '',
       gamesZoomed: false,
+      animationsEnabled: true,
       notifications: {
         formations: 3,
         badges: 1,
@@ -364,12 +399,23 @@ export default {
         { id: 1, title: 'Roue Competences', icon: 'game-icon-galaxy', url: '/roue-des-competences' },
         { id: 2, title: 'Scenarios', icon: 'game-icon-puzzle', url: '/scenarios' },
         { id: 3, title: 'Métiers', icon: 'game-icon-memory', url: '/metier/soudeur' },
-        { id: 4, title: 'Asteroid Rush', icon: 'game-icon-asteroid' },
+        { id: 4, title: 'Environnement', icon: 'game-icon-asteroid', url: '/environment' },
         { id: 5, title: 'Galaxy Match', icon: 'game-icon-quiz' },
-      ]
+      ],
     };
   },
   methods: {
+    toggleThemeMenu() {
+      this.themeMenuVisible = !this.themeMenuVisible;
+      
+      // Ajout d'une sensation tactile
+      if (window.navigator && window.navigator.vibrate) {
+        window.navigator.vibrate(50);
+      }
+      
+      // Stocker la préférence dans localStorage
+      localStorage.setItem('theme-menu-visible', this.themeMenuVisible.toString());
+    },
     handleGamesClick() {
       if (!this.gamesZoomed) {
         this.enterGamesZoom();
@@ -438,20 +484,21 @@ export default {
     },
 
     generateParticleStyle() {
-			const duration = 1 + Math.random() * 1.5;
-			const delay = Math.random() * 0.5;
-			const size = 3 + Math.random() * 4;
-			
-			return {
-				left: 'calc(50% - ' + (size / 2) + 'px)',
-				top: 'calc(50% - ' + (size / 2) + 'px)',
-				width: size + 'px',
-				height: size + 'px',
-				transform: 'scale(0)',
-				opacity: '0',
-				animation: `particleExpand ${duration}s ease ${delay}s infinite`
-			};
-		},
+      const duration = 1 + Math.random() * 1.5;
+      const delay = Math.random() * 0.5;
+      const size = 3 + Math.random() * 4;
+      const halfSize = size / 2;
+      
+      return {
+        left: `calc(50% - ${halfSize}px)`,
+        top: `calc(50% - ${halfSize}px)`,
+        width: `${size}px`,
+        height: `${size}px`,
+        transform: 'scale(0)',
+        opacity: '0',
+        animation: `particleExpand ${duration}s ease ${delay}s infinite`
+      };
+    },
 
     
     // Génère un style aléatoire pour les particules d'arrière-plan
@@ -467,10 +514,10 @@ export default {
     },
 
     toggleGamesOrbit() {
-      // Utiliser une classe CSS au lieu d'ajouter/supprimer des éléments DOM
-      const sectionEl = document.querySelector(`.section.games .section-content`);
+      const sectionEl = this.$refs.gamesContent;
+  
       if (sectionEl) {
-        // Ajouter la classe pour l'animation et la supprimer après l'animation
+
         sectionEl.classList.add('button-animate');
         
         // Utiliser requestAnimationFrame pour une animation plus fluide
@@ -479,11 +526,11 @@ export default {
           if (window.navigator && window.navigator.vibrate) {
             window.navigator.vibrate(50);
           }
-          
-          // Supprimer la classe après l'animation
+
+          // Remove the class after animation completes
           setTimeout(() => {
             sectionEl.classList.remove('button-animate');
-          }, 400); // Réduit de 600ms à 400ms pour une animation plus rapide
+          }, 400);
         });
       }
       
@@ -557,27 +604,32 @@ export default {
         return;
       }
 			// Create a ripple effect element
-			const ripple = document.createElement('div');
-			ripple.className = 'button-ripple';
-			
-			// Find the section element
-			const sectionEl = document.querySelector(`.section.${section} .section-content`);
-			if (sectionEl) {
-				sectionEl.appendChild(ripple);
-				
-				// Trigger ripple animation
-				setTimeout(() => {
-					ripple.remove();
-				}, 600);
-				
-				// Add haptic feedback if available
-				if (window.navigator && window.navigator.vibrate) {
-					window.navigator.vibrate(50);
-				}
-			}
+			const sectionEl = this.$refs[`${section}Content`] || 
+                    document.querySelector(`.section.${section} .section-content`);
+      if (sectionEl) {
+        const ripple = document.createElement('div');
+        ripple.className = 'button-ripple';
+        
+        // Add the ripple to the section
+        sectionEl.appendChild(ripple);
+        
+        // Use requestAnimationFrame for smoother animation
+        requestAnimationFrame(() => {
+          // Add haptic feedback if available
+          if (window.navigator && window.navigator.vibrate) {
+            window.navigator.vibrate(50);
+          }
+          
+          // Remove the ripple after animation completes
+          setTimeout(() => {
+            if (ripple.parentNode === sectionEl) {
+              sectionEl.removeChild(ripple);
+            }
+          }, 600);
+        });
+      }
 
       if (section === 'formations') {
-        // Si vous utilisez Vue Router
         this.$router.push('/formation');
 
         // Réduire la notification
@@ -587,9 +639,19 @@ export default {
         return;
       }
 
+      if (section === 'profile') {
+        this.activeModal = 'profile';
+        this.triggerProfileAnimation();
+        
+        // Réduire la notification
+        if (this.notifications[section] > 0) {
+          this.notifications[section]--;
+        }
+        return;
+      }
+
       if (section === 'badges') {
-        // Si vous utilisez Vue Router
-        this.$router.push('/badges');
+        this.activeModal = 'badges';
  
         // Réduire la notification
         if (this.notifications[section] > 0) {
@@ -611,8 +673,6 @@ export default {
       if (section === 'profile') {
         this.triggerProfileAnimation();
       }
-			
-			// Create a flash effect
 			
 			// Réduire la notification
 			if (this.notifications[section] > 0) {
@@ -690,19 +750,33 @@ export default {
       setTimeout(() => {
         this.hasNewAchievement = false;
       }, 4000);
+    },
+    toggleAnimations() {
+      this.animationsEnabled = !this.animationsEnabled;
+
+      localStorage.setItem('dashboard-animations', this.animationsEnabled.toString());
+      
+      if (window.navigator && window.navigator.vibrate) {
+        window.navigator.vibrate(50);
+      }
+
+      this.$emit('toggle-animations', !this.animationsEnabled);
     }
   },
   mounted() {
-
     const savedTheme = localStorage.getItem('dashboard-theme');
     if (savedTheme && this.availableThemes.some(theme => theme.value === savedTheme)) {
       this.currentTheme = savedTheme;
     }
+
+    const savedAnimationPref = localStorage.getItem('dashboard-animations');
+    if (savedAnimationPref !== null) {
+      this.animationsEnabled = savedAnimationPref === 'true';
+    }
     
-    // Flag to track theme change achievement
     this.themeChangeAchieved = false;
     
-    // Simuler des notifications périodiques
+    // Simulate notifications periodically
     setInterval(() => {
       const sections = ['formations', 'badges', 'games', 'profile'];
       const randomSection = sections[Math.floor(Math.random() * sections.length)];
@@ -712,7 +786,7 @@ export default {
       }
     }, 30000);
     
-    // Simuler une récompense après un certain temps
+    // Simulate a reward after a certain time
     setTimeout(() => {
       const randomAchievement = this.achievements[Math.floor(Math.random() * this.achievements.length)];
       this.triggerAchievement(randomAchievement);
@@ -763,7 +837,7 @@ export default {
 .theme-selector {
   position: absolute;
   bottom: 20px;
-  left: 20px;
+  left: 80px;
   display: flex;
   gap: 15px;
   background: rgba(30, 30, 45, 0.7);
@@ -773,6 +847,19 @@ export default {
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
   z-index: 20;
+  transform: translateY(20px) translateX(25px);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform-origin: bottom left;
+  pointer-events: none;
+}
+
+.theme-selector-visible {
+  transform: translateY(0) translateX(0);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: all;
 }
 
 .theme-option {
@@ -845,6 +932,88 @@ export default {
   opacity: 1;
 }
 
+.theme-tab {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  width: 52px;
+  height: 52px;
+  background: rgba(30, 30, 45, 0.7);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  z-index: 30;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(5px);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.theme-tab:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+  background: rgba(40, 40, 60, 0.8);
+}
+
+.theme-tab:active {
+  transform: scale(0.95);
+}
+
+.theme-tab-icon {
+  color: white;
+  width: 24px;
+  height: 24px;
+  animation: rotateIcon 10s linear infinite;
+}
+
+@keyframes rotateIcon {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animation-toggle {
+  margin-left: 10px;
+  background-color: rgba(30, 30, 45, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.animation-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-3px);
+}
+
+.animation-toggle.active {
+  border-color: #4FC3F7;
+  box-shadow: 0 0 15px rgba(79, 195, 247, 0.5);
+}
+
+.animation-toggle:not(.active) {
+  opacity: 0.7;
+}
+
+.animation-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
+  color: #fff;
+}
+
+.animation-icon i {
+  transition: all 0.3s ease;
+}
+
+.animation-toggle.active .animation-icon i {
+  color: #4FC3F7;
+}
+
+.animation-toggle:not(.active) .animation-icon i {
+  color: #aaa;
+}
+
 /* Add animation for changing themes */
 @keyframes nebulaShift {
   0% { transform: scale(1) rotate(0deg); }
@@ -890,10 +1059,12 @@ export default {
   width: 80px;
   height: 80px;
   transform: translate(-50%, -50%);
-  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+              opacity 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   opacity: 0;
   pointer-events: all;
   perspective: 1000px;
+  will-change: transform, opacity;
 }
 
 .game-orbit-button.game-orbit-appear {
@@ -910,7 +1081,7 @@ export default {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
   border: 2px solid rgba(255, 64, 129, 0.3);
   box-shadow: 
@@ -919,6 +1090,7 @@ export default {
   transform-style: preserve-3d;
   transform: scale(0);
   animation: gameButtonAppear 0.5s forwards;
+  will-change: transform;
 }
 
 @keyframes gameButtonAppear {
@@ -992,7 +1164,7 @@ export default {
   left: 50%;
   transform: translate(-50%, -50%) scale(1.5);
   z-index: 50;
-  transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .button-animate {
@@ -1012,7 +1184,7 @@ export default {
   transform: translate(-50%, -50%) scale(0);
   opacity: 0;
   pointer-events: none;
-  /* Utiliser une animation GPU-accelerated */
+  will-change: transform, opacity;
   animation: optimizedButtonFlash 0.4s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
 }
 
@@ -1028,7 +1200,7 @@ export default {
   transform: translate(-50%, -50%) scale(0);
   opacity: 0.7;
   pointer-events: none;
-  /* Animation plus courte et optimisée */
+  will-change: transform, opacity;
   animation: optimizedRippleEffect 0.4s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
 }
 
@@ -1203,6 +1375,7 @@ export default {
   animation: rippleEffect 0.6s ease-out;
   opacity: 0.7;
   pointer-events: none;
+  will-change: transform, opacity;
 }
 
 @keyframes rippleEffect {
@@ -1368,7 +1541,9 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+              background 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+              box-shadow 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   position: relative;
   cursor: pointer;
   border: 2px solid rgba(255, 255, 255, 0.1);
@@ -1378,6 +1553,14 @@ export default {
     inset 0 0 10px rgba(255, 255, 255, 0.05);
   transform-style: preserve-3d;
   overflow: visible;
+  will-change: transform;
+}
+
+.formations .glow-effect.pulse,
+.badges .glow-effect.pulse,
+.games .glow-effect.pulse,
+.profile .glow-effect.pulse {
+  will-change: transform, opacity, box-shadow;
 }
 
 .section-content:active {
@@ -1424,6 +1607,7 @@ export default {
   left: 0;
   opacity: 0;
   pointer-events: none;
+  will-change: opacity;
 }
 
 .formations .button-ring {
@@ -1452,17 +1636,11 @@ export default {
 
 @keyframes ringExpand {
   0% {
-    width: 100%;
-    height: 100%;
-    top: 0%;
-    left: 0%;
+    transform: scale(1);
     opacity: 0.7;
   }
   100% {
-    width: 200%;
-    height: 200%;
-    top: -50%;
-    left: -50%;
+    transform: scale(2);
     opacity: 0;
   }
 }
@@ -1479,9 +1657,11 @@ export default {
 .icon {
   color: white;
   z-index: 2;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+              filter 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.5));
   transform-style: preserve-3d;
+  will-change: transform, filter;
 }
 
 .section-content:hover .icon {
@@ -1533,8 +1713,10 @@ export default {
   );
   filter: blur(10px);
   opacity: 0.6;
-  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+              opacity 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   z-index: 1;
+  will-change: transform, opacity;
 }
 
 .formations .glow-effect {
@@ -1559,16 +1741,13 @@ export default {
 
 .glow-effect.pulse {
   animation: pulsate 3s infinite;
-  filter: blur(10px);
-  opacity: 0.8;
-  width: 110%;
-  height: 110%;
+  will-change: transform, opacity;
 }
 
 @keyframes pulsate {
-  0% { transform: scale(0.9); opacity: 0.6; filter: blur(8px); }
-  50% { transform: scale(1.1); opacity: 0.8; filter: blur(10px); }
-  100% { transform: scale(0.9); opacity: 0.6; filter: blur(8px); }
+  0% { transform: scale(0.9); opacity: 0.6; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+  100% { transform: scale(0.9); opacity: 0.6; }
 }
 
 .formations .glow-effect.pulse {
@@ -1674,6 +1853,8 @@ export default {
   border-radius: 50%;
   opacity: 0;
   pointer-events: none;
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 
 .formations .button-particle {
@@ -1927,7 +2108,6 @@ export default {
   animation: cosmicRotate 15s linear infinite;
 }
 
-/* Add cosmic pulse to avatar when active */
 .avatar-glow.pulse {
   animation: cosmicPulse 1s;
 }
@@ -1966,6 +2146,47 @@ export default {
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3),
               0 0 15px rgba(79, 195, 247, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.animation-toggle {
+  margin-left: 10px;
+  background-color: rgba(30, 30, 45, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.animation-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateY(-3px);
+}
+
+.animation-toggle.active {
+  border-color: #4FC3F7;
+  box-shadow: 0 0 15px rgba(79, 195, 247, 0.5);
+}
+
+.animation-toggle:not(.active) {
+  opacity: 0.7;
+}
+
+.animation-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
+  color: #fff;
+}
+
+.animation-icon i {
+  transition: all 0.3s ease;
+}
+
+.animation-toggle.active .animation-icon i {
+  color: #4FC3F7;
+}
+
+.animation-toggle:not(.active) .animation-icon i {
+  color: #aaa;
 }
 
 @keyframes enhancedSlideUp {
@@ -2160,8 +2381,30 @@ export default {
 }
 
 .modal-body {
-  padding: 15px 0;
+  height: 100%;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
 }
+
+.modal-content.badges,
+.modal-content.profile {
+  width: 90%;
+  height: 90%;
+  max-width: 1000px;
+  max-height: 800px;
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.modal-content.badges .modal-body,
+.modal-content.profile .modal-body {
+  height: 100%;
+  padding: 0;
+  position: relative;
+}
+
 
 /* Adaptations pour les écrans plus petits */
 @media (max-width: 768px) {

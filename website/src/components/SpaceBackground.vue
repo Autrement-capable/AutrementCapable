@@ -1,6 +1,6 @@
 <!-- SpaceBackground.vue -->
 <template>
-  <div class="space-background" :class="theme">
+  <div class="space-background" :class="[theme, { 'animations-disabled': !animationsEnabled }]">
     <!-- Container for all space elements -->
     <div class="space-elements">
       <!-- Dynamic space elements based on the selected theme -->
@@ -81,7 +81,32 @@
         <div class="fish-school fish-school-2">
           <div v-for="i in 12" :key="`school-2-fish-${i}`" class="school-fish"></div>
         </div>
-        
+
+        <div class="shark">
+          <div class="shark-body">
+            <!-- Éléments du visage -->
+            <div class="shark-eye"></div>
+            <div class="shark-eye shark-eye-shine"></div>
+            <div class="shark-gill gill-1"></div>
+            <div class="shark-gill gill-2"></div>
+            <div class="shark-gill gill-3"></div>
+            <div class="shark-mouth"></div>
+          </div>
+          <div class="shark-dorsal-fin"></div>
+          <div class="shark-pectoral-fin"></div>
+          <div class="shark-pelvic-fin"></div>
+          <div class="shark-tail">
+            <div class="shark-tail-fin"></div>
+          </div>
+          <!-- Ombre du requin -->
+          <div class="shark-shadow"></div>
+          <!-- Bulles occasionnelles -->
+          <div class="shark-bubbles">
+            <div class="shark-bubble bubble-shark-1"></div>
+            <div class="shark-bubble bubble-shark-2"></div>
+            <div class="shark-bubble bubble-shark-3"></div>
+          </div>
+        </div>
         <!-- Individual Fish - Enhanced -->
         <div class="fish fish-1">
           <div class="fish-tail"></div>
@@ -135,6 +160,32 @@
             <div class="tentacle"></div>
             <div class="tentacle"></div>
             <div class="tentacle"></div>
+          </div>
+        </div>
+
+        <!-- Whale -->
+        <div class="whale">
+          <div class="whale-body">
+            <div class="whale-head"></div>
+            <div class="whale-eye"></div>
+            <div class="whale-mouth"></div>
+            <div class="whale-fin whale-fin-dorsal"></div>
+            <div class="whale-fin whale-fin-pectoral"></div>
+            <div class="whale-fin whale-fin-tail"></div>
+            <div class="whale-pattern"></div>
+            <div class="whale-blowhole"></div>
+            <!-- Whale spout (only appears occasionally) -->
+            <div class="whale-spout"></div>
+          </div>
+          <!-- Subtle water displacement effect -->
+          <div class="whale-water-displacement"></div>
+          <!-- Bubbles trail -->
+          <div class="whale-bubbles">
+            <div class="whale-bubble bubble-whale-1"></div>
+            <div class="whale-bubble bubble-whale-2"></div>
+            <div class="whale-bubble bubble-whale-3"></div>
+            <div class="whale-bubble bubble-whale-4"></div>
+            <div class="whale-bubble bubble-whale-5"></div>
           </div>
         </div>
         
@@ -229,7 +280,7 @@
         <div class="forest-mist forest-mist-1"></div>
         <div class="forest-mist forest-mist-2"></div>
         <div class="forest-mist forest-mist-3"></div>
-        
+
         <!-- Feuilles qui tombent -->
         <div class="leaves-container">
           <div v-for="i in 8" :key="`leaf-${i}`" class="falling-leaf" :style="getFallingLeafStyle(i)"></div>
@@ -378,6 +429,10 @@ export default {
       type: String,
       default: 'cosmic',
       validator: (value) => ['cosmic', 'ocean', 'cyberpunk', 'forest'].includes(value)
+    },
+    animationsEnabled: {
+      type: Boolean,
+      default: true
     }
   },
   methods: {
@@ -449,6 +504,7 @@ export default {
   height: 100%;
   z-index: 0;
   overflow: hidden;
+  contain: layout paint style;
 }
 
 /* Container pour tous les éléments spatiaux */
@@ -461,6 +517,7 @@ export default {
   overflow: hidden;
   pointer-events: none;
   z-index: 1;
+  will-change: transform;
 }
 
 /* 
@@ -525,6 +582,7 @@ export default {
   z-index: 2;
   opacity: 0;
   animation: cometAnimation 12s linear infinite;
+  will-change: transform, opacity;
 }
 
 .comet::after {
@@ -597,6 +655,7 @@ export default {
   opacity: 0.7;
   z-index: 1;
   animation: galaxyPulse 15s ease-in-out infinite alternate;
+  will-change: opacity, transform;
 }
 
 .galaxy::before, .galaxy::after {
@@ -634,6 +693,7 @@ export default {
   border-radius: 50%;
   z-index: 3;
   box-shadow: inset -15px -15px 40px rgba(0, 0, 0, 0.5);
+  will-change: transform;
 }
 
 /* Planète violette avec anneaux */
@@ -819,6 +879,576 @@ export default {
   z-index: 0;
 }
 
+/* Requin amélioré */
+.shark {
+  position: absolute;
+  width: 220px;
+  height: 80px;
+  top: 35%;
+  right: -250px;
+  z-index: 4;
+  animation: sharkSwimImproved 60s linear infinite;
+  transform-style: preserve-3d;
+}
+
+.shark-body {
+  position: absolute;
+  width: 150px;
+  height: 60px;
+  left: 20px;
+  top: 10px;
+  background: linear-gradient(to bottom,
+    #2c3e50 0%,
+    #34495e 40%,
+    #7f8c8d 80%,
+    #ecf0f1 100%);
+  border-radius: 80% 40% 40% 80% / 50%;
+  z-index: 2;
+  transform-origin: center;
+  animation: sharkBodyMove 4s ease-in-out infinite;
+}
+
+/* Yeux du requin */
+.shark-eye {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #000;
+  border-radius: 50%;
+  top: 15px;
+  left: 30px;
+  z-index: 3;
+}
+
+.shark-eye-shine {
+  width: 4px;
+  height: 4px;
+  background: #fff;
+  left: 33px;
+  top: 13px;
+  opacity: 0.7;
+}
+
+/* Branchies */
+.shark-gill {
+  position: absolute;
+  width: 2px;
+  height: 15px;
+  background: rgba(0, 0, 0, 0.2);
+  transform: rotate(15deg);
+  z-index: 3;
+}
+
+.gill-1 { top: 20px; left: 50px; }
+.gill-2 { top: 20px; left: 55px; }
+.gill-3 { top: 20px; left: 60px; }
+
+/* Bouche */
+.shark-mouth {
+  position: absolute;
+  width: 30px;
+  height: 5px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  transform: rotate(-5deg);
+  top: 30px;
+  left: 10px;
+}
+
+/* Nageoire dorsale */
+.shark-dorsal-fin {
+  position: absolute;
+  width: 50px;
+  height: 40px;
+  background: #2c3e50;
+  top: -35px;
+  left: 80px;
+  clip-path: polygon(0 100%, 60% 0, 100% 100%);
+  z-index: 1;
+  animation: sharkDorsalFinMove 3s ease-in-out infinite;
+}
+
+/* Nageoire pectorale */
+.shark-pectoral-fin {
+  position: absolute;
+  width: 40px;
+  height: 30px;
+  background: #34495e;
+  transform-origin: top left;
+  top: 40px;
+  left: 70px;
+  clip-path: polygon(0 0, 100% 30%, 80% 100%, 0 70%);
+  z-index: 1;
+  animation: sharkPectoralFinMove 3s ease-in-out infinite alternate;
+}
+
+/* Nageoire pelvienne */
+.shark-pelvic-fin {
+  position: absolute;
+  width: 25px;
+  height: 20px;
+  background: #34495e;
+  transform-origin: top left;
+  top: 45px;
+  left: 110px;
+  clip-path: polygon(0 0, 100% 30%, 80% 100%, 0 70%);
+  z-index: 1;
+  animation: sharkPelvicFinMove 3s ease-in-out infinite alternate;
+  animation-delay: 0.5s;
+}
+
+/* Queue */
+.shark-tail {
+  position: absolute;
+  width: 60px;
+  height: 50px;
+  top: 15px;
+  right: 0;
+  z-index: 2;
+  animation: sharkTailWagImproved 1.5s ease-in-out infinite alternate;
+}
+
+.shark-tail-fin {
+  position: absolute;
+  width: 60px;
+  height: 50px;
+  background: #34495e;
+  clip-path: polygon(0 40%, 50% 0, 50% 100%, 0 60%);
+}
+
+/* Ombre du requin */
+.shark-shadow {
+  position: absolute;
+  width: 180px;
+  height: 60px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 50%;
+  top: 85px;
+  left: 30px;
+  filter: blur(10px);
+  transform: scaleX(1.2);
+  z-index: 1;
+  opacity: 0.5;
+}
+
+/* Bulles du requin */
+.shark-bubbles {
+  position: absolute;
+  top: 25px;
+  left: 40px;
+}
+
+.shark-bubble {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.5), inset 0 0 5px rgba(255, 255, 255, 0.5);
+  animation: sharkBubbleRise 3s ease-in-out infinite;
+  opacity: 0;
+}
+
+.bubble-shark-1 {
+  width: 8px;
+  height: 8px;
+  left: 0;
+  animation-delay: 0s;
+}
+
+.bubble-shark-2 {
+  width: 6px;
+  height: 6px;
+  left: 10px;
+  animation-delay: 1s;
+}
+
+.bubble-shark-3 {
+  width: 4px;
+  height: 4px;
+  left: 5px;
+  animation-delay: 2s;
+}
+
+/* Animations améliorées */
+@keyframes sharkSwimImproved {
+  0% { 
+    transform: translateX(0) translateY(0) rotate(0deg); 
+    opacity: 0; 
+  }
+  3% { opacity: 1; }
+  15% { 
+    transform: translateX(-15vw) translateY(5vh) rotate(2deg);
+  }
+  30% { 
+    transform: translateX(-30vw) translateY(-2vh) rotate(-1deg);
+  }
+  48% { 
+    transform: translateX(-48vw) translateY(3vh) rotate(0deg);
+  }
+  50% {
+    transform: translateX(-50vw) translateY(0);
+  }
+  65% { 
+    transform: translateX(-65vw) translateY(-5vh) rotate(-2deg);
+  }
+  80% { 
+    transform: translateX(-80vw) translateY(2vh) rotate(1deg);
+  }
+  97% { 
+    transform: translateX(-97vw) translateY(-3vh) rotate(0deg);
+    opacity: 1; 
+  }
+  100% { 
+    transform: translateX(-100vw) translateY(0);
+    opacity: 0; 
+  }
+}
+
+@keyframes sharkBodyMove {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+@keyframes sharkTailWagImproved {
+  0% { transform: rotate(-10deg); }
+  100% { transform: rotate(10deg); }
+}
+
+@keyframes sharkDorsalFinMove {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(2deg); }
+}
+
+@keyframes sharkPectoralFinMove {
+  0% { transform: rotate(-5deg); }
+  100% { transform: rotate(15deg); }
+}
+
+@keyframes sharkPelvicFinMove {
+  0% { transform: rotate(-3deg); }
+  100% { transform: rotate(10deg); }
+}
+
+@keyframes sharkBubbleRise {
+  0% { 
+    transform: translateY(0) translateX(0); 
+    opacity: 0;
+  }
+  10% { opacity: 0.8; }
+  100% { 
+    transform: translateY(-40px) translateX(-10px);
+    opacity: 0;
+  }
+}
+
+/* Whale */
+.whale {
+  position: absolute;
+  width: 350px;
+  height: 120px;
+  top: 65%;
+  left: 100px;
+  z-index: 2;
+  animation: whaleSwim 90s linear infinite;
+  transform-style: preserve-3d;
+  transform: scaleX(-1);
+}
+
+.whale-body {
+  position: absolute;
+  width: 300px;
+  height: 100px;
+  background: linear-gradient(to bottom,
+    #1a3a63 0%,
+    #274875 40%,
+    #2c5188 70%,
+    #3a5fa0 85%,
+    #4a6fb0 100%);
+  border-radius: 40% 60% 60% 40% / 60% 60% 40% 40%;
+  box-shadow: inset 0 -10px 20px rgba(0, 0, 0, 0.3);
+  transform-origin: center;
+  animation: whaleBodyMove 8s ease-in-out infinite;
+  z-index: 2;
+}
+
+.whale-head {
+  position: absolute;
+  width: 120px;
+  height: 80px;
+  top: 10px;
+  left: -30px;
+  background: #274875;
+  border-radius: 40% 20% 20% 40% / 50%;
+  transform: rotate(-5deg);
+}
+
+.whale-eye {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: #000;
+  border-radius: 50%;
+  top: 30px;
+  left: 30px;
+  z-index: 3;
+}
+
+.whale-eye::after {
+  content: '';
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: #fff;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  opacity: 0.8;
+}
+
+.whale-mouth {
+  position: absolute;
+  width: 60px;
+  height: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 50%;
+  top: 70px;
+  left: 10px;
+  transform: rotate(-5deg);
+}
+
+.whale-blowhole {
+  position: absolute;
+  width: 10px;
+  height: 5px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 50%;
+  top: 5px;
+  left: 50px;
+  transform: rotate(-5deg);
+}
+
+.whale-spout {
+  position: absolute;
+  width: 5px;
+  height: 40px;
+  background: linear-gradient(to top, 
+    rgba(255, 255, 255, 0.8) 0%,
+    rgba(200, 240, 255, 0.5) 50%,
+    rgba(200, 240, 255, 0) 100%);
+  top: -40px;
+  left: 52px;
+  filter: blur(1px);
+  opacity: 0;
+  animation: whaleSpout 20s ease-in-out infinite;
+  z-index: 1;
+}
+
+.whale-fin {
+  position: absolute;
+  background: #1a3a63;
+  z-index: 1;
+}
+
+.whale-fin-dorsal {
+  width: 50px;
+  height: 40px;
+  top: -30px;
+  left: 160px;
+  border-radius: 80% 0 0 0;
+  transform-origin: bottom right;
+  animation: whaleDorsalFinMove 8s ease-in-out infinite;
+}
+
+.whale-fin-pectoral {
+  width: 70px;
+  height: 25px;
+  top: 60px;
+  left: 80px;
+  border-radius: 50% 50% 0 50%;
+  transform: rotate(-30deg);
+  transform-origin: top left;
+  animation: whalePectoralFinMove 6s ease-in-out infinite alternate;
+}
+
+.whale-fin-tail {
+  width: 70px;
+  height: 60px;
+  top: 20px;
+  right: -30px;
+  border-radius: 0 50% 0 50%;
+  transform-origin: left center;
+  animation: whaleTailMove 4s ease-in-out infinite alternate;
+}
+
+.whale-pattern {
+  position: absolute;
+  width: 200px;
+  height: 50px;
+  top: 30px;
+  left: 50px;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 5px,
+    rgba(255, 255, 255, 0.1) 5px,
+    rgba(255, 255, 255, 0.1) 10px
+  );
+  border-radius: 40% 60% 60% 40% / 60%;
+  opacity: 0.5;
+}
+
+.whale-water-displacement {
+  position: absolute;
+  width: 400px;
+  height: 30px;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 255, 255, 0.3) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 100%
+  );
+  border-radius: 50%;
+  bottom: -15px;
+  left: -50px;
+  filter: blur(8px);
+  opacity: 0.5;
+  z-index: 1;
+  transform: scaleX(1.5);
+}
+
+.whale-bubbles {
+  position: absolute;
+  top: 40px;
+  right: -20px;
+  z-index: 1;
+}
+
+.whale-bubble {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.5), inset 0 0 5px rgba(255, 255, 255, 0.5);
+  animation: whaleBubbleRise 4s ease-in-out infinite;
+  opacity: 0;
+}
+
+.bubble-whale-1 {
+  width: 12px;
+  height: 12px;
+  right: 0;
+  animation-delay: 0s;
+}
+
+.bubble-whale-2 {
+  width: 8px;
+  height: 8px;
+  right: 15px;
+  animation-delay: 0.8s;
+}
+
+.bubble-whale-3 {
+  width: 6px;
+  height: 6px;
+  right: 5px;
+  top: 10px;
+  animation-delay: 1.6s;
+}
+
+.bubble-whale-4 {
+  width: 10px;
+  height: 10px;
+  right: 20px;
+  top: -5px;
+  animation-delay: 2.4s;
+}
+
+.bubble-whale-5 {
+  width: 7px;
+  height: 7px;
+  right: 10px;
+  top: 15px;
+  animation-delay: 3.2s;
+}
+
+/* Whale animations */
+@keyframes whaleSwim {
+  0% {
+    transform: translateX(calc(100vw + 100px)) translateY(0);
+    opacity: 0;
+  }
+  5% {
+    transform: translateX(calc(100vw)) translateY(0);
+    opacity: 1;
+  }
+  45% {
+    transform: translateX(200px) translateY(-50px);
+  }
+  48% {
+    transform: translateX(150px) translateY(-30px);
+    opacity: 1;
+  }
+  50% {
+    transform: translateX(0) translateY(0);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0) translateY(0);
+    opacity: 0;
+  }
+}
+
+@keyframes whaleBodyMove {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+@keyframes whaleDorsalFinMove {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-5deg); }
+}
+
+@keyframes whalePectoralFinMove {
+  0% { transform: rotate(-20deg); }
+  100% { transform: rotate(-40deg); }
+}
+
+@keyframes whaleTailMove {
+  0% { transform: rotate(-10deg); }
+  100% { transform: rotate(10deg); }
+}
+
+@keyframes whaleSpout {
+  0%, 90%, 100% { 
+    height: 0;
+    opacity: 0;
+  }
+  92% {
+    height: 40px;
+    opacity: 0.8;
+  }
+  96% {
+    height: 60px;
+    opacity: 0.5;
+  }
+  98% {
+    height: 70px;
+    opacity: 0.2;
+  }
+}
+
+@keyframes whaleBubbleRise {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-60px) translateX(-20px);
+    opacity: 0;
+  }
+}
+
 /* Rayons de lumière */
 .light-ray {
   position: absolute;
@@ -835,6 +1465,7 @@ export default {
   opacity: 0.4;
   z-index: 2;
   animation: lightRayFlicker 8s ease-in-out infinite alternate;
+  will-change: opacity;
 }
 
 .light-ray-1 { left: 25%; transform: rotate(20deg) translateX(-50%); }
@@ -857,6 +1488,7 @@ export default {
   opacity: 0;
   z-index: 3;
   backdrop-filter: blur(2px);
+  will-change: transform, opacity;
 }
 
 .bubble::after {
@@ -997,7 +1629,7 @@ export default {
 .fish-school-2 {
   top: 55%;
   left: -200px;
-  animation-delay: 15s;
+  animation-delay: 12s;
 }
 
 .school-fish {
@@ -1022,7 +1654,15 @@ export default {
 .fish-school-1 .school-fish:nth-child(8n+7) { top: 45%; left: 50%; animation-delay: 1.2s; }
 .fish-school-1 .school-fish:nth-child(8n+8) { top: 65%; left: 45%; animation-delay: 1.4s; }
 
-/* Les poissons du second banc peuvent être générés de manière similaire */
+.fish-school-2 .school-fish:nth-child(8n+1) { top: 20%; left: 10%; animation-delay: 0s; }
+.fish-school-2 .school-fish:nth-child(8n+2) { top: 50%; left: 20%; animation-delay: 0.2s; }
+.fish-school-2 .school-fish:nth-child(8n+3) { top: 80%; left: 15%; animation-delay: 0.4s; }
+.fish-school-2 .school-fish:nth-child(8n+4) { top: 35%; left: 50%; animation-delay: 0.6s; }
+.fish-school-2 .school-fish:nth-child(8n+5) { top: 65%; left: 60%; animation-delay: 0.8s; }
+.fish-school-2 .school-fish:nth-child(8n+6) { top: 25%; left: 70%; animation-delay: 1.0s; }
+.fish-school-2 .school-fish:nth-child(8n+7) { top: 55%; left: 40%; animation-delay: 1.2s; }
+.fish-school-2 .school-fish:nth-child(8n+8) { top: 75%; left: 35%; animation-delay: 1.4s; }
+
 
 /* Poissons individuels */
 .fish {
@@ -1030,6 +1670,7 @@ export default {
   z-index: 3;
   border-radius: 70% 30% 30% 70% / 50%;
   animation: fishSwim 25s linear infinite;
+  will-change: transform;
 }
 
 .fish-1 {
@@ -1089,6 +1730,7 @@ export default {
   border-radius: 0 50% 50% 0 / 50%;
   transform-origin: left center;
   animation: fishTailWag 0.6s ease-in-out infinite alternate;
+  will-change: transform;
 }
 
 /* Algues */
@@ -1116,6 +1758,7 @@ export default {
   transform-origin: bottom center;
   position: relative;
   animation: seaweedSway 10s ease-in-out infinite alternate;
+  will-change: transform;
 }
 
 .seaweed-strand::after {
@@ -1305,6 +1948,7 @@ export default {
   letter-spacing: 2px;
   z-index: 5;
   animation: neonFlicker 3s infinite alternate;
+  will-change: opacity;
 }
 
 .neon-sign-1 {
@@ -1356,6 +2000,7 @@ export default {
   transform-style: preserve-3d;
   animation: gridRotate 60s linear infinite;
   z-index: 3;
+  will-change: transform;
 }
 
 .grid-horizontal, .grid-vertical {
@@ -1404,6 +2049,7 @@ export default {
     rgba(0, 0, 20, 0.9) 0%, 
     rgba(20, 20, 40, 0.8) 100%);
   animation: buildingLights 4s infinite alternate;
+  will-change: background;
 }
 
 .city-building::before {
@@ -1677,6 +2323,7 @@ export default {
   opacity: 0.4;
   z-index: 2;
   animation: sunbeamFlicker 12s ease-in-out infinite alternate;
+  will-change: opacity;
 }
 
 .sunbeam-1 { left: 25%; transform: rotate(20deg) translateX(-50%); }
@@ -1697,6 +2344,7 @@ export default {
   filter: blur(15px);
   z-index: 2;
   animation: mistFloat 30s ease-in-out infinite alternate;
+  will-change: transform;
 }
 
 .forest-mist-1 { bottom: 25%; left: -10%; height: 20%; }
@@ -1723,6 +2371,8 @@ export default {
   background-position: center;
   opacity: 0.8;
   animation: leafFall 15s linear infinite;
+  will-change: transform, opacity;
+  top: -20px;
 }
 
 /* Types de feuilles */
@@ -1913,6 +2563,7 @@ export default {
   height: 20px;
   z-index: 4;
   animation: butterflyFlight 30s linear infinite;
+  will-change: transform, opacity;
 }
 
 .butterfly-1 { top: 30%; left: -20px; }
@@ -1935,12 +2586,14 @@ export default {
   left: 0;
   transform: scaleX(-1) rotate(-30deg);
   animation: wingBeatLeft 0.3s ease-in-out infinite alternate;
+  will-change: transform;
 }
 
 .wing-right {
   right: 0;
   transform: rotate(30deg);
   animation: wingBeatRight 0.3s ease-in-out infinite alternate;
+  will-change: transform;
 }
 
 /* Oiseaux */
@@ -1954,6 +2607,7 @@ export default {
   background-position: center;
   z-index: 4;
   animation: birdFlight 40s linear infinite;
+  will-change: transform, opacity;
 }
 
 .bird-1 { top: 20%; left: -30px; }
@@ -2082,6 +2736,7 @@ export default {
   border-radius: 0 100% 0 0;
   transform-origin: bottom center;
   animation: grassSway 3s ease-in-out infinite alternate;
+  will-change: transform;
 }
 
 /* Fougères */
@@ -2142,7 +2797,20 @@ export default {
   filter: blur(1px);
   box-shadow: 0 0 10px 2px rgba(255, 255, 153, 0.8);
   animation: fireflyGlow 3s ease-in-out infinite alternate, fireflyHover 20s linear infinite;
+  will-change: opacity, transform;
 }
+
+.animations-disabled * {
+  animation-play-state: paused !important;
+  transition: none !important;
+}
+
+/* Optionnel: Style pour les éléments qui devraient être complètement figés */
+.animations-disabled .space-elements * {
+  animation: none !important;
+  transform: none !important;
+}
+
 
 /* 
 * ANIMATIONS 

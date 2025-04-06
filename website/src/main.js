@@ -6,16 +6,24 @@ import "./assets/styles.css";
 import "@mdi/font/css/materialdesignicons.css";
 import * as PIXI from "pixi.js";
 
+// Importez vos composants globaux ici si nécessaire
+import SpaceBackground from '@/components/SpaceBackground.vue'
+import StaticBackgrounds from '@/components/StaticBackgrounds.vue'
+import BadgesComponent from '@/components/RewardsComponent.vue'
+import ProfileComponent from '@/components/ProfileComponent.vue'
+
 if (process.env.NODE_ENV === "development") {
   window.PIXI = PIXI;
 }
 
-// if (!process.env.SERVER_URL) {
-//   console.warn(
-//     "Please set the SERVER_URL environment variable. Defaulting to http://localhost:5000"
-//   );
-//   App.globalProperties.$serverUrl = "http://localhost:5000";
-// } else {
-//   App.globalProperties.$serverUrl = process.env.SERVER_URL;
-// }
-createApp(App).use(router).mount("#app");
+// Création de l'application
+const app = createApp(App);
+
+// Enregistrement des composants globaux (si nécessaire)
+app.component('SpaceBackground', SpaceBackground);
+app.component('StaticBackgrounds', StaticBackgrounds);
+app.component('BadgesComponent', BadgesComponent);
+app.component('ProfileComponent', ProfileComponent);
+
+// Montage de l'application
+app.use(router).mount("#app");
