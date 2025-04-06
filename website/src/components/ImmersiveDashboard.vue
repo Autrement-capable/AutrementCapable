@@ -1967,13 +1967,6 @@ export default {
   transition: stroke-dashoffset 1s ease-in-out;
   transform-origin: 50% 50%;
   stroke-dasharray: 754;
-  animation: progressRingPulse 4s infinite;
-}
-
-@keyframes progressRingPulse {
-  0% { stroke-width: 12; filter: drop-shadow(0 0 2px rgba(124, 77, 255, 0.3)); }
-  50% { stroke-width: 14; filter: drop-shadow(0 0 8px rgba(124, 77, 255, 0.5)); }
-  100% { stroke-width: 12; filter: drop-shadow(0 0 2px rgba(124, 77, 255, 0.3)); }
 }
 
 .progress-ring-circle-bg {
@@ -1984,13 +1977,7 @@ export default {
 .progress-ring-blur {
   stroke-dasharray: 754;
   stroke-dashoffset: 0;
-  animation: blurPulse 4s infinite alternate;
   filter: blur(12px);
-}
-
-@keyframes blurPulse {
-  0% { stroke-width: 15; filter: blur(10px); }
-  100% { stroke-width: 20; filter: blur(15px); }
 }
 
 .avatar-image-container {
@@ -2000,21 +1987,12 @@ export default {
   border-radius: 50%;
   overflow: hidden;
   /* background-color: #333; */
-  border: 5px solid rgba(255, 255, 255, 0.1);
   z-index: 2;
   transition: all 0.5s ease;
-  box-shadow: 
-    0 0 20px rgba(79, 195, 247, 0.3),
-    0 0 40px rgba(124, 77, 255, 0.2),
-    inset 0 0 15px rgba(255, 255, 255, 0.1);
 }
 
 .avatar-image-container:hover {
   transform: scale(1.05);
-  box-shadow: 
-    0 0 25px rgba(79, 195, 247, 0.5),
-    0 0 50px rgba(124, 77, 255, 0.3),
-    inset 0 0 20px rgba(255, 255, 255, 0.2);
 }
 
 .avatar-effects {
