@@ -68,11 +68,17 @@
           </button>
         </div>
         <div class="option-item">
+          <button @click="toggleReadingMask" :class="{ 'active-option': showReadingMask }">
+            <span class="option-icon">🎭</span>
+            <span class="option-text">Masque de lecture</span>
+          </button>
+        </div>
+        <!-- <div class="option-item">
           <button @click="toggleVoiceNavigation" :class="{ 'active-option': isVoiceNavigation }">
             <span class="option-icon">🎤</span>
             <span class="option-text">Navigation vocale</span>
           </button>
-        </div>
+        </div> -->
         <div class="option-item">
           <button @click="makeCursorLarger" :class="{ 'active-option': isLargeCursor }">
             <span class="option-icon">👆</span>
@@ -126,7 +132,7 @@
           <span class="option-description">Sons doux pour confirmer les actions</span>
         </div>
       </div>
-      
+
       <!-- Reading Tab -->
       <div v-show="activeTab === 'reading'" class="panel-content">
         <div class="option-item">
@@ -145,12 +151,6 @@
           <button @click="toggleTextSpacing" :class="{ 'active-option': isSpacedText }">
             <span class="option-icon">↔️</span>
             <span class="option-text">Espacer le texte</span>
-          </button>
-        </div>
-        <div class="option-item">
-          <button @click="toggleReadingMask" :class="{ 'active-option': showReadingMask }">
-            <span class="option-icon">🎭</span>
-            <span class="option-text">Masque de lecture</span>
           </button>
         </div>
         <div class="option-item">
@@ -237,7 +237,7 @@ export default {
       
       // Visual preferences
       isHighlightClickable: false,
-      textAlignment: 'left',
+      textAlignment: 'center',
       colorTheme: 'default',
       
       // Speech synthesis
@@ -246,8 +246,9 @@ export default {
       
       // Audio context for feedback sounds
       audioContext: null,
+
       // Audio feedback preferences
-      audioFeedbackEnabled: true
+      audioFeedbackEnabled: false
     };
   },
   
@@ -867,7 +868,7 @@ export default {
       this.isHighlightClickable = false;
       this.showReadingMask = false;
       this.showReadingGuide = false;
-      this.textAlignment = 'left';
+      this.textAlignment = 'center';
       this.colorTheme = 'default';
       
       // Remove all applied classes
@@ -987,8 +988,8 @@ body {
   background-color: var(--panel-bg);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
   border-radius: 12px;
-  width: 320px;
-  max-height: 70vh;
+  width: 350px;
+  max-height: 70vh; 
   overflow-y: auto;
   z-index: 1000;
   display: flex;
@@ -1059,7 +1060,8 @@ body {
 }
 
 .panel-content {
-  padding: 12px 16px;
+  padding: 10px;
+  margin-right: 10px;
   display: flex;
   flex-direction: column;
   gap: 10px;
