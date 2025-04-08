@@ -379,8 +379,12 @@ export default {
       this.showAvatarSelection = true;
       const url = process.env.VUE_APP_AZURE_OPENAI_ENDPOINT;
       const apiKey = process.env.VUE_APP_AZURE_OPENAI_API_KEY;
-      const userAge = this.responses.age || 25; // Utilise 25 comme âge par défaut si non spécifié
-      const prompt = `Un avatar d'une personne de ${userAge} ans, conçu pour accompagner un utilisateur en situation de handicap neurodéveloppemental (ADHD, autisme, etc.). Il est vu de face, avec une expression amicale et engageante, prêt à poser des questions. Son apparence et son langage corporel montrent son enthousiasme pour ${passions}, avec des vêtements, accessoires ou éléments visuels directement liés à cet univers. L'avatar doit dégager de la bienveillance et de la curiosité, avec un regard expressif et captivant. Le fond est neutre et ne contient AUCUN éléments, afin de ne pas distraire du personnage principal. L'éclairage est doux et professionnel, adapté à une utilisation digitale.`;
+      // const userAge = this.responses.age || 25;
+      const prompt = `Créer une image Une figurine vinyle de style Funko Pop! Le fond général de l'image est gris clair, avec un aspect minimaliste et propre.
+La figurine a un style Funko Pop classique: grosse tête carrée, corps petit et simple, yeux ronds.
+La figurine est entièrement habillé et a des accessoires en rapport avec la passion: « ${passions} ».
+Elle est placée au centre, debout.
+L'image est bien éclairée, vue de face, en haute qualité, dans un style visuel proche d'un rendu produit professionnel. L'objectif est que le résultat ressemble à un produit réel prêt à être vendu en boutique.`;
       console.log("Envoi de la requête à l'API Azure OpenAI...");
 
       this.generatedImages = [];
