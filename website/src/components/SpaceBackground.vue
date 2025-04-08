@@ -6,6 +6,9 @@
       <!-- Dynamic space elements based on the selected theme -->
       <template v-if="theme === 'cosmic'">
         <!-- Comets -->
+        <div class="crowd-container">
+          <div v-for="i in 150" :key="`crowd-${i}`" class="crowd-dot" :style="getCrowdDotStyle()"></div>
+        </div>
         <div class="comet comet-1"></div>
         <div class="comet comet-2"></div>
         <div class="cometInverse comet-3"></div>
@@ -482,7 +485,24 @@ export default {
         animationDuration: `${duration}s`,
         animationDelay: `${delay}s`
       };
-    }
+    },
+
+    getCrowdDotStyle() {
+      const leftPosition = Math.random() * 100;
+      const topPosition = Math.random() * 100;
+      const size = 1 + Math.random() * 2; // Petits points
+      const opacity = 0.2 + Math.random() * 0.4; // Faible opacité
+      const animationDelay = Math.random() * 5; // Délais variés pour le scintillement
+
+      return {
+        left: `${leftPosition}%`,
+        top: `${topPosition}%`,
+        width: `${size}px`,
+        height: `${size}px`,
+        opacity: opacity,
+        animationDelay: `${animationDelay}s`
+      };
+    },
 
   }
 };
@@ -567,6 +587,27 @@ export default {
     radial-gradient(2px 2px at 85% 85%, rgba(255, 255, 255, 0.8) 50%, transparent 100%);
   background-size: 200% 200%;
   animation: starsFloat 200s linear infinite, starsTwinkle 10s ease-in-out infinite alternate;
+}
+
+.crowd-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  /* Ajoute un dégradé sombre sur les bords pour mieux intégrer la foule */
+  mask-image: radial-gradient(ellipse at center, black 60%, transparent 95%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 60%, transparent 95%);
+}
+
+/* Points lumineux de la foule */
+.crowd-dot {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.7); /* Blanc légèrement transparent */
+  box-shadow: 0 0 3px rgba(255, 255, 255, 0.5);
+  animation: crowdShimmer 3s ease-in-out infinite alternate;
 }
 
 /* Comètes */
