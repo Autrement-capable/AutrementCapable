@@ -1,142 +1,156 @@
 <template>
   <div class="questionnaire" aria-label="Questionnaire page" :style="{ backgroundColor: currentBackgroundColor }">
     <h1 class="title">Bonjour !</h1>
-    <img :src="selectedAvatarUrl || require('../assets/jeunefemme.png')" alt="Avatar" :class="imageClass" />
-
-    <div v-if="currentQuestionIndex < questions.length" class="question-container">
-      <div class="text-with-button">
-        <p class="sub-title">{{ questions[currentQuestionIndex].text }}</p>
-        <button class="action-button listen-button" @click="repeatQuestion" aria-label="Écouter la question">
-          <span class="icon">🔊</span>
-          <span class="button-text">Écouter</span>
-        </button>
-      </div>
-
-      <!-- Affichage des réponses préconfigurées pour l'âge -->
-      <div v-if="questions[currentQuestionIndex].key === 'age'" class="options-grid">
-        <button v-for="ageOption in ageOptions.slice(0, 8)" :key="ageOption" class="option-button"
-          @click="selectOption('age', ageOption)" :class="{ 'selected': responses.age === ageOption }">
-          {{ ageOption }}
-        </button>
-        <button class="option-button custom" @click="showCustomInput = true" v-if="!showCustomInput">
-          Autre
-        </button>
-        <div v-if="showCustomInput" class="custom-input-container">
-          <input type="number" v-model="responses.age" placeholder="Votre âge" class="small-input"
-            ref="customAgeInput" />
-          <button class="action-button" @click="showCustomInput = false; validateResponse('age')">
-            OK
+    
+    <div v-if="currentQuestionIndex < questions.length" class="content-container">
+      <!-- Section gauche avec avatar et question -->
+      <div class="left-section">
+        <img :src="selectedAvatarUrl || require('../assets/jeunefemme.png')" alt="Avatar" :class="imageClass" />
+        <div class="question-container">
+          <p class="sub-title">{{ questions[currentQuestionIndex].text }}</p>
+          <button class="action-button listen-button" @click="repeatQuestion" aria-label="Écouter la question">
+            <span class="icon">🔊</span>
+            <span class="button-text">Écouter</span>
           </button>
         </div>
       </div>
 
-      <!-- Choix prédéfinis pour le nom -->
-      <div v-if="questions[currentQuestionIndex].key === 'name'" class="name-options">
-        <div class="voice-input-container">
-          <button class="action-button speak-button" @click="startRecognition" :class="{ 'active': isRecognizing }">
-            <span class="icon">🎙️</span>
-            <span class="button-text">{{ isRecognizing ? 'J\'écoute...' : 'Dites votre nom' }}</span>
+      <!-- Section droite avec les réponses -->
+      <div class="right-section">
+        <!-- Affichage des réponses préconfigurées pour l'âge -->
+        <div v-if="questions[currentQuestionIndex].key === 'age'" class="options-grid">
+          <button v-for="ageOption in ageOptions.slice(0, 8)" :key="ageOption" class="option-button"
+            @click="selectOption('age', ageOption)" :class="{ 'selected': responses.age === ageOption }">
+            {{ ageOption }}
           </button>
-          <div v-if="responses.name" class="speech-result">
-            <p>Vous avez dit: <strong>{{ responses.name }}</strong></p>
-            <div class="confirm-buttons">
-              <button class="action-button confirm" @click="validateResponse('name')">C'est correct</button>
-              <button class="action-button retry" @click="responses.name = ''; startRecognition()">Réessayer</button>
+          <button class="option-button custom" @click="showCustomInput = true" v-if="!showCustomInput">
+            Autre
+          </button>
+          <div v-if="showCustomInput" class="custom-input-container">
+            <input type="number" v-model="responses.age" placeholder="Votre âge" class="small-input"
+              ref="customAgeInput" />
+            <button class="action-button" @click="showCustomInput = false; validateResponse('age')">
+              OK
+            </button>
+          </div>
+        </div>
+
+        <!-- Choix prédéfinis pour le nom -->
+        <div v-if="questions[currentQuestionIndex].key === 'name'" class="name-options">
+          <!-- Option saisie vocale -->
+          <div class="voice-input-container" v-if="!showNameInput">
+            <button class="action-button speak-button" @click="startRecognition" :class="{ 'active': isRecognizing }">
+              <span class="icon">🎙️</span>
+              <span class="button-text">{{ isRecognizing ? 'J\'écoute...' : 'Dites votre nom' }}</span>
+            </button>
+            <div v-if="responses.name && !showNameInput && voiceInputActive" class="speech-result">
+              <p>Vous avez dit: <strong>{{ responses.name }}</strong></p>
+              <div class="confirm-buttons">
+                <button class="action-button confirm" @click="validateResponse('name')">C'est correct</button>
+                <button class="action-button retry" @click="responses.name = ''; startRecognition()">Réessayer</button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Option saisie texte -->
+          <div class="text-input-option">
+            <button class="option-button text-option" @click="startTextInput" v-if="!showNameInput">
+              Taper mon nom
+            </button>
+            <div v-if="showNameInput" class="custom-input-container">
+              <input type="text" v-model="responses.name" placeholder="Votre nom" class="small-input"
+                ref="customNameInput" />
+              <div class="button-group">
+                <button class="action-button" @click="confirmTextInput">
+                  Confirmer
+                </button>
+                <button class="action-button cancel-button" @click="cancelTextInput">
+                  Annuler
+                </button>
+              </div>
             </div>
           </div>
         </div>
-        <div class="text-input-option">
-          <button class="option-button text-option" @click="showNameInput = true" v-if="!showNameInput">
-            Taper mon nom
-          </button>
-          <div v-if="showNameInput" class="custom-input-container">
-            <input type="text" v-model="responses.name" placeholder="Votre nom" class="small-input"
-              ref="customNameInput" />
-            <button class="action-button" @click="showNameInput = false; validateResponse('name')">
+
+        <!-- Passions avec options prédéfinies et vocales -->
+        <div v-if="questions[currentQuestionIndex].key === 'passions'" class="passions-container">
+          <div class="options-grid">
+            <button v-for="passion in passionOptions" :key="passion" class="option-button passion-button"
+              @click="selectPassion(passion)" :class="{ 'selected': selectedPassions.includes(passion) }">
+              {{ passion }}
+            </button>
+          </div>
+
+          <div class="voice-input-container" style="margin: 0.5rem 0;">
+            <button class="action-button speak-button" @click="startRecognitionForPassions"
+              :class="{ 'active': isRecognizing }">
+              <span class="icon">🎙️</span>
+              <span class="button-text">{{ isRecognizing ? 'J\'écoute...' : 'Dire' }}</span>
+            </button>
+          </div>
+
+          <div v-if="selectedPassions.length > 0" class="selected-passions">
+            <div class="passions-tags">
+              <div v-for="(passion, index) in selectedPassions.slice(0, 3)" :key="index" class="passion-tag">
+                {{ passion }}
+                <button class="remove-button" @click="removePassion(index)"
+                  aria-label="Supprimer cette passion">×</button>
+              </div>
+            </div>
+            <button class="action-button confirm-passions"
+              @click="responses.passions = selectedPassions.join(', '); validateResponse('passions')">
               Confirmer
             </button>
           </div>
         </div>
+
+        <div class="navigation-buttons" v-if="!showAvatarSelection">
+          <button v-if="currentQuestionIndex > 0" class="action-button prev-button" @click="previousQuestion">
+            Précédent
+          </button>
+          <button class="action-button next-button" @click="nextQuestion"
+            :disabled="!responses[questions[currentQuestionIndex].key]">
+            Suivant
+          </button>
+          <button v-if="questions[currentQuestionIndex].key === 'passions'" class="action-button skip-button"
+            @click="skipQuestion">
+            Passer cette question
+          </button>
+        </div>
       </div>
+    </div>
 
-      <!-- Passions avec options prédéfinies et vocales -->
-      <div v-if="questions[currentQuestionIndex].key === 'passions'" class="passions-container">
-        <div class="options-grid">
-          <button v-for="passion in passionOptions" :key="passion" class="option-button passion-button"
-            @click="selectPassion(passion)" :class="{ 'selected': selectedPassions.includes(passion) }">
-            {{ passion }}
-          </button>
-        </div>
-
-        <div class="voice-input-container" style="margin: 0.5rem 0;">
-          <button class="action-button speak-button" @click="startRecognitionForPassions"
-            :class="{ 'active': isRecognizing }">
-            <span class="icon">🎙️</span>
-            <span class="button-text">{{ isRecognizing ? 'J\'écoute...' : 'Dire' }}</span>
-          </button>
-        </div>
-
-        <div v-if="selectedPassions.length > 0" class="selected-passions">
-          <div class="passions-tags">
-            <div v-for="(passion, index) in selectedPassions.slice(0, 3)" :key="index" class="passion-tag">
-              {{ passion }}
-              <button class="remove-button" @click="removePassion(index)"
-                aria-label="Supprimer cette passion">×</button>
-            </div>
+    <!-- Sélection d'avatar -->
+    <div v-if="showAvatarSelection" class="avatar-selection-container">
+      <div v-if="isLoadingImages" class="loading">
+        <div class="loading-spinner"></div>
+        <p>Création de vos avatars personnalisés...</p>
+      </div>
+      <div v-else-if="generatedImages.length > 0" class="avatar-selection">
+        <h2>Choisissez votre avatar :</h2>
+        <div class="avatars-grid">
+          <div v-for="(img, index) in generatedImages" :key="index" class="avatar-option-container"
+            :class="{ 'selected': selectedAvatarUrl === img }">
+            <img :src="img" alt="Option d'avatar" class="avatar-option" @click="selectAvatar(img)" />
+            <button class="select-avatar-button" @click="selectAvatar(img)">
+              Choisir cet avatar
+            </button>
           </div>
-          <button class="action-button confirm-passions"
-            @click="responses.passions = selectedPassions.join(', '); validateResponse('passions')">
-            Confirmer
-          </button>
         </div>
-      </div>
-
-      <!-- Sélection d'avatar -->
-      <div v-if="showAvatarSelection">
-        <div v-if="isLoadingImages" class="loading">
-          <div class="loading-spinner"></div>
-          <p>Création de vos avatars personnalisés...</p>
-        </div>
-        <div v-else-if="generatedImages.length > 0" class="avatar-selection">
-          <h2>Choisissez votre avatar :</h2>
-          <div class="avatars-grid">
-            <div v-for="(img, index) in generatedImages" :key="index" class="avatar-option-container"
-              :class="{ 'selected': selectedAvatarUrl === img }">
-              <img :src="img" alt="Option d'avatar" class="avatar-option" @click="selectAvatar(img)" />
-              <button class="select-avatar-button" @click="selectAvatar(img)">
-                Choisir cet avatar
-              </button>
-            </div>
-          </div>
-          <button v-if="selectedAvatarUrl" class="action-button next-button" @click="finalizeAvatarSelection">
-            Continuer avec cet avatar
-          </button>
-        </div>
-      </div>
-
-      <div class="navigation-buttons" v-if="!showAvatarSelection">
-        <button v-if="currentQuestionIndex > 0" class="action-button prev-button" @click="previousQuestion">
-          Précédent
-        </button>
-        <button class="action-button next-button" @click="nextQuestion"
-          :disabled="!responses[questions[currentQuestionIndex].key]">
-          Suivant
-        </button>
-        <button v-if="questions[currentQuestionIndex].key === 'passions'" class="action-button skip-button"
-          @click="skipQuestion">
-          Passer cette question
+        <button v-if="selectedAvatarUrl" class="action-button next-button" @click="finalizeAvatarSelection">
+          Continuer avec cet avatar
         </button>
       </div>
     </div>
 
-    <div v-else class="completion-message">
-      <!-- <p>Nous allons maintenant créer votre compte avec une passkey pour la sécurité</p> -->
+    <div v-if="currentQuestionIndex >= questions.length && !showAvatarSelection" class="completion-message">
       <div v-if="isRegistering" class="loading-spinner">
         <div class="spinner"></div>
         <p>Création de votre compte...</p>
       </div>
-      <button v-else @click="createAccountAndStartGame" :disabled="isRegistering">Commencer le premier jeu</button>
-      <!-- <p>Merci d'avoir répondu aux questions !</p> -->
+      <button v-else @click="createAccountAndStartGame" :disabled="isRegistering" class="start-game-button">
+        Commencer le premier jeu
+      </button>
     </div>
   </div>
 </template>
@@ -157,6 +171,7 @@ export default {
       showAvatarSelection: false,
       showCustomInput: false,
       showNameInput: false,
+      voiceInputActive: false,
       backgroundColors: ['#e0f7fa', '#e8f5e9', '#fce4ec', '#fff3e0', '#ede7f6', '#f9fbe7'],
       currentBackgroundColor: '#e0f7fa',
       isRegistering: false,
@@ -239,14 +254,6 @@ export default {
       }
     },
 
-    // async speedGame() {
-    //   // get the user's data
-    //   const userData = {
-    //     first_name: this.responses.name,
-    //     age: this.responses.age,
-    //   };
-    //   await AuthService.registerWithPasskey(userData);
-    //   this.$router.push('/game-speed');
     async createAccountAndStartGame() {
       if (this.isRegistering) return;
 
@@ -316,8 +323,34 @@ export default {
 
     startRecognition() {
       if (this.recognition && !this.isRecognizing) {
+        this.voiceInputActive = true;
+        this.showNameInput = false;
         this.recognition.start();
       }
+    },
+    
+    startTextInput() {
+      this.showNameInput = true;
+      this.voiceInputActive = false;
+      this.responses.name = '';
+      // Focus sur le champ de saisie
+      this.$nextTick(() => {
+        if (this.$refs.customNameInput) {
+          this.$refs.customNameInput.focus();
+        }
+      });
+    },
+    
+    confirmTextInput() {
+      if (this.responses.name && this.responses.name.trim() !== '') {
+        this.showNameInput = false;
+        this.validateResponse('name');
+      }
+    },
+    
+    cancelTextInput() {
+      this.showNameInput = false;
+      this.responses.name = '';
     },
 
     startRecognitionForPassions() {
@@ -449,30 +482,52 @@ export default {
   font-weight: bold;
   font-size: 2.2rem;
   margin-top: 0.8rem;
+  margin-bottom: 1.5rem;
   color: #333;
 }
 
-.sub-title {
-  font-family: 'Glacial Indifference', sans-serif;
-  font-weight: bold;
-  font-size: 1.8rem;
-  margin-bottom: 1rem;
-  color: #333;
+.content-container {
+  display: flex;
+  justify-content: space-between;
+  width: 95%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.left-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 40%;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 15px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.right-section {
+  display: flex;
+  flex-direction: column;
+  width: 58%;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 15px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .image-default {
-  width: 120px;
-  height: 120px;
+  width: 180px;
+  height: 180px;
   object-fit: contain;
-  margin: 0.5rem 0;
+  margin: 0.5rem 0 1.5rem;
   border-radius: 10px;
 }
 
 .image-selected {
-  width: 150px;
-  height: 150px;
+  width: 200px;
+  height: 200px;
   object-fit: contain;
-  margin: 0.5rem 0;
+  margin: 0.5rem 0 1.5rem;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
@@ -481,23 +536,16 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 98%;
-  max-width: 1000px;
-  margin: 0.5rem auto;
-  padding: 1.2rem;
-  background-color: rgba(255, 255, 255, 0.9);
-  border-radius: 15px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  overflow-y: auto;
-  max-height: 70vh;
+  width: 100%;
 }
 
-.text-with-button {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 2rem;
-  width: 100%;
+.sub-title {
+  font-family: 'Glacial Indifference', sans-serif;
+  font-weight: bold;
+  font-size: 1.6rem;
+  margin-bottom: 1rem;
+  color: #333;
+  text-align: center;
 }
 
 .action-button {
@@ -600,6 +648,7 @@ export default {
   font-size: 1.1rem;
   background-color: #e0e0e0;
   border: 2px solid #e0e0e0;
+  color: #333;
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -648,6 +697,18 @@ export default {
   width: 100%;
   max-width: 300px;
   margin: 1rem auto;
+}
+
+.button-group {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.cancel-button {
+  background-color: #f44336;
 }
 
 .small-input {
@@ -751,16 +812,17 @@ export default {
   gap: 10px;
 }
 
-.completion-message {
-  font-size: 1.2em;
-  margin-top: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.avatar-selection-container {
+  width: 90%;
+  max-width: 1000px;
+  margin: 1rem auto;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 15px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .avatar-selection {
-  margin-top: 2rem;
   width: 100%;
 }
 
@@ -841,6 +903,8 @@ export default {
   padding: 2rem;
   border-radius: 15px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 60%;
+  max-width: 600px;
 }
 
 .start-game-button {
@@ -879,9 +943,26 @@ export default {
 }
 
 /* Responsive adjustments */
+@media (max-width: 900px) {
+  .content-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .left-section, .right-section {
+    width: 95%;
+    margin-bottom: 1rem;
+  }
+  
+  .image-default, .image-selected {
+    width: 150px;
+    height: 150px;
+  }
+}
+
 @media (max-width: 768px) {
   .options-grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -895,7 +976,12 @@ export default {
   }
 
   .options-grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .image-default, .image-selected {
+    width: 120px;
+    height: 120px;
   }
 }
 
@@ -916,11 +1002,6 @@ export default {
   height: 40px;
   animation: spin 1s linear infinite;
   margin-bottom: 1em;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
 }
 
 button:disabled {
