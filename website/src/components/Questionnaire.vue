@@ -72,6 +72,73 @@
           </div>
         </div>
 
+        <!-- Options pour le genre de l'avatar -->
+        <div v-if="questions[currentQuestionIndex].key === 'avatarGender'" class="avatar-options-container">
+          <div class="options-grid avatar-gender-grid">
+            <button v-for="option in avatarGenderOptions" :key="option.value" class="option-button avatar-option"
+              @click="selectOption('avatarGender', option.value)" 
+              :class="{ 'selected': responses.avatarGender === option.value }">
+              <span class="avatar-option-icon">{{ option.icon }}</span>
+              <span class="avatar-option-text">{{ option.label }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Options pour les accessoires de l'avatar -->
+        <div v-if="questions[currentQuestionIndex].key === 'avatarAccessories'" class="avatar-options-container">
+          <div class="options-grid avatar-accessories-grid">
+            <button v-for="option in avatarAccessoriesOptions" :key="option.value" class="option-button avatar-option"
+              @click="toggleAvatarAccessory(option.value)"
+              :class="{ 'selected': selectedAccessories.includes(option.value) }">
+              <span class="avatar-option-icon">{{ option.icon }}</span>
+              <span class="avatar-option-text">{{ option.label }}</span>
+            </button>
+          </div>
+          <div v-if="selectedAccessories.length > 0" class="selected-items">
+            <button class="action-button confirm-selection"
+              @click="responses.avatarAccessories = selectedAccessories.join(','); validateResponse('avatarAccessories')">
+              Confirmer mes accessoires
+            </button>
+          </div>
+        </div>
+
+        <!-- Options pour la couleur de l'avatar -->
+        <div v-if="questions[currentQuestionIndex].key === 'avatarColor'" class="avatar-options-container">
+          <div class="options-grid avatar-color-grid">
+            <button v-for="option in avatarColorOptions" :key="option.value" class="option-button avatar-color-option"
+              @click="selectOption('avatarColor', option.value)"
+              :class="{ 'selected': responses.avatarColor === option.value }"
+              :style="{ backgroundColor: option.hex }">
+              <span class="avatar-option-icon">{{ option.icon }}</span>
+              <span class="avatar-option-text">{{ option.label }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Options pour les passions de l'avatar -->
+        <div v-if="questions[currentQuestionIndex].key === 'avatarPassion'" class="avatar-options-container">
+          <div class="options-grid avatar-passion-grid">
+            <button v-for="option in avatarPassionOptions" :key="option.value" class="option-button avatar-option"
+              @click="selectOption('avatarPassion', option.value)"
+              :class="{ 'selected': responses.avatarPassion === option.value }">
+              <span class="avatar-option-icon">{{ option.icon }}</span>
+              <span class="avatar-option-text">{{ option.label }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Options pour l'expression de l'avatar -->
+        <div v-if="questions[currentQuestionIndex].key === 'avatarExpression'" class="avatar-options-container">
+          <div class="options-grid avatar-expression-grid">
+            <button v-for="option in avatarExpressionOptions" :key="option.value" class="option-button avatar-option"
+              @click="selectOption('avatarExpression', option.value)"
+              :class="{ 'selected': responses.avatarExpression === option.value }">
+              <span class="avatar-option-icon">{{ option.icon }}</span>
+              <span class="avatar-option-text">{{ option.label }}</span>
+            </button>
+          </div>
+        </div>
+
         <!-- Passions avec options prédéfinies et vocales -->
         <div v-if="questions[currentQuestionIndex].key === 'passions'" class="passions-container">
           <div class="options-grid">
@@ -109,10 +176,10 @@
             Précédent
           </button>
           <button class="action-button next-button" @click="nextQuestion"
-            :disabled="!responses[questions[currentQuestionIndex].key]">
+            :disabled="!canProceed()">
             Suivant
           </button>
-          <button v-if="questions[currentQuestionIndex].key === 'passions'" class="action-button skip-button"
+          <button v-if="shouldShowSkipButton()" class="action-button skip-button"
             @click="skipQuestion">
             Passer cette question
           </button>
@@ -179,6 +246,11 @@ export default {
       questions: [
         { text: '🎂 Quel âge as-tu ?', key: 'age', type: 'number' },
         { text: '👤 Comment voudrais-tu qu\'on t\'appelle ?', key: 'name', type: 'text' },
+        { text: '👦 Veux-tu que ton avatar soit...', key: 'avatarGender', type: 'choice' },
+        { text: '🧢 Quels accessoires aimes-tu porter ou utiliser ?', key: 'avatarAccessories', type: 'multichoice' },
+        { text: '🎨 Choisis une couleur principale pour ton avatar', key: 'avatarColor', type: 'choice' },
+        { text: '🌟 Qu\'est-ce que tu préfères parmi ces passions ?', key: 'avatarPassion', type: 'choice' },
+        { text: '😊 Ton avatar est plutôt...', key: 'avatarExpression', type: 'choice' },
         { text: '🎨 Quelles sont tes passions ?', key: 'passions', type: 'text', icon: 'passion-icon.png' }
       ],
       ageOptions: [12, 14, 16, 18, 20, 22, 24, 26],
@@ -186,10 +258,50 @@ export default {
         'Musique', 'Sport', 'Lecture', 'Jeux vidéo', 'Dessin', 'Cuisine',
         'Animaux', 'Nature'
       ],
+      avatarGenderOptions: [
+        { label: 'Un garçon', value: 'boy', icon: '👦' },
+        { label: 'Une fille', value: 'girl', icon: '👧' },
+        { label: 'Neutre / Je ne sais pas', value: 'neutral', icon: '🤖' }
+      ],
+      avatarAccessoriesOptions: [
+        { label: 'Casque audio', value: 'headphones', icon: '🎧' },
+        { label: 'Casquette', value: 'cap', icon: '🧢' },
+        { label: 'Sac à dos', value: 'backpack', icon: '🎒' },
+        { label: 'Lunettes', value: 'glasses', icon: '👓' },
+        { label: 'Rien de spécial', value: 'none', icon: '🚫' }
+      ],
+      avatarColorOptions: [
+        { label: 'Bleu', value: 'blue', icon: '🔵', hex: '#1e88e5' },
+        { label: 'Vert', value: 'green', icon: '🟢', hex: '#43a047' },
+        { label: 'Rouge', value: 'red', icon: '🔴', hex: '#e53935' },
+        { label: 'Violet', value: 'purple', icon: '🟣', hex: '#8e24aa' },
+        { label: 'Orange', value: 'orange', icon: '🟠', hex: '#fb8c00' },
+        { label: 'Blanc', value: 'white', icon: '⚪', hex: '#f5f5f5' },
+        { label: 'Noir', value: 'black', icon: '⚫', hex: '#424242' }
+      ],
+      avatarPassionOptions: [
+        { label: 'Jeux vidéo', value: 'videogames', icon: '🎮' },
+        { label: 'Dessin / Peinture', value: 'art', icon: '🎨' },
+        { label: 'Musique', value: 'music', icon: '🎵' },
+        { label: 'Espace / Science', value: 'science', icon: '🚀' },
+        { label: 'Nature / Animaux', value: 'nature', icon: '🏞️' }
+      ],
+      avatarExpressionOptions: [
+        { label: 'Souriant', value: 'smiling', icon: '😄' },
+        { label: 'Sérieux', value: 'serious', icon: '😐' },
+        { label: 'Calme', value: 'calm', icon: '🧘‍♂️' },
+        { label: 'Très joyeux', value: 'very_happy', icon: '🤩' }
+      ],
       selectedPassions: [],
+      selectedAccessories: [],
       responses: {
         age: '',
         name: '',
+        avatarGender: '',
+        avatarAccessories: '',
+        avatarColor: '',
+        avatarPassion: '',
+        avatarExpression: '',
         passions: ''
       },
       recognition: null,
@@ -273,7 +385,12 @@ export default {
           name: this.responses.name,
           age: this.responses.age,
           passions: this.responses.passions,
-          avatar: this.selectedAvatarUrl
+          avatar: this.selectedAvatarUrl,
+          avatarGender: this.responses.avatarGender,
+          avatarAccessories: this.responses.avatarAccessories,
+          avatarColor: this.responses.avatarColor,
+          avatarPassion: this.responses.avatarPassion,
+          avatarExpression: this.responses.avatarExpression
         }));
 
         // Register with passkey
@@ -294,6 +411,29 @@ export default {
       }
     },
 
+    toggleAvatarAccessory(accessory) {
+      const index = this.selectedAccessories.indexOf(accessory);
+      
+      // Si l'accessoire est "none", on vide les autres accessoires
+      if (accessory === 'none') {
+        this.selectedAccessories = ['none'];
+        return;
+      }
+      
+      // Si on ajoute un accessoire et que "none" est sélectionné, on retire "none"
+      if (index === -1 && this.selectedAccessories.includes('none')) {
+        this.selectedAccessories = [accessory];
+        return;
+      }
+      
+      // Sinon, on ajoute ou retire l'accessoire normalement
+      if (index === -1) {
+        this.selectedAccessories.push(accessory);
+      } else {
+        this.selectedAccessories.splice(index, 1);
+      }
+    },
+
     selectOption(key, value) {
       this.responses[key] = value;
       if (key === 'age') {
@@ -304,7 +444,7 @@ export default {
     validateResponse(key) {
       if (this.responses[key]) {
         if (key === 'passions') {
-          this.generatePicture(this.responses.passions);
+          this.generatePicture();
         }
       }
     },
@@ -366,16 +506,33 @@ export default {
       }
     },
 
+    canProceed() {
+      const currentKey = this.questions[this.currentQuestionIndex].key;
+      
+      // Pour les accessoires, on vérifie si au moins un accessoire est sélectionné
+      if (currentKey === 'avatarAccessories') {
+        return this.selectedAccessories.length > 0;
+      }
+      
+      // Pour les autres questions, on vérifie si une réponse existe
+      return this.responses[currentKey] !== '';
+    },
+
     nextQuestion() {
       const currentKey = this.questions[this.currentQuestionIndex].key;
 
-      if (!this.responses[currentKey]) {
+      if (!this.canProceed()) {
         this.repeatQuestion();
         return;
       }
 
+      // Si on est sur la question des accessoires, on sauvegarde les accessoires sélectionnés
+      if (currentKey === 'avatarAccessories') {
+        this.responses.avatarAccessories = this.selectedAccessories.join(',');
+      }
+
       if (currentKey === 'passions' && !this.showAvatarSelection) {
-        this.generatePicture(this.responses.passions);
+        this.generatePicture();
         return;
       }
 
@@ -386,14 +543,29 @@ export default {
       this.showAvatarSelection = false;
     },
 
+    shouldShowSkipButton() {
+      const currentKey = this.questions[this.currentQuestionIndex].key;
+      // On peut sauter les questions des accessoires, de la passion et des passions générales
+      return ['avatarAccessories', 'avatarPassion', 'passions'].includes(currentKey);
+    },
+
     skipQuestion() {
-      // Ne permet de sauter que la question sur les passions
-      if (this.questions[this.currentQuestionIndex].key === 'passions') {
+      const currentKey = this.questions[this.currentQuestionIndex].key;
+      
+      if (this.shouldShowSkipButton()) {
+        if (currentKey === 'avatarAccessories') {
+          this.responses.avatarAccessories = 'none';
+          this.selectedAccessories = ['none'];
+        } else if (currentKey === 'avatarPassion') {
+          this.responses.avatarPassion = 'none';
+        } else if (currentKey === 'passions') {
+          this.responses.passions = '';
+        }
+        
         this.currentQuestionIndex++;
         this.updateBackgroundColor();
         this.showCustomInput = false;
         this.showNameInput = false;
-        this.showAvatarSelection = false;
       } else {
         // Pour les autres questions, on rappelle qu'elles sont obligatoires
         this.repeatQuestion();
@@ -404,21 +576,42 @@ export default {
       const text = this.questions[this.currentQuestionIndex].text;
       const speech = new SpeechSynthesisUtterance();
       speech.lang = 'fr-FR';
-      speech.text = text.replace(/[🎂👤🎨]/gu, ''); // Enlever les emojis pour la lecture
+      speech.text = text.replace(/🎂|👤|🎨|👦|🧢|🌟|😊|🎮|🎧|🎒|👓|🚫|🔵|🟢|🔴|🟣|🟠|⚪|⚫||🚀|🏞️/gu, ''); // Enlever les emojis pour la lecture
       window.speechSynthesis.speak(speech);
     },
 
-    async generatePicture(passions) {
+    async generatePicture() {
       this.showAvatarSelection = true;
       const url = process.env.VUE_APP_AZURE_OPENAI_ENDPOINT;
       const apiKey = process.env.VUE_APP_AZURE_OPENAI_API_KEY;
-      // const userAge = this.responses.age || 25;
-      const prompt = `Créer une image Une figurine vinyle de style Funko Pop! Le fond général de l'image est gris clair, avec un aspect minimaliste et propre.
-La figurine a un style Funko Pop classique: grosse tête carrée, corps petit et simple, yeux ronds.
-La figurine est entièrement habillé et a des accessoires en rapport avec la passion: « ${passions} ».
-Elle est placée au centre, debout.
-L'image est bien éclairée, vue de face, en haute qualité, dans un style visuel proche d'un rendu produit professionnel. L'objectif est que le résultat ressemble à un produit réel prêt à être vendu en boutique.`;
+      
+      // Construction du prompt basé sur les choix de l'avatar
+      const gender = this.responses.avatarGender === 'boy' ? 'masculin' : 
+                 this.responses.avatarGender === 'girl' ? 'féminin' : 'neutre';
+
+      const accessoriesText = this.responses.avatarAccessories !== 'none' ? 
+                              `portant les accessoires suivants : ${this.responses.avatarAccessories.replace(/,/g, ', ')}` : 
+                              'sans accessoires particuliers';
+
+      const colorText = this.responses.avatarColor ? 
+                        `avec des tons dominants de ${this.responses.avatarColor}` : '';
+
+      const passionText = this.responses.avatarPassion !== 'none' ? 
+                          `reflétant la passion pour : ${this.responses.avatarPassion}` : '';
+
+      const expressionText = this.responses.avatarExpression ? 
+                              `avec une expression ${this.responses.avatarExpression}` : '';
+
+      const prompt = `Créer une illustration numérique en style cartoon réaliste, avec des traits doux, une palette de couleurs naturelle et harmonieuse.
+      Le fond est gris clair, épuré et minimaliste.
+      Le personnage est de genre ${gender}, ${accessoriesText}, ${colorText}, ${passionText}, ${expressionText}.
+      Le style visuel est moderne, avec des proportions naturelles (pas de déformation type Funko Pop), un rendu propre et professionnel, comme une illustration d'avatar haut de gamme.
+      Le personnage est vu de face, en position debout, bien éclairé, avec des détails soignés sur les vêtements et les accessoires.
+      L'objectif est de produire un visuel prêt pour une utilisation professionnelle ou commerciale.`;
+
       console.log("Envoi de la requête à l'API Azure OpenAI...");
+      console.log("Prompt:", prompt);
+
 
       this.generatedImages = [];
       this.isLoadingImages = true;
@@ -645,6 +838,57 @@ L'image est bien éclairée, vue de face, en haute qualité, dans un style visue
   gap: 12px;
   width: 100%;
   margin: 0.8rem 0;
+}
+
+.avatar-gender-grid,
+.avatar-expression-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.avatar-color-grid {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.avatar-option-container {
+  position: relative;
+  padding: 5px;
+}
+
+.avatar-option-icon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.avatar-option-text {
+  display: block;
+  font-size: 0.9rem;
+}
+
+.avatar-options-container {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.avatar-color-option {
+  color: white;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  border: 3px solid transparent;
+}
+
+.avatar-color-option.selected {
+  border-color: #2196f3;
+  box-shadow: 0 0 10px rgba(33, 150, 243, 0.5);
+}
+
+.selected-items {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.confirm-selection {
+  margin-top: 0.5rem;
 }
 
 .option-button {
