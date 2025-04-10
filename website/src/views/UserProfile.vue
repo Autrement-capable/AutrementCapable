@@ -2,31 +2,31 @@
   <!-- Utiliser soit le fond animé soit le fond statique en fonction de la propriété animationsEnabled -->
   <space-background v-if="animationsEnabled" :theme="currentTheme" />
   <static-backgrounds v-else :theme="currentTheme" />
-  
+
   <div class="profile-container" :class="{ 'high-contrast': highContrastMode }">
     <!-- En-tête avec avatar et message de bienvenue -->
     <div class="profile-header">
       <div class="avatar-container">
         <img :src="userProfile.avatar" alt="Avatar" class="user-avatar" />
-        <div class="level-badge">Niveau {{userProfile.level}}</div>
+        <div class="level-badge">Niveau {{ userProfile.level }}</div>
       </div>
       <div class="welcome-message">
-        <h1>Salut {{userProfile.firstName}} ! 👋</h1>
+        <h1>Salut {{ userProfile.firstName }} ! 👋</h1>
         <p>Super de te revoir aujourd'hui !</p>
       </div>
     </div>
 
     <!-- Onglets de navigation -->
     <div class="profile-tabs">
-      <button 
-        v-for="tab in tabs" 
+      <button
+        v-for="tab in tabs"
         :key="tab.id"
         @click="activeTab = tab.id"
         :class="{ active: activeTab === tab.id }"
         class="tab-button"
       >
-        <span class="tab-icon">{{tab.icon}}</span>
-        <span class="tab-label">{{tab.label}}</span>
+        <span class="tab-icon">{{ tab.icon }}</span>
+        <span class="tab-label">{{ tab.label }}</span>
       </button>
     </div>
 
@@ -44,19 +44,19 @@
             <div class="card-content">
               <div class="info-item">
                 <span class="info-label">Prénom:</span>
-                <span class="info-value">{{userProfile.firstName}}</span>
+                <span class="info-value">{{ userProfile.firstName }}</span>
               </div>
               <div class="info-item">
                 <span class="info-label">Nom:</span>
-                <span class="info-value">{{userProfile.lastName}}</span>
+                <span class="info-value">{{ userProfile.lastName }}</span>
               </div>
               <div class="info-item">
                 <span class="info-label">Âge:</span>
-                <span class="info-value">{{userProfile.age}} ans</span>
+                <span class="info-value">{{ userProfile.age }} ans</span>
               </div>
               <div class="info-item">
                 <span class="info-label">Ville:</span>
-                <span class="info-value">{{userProfile.city}}</span>
+                <span class="info-value">{{ userProfile.city }}</span>
               </div>
             </div>
           </div>
@@ -69,12 +69,12 @@
             </div>
             <div class="card-content">
               <div class="interests-container">
-                <div 
-                  v-for="interest in userProfile.interests" 
+                <div
+                  v-for="interest in userProfile.interests"
                   :key="interest"
                   class="interest-tag"
                 >
-                  {{interest}}
+                  {{ interest }}
                 </div>
               </div>
             </div>
@@ -93,43 +93,47 @@
       <!-- Onglet Paramètres -->
       <div v-if="activeTab === 'settings'" class="settings-tab">
         <h2 class="section-title">Mes paramètres</h2>
-        
+
         <div class="settings-card">
           <h3>Accessibilité</h3>
           <div class="setting-item">
             <label for="contrast-toggle">Mode contraste élevé</label>
             <div class="toggle-switch">
-              <input 
-                type="checkbox" 
-                id="contrast-toggle" 
+              <input
+                type="checkbox"
+                id="contrast-toggle"
                 v-model="highContrastMode"
                 @change="saveAccessibilitySettings"
-              >
+              />
               <span class="toggle-slider"></span>
             </div>
           </div>
           <div class="setting-item">
             <label for="text-size">Taille du texte</label>
             <div class="setting-controls">
-              <button @click="decreaseTextSize" class="text-size-button">A-</button>
-              <button @click="increaseTextSize" class="text-size-button">A+</button>
+              <button @click="decreaseTextSize" class="text-size-button">
+                A-
+              </button>
+              <button @click="increaseTextSize" class="text-size-button">
+                A+
+              </button>
             </div>
           </div>
           <!-- Ajout du paramètre d'animation -->
           <div class="setting-item">
             <label for="animation-toggle">Animations de fond</label>
             <div class="toggle-switch">
-              <input 
-                type="checkbox" 
-                id="animation-toggle" 
+              <input
+                type="checkbox"
+                id="animation-toggle"
                 v-model="animationsEnabled"
                 @change="toggleAnimations"
-              >
+              />
               <span class="toggle-slider"></span>
             </div>
           </div>
         </div>
-        
+
         <div class="settings-card">
           <h3>Gestion du compte</h3>
           <div class="setting-item device-switch">
@@ -149,7 +153,9 @@
         <div class="message-icon">✅</div>
         <h3>Super !</h3>
         <p>Ton CV a été généré et sauvegardé !</p>
-        <button @click="showCVMessage = false" class="close-message-button">Continuer</button>
+        <button @click="showCVMessage = false" class="close-message-button">
+          Continuer
+        </button>
       </div>
     </div>
 
@@ -158,54 +164,66 @@
       <div class="transfer-modal">
         <h3>Code de transfert</h3>
         <div class="transfer-code">{{ transferCode }}</div>
-        <p>Entre ce code sur ton nouvel appareil pour y retrouver ton compte.</p>
-        <div class="transfer-timer">Expire dans: {{ transferTimeLeft }} secondes</div>
-        <button @click="cancelTransfer" class="close-transfer-button">Fermer</button>
+        <p>
+          Entre ce code sur ton nouvel appareil pour y retrouver ton compte.
+        </p>
+        <div class="transfer-timer">
+          Expire dans: {{ transferTimeLeft }} secondes
+        </div>
+        <button @click="cancelTransfer" class="close-transfer-button">
+          Fermer
+        </button>
       </div>
     </div>
   </div>
 </template>
-  
+
 <script>
-import SpaceBackground from '@/components/SpaceBackground.vue';
-import StaticBackgrounds from '@/components/StaticBackgrounds.vue';
-import { BackgroundManager } from '@/utils/BackgroundManager';
-import { BackgroundMixin } from '@/utils/BackgroundMixin';
+import SpaceBackground from '@/components/SpaceBackground.vue'
+import StaticBackgrounds from '@/components/StaticBackgrounds.vue'
+import { BackgroundManager } from '@/utils/BackgroundManager'
+import { BackgroundMixin } from '@/utils/BackgroundMixin'
 
 export default {
   name: 'UserProfile',
   mixins: [BackgroundMixin],
   components: {
     SpaceBackground,
-    StaticBackgrounds
+    StaticBackgrounds,
   },
   data() {
     return {
       // Données du profil utilisateur
       userProfile: {
-        firstName: "Lucas",
-        lastName: "Martin",
+        firstName: 'Lucas',
+        lastName: 'Martin',
         age: 16,
-        city: "Lyon",
+        city: 'Lyon',
         level: 3,
-        avatar: require('@/assets/jeunefemme.png'), // Chemin à adapter selon votre structure
-        interests: ["Jeux vidéo", "Musique", "Dessin", "Programmation", "Animaux"],
+        avatar: require('@/assets/pdp.png'), // Chemin à adapter selon votre structure
+        interests: [
+          'Jeux vidéo',
+          'Musique',
+          'Dessin',
+          'Programmation',
+          'Animaux',
+        ],
         skills: [
-          { name: "Créativité", level: 4 },
-          { name: "Informatique", level: 5 },
-          { name: "Organisation", level: 2 },
-          { name: "Communication", level: 3 },
-          { name: "Logique", level: 4 }
-        ]
+          { name: 'Créativité', level: 4 },
+          { name: 'Informatique', level: 5 },
+          { name: 'Organisation', level: 2 },
+          { name: 'Communication', level: 3 },
+          { name: 'Logique', level: 4 },
+        ],
       },
-      
+
       // Onglets disponibles
       tabs: [
         { id: 'info', label: 'Mon profil', icon: '👤' },
-        { id: 'settings', label: 'Paramètres', icon: '⚙️' }
+        { id: 'settings', label: 'Paramètres', icon: '⚙️' },
       ],
       activeTab: 'info',
-      
+
       // Badges
       badges: [
         {
@@ -214,23 +232,23 @@ export default {
           description: 'Tu as complété ton profil !',
           icon: '🚀',
           color: '#4CAF50',
-          unlocked: true
+          unlocked: true,
         },
         {
           id: 2,
           title: 'Explorateur',
-          description: 'Tu as exploré toutes les sections de l\'application',
+          description: "Tu as exploré toutes les sections de l'application",
           icon: '🧭',
           color: '#2196F3',
-          unlocked: true
+          unlocked: true,
         },
         {
           id: 3,
           title: 'Créatif',
-          description: 'Tu as partagé tes centres d\'intérêt',
+          description: "Tu as partagé tes centres d'intérêt",
           icon: '🎨',
           color: '#9C27B0',
-          unlocked: true
+          unlocked: true,
         },
         {
           id: 4,
@@ -238,7 +256,7 @@ export default {
           description: 'Tu as participé à un atelier de groupe',
           icon: '💬',
           color: '#FF9800',
-          unlocked: false
+          unlocked: false,
         },
         {
           id: 5,
@@ -246,143 +264,152 @@ export default {
           description: 'Tu as atteint le niveau 5',
           icon: '⭐',
           color: '#FFD700',
-          unlocked: false
-        }
+          unlocked: false,
+        },
       ],
-      
+
       // Paramètres d'accessibilité
       highContrastMode: false,
       textSizeLevel: 0,
-      
+
       // États pour les interactions
       showCVMessage: false,
       showTransferCode: false,
-      transferCode: "123456",
+      transferCode: '123456',
       transferTimeLeft: 60,
       transferInterval: null,
-      
+
       // Paramètres de fond d'écran
       currentTheme: 'cosmic',
-      animationsEnabled: true
-    };
-  },
-  
-  computed: {
-    unlockedBadgesCount() {
-      return this.badges.filter(badge => badge.unlocked).length;
-    },
-    totalBadgesCount() {
-      return this.badges.length;
-    },
-    badgesProgressPercentage() {
-      return (this.unlockedBadgesCount / this.totalBadgesCount) * 100;
+      animationsEnabled: true,
     }
   },
-  
+
+  computed: {
+    unlockedBadgesCount() {
+      return this.badges.filter((badge) => badge.unlocked).length
+    },
+    totalBadgesCount() {
+      return this.badges.length
+    },
+    badgesProgressPercentage() {
+      return (this.unlockedBadgesCount / this.totalBadgesCount) * 100
+    },
+  },
+
   created() {
     // Chargement des paramètres d'accessibilité
-    this.loadAccessibilitySettings();
-    
+    this.loadAccessibilitySettings()
+
     // Chargement des paramètres de thème et d'animation
-    this.currentTheme = BackgroundManager.getCurrentTheme();
-    this.animationsEnabled = BackgroundManager.areAnimationsEnabled();
+    this.currentTheme = BackgroundManager.getCurrentTheme()
+    this.animationsEnabled = BackgroundManager.areAnimationsEnabled()
   },
-  
+
   methods: {
     // Méthode pour activer/désactiver les animations
     toggleAnimations() {
-      BackgroundManager.setAnimationsEnabled(this.animationsEnabled);
+      BackgroundManager.setAnimationsEnabled(this.animationsEnabled)
     },
-    
+
     // Méthodes d'édition (simulées pour l'exemple)
     editPersonalInfo() {
-      alert("Fonctionnalité d'édition des informations personnelles à implémenter");
+      alert(
+        "Fonctionnalité d'édition des informations personnelles à implémenter"
+      )
     },
     editInterests() {
-      alert("Fonctionnalité d'édition des centres d'intérêt à implémenter");
+      alert("Fonctionnalité d'édition des centres d'intérêt à implémenter")
     },
     editSkills() {
-      alert("Fonctionnalité d'édition des compétences à implémenter");
+      alert("Fonctionnalité d'édition des compétences à implémenter")
     },
-    
+
     // Génération du CV
     generateCV() {
       // Simulation d'une génération de CV
       setTimeout(() => {
-        this.showCVMessage = true;
+        this.showCVMessage = true
         // Le message se ferme automatiquement après 5 secondes
         setTimeout(() => {
-          this.showCVMessage = false;
-        }, 5000);
-      }, 1000);
+          this.showCVMessage = false
+        }, 5000)
+      }, 1000)
     },
-    
+
     // Changement d'appareil
     switchDevice() {
-      this.showTransferCode = true;
-      this.transferTimeLeft = 60;
-      
+      this.showTransferCode = true
+      this.transferTimeLeft = 60
+
       // Compte à rebours
       this.transferInterval = setInterval(() => {
-        this.transferTimeLeft--;
+        this.transferTimeLeft--
         if (this.transferTimeLeft <= 0) {
-          this.cancelTransfer();
+          this.cancelTransfer()
         }
-      }, 1000);
+      }, 1000)
     },
-    
+
     cancelTransfer() {
-      clearInterval(this.transferInterval);
-      this.showTransferCode = false;
+      clearInterval(this.transferInterval)
+      this.showTransferCode = false
     },
 
     // Méthodes d'accessibilité
     loadAccessibilitySettings() {
-      const settings = localStorage.getItem('accessibilitySettings');
+      const settings = localStorage.getItem('accessibilitySettings')
       if (settings) {
         try {
-          const { highContrastMode, textSizeLevel } = JSON.parse(settings);
-          this.highContrastMode = highContrastMode;
-          this.textSizeLevel = textSizeLevel;
-          this.applyTextSize();
+          const { highContrastMode, textSizeLevel } = JSON.parse(settings)
+          this.highContrastMode = highContrastMode
+          this.textSizeLevel = textSizeLevel
+          this.applyTextSize()
         } catch (error) {
-          console.error('Erreur lors du chargement des paramètres d\'accessibilité:', error);
+          console.error(
+            "Erreur lors du chargement des paramètres d'accessibilité:",
+            error
+          )
         }
       }
     },
-    
+
     saveAccessibilitySettings() {
       const settings = {
         highContrastMode: this.highContrastMode,
-        textSizeLevel: this.textSizeLevel
-      };
-      localStorage.setItem('accessibilitySettings', JSON.stringify(settings));
+        textSizeLevel: this.textSizeLevel,
+      }
+      localStorage.setItem('accessibilitySettings', JSON.stringify(settings))
     },
-    
+
     increaseTextSize() {
       if (this.textSizeLevel < 3) {
-        this.textSizeLevel++;
-        this.applyTextSize();
-        this.saveAccessibilitySettings();
+        this.textSizeLevel++
+        this.applyTextSize()
+        this.saveAccessibilitySettings()
       }
     },
-    
+
     decreaseTextSize() {
       if (this.textSizeLevel > 0) {
-        this.textSizeLevel--;
-        this.applyTextSize();
-        this.saveAccessibilitySettings();
+        this.textSizeLevel--
+        this.applyTextSize()
+        this.saveAccessibilitySettings()
       }
     },
-    
+
     applyTextSize() {
-      document.body.classList.remove('text-size-1', 'text-size-2', 'text-size-3');
+      document.body.classList.remove(
+        'text-size-1',
+        'text-size-2',
+        'text-size-3'
+      )
       if (this.textSizeLevel > 0) {
-        document.body.classList.add(`text-size-${this.textSizeLevel}`);
+        document.body.classList.add(`text-size-${this.textSizeLevel}`)
       }
-    }
-  }
-};
+    },
+  },
+}
 </script>
 
 <style scoped>
@@ -402,8 +429,10 @@ export default {
   transform: translate(-50%, -50%);
   transition: all 0.3s ease;
 }
-h1, h2, h3 {
-  color: #4A4D9E;
+h1,
+h2,
+h3 {
+  color: #4a4d9e;
   margin-top: 0;
 }
 
@@ -428,7 +457,7 @@ button {
   width: 100px;
   height: 100px;
   border-radius: 50%;
-  border: 4px solid #FFD700;
+  border: 4px solid #ffd700;
   object-fit: cover;
   background-color: #fff;
 }
@@ -437,7 +466,7 @@ button {
   position: absolute;
   bottom: 0;
   right: 0;
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   border-radius: 12px;
   padding: 4px 8px;
@@ -480,7 +509,7 @@ button {
 }
 
 .tab-button.active {
-  background-color: #4A4D9E;
+  background-color: #4a4d9e;
   color: white;
 }
 
@@ -517,7 +546,7 @@ button {
   transform: translateX(-50%);
   width: 100px;
   height: 3px;
-  background-color: #FFD700;
+  background-color: #ffd700;
   border-radius: 3px;
 }
 
@@ -632,7 +661,7 @@ button {
 
 .skill-bar {
   height: 100%;
-  background: linear-gradient(90deg, #4A4D9E, #9C27B0);
+  background: linear-gradient(90deg, #4a4d9e, #9c27b0);
   border-radius: 6px;
   transition: width 1s ease;
 }
@@ -648,7 +677,7 @@ button {
   align-items: center;
   justify-content: center;
   padding: 15px 30px;
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   border: none;
   border-radius: 30px;
@@ -696,7 +725,7 @@ button {
 
 .progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, #4CAF50, #8BC34A);
+  background: linear-gradient(90deg, #4caf50, #8bc34a);
   border-radius: 10px;
   transition: width 1s ease;
 }
@@ -732,7 +761,7 @@ button {
 }
 
 .badge-card.unlocked {
-  border: 2px solid #8BC34A;
+  border: 2px solid #8bc34a;
 }
 
 .badge-card.locked {
@@ -855,24 +884,24 @@ button {
   right: 0;
   bottom: 0;
   background-color: #ccc;
-  transition: .4s;
+  transition: 0.4s;
   border-radius: 34px;
 }
 
 .toggle-slider:before {
   position: absolute;
-  content: "";
+  content: '';
   height: 22px;
   width: 22px;
   left: 4px;
   bottom: 4px;
   background-color: white;
-  transition: .4s;
+  transition: 0.4s;
   border-radius: 50%;
 }
 
 input:checked + .toggle-slider {
-  background-color: #4CAF50;
+  background-color: #4caf50;
 }
 
 input:checked + .toggle-slider:before {
@@ -907,7 +936,7 @@ input:checked + .toggle-slider:before {
   display: flex;
   align-items: center;
   padding: 12px 20px;
-  background-color: #2196F3;
+  background-color: #2196f3;
   color: white;
   border: none;
   border-radius: 25px;
@@ -951,7 +980,7 @@ input:checked + .toggle-slider:before {
 .message-icon {
   font-size: 60px;
   margin-bottom: 15px;
-  color: #4CAF50;
+  color: #4caf50;
 }
 
 .cv-message-content h3 {
@@ -966,7 +995,7 @@ input:checked + .toggle-slider:before {
 }
 
 .close-message-button {
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   border: none;
   padding: 10px 20px;
@@ -1006,7 +1035,7 @@ input:checked + .toggle-slider:before {
 }
 
 .transfer-modal h3 {
-  color: #2196F3;
+  color: #2196f3;
   margin-top: 0;
   margin-bottom: 20px;
   font-size: 1.5rem;
@@ -1025,12 +1054,12 @@ input:checked + .toggle-slider:before {
 
 .transfer-timer {
   font-weight: bold;
-  color: #FF5722;
+  color: #ff5722;
   margin-bottom: 20px;
 }
 
 .close-transfer-button {
-  background-color: #FF5722;
+  background-color: #ff5722;
   color: white;
   border: none;
   padding: 10px 20px;
@@ -1046,7 +1075,7 @@ input:checked + .toggle-slider:before {
 
 /* Mode contraste élevé */
 .high-contrast {
-  color: #FFFFFF;
+  color: #ffffff;
   background-color: #000000;
 }
 
@@ -1056,27 +1085,27 @@ input:checked + .toggle-slider:before {
 .high-contrast .badge-card,
 .high-contrast .settings-card {
   background-color: #222222;
-  border: 1px solid #FFFFFF;
+  border: 1px solid #ffffff;
 }
 
 .high-contrast .card-header {
   background-color: #333333;
 }
 
-.high-contrast h1, 
-.high-contrast h2, 
+.high-contrast h1,
+.high-contrast h2,
 .high-contrast h3,
 .high-contrast .info-value,
 .high-contrast .skill-name,
 .high-contrast .badge-info h3 {
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 .high-contrast .info-label,
 .high-contrast .skill-level,
 .high-contrast .progress-text,
 .high-contrast .badge-info p {
-  color: #CCCCCC;
+  color: #cccccc;
 }
 
 .high-contrast .skill-bar-container,
@@ -1086,12 +1115,12 @@ input:checked + .toggle-slider:before {
 
 .high-contrast .interest-tag {
   background-color: #555555;
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 .high-contrast .text-size-button {
   background-color: #444444;
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 /* Tailles de texte pour l'accessibilité */
@@ -1109,13 +1138,23 @@ input:checked + .toggle-slider:before {
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes scaleIn {
-  from { transform: scale(0.8); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* Responsive */
@@ -1123,33 +1162,33 @@ input:checked + .toggle-slider:before {
   .profile-container {
     padding: 15px;
   }
-  
+
   .profile-header {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .avatar-container {
     margin-right: 0;
     margin-bottom: 15px;
   }
-  
+
   .info-cards {
     grid-template-columns: 1fr;
   }
-  
+
   .badges-grid {
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   }
-  
+
   .tab-button {
     padding: 10px;
   }
-  
+
   .tab-icon {
     font-size: 1.5rem;
   }
-  
+
   .tab-label {
     font-size: 0.9rem;
   }
@@ -1159,25 +1198,25 @@ input:checked + .toggle-slider:before {
   .welcome-message h1 {
     font-size: 1.6rem;
   }
-  
+
   .badges-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .badge-icon {
     width: 60px;
     height: 60px;
   }
-  
+
   .badge-emoji {
     font-size: 30px;
   }
-  
+
   .setting-item {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .toggle-switch,
   .setting-controls {
     margin-top: 10px;

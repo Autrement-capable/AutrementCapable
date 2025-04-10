@@ -1,80 +1,174 @@
 <template>
-  <div class="dashboard" :class="{ 'achievements-unlocked': hasNewAchievement, 'games-zoomed': gamesZoomed }">
+  <div
+    class="dashboard"
+    :class="{
+      'achievements-unlocked': hasNewAchievement,
+      'games-zoomed': gamesZoomed,
+    }"
+  >
     <space-background v-if="animationsEnabled" :theme="currentTheme" />
     <static-backgrounds v-else :theme="currentTheme" />
     <!-- La structure principale -->
     <div class="dashboard-container">
-      <div class="click-outside-overlay" v-if="gamesZoomed" @click="exitGamesZoom"></div>
+      <div
+        class="click-outside-overlay"
+        v-if="gamesZoomed"
+        @click="exitGamesZoom"
+      ></div>
       <!-- Section Formations -->
-      <div class="section formations" @mouseenter="activeSection = 'formations'" @mouseleave="activeSection = null">
-        <div class="section-content" ref="formationsContent" :class="{ 'active': activeSection === 'formations' }">
+      <div
+        class="section formations"
+        @mouseenter="activeSection = 'formations'"
+        @mouseleave="activeSection = null"
+      >
+        <div
+          class="section-content"
+          ref="formationsContent"
+          :class="{ active: activeSection === 'formations' }"
+        >
           <div class="button-particles" v-if="activeSection === 'formations'">
-          <div v-for="i in 8" :key="'formation-particle-'+i" class="button-particle" 
-            :style="generateParticleStyle()"></div>
+            <div
+              v-for="i in 8"
+              :key="'formation-particle-' + i"
+              class="button-particle"
+              :style="generateParticleStyle()"
+            ></div>
           </div>
           <div class="button-ring"></div>
           <div class="icon-container" @click="openSection('formations')">
-          <div class="glow-effect" :class="{ 'pulse': activeSection === 'formations' }"></div>
-          <div class="icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor">
-            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 4c1.86 0 3.41 1.28 3.86 3H8.14c.45-1.72 2-3 3.86-3zm-4 6h8v2h-8v-2zm0 4h8v2h-8v-2z" stroke-width="1.5"/>
-            </svg>
-          </div>
-          <span class="tooltip">Formations</span>
-          <div class="notification" v-if="notifications.formations > 0">{{ notifications.formations }}</div>
+            <div
+              class="glow-effect"
+              :class="{ pulse: activeSection === 'formations' }"
+            ></div>
+            <div class="icon">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                width="64"
+                height="64"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 4c1.86 0 3.41 1.28 3.86 3H8.14c.45-1.72 2-3 3.86-3zm-4 6h8v2h-8v-2zm0 4h8v2h-8v-2z"
+                  stroke-width="1.5"
+                />
+              </svg>
+            </div>
+            <span class="tooltip">Formations</span>
+            <div class="notification" v-if="notifications.formations > 0">
+              {{ notifications.formations }}
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Section Badges -->
-      <div class="section badges" @mouseenter="activeSection = 'badges'" @mouseleave="activeSection = null">
-				<div class="section-content" ref="badgesContent" :class="{ 'active': activeSection === 'badges' }">
-					<div class="button-particles" v-if="activeSection === 'badges'">
-						<div v-for="i in 8" :key="'badge-particle-'+i" class="button-particle" 
-								:style="generateParticleStyle()"></div>
-					</div>
-					<div class="button-ring"></div>
-					<div class="icon-container" @click="openSection('badges')">
-						<div class="glow-effect" :class="{ 'pulse': activeSection === 'badges' }"></div>
-						<div class="icon">
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor">
-								<circle cx="12" cy="8" r="7" stroke-width="1.5"/>
-								<path d="M15.5 14l2 8-5.5-3-5.5 3 2-8" stroke-width="1.5"/>
-							</svg>
-						</div>
-						<span class="tooltip">Badges</span>
-						<div class="notification" v-if="notifications.badges > 0">{{ notifications.badges }}</div>
-					</div>
-				</div>
-			</div>
+      <div
+        class="section badges"
+        @mouseenter="activeSection = 'badges'"
+        @mouseleave="activeSection = null"
+      >
+        <div
+          class="section-content"
+          ref="badgesContent"
+          :class="{ active: activeSection === 'badges' }"
+        >
+          <div class="button-particles" v-if="activeSection === 'badges'">
+            <div
+              v-for="i in 8"
+              :key="'badge-particle-' + i"
+              class="button-particle"
+              :style="generateParticleStyle()"
+            ></div>
+          </div>
+          <div class="button-ring"></div>
+          <div class="icon-container" @click="openSection('badges')">
+            <div
+              class="glow-effect"
+              :class="{ pulse: activeSection === 'badges' }"
+            ></div>
+            <div class="icon">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                width="64"
+                height="64"
+                fill="none"
+                stroke="currentColor"
+              >
+                <circle cx="12" cy="8" r="7" stroke-width="1.5" />
+                <path d="M15.5 14l2 8-5.5-3-5.5 3 2-8" stroke-width="1.5" />
+              </svg>
+            </div>
+            <span class="tooltip">Badges</span>
+            <div class="notification" v-if="notifications.badges > 0">
+              {{ notifications.badges }}
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- Section Jeux -->
-      <div class="section games" @mouseenter="activeSection = 'games'" @mouseleave="activeSection = null">
-        <div class="section-content" ref="gamesContent" :class="{ 'active': activeSection === 'games' }">
+      <div
+        class="section games"
+        @mouseenter="activeSection = 'games'"
+        @mouseleave="activeSection = null"
+      >
+        <div
+          class="section-content"
+          ref="gamesContent"
+          :class="{ active: activeSection === 'games' }"
+        >
           <div class="button-particles" v-if="activeSection === 'games'">
-            <div v-for="i in 8" :key="'game-particle-'+i" class="button-particle" 
-              :style="generateParticleStyle()"></div>
+            <div
+              v-for="i in 8"
+              :key="'game-particle-' + i"
+              class="button-particle"
+              :style="generateParticleStyle()"
+            ></div>
           </div>
           <div class="button-ring"></div>
           <div class="icon-container" @click="toggleGamesOrbit">
-            <div class="glow-effect" :class="{ 'pulse': activeSection === 'games' }"></div>
+            <div
+              class="glow-effect"
+              :class="{ pulse: activeSection === 'games' }"
+            ></div>
             <div class="icon">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor">
-                <path d="M17 4H7a5 5 0 0 0-5 5v6a5 5 0 0 0 5 5h10a5 5 0 0 0 5-5V9a5 5 0 0 0-5-5z" stroke-width="1.5"/>
-                <path d="M10 10H8v2H6v2h2v2h2v-2h2v-2h-2v-2zM17.5 15a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM15 11a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z" stroke-width="1.5"/>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                width="64"
+                height="64"
+                fill="none"
+                stroke="currentColor"
+              >
+                <path
+                  d="M17 4H7a5 5 0 0 0-5 5v6a5 5 0 0 0 5 5h10a5 5 0 0 0 5-5V9a5 5 0 0 0-5-5z"
+                  stroke-width="1.5"
+                />
+                <path
+                  d="M10 10H8v2H6v2h2v2h2v-2h2v-2h-2v-2zM17.5 15a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM15 11a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"
+                  stroke-width="1.5"
+                />
               </svg>
             </div>
             <span class="tooltip">Jeux</span>
-            <div class="notification" v-if="notifications.games > 0">{{ notifications.games }}</div>
+            <div class="notification" v-if="notifications.games > 0">
+              {{ notifications.games }}
+            </div>
           </div>
         </div>
 
         <!-- Games Orbit Buttons -->
         <div class="game-orbit" v-if="showGamesOrbit">
-          <div v-for="(game, index) in gamesList" :key="game.id"
-              class="game-orbit-button"
-              :class="{'game-orbit-appear': showGamesOrbit}"
-              :style="calculateOrbitPosition(index, gamesList.length)">
+          <div
+            v-for="(game, index) in gamesList"
+            :key="game.id"
+            class="game-orbit-button"
+            :class="{ 'game-orbit-appear': showGamesOrbit }"
+            :style="calculateOrbitPosition(index, gamesList.length)"
+          >
             <div class="game-orbit-content" @click.stop="selectGame(game)">
               <div class="game-icon">
                 <i :class="game.icon"></i>
@@ -86,37 +180,72 @@
       </div>
 
       <!-- Section Profil - Plus Immersive! -->
-      <div class="section profile" @mouseenter="activeSection = 'profile'" @mouseleave="activeSection = null" :class="{ 'profile-highlight': activeSection === 'profile' }">
-        <div class="section-content" ref="profileContent" :class="{ 'active': activeSection === 'profile' }">
+      <div
+        class="section profile"
+        @mouseenter="activeSection = 'profile'"
+        @mouseleave="activeSection = null"
+        :class="{ 'profile-highlight': activeSection === 'profile' }"
+      >
+        <div
+          class="section-content"
+          ref="profileContent"
+          :class="{ active: activeSection === 'profile' }"
+        >
           <div class="button-particles" v-if="activeSection === 'profile'">
-            <div v-for="i in 8" :key="'profile-particle-'+i" class="button-particle" 
-                :style="generateParticleStyle()"></div>
+            <div
+              v-for="i in 8"
+              :key="'profile-particle-' + i"
+              class="button-particle"
+              :style="generateParticleStyle()"
+            ></div>
           </div>
           <div class="button-ring"></div>
           <div class="icon-container" @click="openSection('profile')">
-            <div class="glow-effect" :class="{ 'pulse': activeSection === 'profile' }"></div>
-            <div class="icon profile-icon" :class="{ 'profile-active': activeSection === 'profile' }">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor">
-                <circle cx="12" cy="8" r="5" stroke-width="1.5"/>
-                <path d="M20 21v-2a6 6 0 0 0-6-6H10a6 6 0 0 0-6 6v2" stroke-width="1.5"/>
+            <div
+              class="glow-effect"
+              :class="{ pulse: activeSection === 'profile' }"
+            ></div>
+            <div
+              class="icon profile-icon"
+              :class="{ 'profile-active': activeSection === 'profile' }"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                width="64"
+                height="64"
+                fill="none"
+                stroke="currentColor"
+              >
+                <circle cx="12" cy="8" r="5" stroke-width="1.5" />
+                <path
+                  d="M20 21v-2a6 6 0 0 0-6-6H10a6 6 0 0 0-6 6v2"
+                  stroke-width="1.5"
+                />
               </svg>
             </div>
             <span class="tooltip">Profil</span>
-            <div class="notification" v-if="notifications.profile > 0">{{ notifications.profile }}</div>
+            <div class="notification" v-if="notifications.profile > 0">
+              {{ notifications.profile }}
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Avatar central avec cercle de progression amélioré -->
-      <div class="avatar-container" @click="interactWithAvatar" :class="{ 'avatar-pulse': avatarAnimating }">
+      <div
+        class="avatar-container"
+        @click="interactWithAvatar"
+        :class="{ 'avatar-pulse': avatarAnimating }"
+      >
         <div class="progress-ring-container">
           <svg class="progress-ring" width="300" height="260">
             <!-- Background glow effect -->
             <filter id="glow">
-              <feGaussianBlur stdDeviation="3.5" result="blur"/>
-              <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+              <feGaussianBlur stdDeviation="3.5" result="blur" />
+              <feComposite in="SourceGraphic" in2="blur" operator="over" />
             </filter>
-            
+
             <!-- Background blur circle -->
             <circle
               class="progress-ring-blur"
@@ -128,7 +257,7 @@
               stroke="url(#blurGradient)"
               filter="url(#glow)"
             />
-            
+
             <!-- Background circle -->
             <circle
               class="progress-ring-circle-bg"
@@ -139,7 +268,7 @@
               cx="130"
               cy="130"
             />
-            
+
             <!-- Progress circle - Now with animation! -->
             <circle
               class="progress-ring-circle"
@@ -152,138 +281,223 @@
               cy="130"
               :style="{ strokeDashoffset: calculateProgressOffset() }"
             />
-            
+
             <defs>
-              <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <linearGradient
+                id="progressGradient"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="0%"
+              >
                 <stop offset="0%" stop-color="#4FC3F7">
-                  <animate attributeName="stop-color" 
-                           values="#4FC3F7;#7C4DFF;#FF4081;#4FC3F7" 
-                           dur="8s" 
-                           repeatCount="indefinite"/>
+                  <animate
+                    attributeName="stop-color"
+                    values="#4FC3F7;#7C4DFF;#FF4081;#4FC3F7"
+                    dur="8s"
+                    repeatCount="indefinite"
+                  />
                 </stop>
                 <stop offset="50%" stop-color="#7C4DFF">
-                  <animate attributeName="stop-color" 
-                           values="#7C4DFF;#FF4081;#4FC3F7;#7C4DFF" 
-                           dur="8s" 
-                           repeatCount="indefinite"/>
+                  <animate
+                    attributeName="stop-color"
+                    values="#7C4DFF;#FF4081;#4FC3F7;#7C4DFF"
+                    dur="8s"
+                    repeatCount="indefinite"
+                  />
                 </stop>
                 <stop offset="100%" stop-color="#FF4081">
-                  <animate attributeName="stop-color" 
-                           values="#FF4081;#4FC3F7;#7C4DFF;#FF4081" 
-                           dur="8s" 
-                           repeatCount="indefinite"/>
+                  <animate
+                    attributeName="stop-color"
+                    values="#FF4081;#4FC3F7;#7C4DFF;#FF4081"
+                    dur="8s"
+                    repeatCount="indefinite"
+                  />
                 </stop>
               </linearGradient>
-              
-              <linearGradient id="blurGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+
+              <linearGradient
+                id="blurGradient"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="0%"
+              >
                 <stop offset="0%" stop-color="rgba(79, 195, 247, 0.3)">
-                  <animate attributeName="stop-color" 
-                           values="rgba(79, 195, 247, 0.3);rgba(124, 77, 255, 0.3);rgba(255, 64, 129, 0.3);rgba(79, 195, 247, 0.3)" 
-                           dur="8s" 
-                           repeatCount="indefinite"/>
+                  <animate
+                    attributeName="stop-color"
+                    values="rgba(79, 195, 247, 0.3);rgba(124, 77, 255, 0.3);rgba(255, 64, 129, 0.3);rgba(79, 195, 247, 0.3)"
+                    dur="8s"
+                    repeatCount="indefinite"
+                  />
                 </stop>
                 <stop offset="100%" stop-color="rgba(255, 64, 129, 0.3)">
-                  <animate attributeName="stop-color" 
-                           values="rgba(255, 64, 129, 0.3);rgba(79, 195, 247, 0.3);rgba(124, 77, 255, 0.3);rgba(255, 64, 129, 0.3)" 
-                           dur="8s" 
-                           repeatCount="indefinite"/>
+                  <animate
+                    attributeName="stop-color"
+                    values="rgba(255, 64, 129, 0.3);rgba(79, 195, 247, 0.3);rgba(124, 77, 255, 0.3);rgba(255, 64, 129, 0.3)"
+                    dur="8s"
+                    repeatCount="indefinite"
+                  />
                 </stop>
               </linearGradient>
 
-              <linearGradient id="formationsGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <linearGradient
+                id="formationsGradient"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="100%"
+              >
                 <stop offset="0%" stop-color="#4FC3F7">
-                <animate attributeName="stop-color" 
-                        values="#4FC3F7;#29B6F6;#03A9F4;#4FC3F7" 
-                        dur="4s" 
-                        repeatCount="indefinite"/>
+                  <animate
+                    attributeName="stop-color"
+                    values="#4FC3F7;#29B6F6;#03A9F4;#4FC3F7"
+                    dur="4s"
+                    repeatCount="indefinite"
+                  />
                 </stop>
                 <stop offset="100%" stop-color="#03A9F4">
-                <animate attributeName="stop-color" 
-                        values="#03A9F4;#4FC3F7;#29B6F6;#03A9F4" 
-                        dur="4s" 
-                        repeatCount="indefinite"/>
+                  <animate
+                    attributeName="stop-color"
+                    values="#03A9F4;#4FC3F7;#29B6F6;#03A9F4"
+                    dur="4s"
+                    repeatCount="indefinite"
+                  />
                 </stop>
-            </linearGradient>
-            
-            <linearGradient id="badgesGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              </linearGradient>
+
+              <linearGradient
+                id="badgesGradient"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="100%"
+              >
                 <stop offset="0%" stop-color="#7C4DFF">
-                <animate attributeName="stop-color" 
-                        values="#7C4DFF;#651FFF;#6200EA;#7C4DFF" 
-                        dur="4s" 
-                        repeatCount="indefinite"/>
+                  <animate
+                    attributeName="stop-color"
+                    values="#7C4DFF;#651FFF;#6200EA;#7C4DFF"
+                    dur="4s"
+                    repeatCount="indefinite"
+                  />
                 </stop>
                 <stop offset="100%" stop-color="#6200EA">
-                <animate attributeName="stop-color" 
-                        values="#6200EA;#7C4DFF;#651FFF;#6200EA" 
-                        dur="4s" 
-                        repeatCount="indefinite"/>
+                  <animate
+                    attributeName="stop-color"
+                    values="#6200EA;#7C4DFF;#651FFF;#6200EA"
+                    dur="4s"
+                    repeatCount="indefinite"
+                  />
                 </stop>
-            </linearGradient>
-            
-            <linearGradient id="gamesGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              </linearGradient>
+
+              <linearGradient
+                id="gamesGradient"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="100%"
+              >
                 <stop offset="0%" stop-color="#FF4081">
-                <animate attributeName="stop-color" 
-                        values="#FF4081;#F50057;#C51162;#FF4081" 
-                        dur="4s" 
-                        repeatCount="indefinite"/>
+                  <animate
+                    attributeName="stop-color"
+                    values="#FF4081;#F50057;#C51162;#FF4081"
+                    dur="4s"
+                    repeatCount="indefinite"
+                  />
                 </stop>
                 <stop offset="100%" stop-color="#C51162">
-                <animate attributeName="stop-color" 
-                        values="#C51162;#FF4081;#F50057;#C51162" 
-                        dur="4s" 
-                        repeatCount="indefinite"/>
+                  <animate
+                    attributeName="stop-color"
+                    values="#C51162;#FF4081;#F50057;#C51162"
+                    dur="4s"
+                    repeatCount="indefinite"
+                  />
                 </stop>
-            </linearGradient>
-            
-            <linearGradient id="profileGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              </linearGradient>
+
+              <linearGradient
+                id="profileGradient"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="100%"
+              >
                 <stop offset="0%" stop-color="#1DE9B6">
-                <animate attributeName="stop-color" 
-                        values="#1DE9B6;#00BFA5;#00897B;#1DE9B6" 
-                        dur="4s" 
-                        repeatCount="indefinite"/>
+                  <animate
+                    attributeName="stop-color"
+                    values="#1DE9B6;#00BFA5;#00897B;#1DE9B6"
+                    dur="4s"
+                    repeatCount="indefinite"
+                  />
                 </stop>
                 <stop offset="100%" stop-color="#00897B">
-                <animate attributeName="stop-color" 
-                        values="#00897B;#1DE9B6;#00BFA5;#00897B" 
-                        dur="4s" 
-                        repeatCount="indefinite"/>
+                  <animate
+                    attributeName="stop-color"
+                    values="#00897B;#1DE9B6;#00BFA5;#00897B"
+                    dur="4s"
+                    repeatCount="indefinite"
+                  />
                 </stop>
-            </linearGradient>
-
+              </linearGradient>
             </defs>
           </svg>
         </div>
 
         <div class="avatar-image-container">
           <!-- <div class="avatar-effects">
-            <div class="avatar-effect-circle" v-for="i in 3" :key="'effect-'+i"></div>
+            <div
+              class="avatar-effect-circle"
+              v-for="i in 3"
+              :key="'effect-' + i"
+            ></div>
           </div> -->
-          <img src="@/assets/jeunefemme.png" alt="Avatar" class="avatar-image" />
-          <!-- <div class="level-badge">Niveau {{ calculateLevel() }}</div> -->
-          <div class="avatar-glow" :class="{ 'pulse': avatarAnimating }"></div>
+          <img src="@/assets/pdp.png" alt="Avatar" class="avatar-image" />
+          <div class="level-badge">Niveau {{ calculateLevel() }}</div>
+          <div class="avatar-glow" :class="{ pulse: avatarAnimating }"></div>
         </div>
-        
+
         <div class="avatar-interaction" v-if="showAvatarInteraction">
           <div class="interaction-option" @click.stop="customizeAvatar">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor">
-              <path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z" stroke-width="1.5"/>
-              <path d="M8 14s1.5 2 4 2 4-2 4-2" stroke-width="1.5"/>
-              <circle cx="9" cy="9" r="1" stroke-width="1.5"/>
-              <circle cx="15" cy="9" r="1" stroke-width="1.5"/>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              width="24"
+              height="24"
+              fill="none"
+              stroke="currentColor"
+            >
+              <path
+                d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"
+                stroke-width="1.5"
+              />
+              <path d="M8 14s1.5 2 4 2 4-2 4-2" stroke-width="1.5" />
+              <circle cx="9" cy="9" r="1" stroke-width="1.5" />
+              <circle cx="15" cy="9" r="1" stroke-width="1.5" />
             </svg>
             <span>Personnaliser</span>
           </div>
           <div class="interaction-option" @click.stop="viewAchievements">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor">
-              <path d="M12 15l-2-5 4-3-4 1-3 1 5 1 3 5h-3z" stroke-width="1.5"/>
-              <path d="M19 9l-7 1-2-3h5l4 2z" stroke-width="1.5"/>
-              <path d="M4 11l5-3 2 5-3 3-4-5z" stroke-width="1.5"/>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              width="24"
+              height="24"
+              fill="none"
+              stroke="currentColor"
+            >
+              <path
+                d="M12 15l-2-5 4-3-4 1-3 1 5 1 3 5h-3z"
+                stroke-width="1.5"
+              />
+              <path d="M19 9l-7 1-2-3h5l4 2z" stroke-width="1.5" />
+              <path d="M4 11l5-3 2 5-3 3-4-5z" stroke-width="1.5" />
             </svg>
             <span>Réalisations</span>
           </div>
         </div>
       </div>
-      
+
       <!-- Animation de récompense -->
       <div class="achievement-popup" v-if="showAchievement">
         <div class="achievement-icon">🏆</div>
@@ -293,14 +507,14 @@
         </div>
       </div>
 
-      <badges-component 
+      <badges-component
         v-if="activeModal === 'badges'"
         :currentTheme="currentTheme"
         :animationsEnabled="animationsEnabled"
         @toggle-animations="toggleAnimations"
         @close="activeModal = null"
       />
-      <profile-component 
+      <profile-component
         v-if="activeModal === 'profile'"
         :currentTheme="currentTheme"
         :animationsEnabled="animationsEnabled"
@@ -310,7 +524,15 @@
       <!-- Onglet de contrôle du thème -->
       <div class="theme-tab" @click="toggleThemeMenu">
         <div class="theme-tab-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="24"
+            height="24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
             <circle cx="12" cy="12" r="5" />
             <line x1="12" y1="1" x2="12" y2="3" />
             <line x1="12" y1="21" x2="12" y2="23" />
@@ -325,22 +547,30 @@
       </div>
 
       <!-- Sélecteur de thème modifié avec transition -->
-      <div class="theme-selector" :class="{ 'theme-selector-visible': themeMenuVisible }">
-        <div class="theme-option" 
-            v-for="theme in availableThemes" 
-            :key="theme.value"
-            @click="changeTheme(theme.value)"
-            :class="{ 'active': currentTheme === theme.value }">
+      <div
+        class="theme-selector"
+        :class="{ 'theme-selector-visible': themeMenuVisible }"
+      >
+        <div
+          class="theme-option"
+          v-for="theme in availableThemes"
+          :key="theme.value"
+          @click="changeTheme(theme.value)"
+          :class="{ active: currentTheme === theme.value }"
+        >
           <div class="theme-icon" :class="theme.value"></div>
           <span>{{ theme.label }}</span>
         </div>
-        
-        <div class="theme-option animation-toggle"
-            @click="toggleAnimations"
-            :class="{ 'active': animationsEnabled }">
-          <div class="theme-icon animation-icon">
-          </div>
-          <span>{{ animationsEnabled ? 'Animations ON' : 'Animations OFF' }}</span>
+
+        <div
+          class="theme-option animation-toggle"
+          @click="toggleAnimations"
+          :class="{ active: animationsEnabled }"
+        >
+          <div class="theme-icon animation-icon"></div>
+          <span>
+            {{ animationsEnabled ? 'Animations ON' : 'Animations OFF' }}
+          </span>
         </div>
       </div>
     </div>
@@ -348,10 +578,10 @@
 </template>
 
 <script>
-import SpaceBackground from '@/components/SpaceBackground.vue';
-import StaticBackgrounds from '@/components/StaticBackgrounds.vue';
-import BadgesComponent from '@/components/RewardsComponent.vue';
-import ProfileComponent from '@/components/ProfileComponent.vue';
+import SpaceBackground from '@/components/SpaceBackground.vue'
+import StaticBackgrounds from '@/components/StaticBackgrounds.vue'
+import BadgesComponent from '@/components/RewardsComponent.vue'
+import ProfileComponent from '@/components/ProfileComponent.vue'
 
 export default {
   name: 'ImmersiveDashboard',
@@ -359,7 +589,7 @@ export default {
     SpaceBackground,
     StaticBackgrounds,
     BadgesComponent,
-    ProfileComponent
+    ProfileComponent,
   },
   data() {
     return {
@@ -369,7 +599,7 @@ export default {
         { value: 'cosmic', label: 'Cosmic' },
         { value: 'ocean', label: 'Ocean' },
         { value: 'cyberpunk', label: 'Cyberpunk' },
-        { value: 'forest', label: 'Forêt' }
+        { value: 'forest', label: 'Forêt' },
       ],
       progress: 37,
       activeSection: null,
@@ -385,110 +615,137 @@ export default {
         formations: 3,
         badges: 1,
         games: 2,
-        profile: 0
+        profile: 0,
       },
       achievements: [
         'Explorateur Curieux',
         'Premier Pas',
         'Maître du Temps',
         'Briseur de Barrières',
-        'Esprit Créatif'
+        'Esprit Créatif',
       ],
       showGamesOrbit: false,
       gamesList: [
-        { id: 1, title: 'Roue Competences', icon: 'game-icon-galaxy', url: '/roue-des-competences' },
-        { id: 2, title: 'Scenarios', icon: 'game-icon-puzzle', url: '/scenarios' },
-        { id: 3, title: 'Métiers', icon: 'game-icon-memory', url: '/metier/soudeur' },
-        { id: 4, title: 'Environnement', icon: 'game-icon-asteroid', url: '/environment' },
+        {
+          id: 1,
+          title: 'Roue Competences',
+          icon: 'game-icon-galaxy',
+          url: '/roue-des-competences',
+        },
+        {
+          id: 2,
+          title: 'Scenarios',
+          icon: 'game-icon-puzzle',
+          url: '/scenarios',
+        },
+        {
+          id: 3,
+          title: 'Métiers',
+          icon: 'game-icon-memory',
+          url: '/metier/soudeur',
+        },
+        {
+          id: 4,
+          title: 'Environnement',
+          icon: 'game-icon-asteroid',
+          url: '/environment',
+        },
         { id: 5, title: 'Galaxy Match', icon: 'game-icon-quiz' },
       ],
-    };
+    }
   },
   methods: {
     toggleThemeMenu() {
-      this.themeMenuVisible = !this.themeMenuVisible;
-      
+      this.themeMenuVisible = !this.themeMenuVisible
+
       // Ajout d'une sensation tactile
       if (window.navigator && window.navigator.vibrate) {
-        window.navigator.vibrate(50);
+        window.navigator.vibrate(50)
       }
-      
+
       // Stocker la préférence dans localStorage
-      localStorage.setItem('theme-menu-visible', this.themeMenuVisible.toString());
+      localStorage.setItem(
+        'theme-menu-visible',
+        this.themeMenuVisible.toString()
+      )
     },
     handleGamesClick() {
       if (!this.gamesZoomed) {
-        this.enterGamesZoom();
+        this.enterGamesZoom()
       } else {
-        this.exitGamesZoom();
+        this.exitGamesZoom()
       }
     },
 
     changeTheme(theme) {
-      this.currentTheme = theme;
-      
+      this.currentTheme = theme
+
       // Optional: store the selected theme in localStorage to persist across sessions
-      localStorage.setItem('dashboard-theme', theme);
-      
+      localStorage.setItem('dashboard-theme', theme)
+
       // Optional: trigger achievement for first theme change
       if (!this.themeChangeAchieved && theme !== 'cosmic') {
-        this.triggerAchievement('Explorateur de Mondes');
-        this.themeChangeAchieved = true;
+        this.triggerAchievement('Explorateur de Mondes')
+        this.themeChangeAchieved = true
       }
     },
 
-    enterGamesZoom() {      
+    enterGamesZoom() {
       // Ajouter une classe pour l'animation de zoom au lieu de manipuler le DOM
       this.$nextTick(() => {
         // Utiliser Vue nextTick pour s'assurer que le DOM est mis à jour
-        document.querySelector('.section.games').classList.add('games-button-active');
-        
+        document
+          .querySelector('.section.games')
+          .classList.add('games-button-active')
+
         // Utiliser haptic feedback si disponible
         if (window.navigator && window.navigator.vibrate) {
-          window.navigator.vibrate(50);
+          window.navigator.vibrate(50)
         }
-        
+
         // Mettre à jour l'état
-        this.gamesZoomed = true;
-        this.activeSection = 'games';
-        this.showGamesOrbit = true;
-        
+        this.gamesZoomed = true
+        this.activeSection = 'games'
+        this.showGamesOrbit = true
+
         // Réduire la notification si présente
         if (this.notifications.games > 0) {
-          this.notifications.games--;
+          this.notifications.games--
         }
-      });
+      })
     },
 
     // Exit games zoom mode
     exitGamesZoom() {
-      document.querySelector('.section.games').classList.remove('games-button-active');
-      
-      this.gamesZoomed = false;
-      this.showGamesOrbit = false;
-      
+      document
+        .querySelector('.section.games')
+        .classList.remove('games-button-active')
+
+      this.gamesZoomed = false
+      this.showGamesOrbit = false
+
       // Haptic feedback léger pour la sortie
       if (window.navigator && window.navigator.vibrate) {
-        window.navigator.vibrate([30, 20, 30]);
+        window.navigator.vibrate([30, 20, 30])
       }
     },
-    
+
     // Keep all existing methods
     calculateProgressOffset() {
-      const circumference = 2 * Math.PI * 120;
-      return circumference - (circumference * this.progress) / 100;
+      const circumference = 2 * Math.PI * 120
+      return circumference - (circumference * this.progress) / 100
     },
-    
+
     calculateLevel() {
-      return Math.floor(this.progress / 10) + 1;
+      return Math.floor(this.progress / 10) + 1
     },
 
     generateParticleStyle() {
-      const duration = 1 + Math.random() * 1.5;
-      const delay = Math.random() * 0.5;
-      const size = 3 + Math.random() * 4;
-      const halfSize = size / 2;
-      
+      const duration = 1 + Math.random() * 1.5
+      const delay = Math.random() * 0.5
+      const size = 3 + Math.random() * 4
+      const halfSize = size / 2
+
       return {
         left: `calc(50% - ${halfSize}px)`,
         top: `calc(50% - ${halfSize}px)`,
@@ -496,11 +753,10 @@ export default {
         height: `${size}px`,
         transform: 'scale(0)',
         opacity: '0',
-        animation: `particleExpand ${duration}s ease ${delay}s infinite`
-      };
+        animation: `particleExpand ${duration}s ease ${delay}s infinite`,
+      }
     },
 
-    
     // Génère un style aléatoire pour les particules d'arrière-plan
     randomParticleStyle() {
       return {
@@ -509,290 +765,297 @@ export default {
         animationDelay: `${Math.random() * 5}s`,
         animationDuration: `${5 + Math.random() * 10}s`,
         opacity: Math.random() * 0.5,
-        transform: `scale(${0.5 + Math.random() * 1.5})`
-      };
+        transform: `scale(${0.5 + Math.random() * 1.5})`,
+      }
     },
 
     toggleGamesOrbit() {
-      const sectionEl = this.$refs.gamesContent;
-  
-      if (sectionEl) {
+      const sectionEl = this.$refs.gamesContent
 
-        sectionEl.classList.add('button-animate');
-        
+      if (sectionEl) {
+        sectionEl.classList.add('button-animate')
+
         // Utiliser requestAnimationFrame pour une animation plus fluide
         requestAnimationFrame(() => {
           // Utiliser haptic feedback si disponible
           if (window.navigator && window.navigator.vibrate) {
-            window.navigator.vibrate(50);
+            window.navigator.vibrate(50)
           }
 
           // Remove the class after animation completes
           setTimeout(() => {
-            sectionEl.classList.remove('button-animate');
-          }, 400);
-        });
+            sectionEl.classList.remove('button-animate')
+          }, 400)
+        })
       }
-      
+
       // Basculer l'état des jeux
       if (!this.gamesZoomed) {
-        this.enterGamesZoom();
+        this.enterGamesZoom()
       } else {
-        this.exitGamesZoom();
+        this.exitGamesZoom()
       }
     },
 
-
     selectGame(game) {
       // If a game is selected, hide the orbit
-      this.showGamesOrbit = false;
+      this.showGamesOrbit = false
 
       if (game.url) {
         // Si vous utilisez Vue Router
-        this.$router.push(game.url);
+        this.$router.push(game.url)
 
         // Show achievement for first game played
         if (Math.random() > 0.5) {
-          this.triggerAchievement('Joueur Stellaire');
+          this.triggerAchievement('Joueur Stellaire')
         }
       }
-      
+
       // Open the modal with game details
-      this.activeModal = 'game-' + game.id;
-      
+      this.activeModal = 'game-' + game.id
+
       // Show achievement for first game played
       if (Math.random() > 0.5) {
-        this.triggerAchievement('Joueur Stellaire');
+        this.triggerAchievement('Joueur Stellaire')
       }
     },
 
     calculateOrbitPosition(index, total) {
       // Calculate the angle for this item
-      const angle = (index / total) * Math.PI * 2;
-      
+      const angle = (index / total) * Math.PI * 2
+
       // Calculate radius - distance from center
-      const radius = 120; // Adjust as needed
-      
+      const radius = 120 // Adjust as needed
+
       // Calculate x and y position using sine and cosine
-      const x = Math.cos(angle) * radius;
-      const y = Math.sin(angle) * radius;
-      
+      const x = Math.cos(angle) * radius
+      const y = Math.sin(angle) * radius
+
       // Delay for sequential appearance animation
-      const delay = index * 0.08;
-      
+      const delay = index * 0.08
+
       return {
         transform: `translate(${x}px, ${y}px)`,
-        transitionDelay: `${delay}s`
-      };
+        transitionDelay: `${delay}s`,
+      }
     },
-    
+
     // Interaction avec l'avatar - Animation améliorée
     interactWithAvatar() {
-      this.avatarAnimating = true;
-      this.showAvatarInteraction = !this.showAvatarInteraction;
-      
+      this.avatarAnimating = true
+      this.showAvatarInteraction = !this.showAvatarInteraction
+
       // Animation plus longue pour un meilleur effet
       setTimeout(() => {
-        this.avatarAnimating = false;
-      }, 1000);
+        this.avatarAnimating = false
+      }, 1000)
     },
-    
+
     // Ouvre une section spécifique
     openSection(section) {
       // Don't open a modal if we're in games zoom mode and it's games section
       if (section === 'games' && this.gamesZoomed) {
-        return;
+        return
       }
-			// Create a ripple effect element
-			const sectionEl = this.$refs[`${section}Content`] || 
-                    document.querySelector(`.section.${section} .section-content`);
+      // Create a ripple effect element
+      const sectionEl =
+        this.$refs[`${section}Content`] ||
+        document.querySelector(`.section.${section} .section-content`)
       if (sectionEl) {
-        const ripple = document.createElement('div');
-        ripple.className = 'button-ripple';
-        
+        const ripple = document.createElement('div')
+        ripple.className = 'button-ripple'
+
         // Add the ripple to the section
-        sectionEl.appendChild(ripple);
-        
+        sectionEl.appendChild(ripple)
+
         // Use requestAnimationFrame for smoother animation
         requestAnimationFrame(() => {
           // Add haptic feedback if available
           if (window.navigator && window.navigator.vibrate) {
-            window.navigator.vibrate(50);
+            window.navigator.vibrate(50)
           }
-          
+
           // Remove the ripple after animation completes
           setTimeout(() => {
             if (ripple.parentNode === sectionEl) {
-              sectionEl.removeChild(ripple);
+              sectionEl.removeChild(ripple)
             }
-          }, 600);
-        });
+          }, 600)
+        })
       }
 
       if (section === 'formations') {
-        this.$router.push('/formation');
+        this.$router.push('/formation')
 
         // Réduire la notification
         if (this.notifications[section] > 0) {
-          this.notifications[section]--;
+          this.notifications[section]--
         }
-        return;
+        return
       }
 
       if (section === 'profile') {
-        this.activeModal = 'profile';
-        this.triggerProfileAnimation();
-        
+        this.activeModal = 'profile'
+        this.triggerProfileAnimation()
+
         // Réduire la notification
         if (this.notifications[section] > 0) {
-          this.notifications[section]--;
+          this.notifications[section]--
         }
-        return;
+        return
       }
 
       if (section === 'badges') {
-        this.activeModal = 'badges';
- 
+        this.activeModal = 'badges'
+
         // Réduire la notification
         if (this.notifications[section] > 0) {
-          this.notifications[section]--;
+          this.notifications[section]--
         }
-        return;
+        return
       }
-			
-			// Special handling for games section
+
+      // Special handling for games section
       if (section === 'games') {
-        this.toggleGamesOrbit();
-        return;
+        this.toggleGamesOrbit()
+        return
       }
-      
+
       // Normal modal opening for other sections
-      this.activeModal = section;
-      
+      this.activeModal = section
+
       // Animation speciale pour le profil
       if (section === 'profile') {
-        this.triggerProfileAnimation();
+        this.triggerProfileAnimation()
       }
-			
-			// Réduire la notification
-			if (this.notifications[section] > 0) {
-				this.notifications[section]--;
-			}
-		},
-    
+
+      // Réduire la notification
+      if (this.notifications[section] > 0) {
+        this.notifications[section]--
+      }
+    },
+
     // Animation spéciale pour le profil
     triggerProfileAnimation() {
-      this.avatarAnimating = true;
+      this.avatarAnimating = true
       setTimeout(() => {
-        this.avatarAnimating = false;
-      }, 1000);
+        this.avatarAnimating = false
+      }, 1000)
     },
-    
+
     // Ferme le modal
     closeModal() {
-      this.activeModal = null;
+      this.activeModal = null
     },
-    
+
     // Obtient le titre du modal
     getModalTitle() {
       const titles = {
         formations: 'Mes Formations',
         badges: 'Mes Badges',
         games: 'Mes Jeux',
-        profile: 'Mon Profil'
-      };
-      return titles[this.activeModal] || 'Section';
+        profile: 'Mon Profil',
+      }
+      return titles[this.activeModal] || 'Section'
     },
-    
+
     // Personnalisation de l'avatar
     customizeAvatar() {
-      this.showAvatarInteraction = false;
-      this.activeModal = 'customize';
-      this.triggerAchievement('Esprit Créatif');
+      this.showAvatarInteraction = false
+      this.activeModal = 'customize'
+      this.triggerAchievement('Esprit Créatif')
     },
-    
+
     // Voir les réalisations
     viewAchievements() {
-      this.showAvatarInteraction = false;
-      this.activeModal = 'achievements';
+      this.showAvatarInteraction = false
+      this.activeModal = 'achievements'
     },
-    
+
     // Déclenche une animation de réalisation
     triggerAchievement(achievement) {
-      this.currentAchievement = achievement;
-      this.showAchievement = true;
-      this.hasNewAchievement = true;
-      
+      this.currentAchievement = achievement
+      this.showAchievement = true
+      this.hasNewAchievement = true
+
       // Animation de progression
-      const oldProgress = this.progress;
-      const newProgress = Math.min(100, oldProgress + 5);
-      
+      const oldProgress = this.progress
+      const newProgress = Math.min(100, oldProgress + 5)
+
       // Animation progressive du changement
-      const step = 0.5;
-      const duration = 2000; // 2 secondes
-      const steps = (newProgress - oldProgress) / step;
-      const interval = duration / steps;
-      
+      const step = 0.5
+      const duration = 2000 // 2 secondes
+      const steps = (newProgress - oldProgress) / step
+      const interval = duration / steps
+
       const progressAnimation = setInterval(() => {
         if (this.progress < newProgress) {
-          this.progress += step;
+          this.progress += step
         } else {
-          clearInterval(progressAnimation);
+          clearInterval(progressAnimation)
         }
-      }, interval);
-      
+      }, interval)
+
       // Faire disparaître l'animation après 3 secondes
       setTimeout(() => {
-        this.showAchievement = false;
-      }, 3000);
-      
+        this.showAchievement = false
+      }, 3000)
+
       // Réinitialiser l'effet de fond
       setTimeout(() => {
-        this.hasNewAchievement = false;
-      }, 4000);
+        this.hasNewAchievement = false
+      }, 4000)
     },
     toggleAnimations() {
-      this.animationsEnabled = !this.animationsEnabled;
+      this.animationsEnabled = !this.animationsEnabled
 
-      localStorage.setItem('dashboard-animations', this.animationsEnabled.toString());
-      
+      localStorage.setItem(
+        'dashboard-animations',
+        this.animationsEnabled.toString()
+      )
+
       if (window.navigator && window.navigator.vibrate) {
-        window.navigator.vibrate(50);
+        window.navigator.vibrate(50)
       }
 
-      this.$emit('toggle-animations', !this.animationsEnabled);
-    }
+      this.$emit('toggle-animations', !this.animationsEnabled)
+    },
   },
   mounted() {
-    const savedTheme = localStorage.getItem('dashboard-theme');
-    if (savedTheme && this.availableThemes.some(theme => theme.value === savedTheme)) {
-      this.currentTheme = savedTheme;
+    const savedTheme = localStorage.getItem('dashboard-theme')
+    if (
+      savedTheme &&
+      this.availableThemes.some((theme) => theme.value === savedTheme)
+    ) {
+      this.currentTheme = savedTheme
     }
 
-    const savedAnimationPref = localStorage.getItem('dashboard-animations');
+    const savedAnimationPref = localStorage.getItem('dashboard-animations')
     if (savedAnimationPref !== null) {
-      this.animationsEnabled = savedAnimationPref === 'true';
+      this.animationsEnabled = savedAnimationPref === 'true'
     }
-    
-    this.themeChangeAchieved = false;
-    
+
+    this.themeChangeAchieved = false
+
     // Simulate notifications periodically
     setInterval(() => {
-      const sections = ['formations', 'badges', 'games', 'profile'];
-      const randomSection = sections[Math.floor(Math.random() * sections.length)];
-      
+      const sections = ['formations', 'badges', 'games', 'profile']
+      const randomSection =
+        sections[Math.floor(Math.random() * sections.length)]
+
       if (Math.random() > 0.7) {
-        this.notifications[randomSection]++;
+        this.notifications[randomSection]++
       }
-    }, 30000);
-    
+    }, 30000)
+
     // Simulate a reward after a certain time
     setTimeout(() => {
-      const randomAchievement = this.achievements[Math.floor(Math.random() * this.achievements.length)];
-      this.triggerAchievement(randomAchievement);
-    }, 5000);
-  }
-};
+      const randomAchievement =
+        this.achievements[Math.floor(Math.random() * this.achievements.length)]
+      this.triggerAchievement(randomAchievement)
+    }, 5000)
+  },
+}
 </script>
 
 <style scoped>
@@ -814,10 +1077,21 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background: 
-    radial-gradient(circle at 30% 40%, rgba(76, 0, 153, 0.2) 0%, rgba(76, 0, 153, 0) 50%),
-    radial-gradient(circle at 70% 60%, rgba(63, 0, 113, 0.2) 0%, rgba(63, 0, 113, 0) 60%),
-    radial-gradient(circle at 50% 50%, rgba(0, 51, 102, 0.2) 0%, rgba(0, 51, 102, 0) 70%);
+  background: radial-gradient(
+      circle at 30% 40%,
+      rgba(76, 0, 153, 0.2) 0%,
+      rgba(76, 0, 153, 0) 50%
+    ),
+    radial-gradient(
+      circle at 70% 60%,
+      rgba(63, 0, 113, 0.2) 0%,
+      rgba(63, 0, 113, 0) 60%
+    ),
+    radial-gradient(
+      circle at 50% 50%,
+      rgba(0, 51, 102, 0.2) 0%,
+      rgba(0, 51, 102, 0) 70%
+    );
   filter: blur(30px);
   opacity: 0.8;
   z-index: 0;
@@ -902,22 +1176,22 @@ export default {
 }
 
 .theme-icon.cosmic {
-  background: linear-gradient(135deg, #7C4DFF 0%, #0D47A1 100%);
+  background: linear-gradient(135deg, #7c4dff 0%, #0d47a1 100%);
   box-shadow: 0 0 10px rgba(124, 77, 255, 0.5);
 }
 
 .theme-icon.ocean {
-  background: linear-gradient(135deg, #4FC3F7 0%, #0D47A1 100%);
+  background: linear-gradient(135deg, #4fc3f7 0%, #0d47a1 100%);
   box-shadow: 0 0 10px rgba(79, 195, 247, 0.5);
 }
 
 .theme-icon.cyberpunk {
-  background: linear-gradient(135deg, #FF4081 0%, #AB47BC 100%);
+  background: linear-gradient(135deg, #ff4081 0%, #ab47bc 100%);
   box-shadow: 0 0 10px rgba(255, 64, 129, 0.5);
 }
 
 .theme-icon.forest {
-  background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
+  background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
   box-shadow: 0 0 10px rgba(46, 125, 50, 0.5);
 }
 
@@ -969,8 +1243,12 @@ export default {
 }
 
 @keyframes rotateIcon {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .animation-toggle {
@@ -986,7 +1264,7 @@ export default {
 }
 
 .animation-toggle.active {
-  border-color: #4FC3F7;
+  border-color: #4fc3f7;
   box-shadow: 0 0 15px rgba(79, 195, 247, 0.5);
 }
 
@@ -1007,7 +1285,7 @@ export default {
 }
 
 .animation-toggle.active .animation-icon i {
-  color: #4FC3F7;
+  color: #4fc3f7;
 }
 
 .animation-toggle:not(.active) .animation-icon i {
@@ -1016,9 +1294,15 @@ export default {
 
 /* Add animation for changing themes */
 @keyframes nebulaShift {
-  0% { transform: scale(1) rotate(0deg); }
-  50% { transform: scale(1.2) rotate(5deg); }
-  100% { transform: scale(1) rotate(10deg); }
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    transform: scale(1.2) rotate(5deg);
+  }
+  100% {
+    transform: scale(1) rotate(10deg);
+  }
 }
 
 /* Container principal pour tous les éléments spatiaux */
@@ -1060,7 +1344,7 @@ export default {
   height: 80px;
   transform: translate(-50%, -50%);
   transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-              opacity 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    opacity 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   opacity: 0;
   pointer-events: all;
   perspective: 1000px;
@@ -1084,9 +1368,7 @@ export default {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
   border: 2px solid rgba(255, 64, 129, 0.3);
-  box-shadow: 
-    0 5px 15px rgba(0, 0, 0, 0.3),
-    0 0 10px rgba(255, 64, 129, 0.3);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 0 0 10px rgba(255, 64, 129, 0.3);
   transform-style: preserve-3d;
   transform: scale(0);
   animation: gameButtonAppear 0.5s forwards;
@@ -1094,16 +1376,20 @@ export default {
 }
 
 @keyframes gameButtonAppear {
-  0% { transform: scale(0) rotate(-45deg); }
-  50% { transform: scale(1.1) rotate(15deg); }
-  100% { transform: scale(1) rotate(0deg); }
+  0% {
+    transform: scale(0) rotate(-45deg);
+  }
+  50% {
+    transform: scale(1.1) rotate(15deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
 }
 
 .game-orbit-content:hover {
   transform: translateZ(10px) scale(1.1);
-  box-shadow: 
-    0 8px 20px rgba(0, 0, 0, 0.4),
-    0 0 15px rgba(255, 64, 129, 0.5);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), 0 0 15px rgba(255, 64, 129, 0.5);
   border-color: rgba(255, 64, 129, 0.6);
 }
 
@@ -1180,12 +1466,17 @@ export default {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 64, 129, 0.8) 0%, rgba(255, 64, 129, 0) 70%);
+  background: radial-gradient(
+    circle,
+    rgba(255, 64, 129, 0.8) 0%,
+    rgba(255, 64, 129, 0) 70%
+  );
   transform: translate(-50%, -50%) scale(0);
   opacity: 0;
   pointer-events: none;
   will-change: transform, opacity;
-  animation: optimizedButtonFlash 0.4s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
+  animation: optimizedButtonFlash 0.4s cubic-bezier(0.215, 0.61, 0.355, 1)
+    forwards;
 }
 
 .button-animate::after {
@@ -1201,7 +1492,8 @@ export default {
   opacity: 0.7;
   pointer-events: none;
   will-change: transform, opacity;
-  animation: optimizedRippleEffect 0.4s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
+  animation: optimizedRippleEffect 0.4s cubic-bezier(0.215, 0.61, 0.355, 1)
+    forwards;
 }
 
 .games-button-active {
@@ -1263,11 +1555,23 @@ export default {
   transition-delay: 0.2s;
 }
 
-.games-zoomed .game-orbit-button:nth-child(1) { transform: translate(-50%, -50%) translateY(-180px) scale(1.2); }
-.games-zoomed .game-orbit-button:nth-child(2) { transform: translate(-50%, -50%) translateX(155px) translateY(-90px) scale(1.2); }
-.games-zoomed .game-orbit-button:nth-child(3) { transform: translate(-50%, -50%) translateX(155px) translateY(90px) scale(1.2); }
-.games-zoomed .game-orbit-button:nth-child(4) { transform: translate(-50%, -50%) translateY(180px) scale(1.2); }
-.games-zoomed .game-orbit-button:nth-child(5) { transform: translate(-50%, -50%) translateX(-155px) translateY(90px) scale(1.2); }
+.games-zoomed .game-orbit-button:nth-child(1) {
+  transform: translate(-50%, -50%) translateY(-180px) scale(1.2);
+}
+.games-zoomed .game-orbit-button:nth-child(2) {
+  transform: translate(-50%, -50%) translateX(155px) translateY(-90px)
+    scale(1.2);
+}
+.games-zoomed .game-orbit-button:nth-child(3) {
+  transform: translate(-50%, -50%) translateX(155px) translateY(90px) scale(1.2);
+}
+.games-zoomed .game-orbit-button:nth-child(4) {
+  transform: translate(-50%, -50%) translateY(180px) scale(1.2);
+}
+.games-zoomed .game-orbit-button:nth-child(5) {
+  transform: translate(-50%, -50%) translateX(-155px) translateY(90px)
+    scale(1.2);
+}
 
 .games-zoomed:before {
   content: '';
@@ -1276,19 +1580,26 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(circle at center, rgba(30, 30, 60, 0.3) 0%, rgba(10, 10, 30, 0.8) 100%);
+  background: radial-gradient(
+    circle at center,
+    rgba(30, 30, 60, 0.3) 0%,
+    rgba(10, 10, 30, 0.8) 100%
+  );
   z-index: 10;
   animation: fadeIn 0.5s ease-out forwards;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .games-zoomed .game-orbit-content {
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4),
-              0 0 20px rgba(255, 64, 129, 0.6);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4), 0 0 20px rgba(255, 64, 129, 0.6);
   border-color: rgba(255, 64, 129, 0.8);
 }
 
@@ -1315,19 +1626,31 @@ export default {
   position: absolute;
   width: 3px !important;
   height: 3px !important;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0) 70%) !important;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(255, 255, 255, 0) 70%
+  ) !important;
   border-radius: 50%;
   animation: floatDust infinite;
   box-shadow: 0 0 6px 2px rgba(111, 168, 220, 0.2);
 }
 
 .particle:nth-child(3n) {
-  background: radial-gradient(circle, rgba(168, 111, 220, 0.9) 0%, rgba(168, 111, 220, 0) 70%) !important;
+  background: radial-gradient(
+    circle,
+    rgba(168, 111, 220, 0.9) 0%,
+    rgba(168, 111, 220, 0) 70%
+  ) !important;
   box-shadow: 0 0 8px 2px rgba(168, 111, 220, 0.3);
 }
 
-.particle:nth-child(3n+1) {
-  background: radial-gradient(circle, rgba(111, 168, 220, 0.9) 0%, rgba(111, 168, 220, 0) 70%) !important;
+.particle:nth-child(3n + 1) {
+  background: radial-gradient(
+    circle,
+    rgba(111, 168, 220, 0.9) 0%,
+    rgba(111, 168, 220, 0) 70%
+  ) !important;
   box-shadow: 0 0 8px 2px rgba(111, 168, 220, 0.3);
 }
 
@@ -1356,9 +1679,10 @@ export default {
   }
   100% {
     transform: translate(
-      calc(cos(var(--angle)) * var(--distance)),
-      calc(sin(var(--angle)) * var(--distance))
-    ) scale(0);
+        calc(cos(var(--angle)) * var(--distance)),
+        calc(sin(var(--angle)) * var(--distance))
+      )
+      scale(0);
     opacity: 0;
   }
 }
@@ -1400,19 +1724,35 @@ export default {
 }
 
 .formations-flash {
-  background: radial-gradient(circle, rgba(79, 195, 247, 0.8) 0%, rgba(79, 195, 247, 0) 70%);
+  background: radial-gradient(
+    circle,
+    rgba(79, 195, 247, 0.8) 0%,
+    rgba(79, 195, 247, 0) 70%
+  );
 }
 
 .badges-flash {
-  background: radial-gradient(circle, rgba(124, 77, 255, 0.8) 0%, rgba(124, 77, 255, 0) 70%);
+  background: radial-gradient(
+    circle,
+    rgba(124, 77, 255, 0.8) 0%,
+    rgba(124, 77, 255, 0) 70%
+  );
 }
 
 .games-flash {
-  background: radial-gradient(circle, rgba(255, 64, 129, 0.8) 0%, rgba(255, 64, 129, 0) 70%);
+  background: radial-gradient(
+    circle,
+    rgba(255, 64, 129, 0.8) 0%,
+    rgba(255, 64, 129, 0) 70%
+  );
 }
 
 .profile-flash {
-  background: radial-gradient(circle, rgba(29, 233, 182, 0.8) 0%, rgba(29, 233, 182, 0) 70%);
+  background: radial-gradient(
+    circle,
+    rgba(29, 233, 182, 0.8) 0%,
+    rgba(29, 233, 182, 0) 70%
+  );
 }
 
 @keyframes flashEffect {
@@ -1454,7 +1794,11 @@ export default {
 }
 
 .formations .section-content {
-  background: linear-gradient(135deg, rgba(30, 30, 45, 0.7) 0%, rgba(30, 50, 80, 0.7) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(30, 30, 45, 0.7) 0%,
+    rgba(30, 50, 80, 0.7) 100%
+  );
 }
 
 .badges {
@@ -1463,7 +1807,11 @@ export default {
 }
 
 .badges .section-content {
-  background: linear-gradient(135deg, rgba(30, 30, 45, 0.7) 0%, rgba(60, 30, 80, 0.7) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(30, 30, 45, 0.7) 0%,
+    rgba(60, 30, 80, 0.7) 100%
+  );
 }
 
 .games {
@@ -1472,7 +1820,11 @@ export default {
 }
 
 .games .section-content {
-  background: linear-gradient(135deg, rgba(30, 30, 45, 0.7) 0%, rgba(80, 30, 50, 0.7) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(30, 30, 45, 0.7) 0%,
+    rgba(80, 30, 50, 0.7) 100%
+  );
 }
 
 .profile {
@@ -1481,7 +1833,11 @@ export default {
 }
 
 .profile .section-content {
-  background: linear-gradient(135deg, rgba(30, 30, 45, 0.7) 0%, rgba(30, 80, 70, 0.7) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(30, 30, 45, 0.7) 0%,
+    rgba(30, 80, 70, 0.7) 100%
+  );
 }
 
 /* Mise en évidence spéciale pour la section profil */
@@ -1507,21 +1863,43 @@ export default {
     opacity: 0.8;
   }
   100% {
-    transform: translate(calc(50% - 4px), calc(50% - 4px)) translateX(calc(random(100) * 1px - 50px)) translateY(calc(random(100) * 1px - 50px)) scale(0);
+    transform: translate(calc(50% - 4px), calc(50% - 4px))
+      translateX(calc(random(100) * 1px - 50px))
+      translateY(calc(random(100) * 1px - 50px)) scale(0);
     opacity: 0;
   }
 }
 
-.profile-particle:nth-child(1) { animation-delay: 0s; }
-.profile-particle:nth-child(2) { animation-delay: 0.3s; }
-.profile-particle:nth-child(3) { animation-delay: 0.6s; }
-.profile-particle:nth-child(4) { animation-delay: 0.9s; }
-.profile-particle:nth-child(5) { animation-delay: 1.2s; }
-.profile-particle:nth-child(6) { animation-delay: 1.5s; }
-.profile-particle:nth-child(7) { animation-delay: 1.8s; }
-.profile-particle:nth-child(8) { animation-delay: 2.1s; }
-.profile-particle:nth-child(9) { animation-delay: 2.4s; }
-.profile-particle:nth-child(10) { animation-delay: 2.7s; }
+.profile-particle:nth-child(1) {
+  animation-delay: 0s;
+}
+.profile-particle:nth-child(2) {
+  animation-delay: 0.3s;
+}
+.profile-particle:nth-child(3) {
+  animation-delay: 0.6s;
+}
+.profile-particle:nth-child(4) {
+  animation-delay: 0.9s;
+}
+.profile-particle:nth-child(5) {
+  animation-delay: 1.2s;
+}
+.profile-particle:nth-child(6) {
+  animation-delay: 1.5s;
+}
+.profile-particle:nth-child(7) {
+  animation-delay: 1.8s;
+}
+.profile-particle:nth-child(8) {
+  animation-delay: 2.1s;
+}
+.profile-particle:nth-child(9) {
+  animation-delay: 2.4s;
+}
+.profile-particle:nth-child(10) {
+  animation-delay: 2.7s;
+}
 
 .profile-icon {
   transition: all 0.5s ease;
@@ -1542,14 +1920,12 @@ export default {
   justify-content: center;
   align-items: center;
   transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-              background 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-              box-shadow 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    box-shadow 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   position: relative;
   cursor: pointer;
   border: 2px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 
-    0 10px 20px rgba(0, 0, 0, 0.2),
-    0 5px 15px rgba(0, 0, 0, 0.1),
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2), 0 5px 15px rgba(0, 0, 0, 0.1),
     inset 0 0 10px rgba(255, 255, 255, 0.05);
   transform-style: preserve-3d;
   overflow: visible;
@@ -1578,22 +1954,31 @@ export default {
   position: absolute;
   inset: -1px;
   border-radius: 50%;
-  background: linear-gradient(45deg, transparent, transparent, rgba(255, 255, 255, 0.1), transparent, transparent);
+  background: linear-gradient(
+    45deg,
+    transparent,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent,
+    transparent
+  );
   z-index: -1;
   animation: gradientRotate 10s linear infinite;
 }
 
 @keyframes gradientRotate {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .section-content.active {
   transform: translateZ(20px) rotateX(10deg);
   background: rgba(40, 40, 65, 0.8);
-  box-shadow: 
-    0 15px 25px rgba(0, 0, 0, 0.3),
-    0 10px 10px rgba(0, 0, 0, 0.2),
+  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.3), 0 10px 10px rgba(0, 0, 0, 0.2),
     inset 0 0 15px rgba(255, 255, 255, 0.1);
 }
 
@@ -1658,7 +2043,7 @@ export default {
   color: white;
   z-index: 2;
   transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-              filter 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    filter 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.5));
   transform-style: preserve-3d;
   will-change: transform, filter;
@@ -1713,29 +2098,45 @@ export default {
   );
   filter: blur(10px);
   opacity: 0.6;
-  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
-              opacity 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    opacity 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   z-index: 1;
   will-change: transform, opacity;
 }
 
 .formations .glow-effect {
-  background: radial-gradient(circle, rgba(111, 168, 220, 0.5) 0%, rgba(111, 168, 220, 0) 70%);
+  background: radial-gradient(
+    circle,
+    rgba(111, 168, 220, 0.5) 0%,
+    rgba(111, 168, 220, 0) 70%
+  );
   box-shadow: 0 0 20px rgba(111, 168, 220, 0.5);
 }
 
 .badges .glow-effect {
-  background: radial-gradient(circle, rgba(168, 111, 220, 0.5) 0%, rgba(168, 111, 220, 0) 70%);
+  background: radial-gradient(
+    circle,
+    rgba(168, 111, 220, 0.5) 0%,
+    rgba(168, 111, 220, 0) 70%
+  );
   box-shadow: 0 0 20px rgba(168, 111, 220, 0.5);
 }
 
 .games .glow-effect {
-  background: radial-gradient(circle, rgba(220, 111, 168, 0.5) 0%, rgba(220, 111, 168, 0) 70%);
+  background: radial-gradient(
+    circle,
+    rgba(220, 111, 168, 0.5) 0%,
+    rgba(220, 111, 168, 0) 70%
+  );
   box-shadow: 0 0 20px rgba(220, 111, 168, 0.5);
 }
 
 .profile .glow-effect {
-  background: radial-gradient(circle, rgba(111, 220, 168, 0.5) 0%, rgba(111, 220, 168, 0) 70%);
+  background: radial-gradient(
+    circle,
+    rgba(111, 220, 168, 0.5) 0%,
+    rgba(111, 220, 168, 0) 70%
+  );
   box-shadow: 0 0 20px rgba(111, 220, 168, 0.5);
 }
 
@@ -1745,9 +2146,18 @@ export default {
 }
 
 @keyframes pulsate {
-  0% { transform: scale(0.9); opacity: 0.6; }
-  50% { transform: scale(1.1); opacity: 0.8; }
-  100% { transform: scale(0.9); opacity: 0.6; }
+  0% {
+    transform: scale(0.9);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(0.9);
+    opacity: 0.6;
+  }
 }
 
 .formations .glow-effect.pulse {
@@ -1767,27 +2177,75 @@ export default {
 }
 
 @keyframes formationsPulsate {
-  0% { transform: scale(0.9); opacity: 0.6; box-shadow: 0 0 20px rgba(79, 195, 247, 0.3); }
-  50% { transform: scale(1.2); opacity: 0.8; box-shadow: 0 0 30px rgba(79, 195, 247, 0.5); }
-  100% { transform: scale(0.9); opacity: 0.6; box-shadow: 0 0 20px rgba(79, 195, 247, 0.3); }
+  0% {
+    transform: scale(0.9);
+    opacity: 0.6;
+    box-shadow: 0 0 20px rgba(79, 195, 247, 0.3);
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+    box-shadow: 0 0 30px rgba(79, 195, 247, 0.5);
+  }
+  100% {
+    transform: scale(0.9);
+    opacity: 0.6;
+    box-shadow: 0 0 20px rgba(79, 195, 247, 0.3);
+  }
 }
 
 @keyframes badgesPulsate {
-  0% { transform: scale(0.9); opacity: 0.6; box-shadow: 0 0 20px rgba(124, 77, 255, 0.3); }
-  50% { transform: scale(1.2); opacity: 0.8; box-shadow: 0 0 30px rgba(124, 77, 255, 0.5); }
-  100% { transform: scale(0.9); opacity: 0.6; box-shadow: 0 0 20px rgba(124, 77, 255, 0.3); }
+  0% {
+    transform: scale(0.9);
+    opacity: 0.6;
+    box-shadow: 0 0 20px rgba(124, 77, 255, 0.3);
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+    box-shadow: 0 0 30px rgba(124, 77, 255, 0.5);
+  }
+  100% {
+    transform: scale(0.9);
+    opacity: 0.6;
+    box-shadow: 0 0 20px rgba(124, 77, 255, 0.3);
+  }
 }
 
 @keyframes gamesPulsate {
-  0% { transform: scale(0.9); opacity: 0.6; box-shadow: 0 0 20px rgba(255, 64, 129, 0.3); }
-  50% { transform: scale(1.2); opacity: 0.8; box-shadow: 0 0 30px rgba(255, 64, 129, 0.5); }
-  100% { transform: scale(0.9); opacity: 0.6; box-shadow: 0 0 20px rgba(255, 64, 129, 0.3); }
+  0% {
+    transform: scale(0.9);
+    opacity: 0.6;
+    box-shadow: 0 0 20px rgba(255, 64, 129, 0.3);
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+    box-shadow: 0 0 30px rgba(255, 64, 129, 0.5);
+  }
+  100% {
+    transform: scale(0.9);
+    opacity: 0.6;
+    box-shadow: 0 0 20px rgba(255, 64, 129, 0.3);
+  }
 }
 
 @keyframes profilePulsate {
-  0% { transform: scale(0.9); opacity: 0.6; box-shadow: 0 0 20px rgba(29, 233, 182, 0.3); }
-  50% { transform: scale(1.2); opacity: 0.8; box-shadow: 0 0 30px rgba(29, 233, 182, 0.5); }
-  100% { transform: scale(0.9); opacity: 0.6; box-shadow: 0 0 20px rgba(29, 233, 182, 0.3); }
+  0% {
+    transform: scale(0.9);
+    opacity: 0.6;
+    box-shadow: 0 0 20px rgba(29, 233, 182, 0.3);
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+    box-shadow: 0 0 30px rgba(29, 233, 182, 0.5);
+  }
+  100% {
+    transform: scale(0.9);
+    opacity: 0.6;
+    box-shadow: 0 0 20px rgba(29, 233, 182, 0.3);
+  }
 }
 
 /* Tooltip */
@@ -1815,19 +2273,19 @@ export default {
 }
 
 .formations .tooltip {
-  border-bottom: 2px solid #4FC3F7;
+  border-bottom: 2px solid #4fc3f7;
 }
 
 .badges .tooltip {
-  border-bottom: 2px solid #7C4DFF;
+  border-bottom: 2px solid #7c4dff;
 }
 
 .games .tooltip {
-  border-bottom: 2px solid #FF4081;
+  border-bottom: 2px solid #ff4081;
 }
 
 .profile .tooltip {
-  border-bottom: 2px solid #1DE9B6;
+  border-bottom: 2px solid #1de9b6;
 }
 
 .icon-container:hover .tooltip {
@@ -1835,7 +2293,6 @@ export default {
   transform: translateX(-50%) translateY(0);
   visibility: visible;
   display: block;
-
 }
 
 .button-particles {
@@ -1858,22 +2315,38 @@ export default {
 }
 
 .formations .button-particle {
-  background: radial-gradient(circle, rgba(79, 195, 247, 1) 0%, rgba(79, 195, 247, 0) 70%);
+  background: radial-gradient(
+    circle,
+    rgba(79, 195, 247, 1) 0%,
+    rgba(79, 195, 247, 0) 70%
+  );
   box-shadow: 0 0 10px rgba(79, 195, 247, 0.5);
 }
 
 .badges .button-particle {
-  background: radial-gradient(circle, rgba(124, 77, 255, 1) 0%, rgba(124, 77, 255, 0) 70%);
+  background: radial-gradient(
+    circle,
+    rgba(124, 77, 255, 1) 0%,
+    rgba(124, 77, 255, 0) 70%
+  );
   box-shadow: 0 0 10px rgba(124, 77, 255, 0.5);
 }
 
 .games .button-particle {
-  background: radial-gradient(circle, rgba(255, 64, 129, 1) 0%, rgba(255, 64, 129, 0) 70%);
+  background: radial-gradient(
+    circle,
+    rgba(255, 64, 129, 1) 0%,
+    rgba(255, 64, 129, 0) 70%
+  );
   box-shadow: 0 0 10px rgba(255, 64, 129, 0.5);
 }
 
 .profile .button-particle {
-  background: radial-gradient(circle, rgba(29, 233, 182, 1) 0%, rgba(29, 233, 182, 0) 70%);
+  background: radial-gradient(
+    circle,
+    rgba(29, 233, 182, 1) 0%,
+    rgba(29, 233, 182, 0) 70%
+  );
   box-shadow: 0 0 10px rgba(29, 233, 182, 0.5);
 }
 
@@ -1896,30 +2369,38 @@ export default {
 }
 
 .formations .notification {
-  background: linear-gradient(135deg, #4FC3F7 0%, #29B6F6 100%);
+  background: linear-gradient(135deg, #4fc3f7 0%, #29b6f6 100%);
   box-shadow: 0 0 15px rgba(79, 195, 247, 0.7);
 }
 
 .badges .notification {
-  background: linear-gradient(135deg, #7C4DFF 0%, #651FFF 100%);
+  background: linear-gradient(135deg, #7c4dff 0%, #651fff 100%);
   box-shadow: 0 0 15px rgba(124, 77, 255, 0.7);
 }
 
 .games .notification {
-  background: linear-gradient(135deg, #FF4081 0%, #F50057 100%);
+  background: linear-gradient(135deg, #ff4081 0%, #f50057 100%);
   box-shadow: 0 0 15px rgba(255, 64, 129, 0.7);
 }
 
 .profile .notification {
-  background: linear-gradient(135deg, #1DE9B6 0%, #00BFA5 100%);
+  background: linear-gradient(135deg, #1de9b6 0%, #00bfa5 100%);
   box-shadow: 0 0 15px rgba(29, 233, 182, 0.7);
 }
 
 @keyframes notificationBounce {
-  0% { transform: scale(0); }
-  50% { transform: scale(1.2); }
-  80% { transform: scale(0.9); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  80% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* Avatar and Progress Ring - Highly enhanced! */
@@ -1941,9 +2422,15 @@ export default {
 }
 
 @keyframes avatarEnhancedPulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .progress-ring-container {
@@ -2057,7 +2544,7 @@ export default {
   bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
-  background: linear-gradient(to right, #4FC3F7, #7C4DFF);
+  background: linear-gradient(to right, #4fc3f7, #7c4dff);
   color: white;
   padding: 4px 12px;
   border-radius: 20px;
@@ -2071,7 +2558,7 @@ export default {
 .avatar-container:hover .level-badge {
   transform: translateX(-50%) translateY(-5px);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
-  background: linear-gradient(to right, #7C4DFF, #FF4081);
+  background: linear-gradient(to right, #7c4dff, #ff4081);
 }
 
 .avatar-glow {
@@ -2091,17 +2578,17 @@ export default {
 }
 
 @keyframes avatarGlowPulse {
-  0% { 
+  0% {
     transform: scale(0.95);
     opacity: 0.5;
     filter: blur(15px);
   }
-  50% { 
+  50% {
     transform: scale(1.2);
     opacity: 0.8;
     filter: blur(20px);
   }
-  100% { 
+  100% {
     transform: scale(1);
     opacity: 0.5;
     filter: blur(15px);
@@ -2121,8 +2608,7 @@ export default {
   gap: 25px;
   z-index: 10;
   animation: enhancedSlideUp 0.4s;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3),
-              0 0 15px rgba(79, 195, 247, 0.3);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 0 15px rgba(79, 195, 247, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -2139,7 +2625,7 @@ export default {
 }
 
 .animation-toggle.active {
-  border-color: #4FC3F7;
+  border-color: #4fc3f7;
   box-shadow: 0 0 15px rgba(79, 195, 247, 0.5);
 }
 
@@ -2160,7 +2646,7 @@ export default {
 }
 
 .animation-toggle.active .animation-icon i {
-  color: #4FC3F7;
+  color: #4fc3f7;
 }
 
 .animation-toggle:not(.active) .animation-icon i {
@@ -2168,12 +2654,12 @@ export default {
 }
 
 @keyframes enhancedSlideUp {
-  from { 
+  from {
     transform: translateX(-50%) translateY(20px);
     opacity: 0;
     filter: blur(5px);
   }
-  to { 
+  to {
     transform: translateX(-50%) translateY(0);
     opacity: 1;
     filter: blur(0);
@@ -2217,19 +2703,22 @@ export default {
   top: 50px;
   left: 50%;
   transform: translateX(-50%);
-  background: linear-gradient(135deg, rgba(30, 30, 45, 0.9) 0%, rgba(30, 30, 60, 0.9) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(30, 30, 45, 0.9) 0%,
+    rgba(30, 30, 60, 0.9) 100%
+  );
   border-radius: 12px;
   padding: 20px;
   display: flex;
   align-items: center;
   gap: 20px;
   z-index: 100;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5),
-              0 0 20px rgba(168, 111, 220, 0.4);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 20px rgba(168, 111, 220, 0.4);
 }
 
 @keyframes enhancedDropDown {
-  0% { 
+  0% {
     transform: translateX(-50%) translateY(-50px);
     opacity: 0;
     filter: blur(10px);
@@ -2237,7 +2726,7 @@ export default {
   70% {
     transform: translateX(-50%) translateY(10px);
   }
-  100% { 
+  100% {
     transform: translateX(-50%) translateY(0);
     opacity: 1;
     filter: blur(0);
@@ -2245,11 +2734,11 @@ export default {
 }
 
 @keyframes enhancedFadeOut {
-  0% { 
+  0% {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
   }
-  100% { 
+  100% {
     opacity: 0;
     transform: translateX(-50%) translateY(-20px);
   }
@@ -2262,9 +2751,15 @@ export default {
 }
 
 @keyframes trophyShine {
-  0% { text-shadow: 0 0 10px rgba(255, 215, 0, 0.7); }
-  50% { text-shadow: 0 0 20px rgba(255, 215, 0, 1); }
-  100% { text-shadow: 0 0 10px rgba(255, 215, 0, 0.7); }
+  0% {
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+  }
+  50% {
+    text-shadow: 0 0 20px rgba(255, 215, 0, 1);
+  }
+  100% {
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+  }
 }
 
 .achievement-text h3 {
@@ -2295,11 +2790,11 @@ export default {
 }
 
 @keyframes enhancedFadeIn {
-  from { 
+  from {
     opacity: 0;
     backdrop-filter: blur(0);
   }
-  to { 
+  to {
     opacity: 1;
     backdrop-filter: blur(5px);
   }
@@ -2308,17 +2803,16 @@ export default {
 .modal-content {
   background: linear-gradient(135deg, #0f1b2a 0%, #1a1a40 100%);
   border: 1px solid rgba(111, 168, 220, 0.2);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5),
-              0 0 20px rgba(111, 168, 220, 0.3);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(111, 168, 220, 0.3);
 }
 
 @keyframes enhancedScaleIn {
-  0% { 
+  0% {
     transform: scale(0.8);
     opacity: 0;
     filter: blur(10px);
   }
-  100% { 
+  100% {
     transform: scale(1);
     opacity: 1;
     filter: blur(0);
@@ -2351,7 +2845,7 @@ export default {
 
 .modal-content h2 {
   margin-top: 0;
-  color: #4FC3F7;
+  color: #4fc3f7;
   border-bottom: 2px solid rgba(255, 255, 255, 0.1);
   padding-bottom: 15px;
   font-size: 24px;
@@ -2383,29 +2877,40 @@ export default {
   position: relative;
 }
 
-
 /* Adaptations pour les écrans plus petits */
 @media (max-width: 768px) {
-  .formations { top: 10%; left: 10%; }
-  .badges { top: 10%; right: 10%; }
-  .games { bottom: 10%; left: 10%; }
-  .profile { bottom: 10%; right: 10%; }
-  
+  .formations {
+    top: 10%;
+    left: 10%;
+  }
+  .badges {
+    top: 10%;
+    right: 10%;
+  }
+  .games {
+    bottom: 10%;
+    left: 10%;
+  }
+  .profile {
+    bottom: 10%;
+    right: 10%;
+  }
+
   .avatar-container {
     width: 200px;
     height: 200px;
   }
-  
+
   .progress-ring-container {
     width: 220px;
     height: 220px;
   }
-  
+
   .avatar-image-container {
     width: 160px;
     height: 160px;
   }
-  
+
   .section-content {
     width: 80px;
     height: 80px;
@@ -2415,7 +2920,7 @@ export default {
     width: 130px;
     height: 130px;
   }
-  
+
   .icon svg {
     width: 60px;
     height: 60px;
@@ -2425,17 +2930,17 @@ export default {
     grid-template-columns: repeat(2, 1fr);
     gap: 20px;
   }
-  
+
   .game-button {
     width: 110px;
     height: 110px;
   }
-  
+
   .game-icon {
     width: 50px;
     height: 50px;
   }
-  
+
   .game-name {
     font-size: 12px;
   }
@@ -2444,17 +2949,17 @@ export default {
     width: 60px;
     height: 60px;
   }
-  
+
   .game-orbit-content {
     width: 50px;
     height: 50px;
   }
-  
+
   .game-icon {
     font-size: 18px;
     margin-bottom: 2px;
   }
-  
+
   .game-title {
     font-size: 8px;
   }
@@ -2465,12 +2970,12 @@ export default {
     padding: 5px 10px;
     gap: 10px;
   }
-  
+
   .theme-icon {
     width: 20px;
     height: 20px;
   }
-  
+
   .theme-option span {
     font-size: 10px;
   }
