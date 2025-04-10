@@ -127,6 +127,23 @@
           <div class="avatar-glow" :class="{ pulse: avatarAnimating }"></div>
         </div>
 
+        <!-- Bouton Commencer à jouer -->
+        <div class="play-button-container">
+          <button
+            class="play-button"
+            @mouseenter="handlePlayButtonHover(true, $event)"
+            @mouseleave="handlePlayButtonHover(false, $event)"
+            @mousedown=";(playButtonPressed = true), $event.stopPropagation()"
+            @mouseup=";(playButtonPressed = false), $event.stopPropagation()"
+            @click="startPlaying($event)"
+            :class="{ hovered: playButtonHovered, pressed: playButtonPressed }"
+          >
+            <div class="button-glow"></div>
+            <span class="button-text">Commencer à jouer</span>
+            <div class="button-border"></div>
+          </button>
+        </div>
+
         <div class="avatar-interaction" v-if="showAvatarInteraction">
           <div class="interaction-option" @click.stop="customizeAvatar">
             <svg
@@ -262,6 +279,8 @@ export default {
       hasNewAchievement: false,
       currentAchievement: '',
       animationsEnabled: true,
+      playButtonHovered: false,
+      playButtonPressed: false,
       achievements: [
         'Explorateur Curieux',
         'Premier Pas',
@@ -411,6 +430,34 @@ export default {
       }
 
       this.$emit('toggle-animations', !this.animationsEnabled)
+    },
+
+    handlePlayButtonHover(isHovered, event) {
+      // Empêcher la propagation pour que le profil ne soit pas affecté
+      event.stopPropagation()
+
+      this.playButtonHovered = isHovered
+      if (!isHovered) {
+        this.playButtonPressed = false
+      }
+    },
+
+    startPlaying(event) {
+      // Empêcher la propagation pour que le profil ne soit pas affecté
+      event.stopPropagation()
+
+      console.log('Commençons à jouer!')
+
+      // Haptic feedback if available
+      if (window.navigator && window.navigator.vibrate) {
+        window.navigator.vibrate(50)
+      }
+
+      // Trigger achievement
+      this.triggerAchievement('Premier Pas')
+
+      // You can redirect to the game or open the game modal here
+      // this.$router.push('/game')
     },
   },
   mounted() {
@@ -1140,6 +1187,172 @@ export default {
   color: #ffffff;
 }
 
+/* Styles pour le bouton Commencer à jouer */
+.play-button-container {
+  position: absolute;
+  bottom: -130px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30; /* Plus élevé que les autres éléments */
+  pointer-events: none; /* Le conteneur lui-même ne capture pas les événements */
+}
+
+.play-button {
+  position: relative;
+  padding: 16px 40px;
+  font-size: 18px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: white;
+  background: linear-gradient(135deg, #f94788 0%, #6495f8 50%, #b152c7 100%);
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  transform: perspective(1px) translateZ(0);
+  width: 320px;
+  height: 60px;
+  pointer-events: auto; /* Le bouton lui-même capture les événements */
+}
+
+.button-text {
+  position: relative;
+  z-index: 3;
+  transition: all 0.3s ease;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.button-border {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 30px;
+  z-index: 1;
+  transition: all 0.3s ease;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.button-border:before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(135deg, #f94788 0%, #6495f8 50%, #b152c7 100%);
+  background-size: 200% 200%;
+  border-radius: 32px;
+  z-index: 1;
+  opacity: 0.6;
+}
+
+.button-glow {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  background: radial-gradient(
+    circle at center,
+    rgba(249, 71, 136, 0.8) 0%,
+    rgba(100, 149, 248, 0.5) 50%,
+    rgba(177, 82, 199, 0.8) 100%
+  );
+  filter: blur(15px);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  z-index: 0;
+  transform: translateZ(-1px);
+}
+
+.play-button:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(249, 71, 136, 0.8) 0%,
+    rgba(100, 149, 248, 0.8) 50%,
+    rgba(177, 82, 199, 0.8) 100%
+  );
+  border-radius: 30px;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.play-button:after {
+  content: '';
+  position: absolute;
+  left: -50%;
+  top: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 255, 255, 0.3) 0%,
+    rgba(255, 255, 255, 0) 60%
+  );
+  opacity: 0;
+  transform: scale(0);
+  transition: transform 0.6s ease, opacity 0.6s ease;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.play-button.hovered {
+  transform: translateY(-5px) scale(1.03);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3), 0 0 15px rgba(249, 71, 136, 0.3),
+    0 0 15px rgba(100, 149, 248, 0.3), 0 0 15px rgba(177, 82, 199, 0.3);
+}
+
+.play-button.hovered .button-glow {
+  opacity: 0.8;
+}
+
+.play-button.hovered .button-text {
+  transform: scale(1.05);
+}
+
+.play-button.hovered .button-border {
+  opacity: 1;
+}
+
+.play-button.hovered .button-border:before {
+  animation: gradientShift 3s ease infinite;
+}
+
+.play-button.pressed {
+  transform: translateY(-2px) scale(0.98);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.play-button.pressed:after {
+  opacity: 0.5;
+  transform: scale(1);
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
 /* Adaptations pour les écrans plus petits */
 @media (max-width: 768px) {
   .avatar-container {
@@ -1171,6 +1384,17 @@ export default {
 
   .theme-option span {
     font-size: 10px;
+  }
+
+  .play-button {
+    padding: 12px 30px;
+    font-size: 16px;
+    width: 240px;
+    height: 50px;
+  }
+
+  .play-button-container {
+    bottom: -100px;
   }
 }
 </style>
