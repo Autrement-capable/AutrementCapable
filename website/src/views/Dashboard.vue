@@ -126,23 +126,23 @@
           <div class="level-badge">Niveau {{ calculateLevel() }}</div>
           <div class="avatar-glow" :class="{ pulse: avatarAnimating }"></div>
         </div>
+      </div>
 
-        <!-- Bouton Commencer à jouer -->
-        <div class="play-button-container">
-          <button
-            class="play-button"
-            @mouseenter="handlePlayButtonHover(true, $event)"
-            @mouseleave="handlePlayButtonHover(false, $event)"
-            @mousedown=";(playButtonPressed = true), $event.stopPropagation()"
-            @mouseup=";(playButtonPressed = false), $event.stopPropagation()"
-            @click="startPlaying($event)"
-            :class="{ hovered: playButtonHovered, pressed: playButtonPressed }"
-          >
-            <div class="button-glow"></div>
-            <span class="button-text">Commencer à jouer</span>
-            <div class="button-border"></div>
-          </button>
-        </div>
+      <!-- Bouton Commencer à jouer -->
+      <div class="play-button-container">
+        <button
+          class="play-button"
+          @mouseenter="handlePlayButtonHover(true)"
+          @mouseleave="handlePlayButtonHover(false)"
+          @mousedown=";(playButtonPressed = true), $event.stopPropagation()"
+          @mouseup=";(playButtonPressed = false), $event.stopPropagation()"
+          @click="startPlaying()"
+          :class="{ hovered: playButtonHovered, pressed: playButtonPressed }"
+        >
+          <div class="button-glow"></div>
+          <span class="button-text">Commencer à jouer</span>
+          <div class="button-border"></div>
+        </button>
       </div>
 
       <!-- Animation de récompense -->
@@ -406,20 +406,14 @@ export default {
       this.$emit('toggle-animations', !this.animationsEnabled)
     },
 
-    handlePlayButtonHover(isHovered, event) {
-      // Empêcher la propagation pour que le profil ne soit pas affecté
-      event.stopPropagation()
-
-      this.playButtonHovered = isHovered
+    handlePlayButtonHover(isHovered) {
+      this.playButtonHovered = isHovered;
       if (!isHovered) {
-        this.playButtonPressed = false
+        this.playButtonPressed = false;
       }
     },
 
-    startPlaying(event) {
-      // Empêcher la propagation pour que le profil ne soit pas affecté
-      event.stopPropagation()
-
+    startPlaying() {
       console.log('Commençons à jouer!')
 
       // Haptic feedback if available
@@ -429,9 +423,6 @@ export default {
 
       // Trigger achievement
       this.triggerAchievement('Premier Pas')
-
-      // You can redirect to the game or open the game modal here
-      // this.$router.push('/game')
     },
   },
   mounted() {
@@ -505,9 +496,11 @@ export default {
   width: 100%;
   height: 100%;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  justify-content: flex-start;
   align-items: center;
   z-index: 10;
+  padding-top: 15vh;
 }
 
 .theme-selector {
@@ -1164,11 +1157,11 @@ export default {
 /* Styles pour le bouton Commencer à jouer */
 .play-button-container {
   position: absolute;
-  bottom: -130px;
+  bottom: 90px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 30; /* Plus élevé que les autres éléments */
-  pointer-events: none; /* Le conteneur lui-même ne capture pas les événements */
+  pointer-events: auto; /* Le conteneur lui-même ne capture pas les événements */
 }
 
 .play-button {
@@ -1190,6 +1183,7 @@ export default {
   width: 320px;
   height: 60px;
   pointer-events: auto; /* Le bouton lui-même capture les événements */
+  z-index: 100;
 }
 
 .button-text {
@@ -1332,6 +1326,7 @@ export default {
   .avatar-container {
     width: 200px;
     height: 200px;
+    margin-bottom: 80px;
   }
 
   .progress-ring-container {
