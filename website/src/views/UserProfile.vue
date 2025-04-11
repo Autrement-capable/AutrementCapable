@@ -200,7 +200,7 @@ export default {
         age: 16,
         city: 'Lyon',
         level: 3,
-        avatar: require('@/assets/pdp.png'), // Chemin à adapter selon votre structure
+        avatar: require('@/assets/pdp.png'),
         interests: [
           'Jeux vidéo',
           'Musique',
