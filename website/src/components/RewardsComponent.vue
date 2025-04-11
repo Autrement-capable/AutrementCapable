@@ -1,7 +1,6 @@
 <template>
   <div class="rewards-container" :class="{ 'high-contrast': highContrastMode }">
-    <button class="close-modal-btn" @click="$emit('close')">
-    </button>
+    <button class="close-modal-btn" @click="$emit('close')"></button>
 
     <h1 class="main-title">Mes Badges</h1>
 
@@ -10,37 +9,52 @@
       <div class="celebration-icon">🎉</div>
       <div class="celebration-text">
         <h2>Bravo !</h2>
-        <p>Vous avez débloqué {{ unlockedBadgesCount }} badge{{ unlockedBadgesCount > 1 ? 's' : '' }} !</p>
+        <p>
+          Vous avez débloqué {{ unlockedBadgesCount }} badge{{
+            unlockedBadgesCount > 1 ? 's' : ''
+          }}
+          !
+        </p>
       </div>
     </div>
-    
+
     <!-- Message si aucun badge -->
     <div class="empty-state" v-if="!hasUnlockedBadges">
       <div class="empty-badge-icon">🏅</div>
       <h2>Pas encore de badges !</h2>
       <p>Participez aux jeux et activités pour gagner vos premiers badges.</p>
-      <button @click="$router.push('/dashboard')" class="start-button">Commencer à jouer</button>
+      <button @click="$router.push('/dashboard')" class="start-button">
+        Commencer à jouer
+      </button>
     </div>
 
     <!-- Progression globale -->
     <div class="progress-container" v-if="hasUnlockedBadges">
       <h2>Ma progression</h2>
       <div class="progress-bar-container">
-        <div class="progress-bar" :style="{ width: `${progressPercentage}%` }"></div>
+        <div
+          class="progress-bar"
+          :style="{ width: `${progressPercentage}%` }"
+        ></div>
       </div>
-      <p class="progress-text">{{ unlockedBadgesCount }} / {{ totalBadgesCount }} badges obtenus</p>
+      <p class="progress-text">
+        {{ unlockedBadgesCount }} / {{ totalBadgesCount }} badges obtenus
+      </p>
     </div>
 
     <!-- Grille des badges -->
     <div class="badges-grid">
-      <div 
-        v-for="badge in badges" 
-        :key="badge.id" 
+      <div
+        v-for="badge in badges"
+        :key="badge.id"
         class="badge-card"
-        :class="{ 'unlocked': badge.unlocked, 'locked': !badge.unlocked }"
+        :class="{ unlocked: badge.unlocked, locked: !badge.unlocked }"
         @click="showBadgeDetails(badge)"
       >
-        <div class="badge-icon" :style="{ backgroundColor: badge.iconColor || '#e0e0e0' }">
+        <div
+          class="badge-icon"
+          :style="{ backgroundColor: badge.iconColor || '#e0e0e0' }"
+        >
           <div v-if="!badge.unlocked" class="lock-overlay">🔒</div>
           <span class="badge-emoji">{{ badge.icon }}</span>
         </div>
@@ -56,21 +70,30 @@
     <div v-if="selectedBadge" class="badge-modal-overlay" @click="closeModal">
       <div class="badge-modal" @click.stop>
         <button class="close-button" @click="closeModal">×</button>
-        
-        <div class="badge-detail-content" :class="{ 'unlocked': selectedBadge.unlocked }">
-          <div class="badge-detail-icon" :style="{ backgroundColor: selectedBadge.iconColor || '#e0e0e0' }">
+
+        <div
+          class="badge-detail-content"
+          :class="{ unlocked: selectedBadge.unlocked }"
+        >
+          <div
+            class="badge-detail-icon"
+            :style="{ backgroundColor: selectedBadge.iconColor || '#e0e0e0' }"
+          >
             <span class="badge-detail-emoji">{{ selectedBadge.icon }}</span>
           </div>
-          
+
           <h2>{{ selectedBadge.title }}</h2>
-          
+
           <p v-if="selectedBadge.unlocked" class="badge-description">
             {{ selectedBadge.description }}
           </p>
           <p v-else class="badge-locked-message">
-            {{ selectedBadge.hint || "Continuez à jouer pour débloquer ce badge !" }}
+            {{
+              selectedBadge.hint ||
+              'Continuez à jouer pour débloquer ce badge !'
+            }}
           </p>
-          
+
           <div v-if="selectedBadge.unlocked" class="badge-achievement">
             <div class="achievement-date">
               Obtenu le: {{ formatDate(selectedBadge.dateUnlocked) }}
@@ -79,18 +102,18 @@
               {{ selectedBadge.game }}
             </div>
           </div>
-          
+
           <div class="badge-actions">
-            <button 
-              v-if="!selectedBadge.unlocked" 
-              @click="goToGame(selectedBadge.gameRoute)" 
+            <button
+              v-if="!selectedBadge.unlocked"
+              @click="goToGame(selectedBadge.gameRoute)"
               class="play-button"
             >
               Jouer maintenant
             </button>
-            <button 
-              v-if="selectedBadge.unlocked && selectedBadge.shareable" 
-              @click="shareBadge(selectedBadge)" 
+            <button
+              v-if="selectedBadge.unlocked && selectedBadge.shareable"
+              @click="shareBadge(selectedBadge)"
               class="share-button"
             >
               Partager ce badge
@@ -104,17 +127,17 @@
 
 <script>
 export default {
-  name: 'BadgesComponent',
+  name: 'RewardsComponent',
   props: {
     // Passer les props nécessaires depuis le Dashboard
     currentTheme: {
       type: String,
-      default: 'cosmic'
+      default: 'cosmic',
     },
     animationsEnabled: {
       type: Boolean,
-      default: true
-    }
+      default: true,
+    },
   },
   data() {
     return {
@@ -122,74 +145,79 @@ export default {
         {
           id: 1,
           title: 'Maître de la vitesse',
-          description: 'Vous avez terminé le jeu de vitesse avec un score parfait !',
+          description:
+            'Vous avez terminé le jeu de vitesse avec un score parfait !',
           icon: '⚡',
           iconColor: '#F44336',
           unlocked: false,
           dateUnlocked: '2023-06-16',
           game: 'Jeu de Vitesse',
           gameRoute: '/game-speed',
-          shareable: true
+          shareable: true,
         },
         {
           id: 2,
           title: 'Maître des scénarios',
-          description: 'Vous avez brillamment résolu votre premier scénario social !',
+          description:
+            'Vous avez brillamment résolu votre premier scénario social !',
           icon: '🎭',
           iconColor: '#9C27B0',
           unlocked: false,
           dateUnlocked: '',
           game: 'Jeu des Scénarios',
           gameRoute: '/scenarios',
-          shareable: true
+          shareable: true,
         },
         {
           id: 3,
           title: 'Expert des formes',
-          description: 'Vous avez reconnu toutes les séquences de formes correctement !',
+          description:
+            'Vous avez reconnu toutes les séquences de formes correctement !',
           icon: '🔷',
           iconColor: '#2196F3',
           unlocked: false,
           hint: 'Terminez le jeu des formes avec un score parfait',
           game: 'Jeu des Formes',
           gameRoute: '/shape-sequence-game',
-          shareable: true
+          shareable: true,
         },
         {
           id: 4,
           title: 'Explorateur de compétences',
-          description: 'Vous avez exploré et identifié vos points forts et axes de développement !',
+          description:
+            'Vous avez exploré et identifié vos points forts et axes de développement !',
           icon: '🎯',
           iconColor: '#3F51B5',
           unlocked: false,
           hint: 'Terminez la Roulette des Compétences et découvrez vos talents',
           game: 'Roulette des Compétences',
           gameRoute: '/roue-des-competences',
-          shareable: true
+          shareable: true,
         },
         {
           id: 5,
-          title: 'Explorateur d\'environnements',
+          title: "Explorateur d'environnements",
           description: 'Vous avez exploré tous les environnements disponibles',
           icon: '🏠',
           iconColor: '#795548',
           unlocked: false,
-          hint: 'Essayez tous les préréglages dans l\'environnement de personnalisation',
+          hint: "Essayez tous les préréglages dans l'environnement de personnalisation",
           game: 'Environnement',
           gameRoute: '/environment',
-          shareable: false
+          shareable: false,
         },
         {
           id: 6,
           title: 'CV professionnel',
-          description: 'Vous avez complété toutes les étapes pour générer un CV professionnel',
+          description:
+            'Vous avez complété toutes les étapes pour générer un CV professionnel',
           icon: '📄',
           iconColor: '#607D8B',
           unlocked: false,
           dateUnlocked: '2023-06-20',
           game: 'Générateur de CV',
           gameRoute: '/cv-preview',
-          shareable: true
+          shareable: true,
         },
         {
           id: 7,
@@ -201,7 +229,7 @@ export default {
           hint: 'Explorez au moins 3 fiches métier',
           game: 'Découverte des métiers',
           gameRoute: '/metier/soudeur',
-          shareable: false
+          shareable: false,
         },
         {
           id: 8,
@@ -213,146 +241,155 @@ export default {
           hint: 'Inscrivez-vous à une formation pour débloquer ce badge',
           game: 'Formations',
           gameRoute: '/formation',
-          shareable: true
-        }
+          shareable: true,
+        },
       ],
       selectedBadge: null,
       highContrastMode: false,
-      textSizeLevel: 0
-    };
+      textSizeLevel: 0,
+    }
   },
   computed: {
     unlockedBadgesCount() {
-      return this.badges.filter(badge => badge.unlocked).length;
+      return this.badges.filter((badge) => badge.unlocked).length
     },
     totalBadgesCount() {
-      return this.badges.length;
+      return this.badges.length
     },
     progressPercentage() {
-      return (this.unlockedBadgesCount / this.totalBadgesCount) * 100;
+      return (this.unlockedBadgesCount / this.totalBadgesCount) * 100
     },
     hasUnlockedBadges() {
-      return this.unlockedBadgesCount > 0;
-    }
+      return this.unlockedBadgesCount > 0
+    },
   },
   created() {
     // Chargement des préférences d'accessibilité
-    this.loadAccessibilitySettings();
-    
+    this.loadAccessibilitySettings()
+
     // On pourrait aussi chargement les badges depuis localStorage
-    this.loadBadges();
+    this.loadBadges()
   },
   methods: {
     toggleAnimations() {
       // Émettre un événement pour que le parent puisse mettre à jour son état
-      this.$emit('toggle-animations');
+      this.$emit('toggle-animations')
     },
     loadBadges() {
       // Dans un cas réel, on chargerait les badges depuis localStorage
       // ou depuis une API selon que l'utilisateur est connecté ou non
-      const savedBadges = localStorage.getItem('userBadges');
+      const savedBadges = localStorage.getItem('userBadges')
       if (savedBadges) {
         try {
-          const badgeData = JSON.parse(savedBadges);
+          const badgeData = JSON.parse(savedBadges)
           // Fusionner les données sauvegardées avec nos badges par défaut
-          this.badges = this.badges.map(badge => {
-            const savedBadge = badgeData.find(b => b.id === badge.id);
+          this.badges = this.badges.map((badge) => {
+            const savedBadge = badgeData.find((b) => b.id === badge.id)
             if (savedBadge) {
-              return { ...badge, ...savedBadge };
+              return { ...badge, ...savedBadge }
             }
-            return badge;
-          });
+            return badge
+          })
         } catch (error) {
-          console.error('Erreur lors du chargement des badges:', error);
+          console.error('Erreur lors du chargement des badges:', error)
         }
       }
-      
+
       // Vérification si le badge "collectionneur" devrait être débloqué
-      this.checkBadgeCollector();
+      this.checkBadgeCollector()
     },
-    
+
     checkBadgeCollector() {
       // Vérifier si l'utilisateur a débloqué 5 badges ou plus
       if (this.unlockedBadgesCount >= 5) {
-        const collectorBadge = this.badges.find(badge => badge.id === 8);
+        const collectorBadge = this.badges.find((badge) => badge.id === 8)
         if (collectorBadge && !collectorBadge.unlocked) {
-          collectorBadge.unlocked = true;
-          collectorBadge.dateUnlocked = new Date().toISOString().split('T')[0];
-          this.saveBadges();
+          collectorBadge.unlocked = true
+          collectorBadge.dateUnlocked = new Date().toISOString().split('T')[0]
+          this.saveBadges()
         }
       }
     },
-    
+
     saveBadges() {
       // Enregistrer les badges dans localStorage
-      localStorage.setItem('userBadges', JSON.stringify(this.badges));
+      localStorage.setItem('userBadges', JSON.stringify(this.badges))
     },
-    
+
     formatDate(dateString) {
       // Formater une date en format français
-      if (!dateString) return '';
-      
-      const options = { day: 'numeric', month: 'long', year: 'numeric' };
-      const date = new Date(dateString);
-      
-      return date.toLocaleDateString('fr-FR', options);
+      if (!dateString) return ''
+
+      const options = { day: 'numeric', month: 'long', year: 'numeric' }
+      const date = new Date(dateString)
+
+      return date.toLocaleDateString('fr-FR', options)
     },
-    
+
     showBadgeDetails(badge) {
-      this.selectedBadge = badge;
+      this.selectedBadge = badge
     },
-    
+
     closeModal() {
-      this.selectedBadge = null;
+      this.selectedBadge = null
     },
-    
+
     goToGame(route) {
-      this.closeModal();
-      this.$router.push(route);
+      this.closeModal()
+      this.$router.push(route)
     },
-    
+
     shareBadge(badge) {
       // Dans un cas réel, cela pourrait ouvrir une boîte de dialogue de partage
       // ou générer un lien à partager
-      alert(`Partage du badge "${badge.title}" sur les réseaux sociaux (à implémenter)`);
+      alert(
+        `Partage du badge "${badge.title}" sur les réseaux sociaux (à implémenter)`
+      )
     },
-    
+
     // Fonctions d'accessibilité
     loadAccessibilitySettings() {
-      const settings = localStorage.getItem('accessibilitySettings');
+      const settings = localStorage.getItem('accessibilitySettings')
       if (settings) {
         try {
-          const { highContrastMode, textSizeLevel } = JSON.parse(settings);
-          this.highContrastMode = highContrastMode;
-          this.textSizeLevel = textSizeLevel;
-          this.applyTextSize();
+          const { highContrastMode, textSizeLevel } = JSON.parse(settings)
+          this.highContrastMode = highContrastMode
+          this.textSizeLevel = textSizeLevel
+          this.applyTextSize()
         } catch (error) {
-          console.error('Erreur lors du chargement des paramètres d\'accessibilité:', error);
+          console.error(
+            "Erreur lors du chargement des paramètres d'accessibilité:",
+            error
+          )
         }
       }
     },
-    
+
     saveAccessibilitySettings() {
       const settings = {
         highContrastMode: this.highContrastMode,
-        textSizeLevel: this.textSizeLevel
-      };
-      localStorage.setItem('accessibilitySettings', JSON.stringify(settings));
-    },
-    
-    toggleContrast() {
-      this.highContrastMode = !this.highContrastMode;
-      this.saveAccessibilitySettings();
-    },
-    
-    applyTextSize() {
-      document.body.classList.remove('text-size-1', 'text-size-2', 'text-size-3');
-      if (this.textSizeLevel > 0) {
-        document.body.classList.add(`text-size-${this.textSizeLevel}`);
+        textSizeLevel: this.textSizeLevel,
       }
-    }
-  }
-};
+      localStorage.setItem('accessibilitySettings', JSON.stringify(settings))
+    },
+
+    toggleContrast() {
+      this.highContrastMode = !this.highContrastMode
+      this.saveAccessibilitySettings()
+    },
+
+    applyTextSize() {
+      document.body.classList.remove(
+        'text-size-1',
+        'text-size-2',
+        'text-size-3'
+      )
+      if (this.textSizeLevel > 0) {
+        document.body.classList.add(`text-size-${this.textSizeLevel}`)
+      }
+    },
+  },
+}
 </script>
 
 <style scoped>
@@ -376,7 +413,7 @@ export default {
 
 .main-title {
   text-align: center;
-  color: #4A4D9E;
+  color: #4a4d9e;
   font-size: 1.8rem;
   margin-bottom: 5px;
   position: relative;
@@ -391,7 +428,7 @@ export default {
   transform: translateX(-50%);
   width: 60px;
   height: 3px;
-  background-color: #FFD700;
+  background-color: #ffd700;
   border-radius: 2px;
 }
 
@@ -416,7 +453,7 @@ export default {
   border-radius: 50%;
   border: none;
   background-color: transparent;
-  color: #4A4D9E;
+  color: #4a4d9e;
   font-size: 1rem;
   cursor: pointer;
   display: flex;
@@ -427,11 +464,11 @@ export default {
 
 .accessibility-btn:hover {
   background-color: rgba(255, 64, 129, 0.1);
-  color: #FF4081;
+  color: #ff4081;
 }
 
 .high-contrast .accessibility-btn {
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 .high-contrast .accessibility-btn:hover {
@@ -444,7 +481,7 @@ export default {
   right: 15px;
   background: transparent;
   border: none;
-  color: #4A4D9E;
+  color: #4a4d9e;
   width: 40px;
   height: 40px;
   display: flex;
@@ -461,7 +498,7 @@ export default {
   position: absolute;
   width: 24px;
   height: 3px;
-  background-color: #4A4D9E;
+  background-color: #4a4d9e;
   transition: background-color 0.3s ease;
 }
 
@@ -475,29 +512,29 @@ export default {
 
 .close-modal-btn:hover:before,
 .close-modal-btn:hover:after {
-  background-color: #FF4081;
+  background-color: #ff4081;
 }
 
 /* Mode contraste élevé */
 .high-contrast .close-modal-btn {
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 .high-contrast .close-modal-btn:before,
 .high-contrast .close-modal-btn:after {
-  background-color: #FFFFFF;
+  background-color: #ffffff;
 }
 
 .high-contrast .close-modal-btn:hover:before,
 .high-contrast .close-modal-btn:hover:after {
-  background-color: #FF4081;
+  background-color: #ff4081;
 }
 
 /* Boîte de célébration */
 .celebration-box {
   display: flex;
   align-items: center;
-  background-color: #FFF8E1;
+  background-color: #fff8e1;
   border-radius: 10px;
   padding: 15px;
   margin-bottom: 10px;
@@ -513,21 +550,21 @@ export default {
 
 .celebration-text h2 {
   margin: 0 0 6px 0;
-  color: #FF9800;
+  color: #ff9800;
   font-size: 1.3rem;
 }
 
 .celebration-text p {
   font-size: 0.95rem;
   margin: 0;
-  color: #000000
+  color: #000000;
 }
 
 /* État vide - pas de badges */
 .empty-state {
   text-align: center;
   padding: 25px 10px;
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   margin-bottom: 20px;
@@ -551,7 +588,7 @@ export default {
 }
 
 .start-button {
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   border: none;
   border-radius: 25px;
@@ -575,7 +612,7 @@ export default {
 .progress-container {
   text-align: center;
   margin-bottom: 10px;
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   padding: 5px;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
@@ -591,7 +628,7 @@ export default {
 .progress-bar-container {
   width: 100%;
   height: 16px;
-  background-color: #E0E0E0;
+  background-color: #e0e0e0;
   border-radius: 8px;
   overflow: hidden;
   margin-bottom: 8px;
@@ -599,7 +636,7 @@ export default {
 
 .progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, #4CAF50, #8BC34A);
+  background: linear-gradient(90deg, #4caf50, #8bc34a);
   border-radius: 8px;
   transition: width 1s ease;
 }
@@ -619,7 +656,7 @@ export default {
 }
 
 .badge-card {
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   border-radius: 10px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -638,7 +675,7 @@ export default {
 }
 
 .badge-card.unlocked {
-  border: 1px solid #8BC34A;
+  border: 1px solid #8bc34a;
 }
 
 .badge-card.locked {
@@ -709,7 +746,7 @@ export default {
 }
 
 .badge-modal {
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   border-radius: 12px;
   width: 90%;
   max-width: 400px;
@@ -739,7 +776,7 @@ export default {
 }
 
 .close-button:hover {
-  background-color: #F5F5F5;
+  background-color: #f5f5f5;
 }
 
 .badge-detail-content {
@@ -781,7 +818,7 @@ export default {
 }
 
 .badge-achievement {
-  background-color: #F5F5F5;
+  background-color: #f5f5f5;
   padding: 12px;
   border-radius: 8px;
   margin-bottom: 15px;
@@ -790,7 +827,7 @@ export default {
 .achievement-date {
   font-weight: bold;
   margin-bottom: 5px;
-  color: #4A4D9E;
+  color: #4a4d9e;
   font-size: 0.9rem;
 }
 
@@ -806,7 +843,8 @@ export default {
   margin-top: 15px;
 }
 
-.play-button, .share-button {
+.play-button,
+.share-button {
   padding: 8px 16px;
   border: none;
   border-radius: 25px;
@@ -817,35 +855,53 @@ export default {
 }
 
 .play-button {
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
 }
 
 .share-button {
-  background-color: #2196F3;
+  background-color: #2196f3;
   color: white;
 }
 
-.play-button:hover, .share-button:hover {
+.play-button:hover,
+.share-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 /* Animations */
 @keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 @keyframes scaleUp {
-  from { transform: scale(0.8); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* Tailles de texte variables pour accessibilité */
@@ -888,7 +944,7 @@ export default {
 /* Mode contraste élevé */
 .high-contrast {
   background-color: #000000;
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 .high-contrast .badge-card,
@@ -897,19 +953,19 @@ export default {
 .high-contrast .empty-state,
 .high-contrast .celebration-box {
   background-color: #222222;
-  border: 1px solid #FFFFFF;
+  border: 1px solid #ffffff;
 }
 
 .high-contrast .badge-info h3,
 .high-contrast .badge-detail-content h2 {
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 .high-contrast .badge-info p,
 .high-contrast .badge-description,
 .high-contrast .badge-locked-message,
 .high-contrast .progress-text {
-  color: #CCCCCC;
+  color: #cccccc;
 }
 
 /* Media queries pour la responsivité */
@@ -918,32 +974,33 @@ export default {
     margin: 15px auto 25px;
     padding: 15px 10px;
   }
-  
+
   .badges-grid {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 10px;
   }
-  
+
   .badge-detail-icon {
     width: 90px;
     height: 90px;
   }
-  
+
   .badge-actions {
     flex-direction: column;
   }
-  
-  .play-button, .share-button {
+
+  .play-button,
+  .share-button {
     width: 100%;
     margin-bottom: 5px;
   }
-  
+
   .celebration-box {
     flex-direction: column;
     text-align: center;
     padding: 5px;
   }
-  
+
   .celebration-icon {
     margin-right: 0;
     margin-bottom: 5px;
@@ -956,28 +1013,28 @@ export default {
     padding: 10px 5px;
     border-radius: 8px;
   }
-  
+
   .badges-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .accessibility-controls {
     top: 5px;
     right: 5px;
     gap: 3px;
   }
-  
+
   .accessibility-btn {
     width: 25px;
     height: 25px;
     font-size: 0.8rem;
   }
-  
+
   .main-title {
     font-size: 1.5rem;
     margin-bottom: 5px;
   }
-  
+
   .empty-badge-icon {
     font-size: 60px;
   }

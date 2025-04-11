@@ -1,14 +1,29 @@
 <template>
-  <div class="questionnaire" aria-label="Questionnaire page" :style="{ backgroundColor: currentBackgroundColor }">
+  <div
+    class="questionnaire"
+    aria-label="Questionnaire page"
+    :style="{ backgroundColor: currentBackgroundColor }"
+  >
     <h1 class="title">Bonjour !</h1>
-    
-    <div v-if="currentQuestionIndex < questions.length" class="content-container">
+
+    <div
+      v-if="currentQuestionIndex < questions.length"
+      class="content-container"
+    >
       <!-- Section gauche avec avatar et question -->
       <div class="left-section">
-        <img :src="selectedAvatarUrl || require('../assets/jeunefemme.png')" alt="Avatar" :class="imageClass" />
+        <img
+          :src="selectedAvatarUrl || require('../assets/jeunefemme.png')"
+          alt="Avatar"
+          :class="imageClass"
+        />
         <div class="question-container">
           <p class="sub-title">{{ questions[currentQuestionIndex].text }}</p>
-          <button class="action-button listen-button" @click="repeatQuestion" aria-label="Écouter la question">
+          <button
+            class="action-button listen-button"
+            @click="repeatQuestion"
+            aria-label="Écouter la question"
+          >
             <span class="icon">🔊</span>
             <span class="button-text">Écouter</span>
           </button>
@@ -18,53 +33,110 @@
       <!-- Section droite avec les réponses -->
       <div class="right-section">
         <!-- Affichage des réponses préconfigurées pour l'âge -->
-        <div v-if="questions[currentQuestionIndex].key === 'age'" class="options-grid">
-          <button v-for="ageOption in ageOptions.slice(0, 8)" :key="ageOption" class="option-button"
-            @click="selectOption('age', ageOption)" :class="{ 'selected': responses.age === ageOption }">
+        <div
+          v-if="questions[currentQuestionIndex].key === 'age'"
+          class="options-grid"
+        >
+          <button
+            v-for="ageOption in ageOptions.slice(0, 8)"
+            :key="ageOption"
+            class="option-button"
+            @click="selectOption('age', ageOption)"
+            :class="{ selected: responses.age === ageOption }"
+          >
             {{ ageOption }}
           </button>
-          <button class="option-button custom" @click="showCustomInput = true" v-if="!showCustomInput">
+          <button
+            class="option-button custom"
+            @click="showCustomInput = true"
+            v-if="!showCustomInput"
+          >
             Autre
           </button>
           <div v-if="showCustomInput" class="custom-input-container">
-            <input type="number" v-model="responses.age" placeholder="Votre âge" class="small-input"
-              ref="customAgeInput" />
-            <button class="action-button" @click="showCustomInput = false; validateResponse('age')">
+            <input
+              type="number"
+              v-model="responses.age"
+              placeholder="Votre âge"
+              class="small-input"
+              ref="customAgeInput"
+            />
+            <button
+              class="action-button"
+              @click=";(showCustomInput = false), validateResponse('age')"
+            >
               OK
             </button>
           </div>
         </div>
 
         <!-- Choix prédéfinis pour le nom -->
-        <div v-if="questions[currentQuestionIndex].key === 'name'" class="name-options">
+        <div
+          v-if="questions[currentQuestionIndex].key === 'name'"
+          class="name-options"
+        >
           <!-- Option saisie vocale -->
           <div class="voice-input-container" v-if="!showNameInput">
-            <button class="action-button speak-button" @click="startRecognition" :class="{ 'active': isRecognizing }">
+            <button
+              class="action-button speak-button"
+              @click="startRecognition"
+              :class="{ active: isRecognizing }"
+            >
               <span class="icon">🎙️</span>
-              <span class="button-text">{{ isRecognizing ? 'J\'écoute...' : 'Dites votre nom' }}</span>
+              <span class="button-text">
+                {{ isRecognizing ? "J'écoute..." : 'Dites votre nom' }}
+              </span>
             </button>
-            <div v-if="responses.name && !showNameInput && voiceInputActive" class="speech-result">
-              <p>Vous avez dit: <strong>{{ responses.name }}</strong></p>
+            <div
+              v-if="responses.name && !showNameInput && voiceInputActive"
+              class="speech-result"
+            >
+              <p>
+                Vous avez dit:
+                <strong>{{ responses.name }}</strong>
+              </p>
               <div class="confirm-buttons">
-                <button class="action-button confirm" @click="validateResponse('name')">C'est correct</button>
-                <button class="action-button retry" @click="responses.name = ''; startRecognition()">Réessayer</button>
+                <button
+                  class="action-button confirm"
+                  @click="validateResponse('name')"
+                >
+                  C'est correct
+                </button>
+                <button
+                  class="action-button retry"
+                  @click=";(responses.name = ''), startRecognition()"
+                >
+                  Réessayer
+                </button>
               </div>
             </div>
           </div>
-          
+
           <!-- Option saisie texte -->
           <div class="text-input-option">
-            <button class="option-button text-option" @click="startTextInput" v-if="!showNameInput">
+            <button
+              class="option-button text-option"
+              @click="startTextInput"
+              v-if="!showNameInput"
+            >
               Taper mon nom
             </button>
             <div v-if="showNameInput" class="custom-input-container">
-              <input type="text" v-model="responses.name" placeholder="Votre nom" class="small-input"
-                ref="customNameInput" />
+              <input
+                type="text"
+                v-model="responses.name"
+                placeholder="Votre nom"
+                class="small-input"
+                ref="customNameInput"
+              />
               <div class="button-group">
                 <button class="action-button" @click="confirmTextInput">
                   Confirmer
                 </button>
-                <button class="action-button cancel-button" @click="cancelTextInput">
+                <button
+                  class="action-button cancel-button"
+                  @click="cancelTextInput"
+                >
                   Annuler
                 </button>
               </div>
@@ -73,11 +145,18 @@
         </div>
 
         <!-- Options pour le genre de l'avatar -->
-        <div v-if="questions[currentQuestionIndex].key === 'avatarGender'" class="avatar-options-container">
+        <div
+          v-if="questions[currentQuestionIndex].key === 'avatarGender'"
+          class="avatar-options-container"
+        >
           <div class="options-grid avatar-gender-grid">
-            <button v-for="option in avatarGenderOptions" :key="option.value" class="option-button avatar-option"
-              @click="selectOption('avatarGender', option.value)" 
-              :class="{ 'selected': responses.avatarGender === option.value }">
+            <button
+              v-for="option in avatarGenderOptions"
+              :key="option.value"
+              class="option-button avatar-option"
+              @click="selectOption('avatarGender', option.value)"
+              :class="{ selected: responses.avatarGender === option.value }"
+            >
               <span class="avatar-option-icon">{{ option.icon }}</span>
               <span class="avatar-option-text">{{ option.label }}</span>
             </button>
@@ -85,30 +164,49 @@
         </div>
 
         <!-- Options pour les accessoires de l'avatar -->
-        <div v-if="questions[currentQuestionIndex].key === 'avatarAccessories'" class="avatar-options-container">
+        <div
+          v-if="questions[currentQuestionIndex].key === 'avatarAccessories'"
+          class="avatar-options-container"
+        >
           <div class="options-grid avatar-accessories-grid">
-            <button v-for="option in avatarAccessoriesOptions" :key="option.value" class="option-button avatar-option"
+            <button
+              v-for="option in avatarAccessoriesOptions"
+              :key="option.value"
+              class="option-button avatar-option"
               @click="toggleAvatarAccessory(option.value)"
-              :class="{ 'selected': selectedAccessories.includes(option.value) }">
+              :class="{ selected: selectedAccessories.includes(option.value) }"
+            >
               <span class="avatar-option-icon">{{ option.icon }}</span>
               <span class="avatar-option-text">{{ option.label }}</span>
             </button>
           </div>
           <div v-if="selectedAccessories.length > 0" class="selected-items">
-            <button class="action-button confirm-selection"
-              @click="responses.avatarAccessories = selectedAccessories.join(','); validateResponse('avatarAccessories')">
+            <button
+              class="action-button confirm-selection"
+              @click="
+                ;(responses.avatarAccessories = selectedAccessories.join(',')),
+                  validateResponse('avatarAccessories')
+              "
+            >
               Confirmer mes accessoires
             </button>
           </div>
         </div>
 
         <!-- Options pour la couleur de l'avatar -->
-        <div v-if="questions[currentQuestionIndex].key === 'avatarColor'" class="avatar-options-container">
+        <div
+          v-if="questions[currentQuestionIndex].key === 'avatarColor'"
+          class="avatar-options-container"
+        >
           <div class="options-grid avatar-color-grid">
-            <button v-for="option in avatarColorOptions" :key="option.value" class="option-button avatar-color-option"
+            <button
+              v-for="option in avatarColorOptions"
+              :key="option.value"
+              class="option-button avatar-color-option"
               @click="selectOption('avatarColor', option.value)"
-              :class="{ 'selected': responses.avatarColor === option.value }"
-              :style="{ backgroundColor: option.hex }">
+              :class="{ selected: responses.avatarColor === option.value }"
+              :style="{ backgroundColor: option.hex }"
+            >
               <span class="avatar-option-icon">{{ option.icon }}</span>
               <span class="avatar-option-text">{{ option.label }}</span>
             </button>
@@ -116,11 +214,18 @@
         </div>
 
         <!-- Options pour les passions de l'avatar -->
-        <div v-if="questions[currentQuestionIndex].key === 'avatarPassion'" class="avatar-options-container">
+        <div
+          v-if="questions[currentQuestionIndex].key === 'avatarPassion'"
+          class="avatar-options-container"
+        >
           <div class="options-grid avatar-passion-grid">
-            <button v-for="option in avatarPassionOptions" :key="option.value" class="option-button avatar-option"
+            <button
+              v-for="option in avatarPassionOptions"
+              :key="option.value"
+              class="option-button avatar-option"
               @click="selectOption('avatarPassion', option.value)"
-              :class="{ 'selected': responses.avatarPassion === option.value }">
+              :class="{ selected: responses.avatarPassion === option.value }"
+            >
               <span class="avatar-option-icon">{{ option.icon }}</span>
               <span class="avatar-option-text">{{ option.label }}</span>
             </button>
@@ -128,11 +233,18 @@
         </div>
 
         <!-- Options pour l'expression de l'avatar -->
-        <div v-if="questions[currentQuestionIndex].key === 'avatarExpression'" class="avatar-options-container">
+        <div
+          v-if="questions[currentQuestionIndex].key === 'avatarExpression'"
+          class="avatar-options-container"
+        >
           <div class="options-grid avatar-expression-grid">
-            <button v-for="option in avatarExpressionOptions" :key="option.value" class="option-button avatar-option"
+            <button
+              v-for="option in avatarExpressionOptions"
+              :key="option.value"
+              class="option-button avatar-option"
               @click="selectOption('avatarExpression', option.value)"
-              :class="{ 'selected': responses.avatarExpression === option.value }">
+              :class="{ selected: responses.avatarExpression === option.value }"
+            >
               <span class="avatar-option-icon">{{ option.icon }}</span>
               <span class="avatar-option-text">{{ option.label }}</span>
             </button>
@@ -140,47 +252,84 @@
         </div>
 
         <!-- Passions avec options prédéfinies et vocales -->
-        <div v-if="questions[currentQuestionIndex].key === 'passions'" class="passions-container">
+        <div
+          v-if="questions[currentQuestionIndex].key === 'passions'"
+          class="passions-container"
+        >
           <div class="options-grid">
-            <button v-for="passion in passionOptions" :key="passion" class="option-button passion-button"
-              @click="selectPassion(passion)" :class="{ 'selected': selectedPassions.includes(passion) }">
+            <button
+              v-for="passion in passionOptions"
+              :key="passion"
+              class="option-button passion-button"
+              @click="selectPassion(passion)"
+              :class="{ selected: selectedPassions.includes(passion) }"
+            >
               {{ passion }}
             </button>
           </div>
 
-          <div class="voice-input-container" style="margin: 0.5rem 0;">
-            <button class="action-button speak-button" @click="startRecognitionForPassions"
-              :class="{ 'active': isRecognizing }">
+          <div class="voice-input-container" style="margin: 0.5rem 0">
+            <button
+              class="action-button speak-button"
+              @click="startRecognitionForPassions"
+              :class="{ active: isRecognizing }"
+            >
               <span class="icon">🎙️</span>
-              <span class="button-text">{{ isRecognizing ? 'J\'écoute...' : 'Dire' }}</span>
+              <span class="button-text">
+                {{ isRecognizing ? "J'écoute..." : 'Dire' }}
+              </span>
             </button>
           </div>
 
           <div v-if="selectedPassions.length > 0" class="selected-passions">
             <div class="passions-tags">
-              <div v-for="(passion, index) in selectedPassions.slice(0, 3)" :key="index" class="passion-tag">
+              <div
+                v-for="(passion, index) in selectedPassions.slice(0, 3)"
+                :key="index"
+                class="passion-tag"
+              >
                 {{ passion }}
-                <button class="remove-button" @click="removePassion(index)"
-                  aria-label="Supprimer cette passion">×</button>
+                <button
+                  class="remove-button"
+                  @click="removePassion(index)"
+                  aria-label="Supprimer cette passion"
+                >
+                  ×
+                </button>
               </div>
             </div>
-            <button class="action-button confirm-passions"
-              @click="responses.passions = selectedPassions.join(', '); validateResponse('passions')">
+            <button
+              class="action-button confirm-passions"
+              @click="
+                ;(responses.passions = selectedPassions.join(', ')),
+                  validateResponse('passions')
+              "
+            >
               Confirmer
             </button>
           </div>
         </div>
 
         <div class="navigation-buttons" v-if="!showAvatarSelection">
-          <button v-if="currentQuestionIndex > 0" class="action-button prev-button" @click="previousQuestion">
+          <button
+            v-if="currentQuestionIndex > 0"
+            class="action-button prev-button"
+            @click="previousQuestion"
+          >
             Précédent
           </button>
-          <button class="action-button next-button" @click="nextQuestion"
-            :disabled="!canProceed()">
+          <button
+            class="action-button next-button"
+            @click="nextQuestion"
+            :disabled="!canProceed()"
+          >
             Suivant
           </button>
-          <button v-if="shouldShowSkipButton()" class="action-button skip-button"
-            @click="skipQuestion">
+          <button
+            v-if="shouldShowSkipButton()"
+            class="action-button skip-button"
+            @click="skipQuestion"
+          >
             Passer cette question
           </button>
         </div>
@@ -196,26 +345,47 @@
       <div v-else-if="generatedImages.length > 0" class="avatar-selection">
         <h2>Choisissez votre avatar :</h2>
         <div class="avatars-grid">
-          <div v-for="(img, index) in generatedImages" :key="index" class="avatar-option-container"
-            :class="{ 'selected': selectedAvatarUrl === img }">
-            <img :src="img" alt="Option d'avatar" class="avatar-option" @click="selectAvatar(img)" />
+          <div
+            v-for="(img, index) in generatedImages"
+            :key="index"
+            class="avatar-option-container"
+            :class="{ selected: selectedAvatarUrl === img }"
+          >
+            <img
+              :src="img"
+              alt="Option d'avatar"
+              class="avatar-option"
+              @click="selectAvatar(img)"
+            />
             <button class="select-avatar-button" @click="selectAvatar(img)">
               Choisir cet avatar
             </button>
           </div>
         </div>
-        <button v-if="selectedAvatarUrl" class="action-button next-button" @click="finalizeAvatarSelection">
+        <button
+          v-if="selectedAvatarUrl"
+          class="action-button next-button"
+          @click="finalizeAvatarSelection"
+        >
           Continuer avec cet avatar
         </button>
       </div>
     </div>
 
-    <div v-if="currentQuestionIndex >= questions.length && !showAvatarSelection" class="completion-message">
+    <div
+      v-if="currentQuestionIndex >= questions.length && !showAvatarSelection"
+      class="completion-message"
+    >
       <div v-if="isRegistering" class="loading-spinner">
         <div class="spinner"></div>
         <p>Création de votre compte...</p>
       </div>
-      <button v-else @click="createAccountAndStartGame" :disabled="isRegistering" class="start-game-button">
+      <button
+        v-else
+        @click="createAccountAndStartGame"
+        :disabled="isRegistering"
+        class="start-game-button"
+      >
         Commencer le premier jeu
       </button>
     </div>
@@ -223,12 +393,12 @@
 </template>
 
 <script>
-import axios from 'axios';
-import AuthService from '@/services/AuthService';
+import axios from 'axios'
+import AuthService from '@/services/AuthService'
 
 /* global webkitSpeechRecognition */
 export default {
-  name: 'UserQuestionnaire',
+  name: 'UserOnboarding',
   data() {
     return {
       currentQuestionIndex: 0,
@@ -239,36 +409,78 @@ export default {
       showCustomInput: false,
       showNameInput: false,
       voiceInputActive: false,
-      backgroundColors: ['#e0f7fa', '#e8f5e9', '#fce4ec', '#fff3e0', '#ede7f6', '#f9fbe7'],
+      backgroundColors: [
+        '#e0f7fa',
+        '#e8f5e9',
+        '#fce4ec',
+        '#fff3e0',
+        '#ede7f6',
+        '#f9fbe7',
+      ],
       currentBackgroundColor: '#e0f7fa',
       isRegistering: false,
       registrationError: null,
       questions: [
         { text: '🎂 Quel âge as-tu ?', key: 'age', type: 'number' },
-        { text: '👤 Comment voudrais-tu qu\'on t\'appelle ?', key: 'name', type: 'text' },
-        { text: '👦 Veux-tu que ton avatar soit...', key: 'avatarGender', type: 'choice' },
-        { text: '🧢 Quels accessoires aimes-tu porter ou utiliser ?', key: 'avatarAccessories', type: 'multichoice' },
-        { text: '🎨 Choisis une couleur principale pour ton avatar', key: 'avatarColor', type: 'choice' },
-        { text: '🌟 Qu\'est-ce que tu préfères parmi ces passions ?', key: 'avatarPassion', type: 'choice' },
-        { text: '😊 Ton avatar est plutôt...', key: 'avatarExpression', type: 'choice' },
-        { text: '🎨 Quelles sont tes passions ?', key: 'passions', type: 'text', icon: 'passion-icon.png' }
+        {
+          text: "👤 Comment voudrais-tu qu'on t'appelle ?",
+          key: 'name',
+          type: 'text',
+        },
+        {
+          text: '👦 Veux-tu que ton avatar soit...',
+          key: 'avatarGender',
+          type: 'choice',
+        },
+        {
+          text: '🧢 Quels accessoires aimes-tu porter ou utiliser ?',
+          key: 'avatarAccessories',
+          type: 'multichoice',
+        },
+        {
+          text: '🎨 Choisis une couleur principale pour ton avatar',
+          key: 'avatarColor',
+          type: 'choice',
+        },
+        {
+          text: "🌟 Qu'est-ce que tu préfères parmi ces passions ?",
+          key: 'avatarPassion',
+          type: 'choice',
+        },
+        {
+          text: '😊 Ton avatar est plutôt...',
+          key: 'avatarExpression',
+          type: 'choice',
+        },
+        {
+          text: '🎨 Quelles sont tes passions ?',
+          key: 'passions',
+          type: 'text',
+          icon: 'passion-icon.png',
+        },
       ],
       ageOptions: [12, 14, 16, 18, 20, 22, 24, 26],
       passionOptions: [
-        'Musique', 'Sport', 'Lecture', 'Jeux vidéo', 'Dessin', 'Cuisine',
-        'Animaux', 'Nature'
+        'Musique',
+        'Sport',
+        'Lecture',
+        'Jeux vidéo',
+        'Dessin',
+        'Cuisine',
+        'Animaux',
+        'Nature',
       ],
       avatarGenderOptions: [
         { label: 'Un garçon', value: 'boy', icon: '👦' },
         { label: 'Une fille', value: 'girl', icon: '👧' },
-        { label: 'Neutre / Je ne sais pas', value: 'neutral', icon: '🤖' }
+        { label: 'Neutre / Je ne sais pas', value: 'neutral', icon: '🤖' },
       ],
       avatarAccessoriesOptions: [
         { label: 'Casque audio', value: 'headphones', icon: '🎧' },
         { label: 'Casquette', value: 'cap', icon: '🧢' },
         { label: 'Sac à dos', value: 'backpack', icon: '🎒' },
         { label: 'Lunettes', value: 'glasses', icon: '👓' },
-        { label: 'Rien de spécial', value: 'none', icon: '🚫' }
+        { label: 'Rien de spécial', value: 'none', icon: '🚫' },
       ],
       avatarColorOptions: [
         { label: 'Bleu', value: 'blue', icon: '🔵', hex: '#1e88e5' },
@@ -277,20 +489,20 @@ export default {
         { label: 'Violet', value: 'purple', icon: '🟣', hex: '#8e24aa' },
         { label: 'Orange', value: 'orange', icon: '🟠', hex: '#fb8c00' },
         { label: 'Blanc', value: 'white', icon: '⚪', hex: '#f5f5f5' },
-        { label: 'Noir', value: 'black', icon: '⚫', hex: '#424242' }
+        { label: 'Noir', value: 'black', icon: '⚫', hex: '#424242' },
       ],
       avatarPassionOptions: [
         { label: 'Jeux vidéo', value: 'videogames', icon: '🎮' },
         { label: 'Dessin / Peinture', value: 'art', icon: '🎨' },
         { label: 'Musique', value: 'music', icon: '🎵' },
         { label: 'Espace / Science', value: 'science', icon: '🚀' },
-        { label: 'Nature / Animaux', value: 'nature', icon: '🏞️' }
+        { label: 'Nature / Animaux', value: 'nature', icon: '🏞️' },
       ],
       avatarExpressionOptions: [
         { label: 'Souriant', value: 'smiling', icon: '😄' },
         { label: 'Sérieux', value: 'serious', icon: '😐' },
         { label: 'Calme', value: 'calm', icon: '🧘‍♂️' },
-        { label: 'Très joyeux', value: 'very_happy', icon: '🤩' }
+        { label: 'Très joyeux', value: 'very_happy', icon: '🤩' },
       ],
       selectedPassions: [],
       selectedAccessories: [],
@@ -302,319 +514,340 @@ export default {
         avatarColor: '',
         avatarPassion: '',
         avatarExpression: '',
-        passions: ''
+        passions: '',
       },
       recognition: null,
-      isRecognizing: false
-    };
+      isRecognizing: false,
+    }
   },
   mounted() {
-    this.updateBackgroundColor();
-    this.setupSpeechRecognition();
+    this.updateBackgroundColor()
+    this.setupSpeechRecognition()
   },
   computed: {
     imageClass() {
-      return this.selectedAvatarUrl ? 'image-selected' : 'image-default';
-    }
+      return this.selectedAvatarUrl ? 'image-selected' : 'image-default'
+    },
   },
   methods: {
     setupSpeechRecognition() {
       if ('webkitSpeechRecognition' in window) {
-        this.recognition = new webkitSpeechRecognition();
-        this.recognition.lang = 'fr-FR';
-        this.recognition.continuous = false;
-        this.recognition.interimResults = false;
+        this.recognition = new webkitSpeechRecognition()
+        this.recognition.lang = 'fr-FR'
+        this.recognition.continuous = false
+        this.recognition.interimResults = false
 
         this.recognition.onstart = () => {
-          console.log('Recognition started');
-          this.isRecognizing = true;
-        };
+          console.log('Recognition started')
+          this.isRecognizing = true
+        }
 
         this.recognition.onresult = (event) => {
-          const transcript = event.results[event.resultIndex][0].transcript.trim();
-          console.log('Recognition result:', transcript);
+          const transcript =
+            event.results[event.resultIndex][0].transcript.trim()
+          console.log('Recognition result:', transcript)
 
-          const currentKey = this.questions[this.currentQuestionIndex].key;
+          const currentKey = this.questions[this.currentQuestionIndex].key
           if (currentKey === 'passions') {
             // Pour les passions, on ajoute à la liste des passions sélectionnées
-            const passionsArray = transcript.split(',').map(p => p.trim());
-            passionsArray.forEach(passion => {
+            const passionsArray = transcript.split(',').map((p) => p.trim())
+            passionsArray.forEach((passion) => {
               if (passion && !this.selectedPassions.includes(passion)) {
-                this.selectedPassions.push(passion);
+                this.selectedPassions.push(passion)
               }
-            });
+            })
           } else {
             // Pour les autres questions, on assigne directement la valeur
-            this.responses[currentKey] = transcript;
+            this.responses[currentKey] = transcript
           }
 
-          this.isRecognizing = false;
-          this.recognition.stop();
-        };
+          this.isRecognizing = false
+          this.recognition.stop()
+        }
 
         this.recognition.onerror = (event) => {
-          console.error('Recognition error:', event.error);
-          this.isRecognizing = false;
-        };
+          console.error('Recognition error:', event.error)
+          this.isRecognizing = false
+        }
 
         this.recognition.onend = () => {
-          console.log('Recognition ended');
-          this.isRecognizing = false;
-        };
+          console.log('Recognition ended')
+          this.isRecognizing = false
+        }
       } else {
-        console.error('webkitSpeechRecognition not supported in this browser.');
+        console.error('webkitSpeechRecognition not supported in this browser.')
       }
     },
 
     async createAccountAndStartGame() {
-      if (this.isRegistering) return;
+      if (this.isRegistering) return
 
-      this.isRegistering = true;
-      this.registrationError = null;
+      this.isRegistering = true
+      this.registrationError = null
 
       try {
         // Prepare user data for registration
         const userData = {
           first_name: this.responses.name,
-          last_name: "",  // Optional
-          age: parseInt(this.responses.age)
-        };
+          last_name: '', // Optional
+          age: parseInt(this.responses.age),
+        }
 
         // Save the user's data in localStorage for profile creation later
-        localStorage.setItem('user_profile', JSON.stringify({
-          name: this.responses.name,
-          age: this.responses.age,
-          passions: this.responses.passions,
-          avatar: this.selectedAvatarUrl,
-          avatarGender: this.responses.avatarGender,
-          avatarAccessories: this.responses.avatarAccessories,
-          avatarColor: this.responses.avatarColor,
-          avatarPassion: this.responses.avatarPassion,
-          avatarExpression: this.responses.avatarExpression
-        }));
+        localStorage.setItem(
+          'user_profile',
+          JSON.stringify({
+            name: this.responses.name,
+            age: this.responses.age,
+            passions: this.responses.passions,
+            avatar: this.selectedAvatarUrl,
+            avatarGender: this.responses.avatarGender,
+            avatarAccessories: this.responses.avatarAccessories,
+            avatarColor: this.responses.avatarColor,
+            avatarPassion: this.responses.avatarPassion,
+            avatarExpression: this.responses.avatarExpression,
+          })
+        )
 
         // Register with passkey
-        const result = await AuthService.registerWithPasskey(userData);
+        const result = await AuthService.registerWithPasskey(userData)
 
-        console.log('Passkey registration successful:', result);
+        console.log('Passkey registration successful:', result)
 
         // Navigate to the first game
-        this.$router.push('/game-speed');
+        this.$router.push('/game-speed')
       } catch (error) {
-        console.error('Registration error:', error);
-        this.registrationError = error.message || 'Failed to create account. Please try again.';
+        console.error('Registration error:', error)
+        this.registrationError =
+          error.message || 'Failed to create account. Please try again.'
 
         // Show error message to user
-        alert(this.registrationError);
+        alert(this.registrationError)
       } finally {
-        this.isRegistering = false;
+        this.isRegistering = false
       }
     },
 
     toggleAvatarAccessory(accessory) {
-      const index = this.selectedAccessories.indexOf(accessory);
-      
+      const index = this.selectedAccessories.indexOf(accessory)
+
       // Si l'accessoire est "none", on vide les autres accessoires
       if (accessory === 'none') {
-        this.selectedAccessories = ['none'];
-        return;
+        this.selectedAccessories = ['none']
+        return
       }
-      
+
       // Si on ajoute un accessoire et que "none" est sélectionné, on retire "none"
       if (index === -1 && this.selectedAccessories.includes('none')) {
-        this.selectedAccessories = [accessory];
-        return;
+        this.selectedAccessories = [accessory]
+        return
       }
-      
+
       // Sinon, on ajoute ou retire l'accessoire normalement
       if (index === -1) {
-        this.selectedAccessories.push(accessory);
+        this.selectedAccessories.push(accessory)
       } else {
-        this.selectedAccessories.splice(index, 1);
+        this.selectedAccessories.splice(index, 1)
       }
     },
 
     selectOption(key, value) {
-      this.responses[key] = value;
+      this.responses[key] = value
       if (key === 'age') {
-        this.showCustomInput = false;
+        this.showCustomInput = false
       }
     },
 
     validateResponse(key) {
       if (this.responses[key]) {
         if (key === 'passions') {
-          this.generatePicture();
+          this.generatePicture()
         }
       }
     },
 
     selectPassion(passion) {
       if (!this.selectedPassions.includes(passion)) {
-        this.selectedPassions.push(passion);
+        this.selectedPassions.push(passion)
       } else {
-        this.removePassion(this.selectedPassions.indexOf(passion));
+        this.removePassion(this.selectedPassions.indexOf(passion))
       }
     },
 
     removePassion(index) {
-      this.selectedPassions.splice(index, 1);
+      this.selectedPassions.splice(index, 1)
     },
 
     startRecognition() {
       if (this.recognition && !this.isRecognizing) {
-        this.voiceInputActive = true;
-        this.showNameInput = false;
-        this.recognition.start();
+        this.voiceInputActive = true
+        this.showNameInput = false
+        this.recognition.start()
       }
     },
-    
+
     startTextInput() {
-      this.showNameInput = true;
-      this.voiceInputActive = false;
-      this.responses.name = '';
+      this.showNameInput = true
+      this.voiceInputActive = false
+      this.responses.name = ''
       // Focus sur le champ de saisie
       this.$nextTick(() => {
         if (this.$refs.customNameInput) {
-          this.$refs.customNameInput.focus();
+          this.$refs.customNameInput.focus()
         }
-      });
+      })
     },
-    
+
     confirmTextInput() {
       if (this.responses.name && this.responses.name.trim() !== '') {
-        this.showNameInput = false;
-        this.validateResponse('name');
+        this.showNameInput = false
+        this.validateResponse('name')
       }
     },
-    
+
     cancelTextInput() {
-      this.showNameInput = false;
-      this.responses.name = '';
+      this.showNameInput = false
+      this.responses.name = ''
     },
 
     startRecognitionForPassions() {
       if (this.recognition && !this.isRecognizing) {
-        this.recognition.start();
+        this.recognition.start()
       }
     },
 
     previousQuestion() {
       if (this.currentQuestionIndex > 0) {
-        this.currentQuestionIndex--;
-        this.updateBackgroundColor();
+        this.currentQuestionIndex--
+        this.updateBackgroundColor()
       }
     },
 
     canProceed() {
-      const currentKey = this.questions[this.currentQuestionIndex].key;
-      
+      const currentKey = this.questions[this.currentQuestionIndex].key
+
       // Pour les accessoires, on vérifie si au moins un accessoire est sélectionné
       if (currentKey === 'avatarAccessories') {
-        return this.selectedAccessories.length > 0;
+        return this.selectedAccessories.length > 0
       }
-      
+
       // Pour les autres questions, on vérifie si une réponse existe
-      return this.responses[currentKey] !== '';
+      return this.responses[currentKey] !== ''
     },
 
     nextQuestion() {
-      const currentKey = this.questions[this.currentQuestionIndex].key;
+      const currentKey = this.questions[this.currentQuestionIndex].key
 
       if (!this.canProceed()) {
-        this.repeatQuestion();
-        return;
+        this.repeatQuestion()
+        return
       }
 
       // Si on est sur la question des accessoires, on sauvegarde les accessoires sélectionnés
       if (currentKey === 'avatarAccessories') {
-        this.responses.avatarAccessories = this.selectedAccessories.join(',');
+        this.responses.avatarAccessories = this.selectedAccessories.join(',')
       }
 
       if (currentKey === 'passions' && !this.showAvatarSelection) {
-        this.generatePicture();
-        return;
+        this.generatePicture()
+        return
       }
 
-      this.currentQuestionIndex++;
-      this.updateBackgroundColor();
-      this.showCustomInput = false;
-      this.showNameInput = false;
-      this.showAvatarSelection = false;
+      this.currentQuestionIndex++
+      this.updateBackgroundColor()
+      this.showCustomInput = false
+      this.showNameInput = false
+      this.showAvatarSelection = false
     },
 
     shouldShowSkipButton() {
-      const currentKey = this.questions[this.currentQuestionIndex].key;
+      const currentKey = this.questions[this.currentQuestionIndex].key
       // On peut sauter les questions des accessoires, de la passion et des passions générales
-      return ['avatarAccessories', 'avatarPassion', 'passions'].includes(currentKey);
+      return ['avatarAccessories', 'avatarPassion', 'passions'].includes(
+        currentKey
+      )
     },
 
     skipQuestion() {
-      const currentKey = this.questions[this.currentQuestionIndex].key;
-      
+      const currentKey = this.questions[this.currentQuestionIndex].key
+
       if (this.shouldShowSkipButton()) {
         if (currentKey === 'avatarAccessories') {
-          this.responses.avatarAccessories = 'none';
-          this.selectedAccessories = ['none'];
+          this.responses.avatarAccessories = 'none'
+          this.selectedAccessories = ['none']
         } else if (currentKey === 'avatarPassion') {
-          this.responses.avatarPassion = 'none';
+          this.responses.avatarPassion = 'none'
         } else if (currentKey === 'passions') {
-          this.responses.passions = '';
+          this.responses.passions = ''
         }
-        
-        this.currentQuestionIndex++;
-        this.updateBackgroundColor();
-        this.showCustomInput = false;
-        this.showNameInput = false;
+
+        this.currentQuestionIndex++
+        this.updateBackgroundColor()
+        this.showCustomInput = false
+        this.showNameInput = false
       } else {
         // Pour les autres questions, on rappelle qu'elles sont obligatoires
-        this.repeatQuestion();
+        this.repeatQuestion()
       }
     },
 
     repeatQuestion() {
-      const text = this.questions[this.currentQuestionIndex].text;
-      const speech = new SpeechSynthesisUtterance();
-      speech.lang = 'fr-FR';
-      speech.text = text.replace(/🎂|👤|🎨|👦|🧢|🌟|😊|🎮|🎧|🎒|👓|🚫|🔵|🟢|🔴|🟣|🟠|⚪|⚫||🚀|🏞️/gu, ''); // Enlever les emojis pour la lecture
-      window.speechSynthesis.speak(speech);
+      const text = this.questions[this.currentQuestionIndex].text
+      const speech = new SpeechSynthesisUtterance()
+      speech.lang = 'fr-FR'
+      speech.text = text.replace(
+        /🎂|👤|🎨|👦|🧢|🌟|😊|🎮|🎧|🎒|👓|🚫|🔵|🟢|🔴|🟣|🟠|⚪|⚫||🚀|🏞️/gu,
+        ''
+      ) // Enlever les emojis pour la lecture
+      window.speechSynthesis.speak(speech)
     },
 
     async generatePicture() {
-      this.showAvatarSelection = true;
-      const url = process.env.VUE_APP_AZURE_OPENAI_ENDPOINT;
-      const apiKey = process.env.VUE_APP_AZURE_OPENAI_API_KEY;
-      
+      this.showAvatarSelection = true
+      const url = process.env.VUE_APP_AZURE_OPENAI_ENDPOINT
+      const apiKey = process.env.VUE_APP_AZURE_OPENAI_API_KEY
+
       // Construction du prompt basé sur les choix de l'avatar
-      const gender = this.responses.avatarGender === 'boy' ? 'masculin' : 
-                 this.responses.avatarGender === 'girl' ? 'féminin' : 'neutre';
+      const gender =
+        this.responses.avatarGender === 'boy'
+          ? 'masculin'
+          : this.responses.avatarGender === 'girl'
+          ? 'féminin'
+          : 'neutre'
 
-      const accessoriesText = this.responses.avatarAccessories !== 'none' ? 
-                              `portant les accessoires suivants : ${this.responses.avatarAccessories.replace(/,/g, ', ')}` : 
-                              'sans accessoires particuliers';
+      const accessoriesText =
+        this.responses.avatarAccessories !== 'none'
+          ? `portant les accessoires suivants : ${this.responses.avatarAccessories.replace(
+              /,/g,
+              ', '
+            )}`
+          : 'sans accessoires particuliers'
 
-      const colorText = this.responses.avatarColor ? 
-                        `avec des tons dominants de ${this.responses.avatarColor}` : '';
+      const colorText = this.responses.avatarColor
+        ? `avec des tons dominants de ${this.responses.avatarColor}`
+        : ''
 
-      const passionText = this.responses.avatarPassion !== 'none' ? 
-                          `reflétant la passion pour : ${this.responses.avatarPassion}` : '';
+      const passionText =
+        this.responses.avatarPassion !== 'none'
+          ? `reflétant la passion pour : ${this.responses.avatarPassion}`
+          : ''
 
-      const expressionText = this.responses.avatarExpression ? 
-                              `avec une expression ${this.responses.avatarExpression}` : '';
+      const expressionText = this.responses.avatarExpression
+        ? `avec une expression ${this.responses.avatarExpression}`
+        : ''
 
       const prompt = `Créer une illustration numérique en style cartoon réaliste, avec des traits doux, une palette de couleurs naturelle et harmonieuse.
       Le fond est gris clair, épuré et minimaliste.
       Le personnage est de genre ${gender}, ${accessoriesText}, ${colorText}, ${passionText}, ${expressionText}.
       Le style visuel est moderne, avec des proportions naturelles (pas de déformation type Funko Pop), un rendu propre et professionnel, comme une illustration d'avatar haut de gamme.
       Le personnage est vu de face, en position debout, bien éclairé, avec des détails soignés sur les vêtements et les accessoires.
-      L'objectif est de produire un visuel prêt pour une utilisation professionnelle ou commerciale.`;
+      L'objectif est de produire un visuel prêt pour une utilisation professionnelle ou commerciale.`
 
-      console.log("Envoi de la requête à l'API Azure OpenAI...");
-      console.log("Prompt:", prompt);
+      console.log("Envoi de la requête à l'API Azure OpenAI...")
+      console.log('Prompt:', prompt)
 
-
-      this.generatedImages = [];
-      this.isLoadingImages = true;
+      this.generatedImages = []
+      this.isLoadingImages = true
 
       for (let i = 0; i < 3; i++) {
         try {
@@ -623,37 +856,38 @@ export default {
             { prompt, n: 1 },
             {
               headers: {
-                "Content-Type": "application/json",
-                "api-key": apiKey
-              }
+                'Content-Type': 'application/json',
+                'api-key': apiKey,
+              },
             }
-          );
-          const imageUrl = response.data.data[0].url;
-          this.generatedImages.push(imageUrl);
-          console.log(`Image ${i + 1} générée:`, imageUrl);
+          )
+          const imageUrl = response.data.data[0].url
+          this.generatedImages.push(imageUrl)
+          console.log(`Image ${i + 1} générée:`, imageUrl)
         } catch (error) {
-          console.error("Erreur lors de la génération de l'image :", error);
+          console.error("Erreur lors de la génération de l'image :", error)
         }
       }
-      this.isLoadingImages = false;
+      this.isLoadingImages = false
     },
 
     selectAvatar(imgUrl) {
-      this.selectedAvatarUrl = imgUrl;
-      console.log("Avatar sélectionné :", imgUrl);
+      this.selectedAvatarUrl = imgUrl
+      console.log('Avatar sélectionné :', imgUrl)
     },
 
     finalizeAvatarSelection() {
-      this.showAvatarSelection = false;
-      this.nextQuestion();
+      this.showAvatarSelection = false
+      this.nextQuestion()
     },
 
     updateBackgroundColor() {
-      const colorIndex = this.currentQuestionIndex % this.backgroundColors.length;
-      this.currentBackgroundColor = this.backgroundColors[colorIndex];
-    }
-  }
-};
+      const colorIndex =
+        this.currentQuestionIndex % this.backgroundColors.length
+      this.currentBackgroundColor = this.backgroundColors[colorIndex]
+    },
+  },
+}
 </script>
 
 <style scoped>
@@ -763,7 +997,7 @@ export default {
 }
 
 .action-button:hover {
-  background-color: #357abD;
+  background-color: #357abd;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
@@ -1197,12 +1431,14 @@ export default {
     align-items: center;
   }
 
-  .left-section, .right-section {
+  .left-section,
+  .right-section {
     width: 95%;
     margin-bottom: 1rem;
   }
-  
-  .image-default, .image-selected {
+
+  .image-default,
+  .image-selected {
     width: 150px;
     height: 150px;
   }
@@ -1226,8 +1462,9 @@ export default {
   .options-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  
-  .image-default, .image-selected {
+
+  .image-default,
+  .image-selected {
     width: 120px;
     height: 120px;
   }
@@ -1245,7 +1482,7 @@ export default {
 .spinner {
   border: 4px solid rgba(0, 123, 255, 0.1);
   border-radius: 50%;
-  border-top: 4px solid #007BFF;
+  border-top: 4px solid #007bff;
   width: 40px;
   height: 40px;
   animation: spin 1s linear infinite;

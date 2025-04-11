@@ -143,46 +143,6 @@
             <div class="button-border"></div>
           </button>
         </div>
-
-        <div class="avatar-interaction" v-if="showAvatarInteraction">
-          <div class="interaction-option" @click.stop="customizeAvatar">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              width="24"
-              height="24"
-              fill="none"
-              stroke="currentColor"
-            >
-              <path
-                d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"
-                stroke-width="1.5"
-              />
-              <path d="M8 14s1.5 2 4 2 4-2 4-2" stroke-width="1.5" />
-              <circle cx="9" cy="9" r="1" stroke-width="1.5" />
-              <circle cx="15" cy="9" r="1" stroke-width="1.5" />
-            </svg>
-            <span>Personnaliser</span>
-          </div>
-          <div class="interaction-option" @click.stop="viewAchievements">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              width="24"
-              height="24"
-              fill="none"
-              stroke="currentColor"
-            >
-              <path
-                d="M12 15l-2-5 4-3-4 1-3 1 5 1 3 5h-3z"
-                stroke-width="1.5"
-              />
-              <path d="M19 9l-7 1-2-3h5l4 2z" stroke-width="1.5" />
-              <path d="M4 11l5-3 2 5-3 3-4-5z" stroke-width="1.5" />
-            </svg>
-            <span>Réalisations</span>
-          </div>
-        </div>
       </div>
 
       <!-- Animation de récompense -->
@@ -193,6 +153,13 @@
           <p>{{ currentAchievement }}</p>
         </div>
       </div>
+
+      <rewards-component
+        v-if="showRewardsModal"
+        :current-theme="currentTheme"
+        :animations-enabled="animationsEnabled"
+        @close="closeRewardsModal"
+      />
 
       <!-- Onglet de contrôle du thème -->
       <div class="theme-tab" @click="toggleThemeMenu">
@@ -253,12 +220,14 @@
 <script>
 import SpaceBackground from '@/components/SpaceBackground.vue'
 import StaticBackgrounds from '@/components/StaticBackgrounds.vue'
+import RewardsComponent from '@/components/RewardsComponent.vue'
 
 export default {
-  name: 'ImmersiveDashboard',
+  name: 'UserDashboard',
   components: {
     SpaceBackground,
     StaticBackgrounds,
+    RewardsComponent,
   },
   data() {
     return {
@@ -277,6 +246,7 @@ export default {
       activeModal: null,
       showAchievement: false,
       hasNewAchievement: false,
+      showRewardsModal: false,
       currentAchievement: '',
       animationsEnabled: true,
       playButtonHovered: false,
@@ -358,15 +328,19 @@ export default {
       }
     },
 
-    // Interaction avec l'avatar - Animation améliorée
     interactWithAvatar() {
       this.avatarAnimating = true
-      this.showAvatarInteraction = !this.showAvatarInteraction
+      this.showRewardsModal = true // Show the rewards modal instead of the interaction menu
 
       // Animation plus longue pour un meilleur effet
       setTimeout(() => {
         this.avatarAnimating = false
       }, 1000)
+    },
+
+    // Nouvelle méthode pour fermer le modal de récompenses
+    closeRewardsModal() {
+      this.showRewardsModal = false
     },
 
     // Personnalisation de l'avatar
