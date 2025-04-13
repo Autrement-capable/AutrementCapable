@@ -6,7 +6,9 @@
         <h2>Badge débloqué !</h2>
         <h3>Maître des scénarios</h3>
         <p>Vous avez brillamment résolu tous les scénarios sociaux !</p>
-        <button @click="closeBadgeAnimation" class="close-animation-btn">Continuer</button>
+        <button @click="closeBadgeAnimation" class="close-animation-btn">
+          Continuer
+        </button>
       </div>
     </div>
     <!-- En-tête avec personnage guide -->
@@ -20,42 +22,66 @@
     <!-- Carte des scénarios -->
     <div class="map-container">
       <div class="path-background"></div>
-      
+
       <svg class="scenario-paths" width="100%" height="100%">
-        <path v-for="(path, index) in pathsData" 
-              :key="'path-'+index" 
-              :d="path" 
-              class="scenario-path"
-              :class="{ 'completed-path': isPathCompleted(index) }">
-        </path>
+        <path
+          v-for="(path, index) in pathsData"
+          :key="'path-' + index"
+          :d="path"
+          class="scenario-path"
+          :class="{ 'completed-path': isPathCompleted(index) }"
+        ></path>
       </svg>
       <div class="scenarios-path">
-        <div v-for="(scenario, index) in scenarios" :key="scenario.id" 
-            class="scenario-node" 
-            :class="{ 'completed': isCompleted(scenario.id), 'active': isActive(scenario.id) }"
-            :style="{ 'top': getNodePosition(index).top + '%', 'left': getNodePosition(index).left + '%' }">
-          
-          <router-link 
-            :to="{ name: 'ScenarioPage', params: { urlName: scenario.urlName } }"
+        <div
+          v-for="(scenario, index) in scenarios"
+          :key="scenario.id"
+          class="scenario-node"
+          :class="{
+            completed: isCompleted(scenario.id),
+            active: isActive(scenario.id),
+          }"
+          :style="{
+            top: getNodePosition(index).top + '%',
+            left: getNodePosition(index).left + '%',
+          }"
+        >
+          <router-link
+            :to="{
+              name: 'ScenarioPage',
+              params: { urlName: scenario.urlName },
+            }"
             class="scenario-link"
-            :class="{ 'disabled': !canAccess(scenario.id) }">
-            
+            :class="{ disabled: !canAccess(scenario.id) }"
+          >
             <!-- Icône du scénario -->
             <div class="scenario-icon">
               <span class="scenario-number">{{ scenario.id }}</span>
-              <img :src="getScenarioIcon(scenario)" :alt="scenario.titre" class="icon-image" />
+              <img
+                :src="getScenarioIcon(scenario)"
+                :alt="scenario.titre"
+                class="icon-image"
+              />
             </div>
-            
+
             <!-- Info-bulle au survol -->
             <div class="scenario-tooltip">
               <h3>{{ scenario.titre }}</h3>
-              <p class="scenario-description">{{ getShortDescription(scenario) }}</p>
+              <p class="scenario-description">
+                {{ getShortDescription(scenario) }}
+              </p>
               <div class="skills-preview">
-                <span v-for="skill in getMainSkills(scenario)" :key="skill" class="skill-tag">{{ skill }}</span>
+                <span
+                  v-for="skill in getMainSkills(scenario)"
+                  :key="skill"
+                  class="skill-tag"
+                >
+                  {{ skill }}
+                </span>
               </div>
             </div>
           </router-link>
-          
+
           <!-- Indicateur de progression -->
           <div v-if="isCompleted(scenario.id)" class="completion-badge">✓</div>
           <div v-else-if="isActive(scenario.id)" class="active-indicator"></div>
@@ -65,29 +91,48 @@
 
     <!-- Bouton de démarrage pour le premier scénario -->
     <div class="action-container">
-      <button v-if="!hasStarted" @click="startAdventure" class="start-adventure-btn">
+      <button
+        v-if="!hasStarted"
+        @click="startAdventure"
+        class="start-adventure-btn"
+      >
         <span class="btn-icon">🚀</span>
         <span class="btn-text">Commencer l'aventure</span>
       </button>
-      
-      <button v-else-if="hasCompletedAll" @click="resetAdventure" class="reset-adventure-btn">
+
+      <button
+        v-else-if="hasCompletedAll"
+        @click="resetAdventure"
+        class="reset-adventure-btn"
+      >
         <span class="btn-icon">🔄</span>
         <span class="btn-text">Recommencer l'aventure</span>
       </button>
-      
-      <router-link v-else-if="hasStarted && completedScenarios.length > 0 && nextScenarioId" 
-                  :to="{ name: 'ScenarioPage', params: { urlName: getNextScenarioUrlName() } }" 
-                  class="continue-adventure-btn">
+
+      <router-link
+        v-else-if="
+          hasStarted && completedScenarios.length > 0 && nextScenarioId
+        "
+        :to="{
+          name: 'ScenarioPage',
+          params: { urlName: getNextScenarioUrlName() },
+        }"
+        class="continue-adventure-btn"
+      >
         <span class="btn-icon">➡️</span>
         <span class="btn-text">Continuer l'aventure</span>
       </router-link>
-      
-      <router-link v-if="hasProgress" :to="{ name: 'RewardsPage' }" class="view-skills-btn">
+
+      <router-link
+        v-if="hasProgress"
+        :to="{ name: 'Dashboard', query: { showBadges: true } }"
+        class="view-skills-btn"
+      >
         <span class="btn-icon">🏆</span>
         <span class="btn-text">Voir mes badges</span>
       </router-link>
     </div>
-    
+
     <!-- Mode accessibilité -->
     <div class="accessibility-container">
       <button @click="toggleAccessibilityMode" class="accessibility-toggle">
@@ -95,14 +140,20 @@
         <span v-else>Mode accessible</span>
         <span class="toggle-icon">👁️</span>
       </button>
-      
+
       <!-- Version liste accessible -->
       <div v-if="accessibilityMode" class="accessible-list">
         <h2>Liste des défis</h2>
         <ul>
-          <li v-for="scenario in scenarios" :key="scenario.id" class="accessible-item">
-            Défi {{scenario.id}}: {{ scenario.titre }}
-            <span v-if="isCompleted(scenario.id)" class="completion-text"> - Complété ✓</span>
+          <li
+            v-for="scenario in scenarios"
+            :key="scenario.id"
+            class="accessible-item"
+          >
+            Défi {{ scenario.id }}: {{ scenario.titre }}
+            <span v-if="isCompleted(scenario.id)" class="completion-text">
+              - Complété ✓
+            </span>
           </li>
         </ul>
       </div>
@@ -111,8 +162,8 @@
 </template>
 
 <script>
-import { scenarios } from '@/data/data.js';
-import { resetBadge } from '@/utils/badges';
+import { scenarios } from '@/data/data.js'
+import { resetBadge } from '@/utils/badges'
 
 export default {
   name: 'ScenariosList',
@@ -124,224 +175,238 @@ export default {
       hasStarted: false,
       pathsData: [],
       showBadgeAnimation: false,
-      badgeData: null
-    };
+      badgeData: null,
+    }
   },
   computed: {
     // Prochain scénario à faire
     nextScenarioId() {
-      const lastCompleted = Math.max(...this.completedScenarios, 0);
-      const next = lastCompleted + 1;
-      return this.scenarios.some(s => s.id === next) ? next : null;
+      const lastCompleted = Math.max(...this.completedScenarios, 0)
+      const next = lastCompleted + 1
+      return this.scenarios.some((s) => s.id === next) ? next : null
     },
     // Tous les scénarios sont-ils complétés ?
     hasCompletedAll() {
-      return this.completedScenarios.length === this.scenarios.length;
+      return this.completedScenarios.length === this.scenarios.length
     },
     // L'utilisateur a-t-il fait au moins un scénario ?
     hasProgress() {
-      return this.completedScenarios.length > 0;
+      return this.completedScenarios.length > 0
     },
   },
   created() {
-    this.loadProgress();
+    this.loadProgress()
     this.$nextTick(() => {
-      this.calculatePaths();
-      window.addEventListener('resize', this.calculatePaths);
-    });
+      this.calculatePaths()
+      window.addEventListener('resize', this.calculatePaths)
+    })
     if (this.$route.query.showBadgeUnlock === 'true') {
-      const badgeData = localStorage.getItem('newUnlockedBadge');
+      const badgeData = localStorage.getItem('newUnlockedBadge')
       if (badgeData) {
-        this.badgeData = JSON.parse(badgeData);
-        this.showBadgeAnimation = true;
-        localStorage.removeItem('newUnlockedBadge');
+        this.badgeData = JSON.parse(badgeData)
+        this.showBadgeAnimation = true
+        localStorage.removeItem('newUnlockedBadge')
       }
     }
   },
 
   beforeUnmount() {
     // N'oubliez pas de supprimer l'écouteur d'événement
-    window.removeEventListener('resize', this.calculatePaths);
+    window.removeEventListener('resize', this.calculatePaths)
   },
   methods: {
     closeBadgeAnimation() {
-      this.showBadgeAnimation = false;
+      this.showBadgeAnimation = false
     },
     // Charger la progression depuis le localStorage
     loadProgress() {
-    // Récupérer les scénarios complétés
-    const completedIds = localStorage.getItem('completedScenarios');
-    if (completedIds) {
-      this.completedScenarios = JSON.parse(completedIds).map(id => parseInt(id));
-      
-      // Définir hasStarted uniquement si l'utilisateur a réellement commencé (au moins un scénario complété)
-      this.hasStarted = this.completedScenarios.length > 0;
-    } else {
-      this.hasStarted = false;
-      this.completedScenarios = [];
-    }
-    
-    // Vérifier aussi les compétences pour plus de sécurité
-    const savedSkills = localStorage.getItem('userSoftSkills');
-    if (savedSkills && !this.hasStarted) {
-      // Si des compétences sont enregistrées mais aucun scénario complété,
-      // cela pourrait indiquer un état partiel où l'utilisateur a commencé mais n'a pas terminé
-      const skills = JSON.parse(savedSkills);
-      // Vérifier si l'objet des compétences n'est pas vide
-      this.hasStarted = Object.keys(skills).length > 0;
-    }
-  },
-    
+      // Récupérer les scénarios complétés
+      const completedIds = localStorage.getItem('completedScenarios')
+      if (completedIds) {
+        this.completedScenarios = JSON.parse(completedIds).map((id) =>
+          parseInt(id),
+        )
+
+        // Définir hasStarted uniquement si l'utilisateur a réellement commencé (au moins un scénario complété)
+        this.hasStarted = this.completedScenarios.length > 0
+      } else {
+        this.hasStarted = false
+        this.completedScenarios = []
+      }
+
+      // Vérifier aussi les compétences pour plus de sécurité
+      const savedSkills = localStorage.getItem('userSoftSkills')
+      if (savedSkills && !this.hasStarted) {
+        // Si des compétences sont enregistrées mais aucun scénario complété,
+        // cela pourrait indiquer un état partiel où l'utilisateur a commencé mais n'a pas terminé
+        const skills = JSON.parse(savedSkills)
+        // Vérifier si l'objet des compétences n'est pas vide
+        this.hasStarted = Object.keys(skills).length > 0
+      }
+    },
+
     // Démarrer l'aventure (premier scénario)
     startAdventure() {
-      localStorage.setItem('userSoftSkills', JSON.stringify({}));
-      localStorage.setItem('completedScenarios', JSON.stringify([]));
-      this.hasStarted = true;
-      this.completedScenarios = [];
-      const firstScenario = this.scenarios.find(s => s.id === 1);
-      this.$router.push({ name: 'ScenarioPage', params: { urlName: firstScenario.urlName } });
+      localStorage.setItem('userSoftSkills', JSON.stringify({}))
+      localStorage.setItem('completedScenarios', JSON.stringify([]))
+      this.hasStarted = true
+      this.completedScenarios = []
+      const firstScenario = this.scenarios.find((s) => s.id === 1)
+      this.$router.push({
+        name: 'ScenarioPage',
+        params: { urlName: firstScenario.urlName },
+      })
     },
-    
+
     getNextScenarioUrlName() {
-      const nextId = this.nextScenarioId;
-      const nextScenario = this.scenarios.find(s => s.id === nextId);
-      return nextScenario ? nextScenario.urlName : '';
+      const nextId = this.nextScenarioId
+      const nextScenario = this.scenarios.find((s) => s.id === nextId)
+      return nextScenario ? nextScenario.urlName : ''
     },
 
     // Réinitialiser l'aventure
     resetAdventure() {
-      if (confirm("Es-tu sûr de vouloir recommencer toute l'aventure ? Tes données seront réinitialisés !")) {
-        localStorage.setItem('userSoftSkills', JSON.stringify({}));
-        localStorage.setItem('completedScenarios', JSON.stringify([]));
-        this.completedScenarios = [];
-        resetBadge(2);
-        const firstScenario = this.scenarios.find(s => s.id === 1);
-        this.$router.push({ name: 'ScenarioPage', params: { urlName: firstScenario.urlName } })
+      if (
+        confirm(
+          "Es-tu sûr de vouloir recommencer toute l'aventure ? Tes données seront réinitialisés !",
+        )
+      ) {
+        localStorage.setItem('userSoftSkills', JSON.stringify({}))
+        localStorage.setItem('completedScenarios', JSON.stringify([]))
+        this.completedScenarios = []
+        resetBadge(2)
+        const firstScenario = this.scenarios.find((s) => s.id === 1)
+        this.$router.push({
+          name: 'ScenarioPage',
+          params: { urlName: firstScenario.urlName },
+        })
       }
     },
-    
+
     isPathCompleted(pathIndex) {
-      const scenarioId = this.scenarios[pathIndex].id;
-      return this.isCompleted(scenarioId);
+      const scenarioId = this.scenarios[pathIndex].id
+      return this.isCompleted(scenarioId)
     },
 
     // Vérifier si un scénario est complété
     isCompleted(scenarioId) {
-      return this.completedScenarios.includes(scenarioId);
+      return this.completedScenarios.includes(scenarioId)
     },
-    
+
     // Vérifier si un scénario est actif (à faire maintenant)
     isActive(scenarioId) {
-      return scenarioId === this.nextScenarioId || 
-             (scenarioId === 1 && this.completedScenarios.length === 0);
+      return (
+        scenarioId === this.nextScenarioId ||
+        (scenarioId === 1 && this.completedScenarios.length === 0)
+      )
     },
-    
+
     // Vérifier si l'utilisateur peut accéder à un scénario
     canAccess(scenarioId) {
       // Toujours accès au premier scénario
-      if (scenarioId === 1) return true;
-      
+      if (scenarioId === 1) return true
+
       // Accès aux scénarios déjà complétés
-      if (this.isCompleted(scenarioId)) return true;
-      
+      if (this.isCompleted(scenarioId)) return true
+
       // Accès au prochain scénario à faire
-      if (scenarioId === this.nextScenarioId) return true;
-      
-      return false;
+      if (scenarioId === this.nextScenarioId) return true
+
+      return false
     },
-    
+
     // Obtenir une courte description du scénario
     getShortDescription(scenario) {
       // Limiter la description à 100 caractères
-      const description = scenario.contexteIntro || '';
-      return description.length > 100 
-        ? description.substring(0, 97) + '...' 
-        : description;
+      const description = scenario.contexteIntro || ''
+      return description.length > 100
+        ? description.substring(0, 97) + '...'
+        : description
     },
 
     calculatePaths() {
-      const container = document.querySelector('.map-container');
-      if (!container) return;
-      
-      const containerWidth = container.offsetWidth;
-      const containerHeight = container.offsetHeight;
-      
-      const paths = [];
+      const container = document.querySelector('.map-container')
+      if (!container) return
+
+      const containerWidth = container.offsetWidth
+      const containerHeight = container.offsetHeight
+
+      const paths = []
       for (let i = 0; i < this.scenarios.length - 1; i++) {
-        const startPos = this.getNodePosition(i);
-        const endPos = this.getNodePosition(i + 1);
-        
+        const startPos = this.getNodePosition(i)
+        const endPos = this.getNodePosition(i + 1)
+
         // Convertir les pourcentages en pixels
-        const startX = startPos.left * containerWidth / 100;
-        const startY = startPos.top * containerHeight / 100;
-        const endX = endPos.left * containerWidth / 100;
-        const endY = endPos.top * containerHeight / 100;
-        
+        const startX = (startPos.left * containerWidth) / 100
+        const startY = (startPos.top * containerHeight) / 100
+        const endX = (endPos.left * containerWidth) / 100
+        const endY = (endPos.top * containerHeight) / 100
+
         // Point de contrôle pour la courbe
-        const controlX = (startX + endX) / 2;
-        const controlY = Math.min(startY, endY) - 20;
-        
+        const controlX = (startX + endX) / 2
+        const controlY = Math.min(startY, endY) - 20
+
         // Créer un chemin incurvé entre les deux points
-        const path = `M ${startX} ${startY} Q ${controlX} ${controlY}, ${endX} ${endY}`;
-        paths.push(path);
+        const path = `M ${startX} ${startY} Q ${controlX} ${controlY}, ${endX} ${endY}`
+        paths.push(path)
       }
-      
-      this.pathsData = paths;
+
+      this.pathsData = paths
     },
-    
+
     // Obtenir les compétences principales développées dans ce scénario
     getMainSkills(scenario) {
       // Extraire et regrouper toutes les compétences du scénario
-      const skills = {};
-      
-      scenario.reponses.forEach(reponse => {
+      const skills = {}
+
+      scenario.reponses.forEach((reponse) => {
         if (reponse.skills) {
           Object.entries(reponse.skills).forEach(([skill, value]) => {
-            skills[skill] = (skills[skill] || 0) + value;
-          });
+            skills[skill] = (skills[skill] || 0) + value
+          })
         }
-      });
-      
+      })
+
       // Sélectionner les 3 principales compétences
       return Object.entries(skills)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 3)
-        .map(([skill]) => this.formatSkillName(skill));
+        .map(([skill]) => this.formatSkillName(skill))
     },
-    
+
     // Formater le nom d'une compétence
     formatSkillName(skill) {
       const skillNames = {
-        assertivite: "Assertivité",
-        communication: "Communication",
-        empathie: "Empathie",
+        assertivite: 'Assertivité',
+        communication: 'Communication',
+        empathie: 'Empathie',
         espritEquipe: "Travail d'équipe",
-        initiative: "Initiative",
-        adaptabilite: "Adaptabilité",
-        responsabilite: "Responsabilité",
-        creativite: "Créativité",
-        observation: "Observation",
-        diplomatie: "Diplomatie",
-        patience: "Patience",
-        confianceEnSoi: "Confiance",
-        inclusion: "Inclusion",
-        mediation: "Médiation",
-        coaching: "Coaching",
-        ecouteActive: "Écoute",
-        soutien: "Soutien",
-        reflexionRapide: "Réflexion",
-        negociation: "Négociation",
-        gestionStress: "Calme",
-        anticipation: "Anticipation",
-        apprentissage: "Apprentissage"
-      };
-      
-      return skillNames[skill] || skill;
+        initiative: 'Initiative',
+        adaptabilite: 'Adaptabilité',
+        responsabilite: 'Responsabilité',
+        creativite: 'Créativité',
+        observation: 'Observation',
+        diplomatie: 'Diplomatie',
+        patience: 'Patience',
+        confianceEnSoi: 'Confiance',
+        inclusion: 'Inclusion',
+        mediation: 'Médiation',
+        coaching: 'Coaching',
+        ecouteActive: 'Écoute',
+        soutien: 'Soutien',
+        reflexionRapide: 'Réflexion',
+        negociation: 'Négociation',
+        gestionStress: 'Calme',
+        anticipation: 'Anticipation',
+        apprentissage: 'Apprentissage',
+      }
+
+      return skillNames[skill] || skill
     },
-    
+
     // Obtenir l'icône associée au scénario
     getScenarioIcon(scenario) {
-      // Associer une icône en fonction du thème du scénario 
+      // Associer une icône en fonction du thème du scénario
       // (idéalement, vous auriez des icônes spécifiques pour chaque scénario)
       const iconMapping = {
         1: require('@/assets/avatars/personne_agee.png'),
@@ -352,45 +417,47 @@ export default {
         6: require('@/assets/avatars/passant2.png'),
         7: require('@/assets/avatars/homme-daffaire.png'),
         8: require('@/assets/avatars/passant2.png'),
-        9: require('@/assets/avatars/homme-daffaire.png'), 
-        10: require('@/assets/avatars/passant2.png')
-      };
-      
-      return iconMapping[scenario.id] || require('@/assets/avatars/toi.png');
+        9: require('@/assets/avatars/homme-daffaire.png'),
+        10: require('@/assets/avatars/passant2.png'),
+      }
+
+      return iconMapping[scenario.id] || require('@/assets/avatars/toi.png')
     },
-    
+
     // Obtenir la position d'un nœud sur la carte
     getNodePosition(index) {
       // Créer un chemin sinueux pour les scénarios
       const positions = [
-        { top: 20, left: 20 },   // Scénario 1
-        { top: 35, left: 35 },   // Scénario 2
-        { top: 50, left: 20 },   // Scénario 3
-        { top: 65, left: 40 },   // Scénario 4
-        { top: 80, left: 20 },   // Scénario 5
-        { top: 75, left: 60 },   // Scénario 6
-        { top: 55, left: 70 },   // Scénario 7
-        { top: 35, left: 80 },   // Scénario 8
-        { top: 20, left: 65 },   // Scénario 9
-        { top: 10, left: 50 }    // Scénario 10
-      ];
-      
+        { top: 20, left: 20 }, // Scénario 1
+        { top: 35, left: 35 }, // Scénario 2
+        { top: 50, left: 20 }, // Scénario 3
+        { top: 65, left: 40 }, // Scénario 4
+        { top: 80, left: 20 }, // Scénario 5
+        { top: 75, left: 60 }, // Scénario 6
+        { top: 55, left: 70 }, // Scénario 7
+        { top: 35, left: 80 }, // Scénario 8
+        { top: 20, left: 65 }, // Scénario 9
+        { top: 10, left: 50 }, // Scénario 10
+      ]
+
       // Si l'index existe dans les positions, le retourner, sinon générer aléatoirement
-      return positions[index] || { 
-        top: 10 + (index * 8) % 80, 
-        left: 20 + (index * 15) % 60 
-      };
+      return (
+        positions[index] || {
+          top: 10 + ((index * 8) % 80),
+          left: 20 + ((index * 15) % 60),
+        }
+      )
     },
-    
+
     // Activer/désactiver le mode d'accessibilité
     toggleAccessibilityMode() {
-      this.accessibilityMode = !this.accessibilityMode;
-      
+      this.accessibilityMode = !this.accessibilityMode
+
       // Sauvegarder la préférence
-      localStorage.setItem('accessibilityMode', this.accessibilityMode);
-    }
-  }
-};
+      localStorage.setItem('accessibilityMode', this.accessibilityMode)
+    },
+  },
+}
 </script>
 
 <style scoped>
@@ -437,7 +504,7 @@ export default {
 }
 
 .badge-unlock-animation h2 {
-  color: #FFD700;
+  color: #ffd700;
   font-size: 2rem;
   margin-bottom: 10px;
 }
@@ -454,7 +521,7 @@ export default {
 }
 
 .close-animation-btn {
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   border: none;
   padding: 12px 24px;
@@ -471,19 +538,35 @@ export default {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes scaleIn {
-  from { transform: scale(0.8); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* Personnage guide */
@@ -497,14 +580,14 @@ export default {
   width: 70px;
   height: 70px;
   border-radius: 50%;
-  border: 3px solid #FFC107;
+  border: 3px solid #ffc107;
   background-color: #fff;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .speech-bubble {
   position: relative;
-  background-color: #FFF;
+  background-color: #fff;
   border-radius: 15px;
   padding: 15px;
   margin-left: 15px;
@@ -520,7 +603,7 @@ export default {
   transform: translateY(-50%);
   border-width: 10px 10px 10px 0;
   border-style: solid;
-  border-color: transparent #FFF transparent transparent;
+  border-color: transparent #fff transparent transparent;
 }
 
 .speech-bubble p {
@@ -537,7 +620,7 @@ export default {
   border-radius: 15px;
   margin: 20px 0;
   overflow: hidden;
-  border: 5px solid #9C7248;
+  border: 5px solid #9c7248;
   box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
 }
 
@@ -548,7 +631,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  background-image: 
+  background-image:
     radial-gradient(circle at 20px 20px, #d4e9f7 2px, transparent 2px),
     radial-gradient(circle at 60px 60px, #d4e9f7 2px, transparent 2px),
     radial-gradient(circle at 100px 40px, #d4e9f7 2px, transparent 2px);
@@ -578,7 +661,7 @@ export default {
 }
 
 .completed-path {
-  stroke: #4CAF50;
+  stroke: #4caf50;
   opacity: 0.8;
   stroke-dasharray: none;
 }
@@ -630,7 +713,7 @@ export default {
   justify-content: center;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   overflow: hidden;
-  border: 3px solid #4CAF50;
+  border: 3px solid #4caf50;
   transition: all 0.3s ease;
 }
 
@@ -638,7 +721,7 @@ export default {
   position: absolute;
   top: 5px;
   left: 5px;
-  background-color: #FF5722;
+  background-color: #ff5722;
   color: white;
   border-radius: 50%;
   width: 22px;
@@ -665,7 +748,7 @@ export default {
   right: -5px;
   width: 25px;
   height: 25px;
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   border-radius: 50%;
   display: flex;
@@ -681,8 +764,8 @@ export default {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  border: 3px solid #FF9800;
-  box-shadow: 0 0 10px #FF9800;
+  border: 3px solid #ff9800;
+  box-shadow: 0 0 10px #ff9800;
   animation: pulse 2s infinite;
   top: -3px;
   left: -3px;
@@ -756,11 +839,11 @@ export default {
 
 /* État des nœuds */
 .scenario-node.completed .scenario-icon {
-  border-color: #4CAF50;
+  border-color: #4caf50;
 }
 
 .scenario-node.active .scenario-icon {
-  border-color: #FF9800;
+  border-color: #ff9800;
 }
 
 /* Boutons d'action */
@@ -796,19 +879,19 @@ export default {
 }
 
 .start-adventure-btn {
-  background-color: #4CAF50;
+  background-color: #4caf50;
 }
 
 .reset-adventure-btn {
-  background-color: #F44336;
+  background-color: #f44336;
 }
 
 .continue-adventure-btn {
-  background-color: #2196F3;
+  background-color: #2196f3;
 }
 
 .view-skills-btn {
-  background-color: #9C27B0;
+  background-color: #9c27b0;
 }
 
 .btn-icon {
@@ -839,7 +922,7 @@ export default {
 }
 
 .accessibility-toggle {
-  background-color: #607D8B;
+  background-color: #607d8b;
   color: white;
   border: none;
   padding: 8px 15px;
@@ -856,7 +939,7 @@ export default {
 }
 
 .accessibility-toggle:hover {
-  background-color: #455A64;
+  background-color: #455a64;
 }
 
 .accessible-list {
@@ -892,7 +975,7 @@ export default {
 }
 
 .accessible-item a:hover {
-  color: #2196F3;
+  color: #2196f3;
 }
 
 .accessible-item a.disabled {
@@ -901,7 +984,7 @@ export default {
 }
 
 .completion-text {
-  color: #4CAF50;
+  color: #4caf50;
   font-weight: bold;
 }
 
@@ -910,30 +993,30 @@ export default {
   .adventure-map {
     padding: 15px;
   }
-  
+
   .map-container {
     height: 400px;
   }
-  
+
   .scenario-node {
     width: 60px;
     height: 60px;
   }
-  
+
   .guide-avatar {
     width: 60px;
     height: 60px;
   }
-  
+
   .speech-bubble p {
     font-size: 1rem;
   }
-  
+
   .action-container {
     flex-direction: column;
     align-items: center;
   }
-  
+
   .start-adventure-btn,
   .reset-adventure-btn,
   .continue-adventure-btn,

@@ -272,7 +272,7 @@ export default {
       // Stocker la préférence dans localStorage
       localStorage.setItem(
         'theme-menu-visible',
-        this.themeMenuVisible.toString()
+        this.themeMenuVisible.toString(),
       )
     },
 
@@ -396,7 +396,7 @@ export default {
 
       localStorage.setItem(
         'dashboard-animations',
-        this.animationsEnabled.toString()
+        this.animationsEnabled.toString(),
       )
 
       if (window.navigator && window.navigator.vibrate) {
@@ -407,9 +407,9 @@ export default {
     },
 
     handlePlayButtonHover(isHovered) {
-      this.playButtonHovered = isHovered;
+      this.playButtonHovered = isHovered
       if (!isHovered) {
-        this.playButtonPressed = false;
+        this.playButtonPressed = false
       }
     },
 
@@ -426,6 +426,17 @@ export default {
     },
   },
   mounted() {
+    // Check if the showBadges query parameter exists
+    if (
+      this.$route.query.showBadges === 'true' ||
+      this.$route.query.showBadges === true
+    ) {
+      this.showRewardsModal = true
+      const newQuery = { ...this.$route.query }
+      delete newQuery.showBadges
+      this.$router.replace({ query: newQuery })
+    }
+
     const savedTheme = localStorage.getItem('dashboard-theme')
     if (
       savedTheme &&
@@ -470,7 +481,8 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(
+  background:
+    radial-gradient(
       circle at 30% 40%,
       rgba(76, 0, 153, 0.2) 0%,
       rgba(76, 0, 153, 0) 50%
@@ -989,7 +1001,9 @@ export default {
   gap: 25px;
   z-index: 10;
   animation: enhancedSlideUp 0.4s;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 0 15px rgba(79, 195, 247, 0.3);
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.3),
+    0 0 15px rgba(79, 195, 247, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -1095,7 +1109,9 @@ export default {
   align-items: center;
   gap: 20px;
   z-index: 100;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 20px rgba(168, 111, 220, 0.4);
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(168, 111, 220, 0.4);
 }
 
 @keyframes enhancedDropDown {
@@ -1272,15 +1288,20 @@ export default {
   );
   opacity: 0;
   transform: scale(0);
-  transition: transform 0.6s ease, opacity 0.6s ease;
+  transition:
+    transform 0.6s ease,
+    opacity 0.6s ease;
   z-index: 2;
   pointer-events: none;
 }
 
 .play-button.hovered {
   transform: translateY(-5px) scale(1.03);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3), 0 0 15px rgba(249, 71, 136, 0.3),
-    0 0 15px rgba(100, 149, 248, 0.3), 0 0 15px rgba(177, 82, 199, 0.3);
+  box-shadow:
+    0 15px 30px rgba(0, 0, 0, 0.3),
+    0 0 15px rgba(249, 71, 136, 0.3),
+    0 0 15px rgba(100, 149, 248, 0.3),
+    0 0 15px rgba(177, 82, 199, 0.3);
 }
 
 .play-button.hovered .button-glow {
