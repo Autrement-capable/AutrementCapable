@@ -26,6 +26,51 @@ class UnverifiedDetails(AsyncAttrs, Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, unique=True)  # Enforce one-to-one
     user: Mapped["User"] = relationship(back_populates="verification_details", lazy="selectin")
 
+class UserPicture(AsyncAttrs, Base):
+    __tablename__ = "user_pictures"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, unique=True)
+    picture_data: Mapped[bytes] = mapped_column(LargeBinary, nullable=True)
+    date_updated: Mapped[DateTime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
+    type: Mapped[str] = mapped_column(String, nullable=False)  # Type of picture (e.g., "profile", "cover")
+
+    user: Mapped["User"] = relationship(back_populates="picture", lazy="selectin")
+
+class UserPassion(AsyncAttrs, Base):
+    __tablename__ = "user_passions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    passion_text: Mapped[str] = mapped_column(String, nullable=False)
+    order: Mapped[int] = mapped_column(Integer, nullable=False)  # To maintain order of passions (1, 2, 3)
+
+    user: Mapped["User"] = relationship(back_populates="passions", lazy="selectin")
+
+class TermsVersion(AsyncAttrs, Base):
+    __tablename__ = "terms_versions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    version: Mapped[str] = mapped_column(String, nullable=False, unique=True)
+    content: Mapped[str] = mapped_column(String, nullable=False)  # Markdown content
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    date_created: Mapped[DateTime] = mapped_column(DateTime, server_default=func.now())
+
+    user_agreements: Mapped[list["UserTermsAgreement"]] = relationship(
+        back_populates="terms_version", lazy="selectin", cascade="all, delete-orphan"
+    )
+
+class UserTermsAgreement(AsyncAttrs, Base):
+    __tablename__ = "user_terms_agreements"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    terms_id: Mapped[int] = mapped_column(ForeignKey("terms_versions.id"), nullable=False)
+    date_agreed: Mapped[DateTime] = mapped_column(DateTime, server_default=func.now())
+
+    user: Mapped["User"] = relationship(back_populates="terms_agreements", lazy="selectin")
+    terms_version: Mapped["TermsVersion"] = relationship(back_populates="user_agreements", lazy="selectin")
+
 class User(AsyncAttrs, Base):
     __tablename__ = "users"
 
@@ -53,8 +98,20 @@ class User(AsyncAttrs, Base):
     )
     account_recovery: Mapped[list["AccountRecovery"]] = relationship(back_populates="user", lazy="selectin", cascade="all, delete-orphan")
     passkey_credentials: Mapped[list["PasskeyCredential"]] = relationship(back_populates="user", lazy="selectin", cascade="all, delete-orphan")
+
+    # User data
     skills: Mapped[list["UserSkill"]] = relationship(back_populates="user", lazy="selectin", cascade="all, delete-orphan")
     abilities: Mapped[list["UserAbilities"]] = relationship(back_populates="user", lazy="selectin", cascade="all, delete-orphan")
+
+    picture: Mapped[Optional["UserPicture"]] = relationship(
+        back_populates="user", lazy="selectin", uselist=False, cascade="all, delete-orphan"
+    )
+    passions: Mapped[list["UserPassion"]] = relationship(
+        back_populates="user", lazy="selectin", cascade="all, delete-orphan"
+    )
+    terms_agreements: Mapped[list["UserTermsAgreement"]] = relationship(
+        back_populates="user", lazy="selectin", cascade="all, delete-orphan"
+    )
 
 class AccountRecovery(AsyncAttrs, Base):
     __tablename__ = "account_recovery"

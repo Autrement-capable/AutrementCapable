@@ -7,6 +7,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi.openapi.utils import get_openapi
 from server.cors.config import init_cors
 from server.role_config.roles import init_roles
+from utils.init_terms import init_terms
 from utils.singleton import singleton
 from database.postgress.config import postgress
 from database.postgress.actions.revoked_jwt_tokens import get_revoked_token_by_jti,  get_revoked_token_by_jti_sync
@@ -63,6 +64,9 @@ class Server:
 
         # Initialize roles asynchronously
         await self.init_roles()
+
+        # Initialize Terms creation
+        await init_terms(self.postgress)
 
         server.scheduler.start()
         CronJobFactory.register_jobs()
