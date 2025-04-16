@@ -20,11 +20,36 @@ class UnverifiedDetails(AsyncAttrs, Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     verification_token: Mapped[str] = mapped_column(String, nullable=False, unique=True)
-    token_expires: Mapped[DateTime] = mapped_column(DateTime, nullable=False)  # Add token expiration
+    token_expires: Mapped[DateTime] = mapped_column(DateTime, nullable=False)
     date_created: Mapped[DateTime] = mapped_column(DateTime, server_default=func.now())
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, unique=True)  # Enforce one-to-one
-    user: Mapped["User"] = relationship(back_populates="verification_details", lazy="selectin")
+    
+    user_detail_id: Mapped[int] = mapped_column(ForeignKey("user_details.id"), nullable=False, unique=True)
+    user_detail: Mapped["UserDetail"] = relationship(back_populates="verification_details", lazy="selectin")
+
+class UserDetail(AsyncAttrs, Base):
+    __tablename__ = "user_details"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, unique=True)
+    
+    # Personal details
+    first_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    last_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    age: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    phone_number: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    address: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    
+    # Traditional login details (moved from User)
+    email: Mapped[Optional[str]] = mapped_column(String, unique=True, nullable=True)
+    password_hash: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    
+    # Relationships
+    user: Mapped["User"] = relationship(back_populates="user_detail", lazy="selectin")
+    verification_details: Mapped[Optional["UnverifiedDetails"]] = relationship(
+        back_populates="user_detail", lazy="selectin", uselist=False, cascade="all, delete-orphan"
+    )
+
 
 class UserPicture(AsyncAttrs, Base):
     __tablename__ = "user_pictures"
@@ -71,45 +96,44 @@ class UserTermsAgreement(AsyncAttrs, Base):
     user: Mapped["User"] = relationship(back_populates="terms_agreements", lazy="selectin")
     terms_version: Mapped["TermsVersion"] = relationship(back_populates="user_agreements", lazy="selectin")
 
+
 class User(AsyncAttrs, Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    username: Mapped[Optional[str]] = mapped_column(String, unique=True, nullable=True)  # Made nullable for passkey users
-    email: Mapped[Optional[str]] = mapped_column(String, unique=True, nullable=True)     # Made nullable for passkey users
-    password_hash: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    is_passkey: Mapped[bool] = mapped_column(Boolean, default=False)
-    first_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    last_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    age: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Added age field for minimal passkey registration
-    phone_number: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    address: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    username: Mapped[Optional[str]] = mapped_column(String, unique=True, nullable=True)
     date_created: Mapped[DateTime] = mapped_column(DateTime, server_default=func.now())
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     last_login: Mapped[Optional[DateTime]] = mapped_column(DateTime, nullable=True)
-    onboarding_complete: Mapped[bool] = mapped_column(Boolean, default=False)  # Track if user has completed onboarding
+    is_passkey: Mapped[bool] = mapped_column(Boolean, default=True)  # Default to passkey now
+    onboarding_complete: Mapped[bool] = mapped_column(Boolean, default=False)
 
     role_id: Mapped[int] = mapped_column(ForeignKey("roles.id"), nullable=False)
     role: Mapped["Role"] = relationship(back_populates="users", lazy="selectin")
 
-    # If this is null, the user is verified
-    verification_details: Mapped[Optional["UnverifiedDetails"]] = relationship(
+    # Relationships
+    passkey_credentials: Mapped[list["PasskeyCredential"]] = relationship(
+        back_populates="user", lazy="selectin", cascade="all, delete-orphan"
+    )
+    user_detail: Mapped[Optional["UserDetail"]] = relationship(
         back_populates="user", lazy="selectin", uselist=False, cascade="all, delete-orphan"
     )
-    account_recovery: Mapped[list["AccountRecovery"]] = relationship(back_populates="user", lazy="selectin", cascade="all, delete-orphan")
-    passkey_credentials: Mapped[list["PasskeyCredential"]] = relationship(back_populates="user", lazy="selectin", cascade="all, delete-orphan")
-
-    # User data
-    skills: Mapped[list["UserSkill"]] = relationship(back_populates="user", lazy="selectin", cascade="all, delete-orphan")
-    abilities: Mapped[list["UserAbilities"]] = relationship(back_populates="user", lazy="selectin", cascade="all, delete-orphan")
-
     picture: Mapped[Optional["UserPicture"]] = relationship(
         back_populates="user", lazy="selectin", uselist=False, cascade="all, delete-orphan"
     )
     passions: Mapped[list["UserPassion"]] = relationship(
         back_populates="user", lazy="selectin", cascade="all, delete-orphan"
     )
+    skills: Mapped[list["UserSkill"]] = relationship(
+        back_populates="user", lazy="selectin", cascade="all, delete-orphan"
+    )
+    abilities: Mapped[list["UserAbilities"]] = relationship(
+        back_populates="user", lazy="selectin", cascade="all, delete-orphan"
+    )
     terms_agreements: Mapped[list["UserTermsAgreement"]] = relationship(
+        back_populates="user", lazy="selectin", cascade="all, delete-orphan"
+    )
+    account_recovery: Mapped[list["AccountRecovery"]] = relationship(
         back_populates="user", lazy="selectin", cascade="all, delete-orphan"
     )
 

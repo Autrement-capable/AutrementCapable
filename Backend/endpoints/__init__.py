@@ -1,4 +1,8 @@
 # Import new endpoints
-import endpoints.data.user_passions
-import endpoints.data.user_pictures
-import endpoints.data.terms
+from os import getenv
+
+from .data import *
+from .auth import *
+
+if getenv("MODE") == "DEV":
+    from .dev import *

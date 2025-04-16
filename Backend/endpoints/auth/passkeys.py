@@ -31,10 +31,13 @@ class PasskeyRegistrationStart(BaseModel):
     first_name: str = Field(..., description="User's first name")
     last_name: Optional[str] = Field(None, description="User's last name")
     age: Optional[int] = Field(None, description="User's age")
+    passions: Optional[List[str]] = Field(None, description="User's passions (max 3)")
+    # No avatar field here as it will be handled with Form/File
 
 class PasskeyRegistrationOptions(BaseModel):
     options: Dict[str, Any] = Field(..., description="WebAuthn registration options")
     user_id: int = Field(..., description="User ID")
+
 
 class PasskeyRegistrationComplete(BaseModel):
     user_id: int = Field(..., description="User ID")
@@ -73,37 +76,128 @@ class UpdateUserProfile(BaseModel):
 
 # ----- Endpoints -----
 
+from fastapi import File, Form, UploadFile
+
 @router.post("/registration/start", response_model=PasskeyRegistrationOptions)
 async def start_passkey_registration(
-    data: PasskeyRegistrationStart,
+    first_name: str = Form(...),
+    last_name: Optional[str] = Form(None),
+    age: Optional[int] = Form(None),
+    passions: Optional[str] = Form(None),  # JSON string of passions
+    avatar: Optional[UploadFile] = File(None),
     session: AsyncSession = Depends(getSession)
 ):
     """
-    Start the passkey registration process by creating a minimal user profile
-    and generating WebAuthn registration options.
+    Start the passkey registration process by creating a minimal user profile,
+    storing the provided avatar and passions, and generating WebAuthn registration options.
     """
-    # Create a user with minimal information
-    user = await create_passkey_user(
-        session=session,
-        first_name=data.first_name,
-        last_name=data.last_name,
-        age=data.age
-    )
+    # Check if we need an avatar (required except in DEV mode)
+    is_dev_mode = getenv("MODE") == "DEV"
+    if not avatar and not is_dev_mode:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Avatar image is required"
+        )
+    
+    # Parse passions if provided
+    user_passions = []
+    if passions:
+        try:
+            user_passions = json.loads(passions)
+            if not isinstance(user_passions, list) or len(user_passions) > 3:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Passions must be a list with maximum 3 items"
+                )
+        except json.JSONDecodeError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid passions format, must be a JSON array"
+            )
+    
+    # Create the user with the new structure
+    try:
+        # Transaction for creating user and related data
+        async with session.begin():
+            # 1. Create the base user
+            role = await get_role_by_name(session, "Young Person")
+            if not role:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Default role not found"
+                )
+            
+            # Generate a random username as placeholder
+            random_suffix = secrets.token_hex(8)
+            temp_username = f"user_{random_suffix}"
+            
+            user = User(
+                username=temp_username,
+                is_passkey=True,
+                role_id=role.id,
+                onboarding_complete=False
+            )
+            session.add(user)
+            await session.flush()  # Get the user ID
+            
+            # 2. Create the user detail entry
+            user_detail = UserDetail(
+                user_id=user.id,
+                first_name=first_name,
+                last_name=last_name,
+                age=age
+            )
+            session.add(user_detail)
+            
+            # 3. Process the avatar if provided
+            if avatar:
+                avatar_data = await avatar.read()
+                if len(avatar_data) > 2 * 1024 * 1024:  # 2MB limit
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail="Avatar image must be less than 2MB"
+                    )
+                
+                picture = UserPicture(
+                    user_id=user.id,
+                    picture_data=avatar_data,
+                    type="profile"
+                )
+                session.add(picture)
+            elif is_dev_mode:
+                # In dev mode, create an empty picture placeholder
+                picture = UserPicture(
+                    user_id=user.id,
+                    picture_data=b"",
+                    type="profile"
+                )
+                session.add(picture)
+            
+            # 4. Create passions if provided
+            for i, passion_text in enumerate(user_passions, 1):
+                passion = UserPassion(
+                    user_id=user.id,
+                    passion_text=passion_text,
+                    order=i
+                )
+                session.add(passion)
+    
+        # Generate registration options
+        display_name = f"{first_name} {last_name}" if last_name else first_name
+        options = generate_passkey_registration_options(user.id, display_name)
 
-    if not user:
+        return {
+            "options": options,
+            "user_id": user.id
+        }
+    except HTTPException:
+        raise  # Re-raise HTTP exceptions
+    except Exception as e:
+        print(f"Error in passkey registration: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to create user"
+            detail="Failed to create user profile"
         )
-
-    # Generate registration options
-    display_name = f"{user.first_name} {user.last_name}" if user.last_name else user.first_name
-    options = generate_passkey_registration_options(user.id, display_name)
-
-    return {
-        "options": options,
-        "user_id": user.id
-    }
 
 @router.post("/registration/complete", response_model=PasskeyRegistrationResult)
 async def complete_passkey_registration(
@@ -114,7 +208,7 @@ async def complete_passkey_registration(
     """
     Complete the passkey registration process by verifying the registration response
     and storing the credential.
-    
+
     The refresh token is automatically stored in an HTTP-only cookie.
     """
     # Verify registration response
@@ -158,7 +252,7 @@ async def complete_passkey_registration(
     # Create tokens
     access_token = create_token(user.id, user.role_id, refresh=False, fresh=True)
     refresh_token = create_token(user.id, user.role_id, refresh=True, fresh=True)
-    
+
     # Set refresh token in HTTP-only cookie
     set_refresh_cookie(response, refresh_token)
 

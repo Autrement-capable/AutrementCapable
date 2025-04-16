@@ -1,5 +1,5 @@
 from server.server import server as svr
-import server.route_includer
+import endpoints
 import atexit
 
 def CleanUp():

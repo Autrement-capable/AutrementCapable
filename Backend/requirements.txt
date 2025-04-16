@@ -10,8 +10,8 @@ pillow
 pdf2image
 fillpdf
 apscheduler
+python-multipart
 # for database
-# SQLModel
 asyncpg
 sqlalchemy[asyncio]
 psycopg2

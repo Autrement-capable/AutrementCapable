@@ -6,8 +6,8 @@ from fastapi import FastAPI, Depends
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi.openapi.utils import get_openapi
 from server.cors.config import init_cors
-from server.role_config.roles import init_roles
-from utils.init_terms import init_terms
+from server.misc_config.roles import init_roles
+from server.misc_config.init_terms import init_terms
 from utils.singleton import singleton
 from database.postgress.config import postgress
 from database.postgress.actions.revoked_jwt_tokens import get_revoked_token_by_jti,  get_revoked_token_by_jti_sync
@@ -18,16 +18,48 @@ from .cron_jobs.factory import CronJobFactory
 import asyncio
 import anyio
 from fastapi.concurrency import run_in_threadpool
+from contextlib import asynccontextmanager
 from typing import Callable
 
 @singleton
 class Server:
     def __init__(self):
+        # Acording the fast api docs this better than using on_event(deprecated)
+        # I disagree but need to make the code compatible with the rest of the code
+        @asynccontextmanager
+        async def lifespan(app: FastAPI):
+            # Startup
+            CronJobFactory.set_add_cron_job(AddCronJob)
+
+            # Check if tables exist and initialize data if needed
+            exists, _ = await self.postgress.check_all_models_exist()
+            if not exists:
+                await self.postgress.create_all()
+                await self.init_roles()
+                await init_terms()
+
+            # Start scheduler
+            self.scheduler.start()
+            CronJobFactory.register_jobs()
+
+            yield  # This is where FastAPI serves requests
+
+            # Shutdown
+            if hasattr(self, 'scheduler') and self.scheduler is not None:
+                await self.scheduler.shutdown()
+            else:
+                print("Scheduler was already shut down or was None")
+
+            if hasattr(self.postgress, 'engine') and self.postgress.engine is not None:
+                print("Closing database connections...")
+                await self.postgress.close()
+
         self.app = FastAPI(
             title="Autrement Capable API Dev Server",
             description="The API for Autrement Capable Backend.",
             version=getenv("VERSION", "0.1.0alpha"),
-            docs_url="/docs" if getenv("MODE") == "DEV" else None
+            docs_url="/docs" if getenv("MODE") == "DEV" else None,
+            lifespan=lifespan,
         )
 
         self.port = int(getenv("PORT", 5000))
@@ -60,13 +92,15 @@ class Server:
     async def on_startup(self):
         """ This function runs during startup of FastAPI application. """
         # Initialize the database and create tables asynchronously
-        await self.postgress.create_all()
+        exists, _ = await self.postgress.check_all_models_exist()
+        if not exists: # if tables do not exist, create them and init data
+            await self.postgress.create_all()
 
-        # Initialize roles asynchronously
-        await self.init_roles()
+            # Initialize roles asynchronously
+            await self.init_roles()
 
-        # Initialize Terms creation
-        await init_terms(self.postgress)
+            # Initialize Terms creation
+            await init_terms()
 
         server.scheduler.start()
         CronJobFactory.register_jobs()
@@ -129,24 +163,5 @@ def AddRouter(router):
 def AddCronJob(func: Callable, **kwargs: dict):
     """ Add a cron job to the scheduler """
     server.scheduler.add_job(server.run_job_with_session, args=[func], **kwargs)
-
-@server.app.on_event("startup")
-async def start_scheduler():
-    CronJobFactory.set_add_cron_job(AddCronJob)
-    await server.on_startup()
-
-@server.app.on_event("shutdown")
-async def stop_scheduler():
-    if hasattr(server, 'scheduler') and server.scheduler is not None:
-        await server.scheduler.shutdown()
-    else:
-        print("Scheduler was already shut down or was None")
-
-@server.app.on_event("shutdown")
-async def cleanup_db_connections():
-    """Properly close all database connections on shutdown."""
-    if hasattr(server.postgress, 'engine') and server.postgress.engine is not None:
-        print("Closing database connections...")
-        await server.postgress.close()
 
 __all__ = ["server", "AddRouter", "AddCronJob"]
