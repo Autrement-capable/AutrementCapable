@@ -8,6 +8,7 @@ from fastapi.openapi.utils import get_openapi
 from server.cors.config import init_cors
 from server.misc_config.roles import init_roles
 from server.misc_config.init_terms import init_terms
+from utils import secured_endpoint, SecurityRequirement
 from utils.singleton import singleton
 from database.postgress.config import postgress
 from database.postgress.actions.revoked_jwt_tokens import get_revoked_token_by_jti,  get_revoked_token_by_jti_sync
@@ -24,6 +25,14 @@ from typing import Callable
 @singleton
 class Server:
     def __init__(self):
+        # First, initialize your properties
+        self.port = int(getenv("PORT", 5000))
+        self.host = '0.0.0.0'
+        self.log_lvl = "info"
+        self.postgress = postgress
+        # Initialize scheduler before setting up lifespan so we dont get stupid errors
+        self.scheduler = AsyncIOScheduler()
+
         # Acording the fast api docs this better than using on_event(deprecated)
         # I disagree but need to make the code compatible with the rest of the code
         @asynccontextmanager
@@ -45,14 +54,19 @@ class Server:
             yield  # This is where FastAPI serves requests
 
             # Shutdown
-            if hasattr(self, 'scheduler') and self.scheduler is not None:
-                await self.scheduler.shutdown()
-            else:
-                print("Scheduler was already shut down or was None")
+            try:
+                if self.scheduler and hasattr(self.scheduler, 'running') and self.scheduler.running:
+                    print("Shutting down scheduler...")
+                    self.scheduler.shutdown(wait=False)
+            except Exception as e:
+                print(f"Error shutting down scheduler: {e}")
 
-            if hasattr(self.postgress, 'engine') and self.postgress.engine is not None:
-                print("Closing database connections...")
-                await self.postgress.close()
+            try:
+                if self.postgress:
+                    print("Closing database connections...")
+                    await self.postgress.close()
+            except Exception as e:
+                print(f"Error closing database connections: {e}")
 
         self.app = FastAPI(
             title="Autrement Capable API Dev Server",
@@ -62,32 +76,11 @@ class Server:
             lifespan=lifespan,
         )
 
-        self.port = int(getenv("PORT", 5000))
-        self.host = '0.0.0.0'
-        self.log_lvl = "info"
-        self.postgress = postgress
-
-        # Start the async scheduler for deleting expired tokens
-        self.scheduler = AsyncIOScheduler()
-
         # Initialize CORS
         init_cors(self.app)
 
         # Set up custom OpenAPI
-        self.app.openapi_tags = self.get_openapi_tags()
         self.app.openapi = self.__custom_openapi__
-
-    def get_openapi_tags(self):
-        return [
-            {
-                "name": "Auth",
-                "description": "Operations requiring authentication via ACCESS Token."
-            },
-            {
-                "name": "Auth_refresh",
-                "description": "Operations requiring authentication via REFRESH Token."
-            }
-        ]
 
     async def on_startup(self):
         """ This function runs during startup of FastAPI application. """
@@ -137,20 +130,44 @@ class Server:
             tags=self.app.openapi_tags
         )
 
+        # Define security schemes
         openapi_schema["components"]["securitySchemes"] = {
             "Authorization": {
                 "type": "http",
                 "scheme": "bearer",
                 "bearerFormat": "JWT",
-                "description": "JWT Authorization header using the Bearer scheme (FYI: do not include 'Bearer ' in the value)",
+                "description": "JWT Authorization header using the Bearer scheme"
+            },
+            "RefreshCookie": {
+                "type": "apiKey",
+                "in": "cookie",
+                "name": "refresh_token",
+                "description": "JWT Refresh token stored in HTTP-only cookie"
             }
         }
 
+        # Add security requirements to endpoints based on their decorators
         for path, path_item in openapi_schema["paths"].items():
             for method, operation in path_item.items():
-                tags = operation.get("tags", [])
-                if "Auth" in tags or "Auth_refresh" in tags:
-                    operation["security"] = [{"Authorization": []}]
+                for route in self.app.routes:
+                    if route.path == path and method.upper() in route.methods:
+                        endpoint = route.endpoint
+                        if hasattr(endpoint, "requires_auth") and endpoint.requires_auth:
+                            security_type = getattr(endpoint, "security_type", SecurityRequirement.ACCESS_TOKEN)
+
+                            if security_type == SecurityRequirement.ACCESS_TOKEN:
+                                operation["security"] = [{"Authorization": []}]
+                            elif security_type == SecurityRequirement.REFRESH_COOKIE:
+                                operation["security"] = [{"RefreshCookie": []}]
+                            elif security_type == SecurityRequirement.BOTH_TOKENS:
+                                operation["security"] = [{"Authorization": [], "RefreshCookie": []}]
+
+                            # Add custom description if provided
+                            custom_desc = getattr(endpoint, "security_description", None)
+                            if custom_desc:
+                                if "description" not in operation:
+                                    operation["description"] = ""
+                                operation["description"] += f"\n\n**Auth:** {custom_desc}"
 
         self.app.openapi_schema = openapi_schema
         return self.app.openapi_schema

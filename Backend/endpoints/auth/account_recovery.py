@@ -5,6 +5,7 @@ from utils.password import hash_password
 from database.postgress.config import getSession as GetSession
 from database.postgress.actions.acc_recovery import get_acc_recovery_by_token, del_acc_recovery, create_acc_recovery
 from database.postgress.actions.user import get_user_by_id
+from utils import secured_endpoint
 
 from server.server import AddRouter
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -68,7 +69,8 @@ async def reset_password(
     return {"access_token": access_token, "message": "Password reset successful"}
 
 @router.get("/create-account-recovery", response_model=dict,
-responses={200: {"message": "Account recovery created."}}, tags=["Auth"])
+responses={200: {"message": "Account recovery created."}})
+@secured_endpoint
 async def create_account_recovery(
     request: Request, 
     session: AsyncSession = Depends(GetSession), 

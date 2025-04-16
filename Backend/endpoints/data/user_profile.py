@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from server.server import AddRouter
 from server.jwt_config.token_creation import JWTBearer
+from utils import secured_endpoint
 from database.postgress.config import getSession
 from database.postgress.models import User, UserDetail, UserPassion, UserPicture
 from database.postgress.actions.user_passions import (
@@ -39,6 +40,7 @@ class ProfileUpdate(BaseModel):
 profile_router = APIRouter(prefix="/user/profile", tags=["User Profile"])
 
 @profile_router.get("", response_model=UserProfileResponse)
+@secured_endpoint
 async def get_my_profile(
     session: AsyncSession = Depends(getSession),
     jwt: dict = Depends(JWTBearer())
@@ -85,6 +87,7 @@ async def get_my_profile(
     }
 
 @profile_router.put("")
+@secured_endpoint
 async def update_my_profile(
     profile_data: ProfileUpdate,
     session: AsyncSession = Depends(getSession),
@@ -143,6 +146,7 @@ async def update_my_profile(
     return {"message": "Profile updated successfully"}
 
 @profile_router.put("/complete-setup")
+@secured_endpoint
 async def complete_profile_setup(
     username: str = Form(...),
     avatar: Optional[UploadFile] = File(None),

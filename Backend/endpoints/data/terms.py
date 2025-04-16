@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from server.server import AddRouter
 from server.jwt_config.token_creation import JWTBearer
+from utils import secured_endpoint
 from database.postgress.config import getSession
 from database.postgress.actions.terms_agreements import (
     get_latest_terms_version,
@@ -73,13 +74,13 @@ async def get_latest_terms(
 ):
     """Get the latest active terms and conditions"""
     terms = await get_latest_terms_version(session)
-    
+
     if not terms:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="No active terms found"
         )
-    
+
     return {
         "id": terms.id,
         "version": terms.version,
@@ -95,13 +96,13 @@ async def get_terms_by_version_string(
 ):
     """Get terms and conditions by version string"""
     terms = await get_terms_by_version(session, version)
-    
+
     if not terms:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Terms version '{version}' not found"
         )
-    
+
     return {
         "id": terms.id,
         "version": terms.version,
@@ -113,6 +114,7 @@ async def get_terms_by_version_string(
 # ============ Admin Endpoints ============
 
 # @terms_admin_router.post("", response_model=TermsVersionResponse, status_code=status.HTTP_201_CREATED)
+# @secured_endpoint
 # async def create_new_terms_version(
 #     terms_data: TermsVersionCreate,
 #     session: AsyncSession = Depends(getSession),
@@ -126,17 +128,17 @@ async def get_terms_by_version_string(
 #             status_code=status.HTTP_403_FORBIDDEN,
 #             detail="Only administrators can create terms versions"
 #         )
-    
+
 #     terms = await create_terms_version(
 #         session, terms_data.version, terms_data.content, terms_data.is_active
 #     )
-    
+
 #     if not terms:
 #         raise HTTPException(
 #             status_code=status.HTTP_400_BAD_REQUEST,
 #             detail="Failed to create terms version"
 #         )
-    
+
 #     return {
 #         "id": terms.id,
 #         "version": terms.version,
@@ -146,6 +148,7 @@ async def get_terms_by_version_string(
 #     }
 
 # @terms_admin_router.patch("/{terms_id}", response_model=TermsVersionResponse)
+# @secured_endpoint
 # async def update_terms_version_admin(
 #     terms_update: TermsVersionUpdate,
 #     terms_id: int = Path(..., description="Terms ID"),
@@ -160,17 +163,17 @@ async def get_terms_by_version_string(
 #             status_code=status.HTTP_403_FORBIDDEN,
 #             detail="Only administrators can update terms versions"
 #         )
-    
+
 #     terms = await update_terms_version(
 #         session, terms_id, terms_update.content, terms_update.is_active
 #     )
-    
+
 #     if not terms:
 #         raise HTTPException(
 #             status_code=status.HTTP_404_NOT_FOUND,
 #             detail=f"Terms version with ID {terms_id} not found"
 #         )
-    
+
 #     return {
 #         "id": terms.id,
 #         "version": terms.version,
@@ -182,32 +185,34 @@ async def get_terms_by_version_string(
 # ============ User Agreement Endpoints ============
 
 @terms_agreement_router.get("/status", response_model=TermsStatus)
+@secured_endpoint
 async def check_terms_agreement_status(
     session: AsyncSession = Depends(getSession),
     jwt: dict = Depends(JWTBearer())
 ):
     """Check if the current user has agreed to the latest terms"""
     user_id = jwt["payload"]["sub"]
-    
+
     latest_terms = await get_latest_terms_version(session)
     if not latest_terms:
         return {"has_agreed": True}  # No terms to agree to
-    
+
     has_agreed = await has_user_agreed_to_latest_terms(session, user_id)
     latest_agreement = await get_latest_user_terms_agreement(session, user_id)
-    
+
     response = {
         "has_agreed": has_agreed,
         "latest_terms_id": latest_terms.id,
         "latest_terms_version": latest_terms.version
     }
-    
+
     if latest_agreement:
         response["agreement_date"] = latest_agreement.date_agreed.isoformat()
-    
+
     return response
 
 @terms_agreement_router.post("/{terms_id}/agree", status_code=status.HTTP_201_CREATED)
+@secured_endpoint
 async def agree_to_terms(
     terms_id: int = Path(..., description="Terms ID to agree to"),
     session: AsyncSession = Depends(getSession),
@@ -215,7 +220,7 @@ async def agree_to_terms(
 ):
     """Record user agreement to a specific terms version"""
     user_id = jwt["payload"]["sub"]
-    
+
     # Check if terms exist
     terms = await get_terms_by_id(session, terms_id)
     if not terms:
@@ -223,15 +228,15 @@ async def agree_to_terms(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Terms version with ID {terms_id} not found"
         )
-    
+
     agreement, created = await create_user_terms_agreement(session, user_id, terms_id)
-    
+
     if not agreement:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to record agreement"
         )
-    
+
     status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
     return {
         "message": "Terms agreement recorded successfully",
@@ -240,15 +245,16 @@ async def agree_to_terms(
     }
 
 @terms_agreement_router.get("/history", response_model=List[TermsAgreementResponse])
+@secured_endpoint
 async def get_terms_agreement_history(
     session: AsyncSession = Depends(getSession),
     jwt: dict = Depends(JWTBearer())
 ):
     """Get the current user's terms agreement history"""
     user_id = jwt["payload"]["sub"]
-    
+
     agreements = await get_user_terms_agreement(session, user_id)
-    
+
     # Fetch terms version for each agreement
     result = []
     for agreement in agreements:
@@ -260,7 +266,7 @@ async def get_terms_agreement_history(
                 "terms_version": terms.version,
                 "date_agreed": agreement.date_agreed.isoformat()
             })
-    
+
     return result
 
 # Add the routers to the app

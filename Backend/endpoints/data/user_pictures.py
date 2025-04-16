@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from server.server import AddRouter
 from server.jwt_config.token_creation import JWTBearer
+from utils import secured_endpoint
 from database.postgress.config import getSession
 from database.postgress.actions.user_pictures import (
     get_user_picture,
@@ -21,6 +22,7 @@ pictures_router = APIRouter(prefix="/user/picture", tags=["User Pictures"])
 # ============ Endpoints ============
 
 @pictures_router.get("", response_class=Response)
+@secured_endpoint
 async def get_my_picture(
     picture_type: str = "profile",
     session: AsyncSession = Depends(getSession), 
@@ -40,6 +42,7 @@ async def get_my_picture(
     return Response(content=picture.picture_data, media_type="image/jpeg")
 
 @pictures_router.post("", status_code=status.HTTP_201_CREATED)
+@secured_endpoint
 async def upload_picture(
     picture: UploadFile = File(...),
     picture_type: str = Form("profile"),
@@ -80,6 +83,7 @@ async def upload_picture(
     return {"message": f"Picture of type '{picture_type}' uploaded successfully"}
 
 @pictures_router.delete("", status_code=status.HTTP_204_NO_CONTENT)
+@secured_endpoint
 async def delete_picture(
     picture_type: str = "profile",
     session: AsyncSession = Depends(getSession), 

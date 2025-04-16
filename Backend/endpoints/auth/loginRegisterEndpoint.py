@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends, status, Response
 from pydantic import BaseModel, EmailStr
-from server.jwt_config.token_creation import create_token, JWTBearer, set_refresh_cookie
+from server.jwt_config.token_creation import create_token, set_refresh_cookie
 from database.postgress.actions.user import create_user, login_user, get_available_usernames, del_uvf_user
 from mail.actions.verify_account import send_verification_email
 from server.server import AddRouter

@@ -20,7 +20,7 @@ from utils.webauthn_utils import (
     generate_passkey_authentication_options,
     verify_passkey_authentication
 )
-from server.jwt_config.token_creation import create_token, JWTBearer, set_refresh_cookie
+from server.jwt_config.token_creation import create_token, set_refresh_cookie
 from server.server import AddRouter
 
 router = APIRouter(prefix="/auth/passkey", tags=["Passkey Authentication"])

@@ -30,8 +30,14 @@ class Postgress:
         return self.SyncSession()
 
     async def close(self):
-        await self.engine.dispose()
-        await self.sync_engine.dispose()
+        """Close all database connections."""
+        # Close the async engine
+        if self.engine is not None:
+            await self.engine.dispose()
+
+        # Close the sync engine (without await since it's not async)
+        if hasattr(self, 'sync_engine') and self.sync_engine is not None:
+            self.sync_engine.dispose()
 
     async def create_all(self):
         async with self.engine.begin() as conn:

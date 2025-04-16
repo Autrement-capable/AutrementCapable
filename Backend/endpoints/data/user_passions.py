@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from server.server import AddRouter
 from server.jwt_config.token_creation import JWTBearer
+from utils import secured_endpoint
 from database.postgress.config import getSession
 from database.postgress.actions.user_passions import (
     get_user_passions,
@@ -48,6 +49,7 @@ passions_router = APIRouter(prefix="/user/passions", tags=["User Passions"])
 # ============ Endpoints ============
 
 @passions_router.get("", response_model=PassionList)
+@secured_endpoint
 async def get_my_passions(
     session: AsyncSession = Depends(getSession), 
     jwt: dict = Depends(JWTBearer())
@@ -62,6 +64,7 @@ async def get_my_passions(
     ]}
 
 @passions_router.post("", response_model=PassionResponse, status_code=status.HTTP_201_CREATED)
+@secured_endpoint
 async def create_passion(
     passion: PassionCreate,
     session: AsyncSession = Depends(getSession), 
@@ -96,6 +99,7 @@ async def create_passion(
     }
 
 @passions_router.patch("/{passion_id}", response_model=PassionResponse)
+@secured_endpoint
 async def update_passion(
     passion_update: PassionUpdate,
     passion_id: int = Path(..., description="The ID of the passion to update"),
@@ -131,6 +135,7 @@ async def update_passion(
     }
 
 @passions_router.delete("/{passion_id}", status_code=status.HTTP_204_NO_CONTENT)
+@secured_endpoint
 async def delete_passion(
     passion_id: int = Path(..., description="The ID of the passion to delete"),
     session: AsyncSession = Depends(getSession), 
@@ -157,6 +162,7 @@ async def delete_passion(
         )
 
 @passions_router.post("/reorder", response_model=PassionList)
+@secured_endpoint
 async def reorder_passions(
     reorder_data: PassionReorder,
     session: AsyncSession = Depends(getSession), 
