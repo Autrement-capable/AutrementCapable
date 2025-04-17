@@ -1,10 +1,11 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
-from sqlalchemy.exc import IntegrityError
 from typing import Optional
 from datetime import datetime
 
-from database.postgress.models import User, UserPicture
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+from sqlalchemy.exc import IntegrityError
+
+from ..models import User, UserPicture
 
 async def get_user_picture(session: AsyncSession, user_id: int, picture_type: str = "profile") -> Optional[UserPicture]:
     """Get a user's picture by type."""

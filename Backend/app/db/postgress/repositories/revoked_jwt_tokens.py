@@ -1,11 +1,13 @@
+from datetime import datetime
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.future import select
-from datetime import datetime
-from database.postgress.models import RevokedToken
-from database.postgress import postgress
-from server.cron_jobs.base_cron import register_cron_job, BaseCronJob
-from utils.parse_yaml import get_property
+
+from ..models import RevokedToken
+from ..engine import postgress
+from ....services.scheduler.base_cron import register_cron_job, BaseCronJob
+from ....utils.config_helpers import get_property
 
 
 # Cron jobs

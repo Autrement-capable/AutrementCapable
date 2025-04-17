@@ -52,7 +52,7 @@ def get_property(config:dict, property_name:str, sub_propertyList:list[str]=None
 
 # # Example usage
 # if __name__ == "__main__":
-#     with open("./server/config_files/config.yaml", "r") as file:
+#     with open("./config/config.yaml", "r") as file:
 #         config = yaml.safe_load(file)
 
 #     # Get the duration of the access token

@@ -1,11 +1,13 @@
 ## Debugging endpoints to check if the access token and refresh token are valid
 ## FIY: SHOULD NOT BE USED IN PRODUCTION
+
 from fastapi import APIRouter, Depends, HTTPException
-from server.jwt_config.token_creation import JWTBearer
-from utils import secured_endpoint, SecurityRequirement
-from database.postgress.config import getSession as GetSession
 from sqlalchemy.ext.asyncio import AsyncSession
-from server.server import AddRouter
+
+from ...core.application import AddRouter
+from ...core.security.token_creation import JWTBearer
+from ...core.security.decorators import secured_endpoint, SecurityRequirement
+from ...db.postgress.engine import getSession
 
 auth_test = APIRouter(prefix="/dev", tags=["Development"])
 

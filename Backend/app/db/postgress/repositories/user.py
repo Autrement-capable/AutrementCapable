@@ -1,20 +1,22 @@
+import asyncio
+from typing import Optional, Literal
+from datetime import datetime
+import yaml
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.future import select
-from datetime import datetime
 from sqlalchemy.orm import joinedload
-import yaml
-from database.postgress.models import User, UnverifiedDetails
-from database.postgress.config import postgress
-from database.postgress.actions.role import get_role_by_name
-from utils.password import verify_password, hash_password
-from utils.verifcation_code import generate_verification_code, generate_random_suffix
-from server.cron_jobs.base_cron import register_cron_job, BaseCronJob
-from utils.parse_yaml import get_property
-from utils.Config_loader import Config
 from faker import Faker
-from typing import Optional, Literal
-import asyncio
+
+from ..models import User, UnverifiedDetails, UserDetail
+from ..engine import postgress
+from .role import get_role_by_name
+from ....services.auth.password import verify_password, hash_password
+from ....services.auth.verification import generate_verification_code, generate_random_suffix
+from ....services.scheduler.base_cron import register_cron_job, BaseCronJob
+from ....utils.config_helpers import get_property
+from ....core.config import Config
 
 try:
     email_verification_code_duration = Config.get_property(None, "verify", ["email_verification_code_duration"])["email_verification_code_duration"]

@@ -10,7 +10,7 @@ class Config:
     """Singleton class that loads and stores configuration files as dictionaries."""
 
     _config_data: Dict[str, Dict[str, Any]] = {}  # Stores loaded YAML configs
-    __default_config_file__ = "./server/config_files/config.yaml"  # Default config file
+    __default_config_file__ = "./config/config.yaml"  # Default config file
 
     @classmethod
     def load_config(cls, file_path: str) -> Dict[str, Any]:

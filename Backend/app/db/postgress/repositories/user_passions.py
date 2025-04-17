@@ -1,10 +1,12 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
-from sqlalchemy.exc import IntegrityError
 from typing import List, Optional
 from datetime import datetime
 
-from database.postgress.models import User, UserPassion
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+from sqlalchemy.exc import IntegrityError
+
+from ..models import User, UserPassion
+
 
 async def get_user_passions(session: AsyncSession, user_id: int) -> List[UserPassion]:
     """Get all passions for a user ordered by their defined order."""

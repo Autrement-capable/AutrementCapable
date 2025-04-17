@@ -1,10 +1,11 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
-from sqlalchemy.exc import IntegrityError
 from typing import List, Optional, Tuple
 from datetime import datetime
 
-from database.postgress.models import User, TermsVersion, UserTermsAgreement
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+from sqlalchemy.exc import IntegrityError
+
+from ..models import User, TermsVersion, UserTermsAgreement
 
 async def get_latest_terms_version(session: AsyncSession) -> Optional[TermsVersion]:
     """Get the latest active terms version."""

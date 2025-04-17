@@ -1,4 +1,4 @@
-import os
+from os import getenv
 import atexit
 from contextlib import asynccontextmanager
 from typing import Callable

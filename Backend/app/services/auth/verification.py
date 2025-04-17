@@ -9,8 +9,6 @@ from typing import Union
 
 SERVER_SECRET = getenv("SERVER_SECRET", "default_secret_key")
 
-SERVER_SECRET = getenv("SERVER_SECRET", "default_secret_key")
-
 def generate_verification_code(data: Union[str, int], expiration_seconds: int = 900) -> tuple[str, datetime]:
     """
     Generate a secure verification code based on either:

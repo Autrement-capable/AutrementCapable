@@ -1,6 +1,6 @@
-from .base_cron import BaseCronJob, CronJobRegistry
 from typing import Callable
 
+from .base_cron import BaseCronJob, CronJobRegistry
 class CronJobFactory:
     """Factory class for dynamically registering cron jobs."""
     # delcare a callback variable type

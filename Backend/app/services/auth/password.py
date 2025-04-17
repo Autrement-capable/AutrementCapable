@@ -1,5 +1,6 @@
-from passlib.hash import pbkdf2_sha256
 import secrets
+
+from passlib.hash import pbkdf2_sha256
 
 def hash_password(password) -> str:
     """Hash a password using pbkdf2_sha256.

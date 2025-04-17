@@ -1,10 +1,11 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
-from sqlalchemy.exc import IntegrityError, OperationalError
 from datetime import datetime
 from typing import Dict, Any, Optional, List, Tuple
 
-from database.postgress.models.test_model import User, UserSkill, UserAbilities
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+from sqlalchemy.exc import IntegrityError, OperationalError
+
+from ..models.test_model import User, UserSkill, UserAbilities
 
 # ============ USER SKILLS FUNCTIONS ============
 

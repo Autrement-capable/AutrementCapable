@@ -1,9 +1,11 @@
 from typing import Optional, List
+from datetime import datetime
+
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, func, LargeBinary, JSON
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from sqlalchemy.ext.asyncio import AsyncAttrs
-from database.postgress.config import Base
 
+from ..engine import Base
 ## AUTH
 
 class Role(AsyncAttrs, Base):

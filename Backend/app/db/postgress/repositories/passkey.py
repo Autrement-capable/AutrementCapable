@@ -1,14 +1,17 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import IntegrityError, OperationalError
-from sqlalchemy.future import select
-from sqlalchemy.orm import joinedload
-from datetime import datetime
-from database.postgress.models import User, PasskeyCredential, Role
-from database.postgress.actions.role import get_role_by_name
 import base64
 import secrets
 import json
 import asyncio
+from datetime import datetime
+
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError, OperationalError
+from sqlalchemy.future import select
+from sqlalchemy.orm import joinedload
+
+from ..models import User, PasskeyCredential, Role
+from .role import get_role_by_name
+
 
 async def create_passkey_user(
     session: AsyncSession, 

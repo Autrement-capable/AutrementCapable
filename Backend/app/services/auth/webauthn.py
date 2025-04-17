@@ -2,6 +2,9 @@ import base64
 import os
 import json
 from typing import Dict, Any, Optional
+from os import getenv
+from datetime import datetime, timedelta
+
 from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePublicKey
 from cryptography.hazmat.primitives import serialization
 import cbor2
@@ -19,8 +22,6 @@ from webauthn.helpers.structs import (
     UserVerificationRequirement,
     AttestationConveyancePreference
 )
-from os import getenv
-from datetime import datetime, timedelta
 
 # Get RP name and ID from environment or use defaults
 RP_ID = getenv("RP_ID", "localhost")

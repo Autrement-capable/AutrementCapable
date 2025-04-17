@@ -1,13 +1,16 @@
+import os
+import base64
+from os import getenv, urandom
+
+import yaml
 from pydantic import BaseModel
 from dotenv import load_dotenv
-import yaml
-from os import getenv, urandom
-from utils.parse_yaml import get_property
-import base64
+
+from ...utils.config_helpers import get_property
 
 load_dotenv()
 
-__config_file__ = "./server/config_files/config.yaml"
+__config_file__ = "./config/config.yaml"
 
 class Settings(BaseModel):
     authjwt_secret_key: str
@@ -47,5 +50,5 @@ class Settings(BaseModel):
         )
 
 # Load settings from the YAML file during class initialization
-__config_file__ = "./server/config_files/config.yaml"
+__config_file__ = "./config/config.yaml"
 settings = Settings.from_yaml(__config_file__)

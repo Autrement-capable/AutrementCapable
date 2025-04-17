@@ -1,9 +1,11 @@
+import os
+
 from jinja2 import Environment, FileSystemLoader
 from pydantic import EmailStr
 from fastapi_mail import MessageSchema
-from database.postgress.models.test_model import User
-from database.postgress.models.test_model import AccountRecovery
-from mail.config import mail
+
+from ....db.postgress.models.test_model import User, AccountRecovery
+from ..config import mail
 
 from os import getenv
 

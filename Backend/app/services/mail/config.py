@@ -1,8 +1,7 @@
-# mail_config.py
+from os import getenv
 
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 from pydantic import BaseModel, EmailStr
-from os import getenv
 
 class MailConfig(BaseModel):
     MAIL_USERNAME: str

@@ -1,14 +1,18 @@
+import os
+
 from jinja2 import Environment, FileSystemLoader
 from pydantic import EmailStr
 from fastapi_mail import MessageSchema
-from database.postgress.models.test_model import User, UnverifiedDetails
-from mail.config import mail
 
-from os import getenv
+from ....db.postgress.models.test_model import User, UnverifiedDetails
+from ..config import mail
 
-template_env = Environment(loader=FileSystemLoader("mail/templates"))
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# Navigate up one level to the mail directory, then to templates
+template_path = os.path.join(current_dir, "..", "templates")
+template_env = Environment(loader=FileSystemLoader(template_path))
 
-VER_URL = getenv("VER_URL", "http://localhost:5000/auth/verify")
+VER_URL = os.getenv("VER_URL", "http://localhost:5000/auth/verify")
 
 async def send_verification_email(user: User, details: UnverifiedDetails, email: str = None):
     """

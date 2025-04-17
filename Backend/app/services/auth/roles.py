@@ -1,7 +1,9 @@
+import copy
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from database.postgress.models import Role
-import copy
+
+from ...db.postgress.models import Role
 
 roles = {
     "Super Admin": {

@@ -1,5 +1,4 @@
-import os
-from typing import tuple
+from os import getenv
 
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker, declarative_base, Session

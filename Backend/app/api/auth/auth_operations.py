@@ -3,6 +3,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Request, HTTPException, Response, Cookie
 from sqlalchemy.ext.asyncio import AsyncSession
+from pydantic import BaseModel, Field
 
 from ...core.security.token_creation import create_token, decode_token, JWTBearer, set_refresh_cookie, clear_refresh_cookie
 from ...core.security.decorators import secured_endpoint, SecurityRequirement

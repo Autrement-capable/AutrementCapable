@@ -1,14 +1,16 @@
 from abc import ABC, abstractmethod
-from utils.Config_loader import Config
-from sqlalchemy.ext.asyncio import AsyncSession
-from database.postgress.config import getSession
 from typing import Dict, Type
-from utils.singleton import singleton
+
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from ...core.config import Config
+from ...db.postgress.engine import getSession
+from ...utils.patterns import singleton
 
 class BaseCronJob(ABC):
     """Abstract base class for all cron jobs."""
 
-    __config_file__ = "./server/config_files/config.yaml"  # Default config file (can be overridden)
+    __config_file__ = "./config/config.yaml"  # Default config file (can be overridden)
 
     def __init__(self, name: str, config_section: str, config_keys: list[str]):
         """

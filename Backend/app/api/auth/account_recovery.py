@@ -1,17 +1,17 @@
-from fastapi import APIRouter, Depends, Request, HTTPException, Response
-from server.jwt_config.token_creation import create_token, JWTBearer, set_refresh_cookie
-from pydantic import BaseModel, Field, EmailStr
-from utils.password import hash_password
-from database.postgress.config import getSession as GetSession
-from database.postgress.actions.acc_recovery import get_acc_recovery_by_token, del_acc_recovery, create_acc_recovery
-from database.postgress.actions.user import get_user_by_id
-from utils import secured_endpoint
-
-from server.server import AddRouter
-from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
 from os import getenv
 
+from fastapi import APIRouter, Depends, Request, HTTPException, Response
+from pydantic import BaseModel, Field, EmailStr
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from ...core.application import AddRouter
+from ...core.security.token_creation import create_token, JWTBearer, set_refresh_cookie
+from ...core.security.decorators import secured_endpoint
+from ...db.postgress.engine import getSession as GetSession
+from ...db.postgress.repositories.acc_recovery import get_acc_recovery_by_token, del_acc_recovery, create_acc_recovery
+from ...db.postgress.repositories.user import get_user_by_id
+from ...services.auth.password import hash_password
 router = APIRouter(prefix="/recovery", tags=["Account Recovery"])
 
 class ResetForm(BaseModel):

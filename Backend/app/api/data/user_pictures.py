@@ -1,15 +1,15 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from fastapi.responses import Response
 from pydantic import BaseModel, Field
-from typing import Optional
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from server.server import AddRouter
-from server.jwt_config.token_creation import JWTBearer
-from utils import secured_endpoint
-from database.postgress.config import getSession
-from database.postgress.actions.user_pictures import (
+from ...core.application import AddRouter
+from ...core.security.token_creation import JWTBearer
+from ...core.security.decorators import secured_endpoint
+from ...db.postgress.engine import getSession
+from ...db.postgress.repositories.user_pictures import (
     get_user_picture,
     create_or_update_user_picture,
     delete_user_picture

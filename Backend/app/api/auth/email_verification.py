@@ -1,20 +1,19 @@
+import os
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, Request, HTTPException, Response, Cookie, status, Query
 from fastapi.responses import RedirectResponse
-from server.jwt_config.token_creation import create_token, decode_token, set_refresh_cookie, clear_refresh_cookie
 from pydantic import BaseModel, Field, EmailStr
-from utils.password import hash_password
-from utils.jwt_exceptions import create_response_dict
-from database.postgress.config import getSession as GetSession
-from database.postgress.actions.user import get_user_by_email
-from database.postgress.actions.revoked_jwt_tokens import revoke_token, get_revoked_token_by_jti
-from database.postgress.actions.acc_recovery import get_acc_recovery_by_token, create_acc_recovery, del_acc_recovery
-from database.postgress.actions.user import verify_user, update_ver_details
-from mail.actions.reset_password import send_reset_password_email
-
-from server.server import AddRouter
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import datetime
-from os import getenv
+
+from ...core.application import AddRouter
+from ...core.security.token_creation import create_token, decode_token, set_refresh_cookie
+from ...core.errors import create_response_dict
+from ...db.postgress.engine import getSession as GetSession
+from ...db.postgress.repositories.user import get_user_by_email, verify_user, update_ver_details
+from ...db.postgress.repositories.revoked_jwt_tokens import revoke_token, get_revoked_token_by_jti
+from ...db.postgress.repositories.acc_recovery import get_acc_recovery_by_token, create_acc_recovery, del_acc_recovery
+from ...services.mail.repositories.reset_password import send_reset_password_email
 
 class ResetRequestForm(BaseModel):
     email: EmailStr

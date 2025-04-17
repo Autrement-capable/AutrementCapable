@@ -1,8 +1,10 @@
+from datetime import datetime
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.exc import IntegrityError, OperationalError
-from datetime import datetime
-from database.postgress.models import Role
+
+from ..models import Role
 
 # Create functions
 

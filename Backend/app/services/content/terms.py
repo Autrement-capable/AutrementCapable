@@ -1,12 +1,14 @@
 """
 Initialize the first version of the Terms and Conditions in the database.
-Run this script manually after your models are set up.
 """
 
 import asyncio
+from os import getenv
+
 from sqlalchemy.ext.asyncio import AsyncSession
-from database.postgress.config import getSession
-from database.postgress.actions.terms_agreements import create_terms_version
+
+from ...db.postgress.engine import getSession
+from ...db.postgress.repositories.terms_agreements import create_terms_version
 
 # Sample Terms and Conditions content for the first version
 INITIAL_TERMS_CONTENT = """
@@ -47,6 +49,10 @@ If you have any questions about these Terms, please contact us.
 
 async def init_terms():
     """Initialize the first version of the Terms and Conditions."""
+    if getenv("MODE") == "DEV":
+        # print("Skipping terms initialization in DEV mode.")
+        # return
+        pass
     session = await getSession()
     try:
         # Create first version

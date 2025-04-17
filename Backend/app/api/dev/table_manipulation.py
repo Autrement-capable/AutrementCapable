@@ -1,11 +1,13 @@
+## Debugging endpoints to manipulate tables in the database
+## FIY: SHOULD NOT BE USED IN PRODUCTION
+
 from fastapi import APIRouter, Depends, Path
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, AsyncEngine
 from sqlalchemy.future import select
-from sqlalchemy.ext.asyncio import AsyncEngine
 from sqlalchemy import text, inspect
 
-from server.server import AddRouter
-from database.postgress.config import getSession, postgress
+from ...core.application import AddRouter
+from ...db.postgress.engine import getSession, postgress
 
 example_router = APIRouter(prefix="/dev", tags=["Development"])
 

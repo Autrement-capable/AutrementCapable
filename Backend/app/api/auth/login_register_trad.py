@@ -1,14 +1,14 @@
+import os
+
 from fastapi import APIRouter, HTTPException, Depends, status, Response
 from pydantic import BaseModel, EmailStr
-from server.jwt_config.token_creation import create_token, set_refresh_cookie
-from database.postgress.actions.user import create_user, login_user, get_available_usernames, del_uvf_user
-from mail.actions.verify_account import send_verification_email
-from server.server import AddRouter
-from database.postgress.config import getSession as GetSession
 from sqlalchemy.ext.asyncio import AsyncSession
-from database.postgress.setup import postgress
 
-from os import getenv
+from ...core.application import AddRouter
+from ...core.security.token_creation import create_token, set_refresh_cookie
+from ...db.postgress.engine import getSession as GetSession
+from ...db.postgress.repositories.user import create_user, login_user, get_available_usernames, del_uvf_user
+from ...services.mail.repositories.verify_account import send_verification_email
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 

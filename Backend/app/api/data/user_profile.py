@@ -1,19 +1,19 @@
-# In endpoints/data/user_profile.py
+import os
+import json
 
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 
-from server.server import AddRouter
-from server.jwt_config.token_creation import JWTBearer
-from utils import secured_endpoint
-from database.postgress.config import getSession
-from database.postgress.models import User, UserDetail, UserPassion, UserPicture
-from database.postgress.actions.user_passions import (
-    get_user_passions, create_user_passion, delete_user_passion
-)
-from database.postgress.actions.user_pictures import create_or_update_user_picture
+from ...core.application import AddRouter
+from ...core.security.token_creation import JWTBearer
+from ...core.security.decorators import secured_endpoint
+from ...db.postgress.engine import getSession
+from ...db.postgress.models import User, UserDetail, UserPassion, UserPicture
+from ...db.postgress.repositories.user_passions import get_user_passions, create_user_passion, delete_user_passion
+from ...db.postgress.repositories.user_pictures import create_or_update_user_picture
 
 class UserProfileResponse(BaseModel):
     username: Optional[str]

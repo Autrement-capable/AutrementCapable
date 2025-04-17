@@ -1,13 +1,14 @@
+from typing import Dict, List, Optional, Any
+
 from fastapi import APIRouter, Depends, HTTPException, status, Path, Query
 from pydantic import BaseModel, Field
-from typing import Dict, List, Optional, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from server.server import AddRouter
-from server.jwt_config.token_creation import JWTBearer
-from utils import secured_endpoint
-from database.postgress.config import getSession
-from database.postgress.actions.ability_skills_user import (
+from ...core.application import AddRouter
+from ...core.security.token_creation import JWTBearer
+from ...core.security.decorators import secured_endpoint
+from ...db.postgress.engine import getSession
+from ...db.postgress.repositories.ability_skills_user import (
     get_user_skills,
     create_or_update_user_skills,
     update_specific_user_skill,
