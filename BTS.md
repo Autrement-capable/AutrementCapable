@@ -1,4 +1,4 @@
-# BETA TEST PLAN – AUTREMENT CAPABLE (MVP – Young User Only)
+# BETA TEST PLAN – AUTREMENT CAPABLE
 
 ## 1. Core Functionalities for Beta Version
 
