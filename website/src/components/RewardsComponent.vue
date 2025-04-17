@@ -2,35 +2,31 @@
   <div class="rewards-container" :class="{ 'high-contrast': highContrastMode }">
     <button class="close-modal-btn" @click="$emit('close')"></button>
 
-    <h1 class="main-title">Mes Badges</h1>
-
-    <!-- Message de célébration -->
-    <div class="celebration-box" v-if="hasUnlockedBadges">
-      <div class="celebration-icon">🎉</div>
-      <div class="celebration-text">
-        <h2>Bravo !</h2>
-        <p>
-          Vous avez débloqué {{ unlockedBadgesCount }} badge{{
-            unlockedBadgesCount > 1 ? 's' : ''
-          }}
-          !
-        </p>
+    <!-- Header - Profil simplifié -->
+    <div class="profile-header">
+      <div class="avatar-section">
+        <img :src="require('@/assets/pdp.png')" alt="Avatar" class="user-avatar" />
+        <div class="level-badge">Niveau {{ calculateLevel() }}</div>
+      </div>
+      <div class="user-info">
+        <h1 class="welcome-title">Bonjour {{ userProfile.firstName }} ! 👋</h1>
+        <p class="welcome-subtitle">Content de te revoir aujourd'hui !</p>
+        <div class="user-details">
+          <div class="user-detail-item">
+            <span class="detail-label">Âge:</span>
+            <span class="detail-value">{{ userProfile.age }} ans</span>
+          </div>
+          <div class="user-detail-item">
+            <span class="detail-label">Ville:</span>
+            <span class="detail-value">{{ userProfile.city }}</span>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Message si aucun badge -->
-    <div class="empty-state" v-if="!hasUnlockedBadges">
-      <div class="empty-badge-icon">🏅</div>
-      <h2>Pas encore de badges !</h2>
-      <p>Participez aux jeux et activités pour gagner vos premiers badges.</p>
-      <button @click="$router.push('/dashboard')" class="start-button">
-        Commencer à jouer
-      </button>
-    </div>
-
     <!-- Progression globale -->
-    <div class="progress-container" v-if="hasUnlockedBadges">
-      <h2>Ma progression</h2>
+    <div class="progress-container">
+      <h2 class="section-title">Mon parcours</h2>
       <div class="progress-bar-container">
         <div
           class="progress-bar"
@@ -38,32 +34,81 @@
         ></div>
       </div>
       <p class="progress-text">
-        {{ unlockedBadgesCount }} / {{ totalBadgesCount }} badges obtenus
+        <strong>{{ unlockedBadgesCount }}</strong> activités terminées sur <strong>{{ totalBadgesCount }}</strong>
       </p>
     </div>
 
-    <!-- Grille des badges -->
-    <div class="badges-grid">
-      <div
-        v-for="badge in badges"
-        :key="badge.id"
-        class="badge-card"
-        :class="{ unlocked: badge.unlocked, locked: !badge.unlocked }"
-        @click="showBadgeDetails(badge)"
-      >
-        <div
-          class="badge-icon"
-          :style="{ backgroundColor: badge.iconColor || '#e0e0e0' }"
+    <!-- Message si aucun badge -->
+    <div class="empty-state" v-if="!hasUnlockedBadges">
+      <div class="empty-badge-icon">🏅</div>
+      <h2>Pas encore de badges !</h2>
+      <p>Participe aux jeux et activités pour gagner tes premiers badges.</p>
+      <button @click="$router.push('/dashboard')" class="start-button">
+        Commencer à jouer
+      </button>
+    </div>
+
+    <!-- Prochaine activité -->
+    <div class="next-activity" v-if="hasUnlockedBadges || nextBadge">
+      <h2 class="section-title">Ma prochaine activité</h2>
+      <div class="next-activity-card">
+        <div 
+          class="next-activity-icon" 
+          :style="{ backgroundColor: nextBadge.iconColor }"
         >
-          <div v-if="!badge.unlocked" class="lock-overlay">🔒</div>
-          <span class="badge-emoji">{{ badge.icon }}</span>
+          <span class="activity-emoji">{{ nextBadge.icon }}</span>
         </div>
-        <div class="badge-info">
-          <h3>{{ badge.title }}</h3>
-          <p v-if="badge.unlocked">{{ badge.description }}</p>
-          <p v-else>Badge verrouillé</p>
+        <div class="next-activity-info">
+          <h3>{{ nextBadge.title }}</h3>
+          <p>{{ nextBadge.hint || 'Joue pour débloquer ce badge !' }}</p>
+          <button 
+            class="play-button"
+            @click="goToGame(nextBadge.gameRoute)"
+          >
+            Jouer maintenant →
+          </button>
         </div>
       </div>
+    </div>
+
+    <!-- Tous les badges -->
+    <div class="all-badges">
+      <h2 class="section-title">Mes badges</h2>
+      <div class="badges-grid">
+        <div 
+          v-for="badge in badges" 
+          :key="badge.id" 
+          class="badge-card"
+          :class="{ 'unlocked': badge.unlocked, 'locked': !badge.unlocked }"
+          @click="showBadgeDetails(badge)"
+        >
+          <div 
+            class="badge-icon" 
+            :style="{ backgroundColor: badge.unlocked ? badge.iconColor : '#e0e0e0' }"
+          >
+            <div v-if="!badge.unlocked" class="lock-overlay">🔒</div>
+            <span class="badge-emoji">{{ badge.icon }}</span>
+          </div>
+          <h3 class="badge-title">{{ badge.title }}</h3>
+          <div class="badge-status">
+            <span :class="badge.unlocked ? 'status-unlocked' : 'status-locked'">
+              {{ badge.unlocked ? 'Obtenu ✅' : 'À débloquer' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Boutons d'action -->
+    <div class="action-buttons">
+      <button class="action-button generate-cv-button" @click="generateCV">
+        <span class="button-icon">📄</span>
+        Créer mon CV
+      </button>
+      <button class="action-button profile-button" @click="viewProfile">
+        <span class="button-icon">👤</span>
+        Mon profil
+      </button>
     </div>
 
     <!-- Détails du badge (modal) -->
@@ -71,10 +116,7 @@
       <div class="badge-modal" @click.stop>
         <button class="close-button" @click="closeModal">×</button>
 
-        <div
-          class="badge-detail-content"
-          :class="{ unlocked: selectedBadge.unlocked }"
-        >
+        <div class="badge-detail-content">
           <div
             class="badge-detail-icon"
             :style="{ backgroundColor: selectedBadge.iconColor || '#e0e0e0' }"
@@ -82,16 +124,10 @@
             <span class="badge-detail-emoji">{{ selectedBadge.icon }}</span>
           </div>
 
-          <h2>{{ selectedBadge.title }}</h2>
+          <h2 class="badge-detail-title">{{ selectedBadge.title }}</h2>
 
-          <p v-if="selectedBadge.unlocked" class="badge-description">
-            {{ selectedBadge.description }}
-          </p>
-          <p v-else class="badge-locked-message">
-            {{
-              selectedBadge.hint ||
-              'Continuez à jouer pour débloquer ce badge !'
-            }}
+          <p class="badge-detail-description">
+            {{ selectedBadge.unlocked ? selectedBadge.description : (selectedBadge.hint || 'Continue à jouer pour débloquer ce badge !') }}
           </p>
 
           <div v-if="selectedBadge.unlocked" class="badge-achievement">
@@ -99,7 +135,16 @@
               Obtenu le: {{ formatDate(selectedBadge.dateUnlocked) }}
             </div>
             <div class="achievement-game">
-              {{ selectedBadge.game }}
+              Dans: {{ selectedBadge.game }}
+            </div>
+          </div>
+          <div v-else class="badge-locked-info">
+            <div class="badge-hint">
+              <span class="hint-icon">💡</span>
+              <p>{{ selectedBadge.hint || 'Continue à jouer pour débloquer ce badge !' }}</p>
+            </div>
+            <div class="badge-game">
+              Jeu: {{ selectedBadge.game }}
             </div>
           </div>
 
@@ -107,7 +152,7 @@
             <button
               v-if="!selectedBadge.unlocked"
               @click="goToGame(selectedBadge.gameRoute)"
-              class="play-button"
+              class="play-now-button"
             >
               Jouer maintenant
             </button>
@@ -138,45 +183,57 @@ export default {
       type: Boolean,
       default: true,
     },
+    progress: {
+      type: Number,
+      default: 37,
+    }
   },
   data() {
     return {
+      userProfile: {
+        firstName: 'Lucas',
+        lastName: 'Martin',
+        age: 16,
+        city: 'Lyon',
+      },
       badges: [
         {
           id: 1,
           title: 'Maître de la vitesse',
           description:
-            'Vous avez terminé le jeu de vitesse avec un score parfait !',
+            'Tu as terminé le jeu de vitesse avec un score parfait !',
           icon: '⚡',
           iconColor: '#F44336',
-          unlocked: false,
+          unlocked: true,
           dateUnlocked: '2023-06-16',
           game: 'Jeu de Vitesse',
           gameRoute: '/game-speed',
           shareable: true,
+          hint: 'Badge déjà obtenu'
         },
         {
           id: 2,
           title: 'Maître des scénarios',
           description:
-            'Vous avez brillamment résolu votre premier scénario social !',
+            'Tu as brillamment résolu ton premier scénario social !',
           icon: '🎭',
           iconColor: '#9C27B0',
-          unlocked: false,
-          dateUnlocked: '',
+          unlocked: true,
+          dateUnlocked: '2023-06-18',
           game: 'Jeu des Scénarios',
           gameRoute: '/scenarios',
           shareable: true,
+          hint: 'Badge déjà obtenu'
         },
         {
           id: 3,
           title: 'Expert des formes',
           description:
-            'Vous avez reconnu toutes les séquences de formes correctement !',
+            'Tu as reconnu toutes les séquences de formes correctement !',
           icon: '🔷',
           iconColor: '#2196F3',
           unlocked: false,
-          hint: 'Terminez le jeu des formes avec un score parfait',
+          hint: 'Termine le jeu des formes avec un score parfait',
           game: 'Jeu des Formes',
           gameRoute: '/shape-sequence-game',
           shareable: true,
@@ -185,11 +242,11 @@ export default {
           id: 4,
           title: 'Explorateur de compétences',
           description:
-            'Vous avez exploré et identifié vos points forts et axes de développement !',
+            'Tu as exploré et identifié tes points forts !',
           icon: '🎯',
           iconColor: '#3F51B5',
           unlocked: false,
-          hint: 'Terminez la Roulette des Compétences et découvrez vos talents',
+          hint: 'Termine la Roulette des Compétences et découvre tes talents',
           game: 'Roulette des Compétences',
           gameRoute: '/roue-des-competences',
           shareable: true,
@@ -197,11 +254,11 @@ export default {
         {
           id: 5,
           title: "Explorateur d'environnements",
-          description: 'Vous avez exploré tous les environnements disponibles',
+          description: 'Tu as exploré tous les environnements disponibles',
           icon: '🏠',
           iconColor: '#795548',
           unlocked: false,
-          hint: "Essayez tous les préréglages dans l'environnement de personnalisation",
+          hint: "Essaie tous les préréglages dans l'environnement de personnalisation",
           game: 'Environnement',
           gameRoute: '/environment',
           shareable: false,
@@ -210,7 +267,7 @@ export default {
           id: 6,
           title: 'CV professionnel',
           description:
-            'Vous avez complété toutes les étapes pour générer un CV professionnel',
+            'Tu as complété toutes les étapes pour générer un CV professionnel',
           icon: '📄',
           iconColor: '#607D8B',
           unlocked: false,
@@ -218,15 +275,16 @@ export default {
           game: 'Générateur de CV',
           gameRoute: '/cv-preview',
           shareable: true,
+          hint: 'Crée ton CV pour débloquer ce badge'
         },
         {
           id: 7,
           title: 'Apprenti des métiers',
-          description: 'Vous avez découvert 3 métiers différents',
+          description: 'Tu as découvert 3 métiers différents',
           icon: '👷',
           iconColor: '#FF9800',
           unlocked: false,
-          hint: 'Explorez au moins 3 fiches métier',
+          hint: 'Explore au moins 3 fiches métier',
           game: 'Découverte des métiers',
           gameRoute: '/metier/soudeur',
           shareable: false,
@@ -234,11 +292,11 @@ export default {
         {
           id: 8,
           title: 'Inscription à une formation',
-          description: 'Vous vous êtes inscrit à une formation',
+          description: 'Tu t\'es inscrit à une formation',
           icon: '🎓',
           iconColor: '#FFD700',
           unlocked: false,
-          hint: 'Inscrivez-vous à une formation pour débloquer ce badge',
+          hint: 'Inscris-toi à une formation pour débloquer ce badge',
           game: 'Formations',
           gameRoute: '/formation',
           shareable: true,
@@ -262,6 +320,11 @@ export default {
     hasUnlockedBadges() {
       return this.unlockedBadgesCount > 0
     },
+    nextBadge() {
+      // Trouve le premier badge non débloqué
+      const nextBadge = this.badges.find(badge => !badge.unlocked);
+      return nextBadge || this.badges[0]; // Retourne le premier badge si tout est débloqué
+    }
   },
   created() {
     // Chargement des préférences d'accessibilité
@@ -271,10 +334,15 @@ export default {
     this.loadBadges()
   },
   methods: {
+    calculateLevel() {
+      return Math.floor(this.progress / 10) + 1;
+    },
+    
     toggleAnimations() {
       // Émettre un événement pour que le parent puisse mettre à jour son état
       this.$emit('toggle-animations')
     },
+    
     loadBadges() {
       // Dans un cas réel, on chargerait les badges depuis localStorage
       // ou depuis une API selon que l'utilisateur est connecté ou non
@@ -343,8 +411,24 @@ export default {
       // Dans un cas réel, cela pourrait ouvrir une boîte de dialogue de partage
       // ou générer un lien à partager
       alert(
-        `Partage du badge "${badge.title}" sur les réseaux sociaux (à implémenter)`
+        `Partage du badge "${badge.title}" sur les réseaux sociaux`
       )
+    },
+    
+    generateCV() {
+      // Dans un cas réel, on redirigerait vers la page de génération de CV
+      this.$router.push('/cv-preview')
+      
+      // Fermer la modal
+      this.$emit('close')
+    },
+    
+    viewProfile() {
+      // Dans un cas réel, on redirigerait vers la page de profil
+      this.$router.push('/profile')
+      
+      // Fermer la modal
+      this.$emit('close')
     },
 
     // Fonctions d'accessibilité
@@ -398,10 +482,10 @@ export default {
   position: absolute;
   max-width: 1000px;
   width: 90%;
-  padding: 20px;
-  background-color: #f8f9fa;
-  border-radius: 20px;
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+  background-color: rgba(30, 30, 45, 0.85);
+  border-radius: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -409,87 +493,32 @@ export default {
   z-index: 1000;
   max-height: 90vh;
   overflow-y: auto;
+  color: white;
+  font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', sans-serif;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.main-title {
-  text-align: center;
-  color: #4a4d9e;
-  font-size: 1.8rem;
-  margin-bottom: 5px;
-  position: relative;
-  padding-bottom: 8px;
-}
-
-.main-title::after {
-  content: '';
+/* Boutons de contrôle */
+.close-modal-btn {
   position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60px;
-  height: 3px;
-  background-color: #ffd700;
-  border-radius: 2px;
-}
-
-/* Ajout d'espace en bas de la page */
-.bottom-spacer {
-  height: 30px;
-}
-
-/* Styles d'accessibilité */
-.accessibility-controls {
-  position: absolute;
-  top: 10px;
-  right: 80px;
-  display: flex;
-  gap: 1px;
-  z-index: 10;
-}
-
-.accessibility-btn {
-  width: 40px;
-  height: 40px;
+  width: 24px;
+  height: 56px;
   border-radius: 50%;
-  border: none;
-  background-color: transparent;
-  color: #4a4d9e;
-  font-size: 1rem;
-  cursor: pointer;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
   transition: all 0.3s ease;
-}
-
-.accessibility-btn:hover {
-  background-color: rgba(255, 64, 129, 0.1);
-  color: #ff4081;
-}
-
-.high-contrast .accessibility-btn {
-  color: #ffffff;
-}
-
-.high-contrast .accessibility-btn:hover {
-  background-color: rgba(255, 64, 129, 0.2);
+  z-index: 10;
+  font-size: 14px;
 }
 
 .close-modal-btn {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  background: transparent;
-  border: none;
-  color: #4a4d9e;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  transition: color 0.3s ease;
-  z-index: 10;
+  top: 16px;
+  right: 16px;
 }
 
 .close-modal-btn:before,
@@ -498,7 +527,7 @@ export default {
   position: absolute;
   width: 24px;
   height: 3px;
-  background-color: #4a4d9e;
+  background-color: white;
   transition: background-color 0.3s ease;
 }
 
@@ -510,64 +539,137 @@ export default {
   transform: rotate(-45deg);
 }
 
-.close-modal-btn:hover:before,
-.close-modal-btn:hover:after {
-  background-color: #ff4081;
+.close-modal-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
 }
 
-/* Mode contraste élevé */
-.high-contrast .close-modal-btn {
-  color: #ffffff;
-}
-
-.high-contrast .close-modal-btn:before,
-.high-contrast .close-modal-btn:after {
-  background-color: #ffffff;
-}
-
-.high-contrast .close-modal-btn:hover:before,
-.high-contrast .close-modal-btn:hover:after {
-  background-color: #ff4081;
-}
-
-/* Boîte de célébration */
-.celebration-box {
+/* Header profil */
+.profile-header {
   display: flex;
   align-items: center;
-  background-color: #fff8e1;
-  border-radius: 10px;
-  padding: 15px;
-  margin-bottom: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  animation: bounce 0.5s ease;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px dashed rgba(255, 255, 255, 0.2);
 }
 
-.celebration-icon {
-  font-size: 2.2rem;
-  margin-right: 15px;
-  animation: pulse 2s infinite;
+.avatar-section {
+  position: relative;
+  margin-right: 24px;
 }
 
-.celebration-text h2 {
-  margin: 0 0 6px 0;
-  color: #ff9800;
-  font-size: 1.3rem;
+.user-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 4px solid #ffd700;
+  object-fit: cover;
+  background-color: #333;
 }
 
-.celebration-text p {
-  font-size: 0.95rem;
-  margin: 0;
-  color: #000000;
+.level-badge {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background-color: #4caf50;
+  color: white;
+  border-radius: 12px;
+  padding: 4px 8px;
+  font-size: 16px;
+  font-weight: bold;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.user-info {
+  flex: 1;
+}
+
+.welcome-title {
+  font-size: 28px;
+  color: #fff;
+  margin: 0 0 4px 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.welcome-subtitle {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 16px 0;
+}
+
+.user-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.user-detail-item {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 6px 12px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.detail-label {
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.detail-value {
+  color: white;
+}
+
+/* Section de progression */
+.progress-container {
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 20px;
+  border-radius: 16px;
+  margin-bottom: 24px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.section-title {
+  font-size: 22px;
+  color: #4fc3f7;
+  margin-top: 0;
+  margin-bottom: 16px;
+  text-align: center;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.progress-bar-container {
+  height: 24px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 8px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #4caf50, #8bc34a);
+  border-radius: 12px;
+  transition: width 1s ease;
+  box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+}
+
+.progress-text {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 /* État vide - pas de badges */
 .empty-state {
   text-align: center;
-  padding: 25px 10px;
-  background-color: #ffffff;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  margin-bottom: 20px;
+  padding: 25px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  margin-bottom: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .empty-badge-icon {
@@ -577,14 +679,15 @@ export default {
 }
 
 .empty-state h2 {
-  font-size: 1.3rem;
+  font-size: 24px;
   margin-bottom: 8px;
-  color: #757575;
+  color: white;
 }
 
 .empty-state p {
-  font-size: 0.95rem;
-  margin-bottom: 10px;
+  font-size: 18px;
+  margin-bottom: 20px;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .start-button {
@@ -592,143 +695,220 @@ export default {
   color: white;
   border: none;
   border-radius: 25px;
-  padding: 8px 16px;
-  font-size: 0.9rem;
+  padding: 12px 24px;
+  font-size: 18px;
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
-  margin-top: 10px;
-  display: inline-block;
-  line-height: normal;
-  height: auto;
+  font-weight: bold;
 }
 
 .start-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
-}
-
-/* Barre de progression */
-.progress-container {
-  text-align: center;
-  margin-bottom: 10px;
-  background-color: #ffffff;
-  padding: 5px;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.progress-container h2 {
-  margin-top: 0;
-  margin-bottom: 10px;
-  color: #333333;
-  font-size: 1.2rem;
-}
-
-.progress-bar-container {
-  width: 100%;
-  height: 16px;
-  background-color: #e0e0e0;
-  border-radius: 8px;
-  overflow: hidden;
-  margin-bottom: 8px;
-}
-
-.progress-bar {
-  height: 100%;
-  background: linear-gradient(90deg, #4caf50, #8bc34a);
-  border-radius: 8px;
-  transition: width 1s ease;
-}
-
-.progress-text {
-  font-size: 0.9rem;
-  color: #757575;
-  margin: 3px 0 0;
-}
-
-/* Grille des badges */
-.badges-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 15px;
-  margin-bottom: 30px;
-}
-
-.badge-card {
-  background-color: #ffffff;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 15px;
-  position: relative;
-}
-
-.badge-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
 }
 
-.badge-card.unlocked {
-  border: 1px solid #8bc34a;
+/* Prochaine activité */
+.next-activity {
+  margin-bottom: 24px;
 }
 
-.badge-card.locked {
-  opacity: 0.7;
-  filter: grayscale(70%);
+.next-activity-card {
+  display: flex;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 16px;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.badge-icon {
-  position: relative;
+.next-activity-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.next-activity-icon {
   width: 80px;
   height: 80px;
-  margin-bottom: 12px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-right: 16px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
-.badge-emoji {
+.activity-emoji {
   font-size: 40px;
+}
+
+.next-activity-info {
+  flex: 1;
+}
+
+.next-activity-info h3 {
+  font-size: 20px;
+  color: white;
+  margin: 0 0 8px 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.next-activity-info p {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 16px 0;
+}
+
+/* Tous les badges */
+.all-badges {
+  margin-bottom: 24px;
+}
+
+.badges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.badge-card {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.badge-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.badge-card.locked {
+  opacity: 0.8;
+}
+
+.badge-card.unlocked {
+  border: 2px solid #4caf50;
+  box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+}
+
+.badge-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  position: relative;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .lock-overlay {
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: 24px;
+  color: #fff;
+  background-color: rgba(0, 0, 0, 0.5);
   border-radius: 50%;
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
 }
 
-.badge-info {
+.badge-emoji {
+  font-size: 32px;
+}
+
+.badge-title {
+  font-size: 16px;
+  color: white;
+  margin: 0 0 8px 0;
   text-align: center;
-  flex-grow: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-.badge-info h3 {
-  margin-top: 0;
-  margin-bottom: 6px;
-  color: #333333;
-  font-size: 1rem;
+.badge-status {
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: bold;
 }
 
-.badge-info p {
-  margin: 0;
-  color: #757575;
-  font-size: 0.85rem;
-  line-height: 1.3;
+.status-unlocked {
+  color: #4caf50;
+  text-shadow: 0 0 4px rgba(76, 175, 80, 0.5);
+}
+
+.status-locked {
+  color: #9e9e9e;
+}
+
+/* Boutons d'action */
+.action-buttons {
+  display: flex;
+  gap: 16px;
+  margin-top: 24px;
+  margin-bottom: 16px;
+}
+
+.action-button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(74, 77, 158, 0.8);
+  color: white;
+  border: none;
+  padding: 16px;
+  border-radius: 16px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  gap: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.action-button:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+}
+
+.generate-cv-button {
+  background-color: rgba(255, 152, 0, 0.8);
+}
+
+.generate-cv-button:hover {
+  background-color: rgba(255, 152, 0, 0.9);
+}
+
+.profile-button {
+  background-color: rgba(33, 150, 243, 0.8);
+}
+
+.profile-button:hover {
+  background-color: rgba(33, 150, 243, 0.9);
+}
+
+.button-icon {
+  font-size: 24px;
 }
 
 /* Modal de détails de badge */
@@ -738,102 +918,127 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.9);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 1100;
+  backdrop-filter: blur(5px);
 }
 
 .badge-modal {
-  background-color: #ffffff;
-  border-radius: 12px;
-  width: 90%;
+  background-color: rgba(30, 30, 45, 0.95);
+  border-radius: 24px;
+  padding: 24px;
   max-width: 400px;
-  max-height: 90vh;
-  overflow-y: auto;
+  width: 90%;
   position: relative;
-  padding: 20px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   animation: scaleUp 0.3s ease;
 }
 
 .close-button {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  background: none;
-  border: none;
-  font-size: 1.2rem;
-  cursor: pointer;
-  width: 24px;
-  height: 24px;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  transition: all 0.2s ease;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 .close-button:hover {
-  background-color: #f5f5f5;
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
 }
 
 .badge-detail-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
 }
 
 .badge-detail-icon {
   width: 100px;
   height: 100px;
-  margin: 0 auto 15px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 .badge-detail-emoji {
   font-size: 50px;
 }
 
-.badge-detail-content h2 {
-  color: #333333;
-  margin-bottom: 12px;
-  font-size: 1.3rem;
+.badge-detail-title {
+  font-size: 24px;
+  color: white;
+  margin: 0 0 8px 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.badge-description {
-  color: #555555;
-  margin-bottom: 15px;
-  line-height: 1.4;
-  font-size: 0.9rem;
+.badge-detail-description {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0 0 16px 0;
 }
 
-.badge-locked-message {
-  color: #757575;
-  font-style: italic;
-  margin-bottom: 15px;
-  font-size: 0.9rem;
-}
-
-.badge-achievement {
-  background-color: #f5f5f5;
-  padding: 12px;
-  border-radius: 8px;
-  margin-bottom: 15px;
+.badge-achievement, .badge-locked-info {
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 16px;
+  border-radius: 16px;
+  width: 100%;
+  margin-bottom: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .achievement-date {
   font-weight: bold;
-  margin-bottom: 5px;
-  color: #4a4d9e;
-  font-size: 0.9rem;
+  color: #4fc3f7;
+  margin-bottom: 4px;
+  text-shadow: 0 0 5px rgba(79, 195, 247, 0.5);
 }
 
 .achievement-game {
-  color: #757575;
-  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.badge-hint {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.hint-icon {
+  font-size: 24px;
+  margin-right: 8px;
+  text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+}
+
+.badge-hint p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 16px;
+  text-align: left;
+}
+
+.badge-game {
+  color: rgba(255, 255, 255, 0.8);
+  font-style: italic;
+  text-align: left;
 }
 
 .badge-actions {
@@ -843,41 +1048,40 @@ export default {
   margin-top: 15px;
 }
 
-.play-button,
-.share-button {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 25px;
-  cursor: pointer;
+.play-button, .play-now-button, .share-button {
+  padding: 12px 24px;
+  border-radius: 24px;
+  font-size: 16px;
   font-weight: bold;
+  color: white;
+  border: none;
+  cursor: pointer;
   transition: all 0.3s ease;
-  font-size: 0.85rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
-.play-button {
+.play-button, .play-now-button {
   background-color: #4caf50;
-  color: white;
 }
 
 .share-button {
   background-color: #2196f3;
-  color: white;
 }
 
-.play-button:hover,
-.share-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+.play-button:hover, .play-now-button:hover, .share-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
 }
 
 /* Animations */
-@keyframes bounce {
-  0%,
-  100% {
-    transform: translateY(0);
+@keyframes scaleUp {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
   }
-  50% {
-    transform: translateY(-5px);
+  to {
+    transform: scale(1);
+    opacity: 1;
   }
 }
 
@@ -893,150 +1097,107 @@ export default {
   }
 }
 
-@keyframes scaleUp {
-  from {
-    transform: scale(0.8);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-/* Tailles de texte variables pour accessibilité */
-.text-small {
-  font-size: 0.8rem;
-}
-
-.text-small .main-title {
-  font-size: 1.6rem;
-}
-
-.text-small .badge-info h3 {
-  font-size: 0.9rem;
-}
-
-.text-large {
-  font-size: 1rem;
-}
-
-.text-large .main-title {
-  font-size: 2.2rem;
-}
-
-.text-large .badge-info h3 {
-  font-size: 1.2rem;
-}
-
-.text-xlarge {
-  font-size: 1.2rem;
-}
-
-.text-xlarge .main-title {
-  font-size: 2.6rem;
-}
-
-.text-xlarge .badge-info h3 {
-  font-size: 1.4rem;
-}
-
 /* Mode contraste élevé */
 .high-contrast {
-  background-color: #000000;
-  color: #ffffff;
+  color: white;
+  background-color: black;
+}
+
+.high-contrast.rewards-container {
+  background-color: #000;
+  border: 2px solid #fff;
 }
 
 .high-contrast .badge-card,
-.high-contrast .badge-modal,
+.high-contrast .next-activity-card,
 .high-contrast .progress-container,
 .high-contrast .empty-state,
-.high-contrast .celebration-box {
-  background-color: #222222;
-  border: 1px solid #ffffff;
+.high-contrast .badge-achievement,
+.high-contrast .badge-locked-info,
+.high-contrast .badge-modal {
+  background-color: #222;
+  border: 2px solid #fff;
 }
 
-.high-contrast .badge-info h3,
-.high-contrast .badge-detail-content h2 {
-  color: #ffffff;
+.high-contrast .user-detail-item {
+  background-color: #333;
+  border: 1px solid #fff;
 }
 
-.high-contrast .badge-info p,
-.high-contrast .badge-description,
-.high-contrast .badge-locked-message,
-.high-contrast .progress-text {
-  color: #cccccc;
+.high-contrast .progress-bar-container {
+  background-color: #333;
+  border: 1px solid #fff;
+}
+
+.high-contrast .progress-bar {
+  background: #fff;
+}
+
+.high-contrast .section-title,
+.high-contrast .welcome-title,
+.high-contrast .badge-title,
+.high-contrast .badge-detail-title,
+.high-contrast .next-activity-info h3 {
+  color: #fff;
+  text-shadow: none;
 }
 
 /* Media queries pour la responsivité */
 @media (max-width: 768px) {
-  .rewards-container {
-    margin: 15px auto 25px;
-    padding: 15px 10px;
+  .profile-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
   }
-
+  
+  .avatar-section {
+    margin-right: 0;
+    margin-bottom: 16px;
+  }
+  
+  .user-details {
+    justify-content: center;
+  }
+  
   .badges-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   }
-
-  .badge-detail-icon {
-    width: 90px;
-    height: 90px;
-  }
-
-  .badge-actions {
+  
+  .action-buttons {
     flex-direction: column;
   }
-
-  .play-button,
-  .share-button {
-    width: 100%;
-    margin-bottom: 5px;
-  }
-
-  .celebration-box {
+  
+  .next-activity-card {
     flex-direction: column;
     text-align: center;
-    padding: 5px;
   }
-
-  .celebration-icon {
+  
+  .next-activity-icon {
     margin-right: 0;
-    margin-bottom: 5px;
+    margin-bottom: 12px;
   }
 }
 
 @media (max-width: 480px) {
   .rewards-container {
-    margin: 10px auto 20px;
-    padding: 10px 5px;
-    border-radius: 8px;
+    padding: 16px 12px;
+    border-radius: 16px;
   }
-
+  
   .badges-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
   }
-
-  .accessibility-controls {
-    top: 5px;
-    right: 5px;
-    gap: 3px;
+  
+  .section-title {
+    font-size: 20px;
   }
-
-  .accessibility-btn {
-    width: 25px;
-    height: 25px;
-    font-size: 0.8rem;
+  
+  .welcome-title {
+    font-size: 24px;
   }
-
-  .main-title {
-    font-size: 1.5rem;
-    margin-bottom: 5px;
-  }
-
-  .empty-badge-icon {
-    font-size: 60px;
+  
+  .welcome-subtitle {
+    font-size: 16px;
   }
 }
 </style>

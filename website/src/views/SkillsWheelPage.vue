@@ -302,7 +302,7 @@ export default {
             return '✨';
           },
           style: {
-            fontSize: '24px',
+            fontSize: '40px',
             fontFamily: 'Arial, sans-serif',
             fontWeight: 'normal'
           },
@@ -324,7 +324,12 @@ export default {
           options: {
             chart: {
               height: 350
-            }
+            },
+            dataLabels: {
+              style: {
+                fontSize: '32px', // MODIFIÉ: Taille adaptée pour les petits écrans
+              }
+            },
           }
         }],
         states: {
@@ -465,9 +470,6 @@ export default {
       // Select random segment from available ones
       const randomIndex = Math.floor(Math.random() * availableIndices.length);
       this.currentSegmentIndex = availableIndices[randomIndex];
-      
-      // Play spinning sound if SpeechSynthesis is available
-      this.playSpinningSound();
       
       // Préparer l'animation
       const startTime = performance.now();
@@ -768,23 +770,7 @@ export default {
       console.log("Compétence sans icône trouvée:", skill);
       return '✨'; // Icône par défaut
     },
-    
-    // Play a spinning sound using Web Speech API
-    playSpinningSound() {
-      if (!('speechSynthesis' in window)) return;
-      
-      // Cancel any ongoing speech
-      window.speechSynthesis.cancel();
-      
-      // Create and play a short spinning sound
-      const utterance = new SpeechSynthesisUtterance('La roue tourne');
-      utterance.lang = 'fr-FR';
-      utterance.rate = 1.2;
-      utterance.pitch = 1.5;
-      
-      window.speechSynthesis.speak(utterance);
-    },
-    
+
     // Announce the selected skill using speech synthesis
     announceSkill() {
       if (!('speechSynthesis' in window) || !this.currentSkill) return;
@@ -1651,7 +1637,6 @@ export default {
 :deep(.apexcharts-pie-label),
 :deep(.apexcharts-datalabel) {
   fill: #333 !important;
-  font-size: 12px !important;
   font-weight: bold !important;
   filter: none !important;
 }

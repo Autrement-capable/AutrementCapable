@@ -158,7 +158,10 @@
         v-if="showRewardsModal"
         :current-theme="currentTheme"
         :animations-enabled="animationsEnabled"
+        :progress="progress"
         @close="closeRewardsModal"
+        @generate-cv="handleGenerateCV"
+        @view-profile="handleViewProfile"
       />
 
       <!-- Onglet de contrôle du thème -->
@@ -341,6 +344,17 @@ export default {
     // Nouvelle méthode pour fermer le modal de récompenses
     closeRewardsModal() {
       this.showRewardsModal = false
+    },
+
+    handleGenerateCV() {
+      // Déclenche un accomplissement et ferme le modal
+      this.triggerAchievement('CV professionnel');
+      this.closeRewardsModal();
+    },
+
+    handleViewProfile() {
+      console.log('Affichage du profil');
+      this.closeRewardsModal();
     },
 
     // Personnalisation de l'avatar
@@ -795,6 +809,40 @@ export default {
       scale(0);
     opacity: 0;
   }
+}
+
+/* Bouton pour accéder au parcours */
+.parcours-button-container {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  z-index: 30;
+}
+
+.parcours-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(30, 30, 45, 0.7);
+  padding: 10px 20px;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  backdrop-filter: blur(5px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.parcours-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4);
+  background: rgba(40, 40, 60, 0.8);
+}
+
+.parcours-button-icon {
+  font-size: 20px;
 }
 
 /* Avatar and Progress Ring - Highly enhanced! */
