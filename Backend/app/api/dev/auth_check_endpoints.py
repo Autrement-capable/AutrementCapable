@@ -1,0 +1,29 @@
+## Debugging endpoints to check if the access token and refresh token are valid
+## FIY: SHOULD NOT BE USED IN PRODUCTION
+
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from ...core.application import AddRouter
+from ...core.security.token_creation import JWTBearer
+from ...core.security.decorators import secured_endpoint, SecurityRequirement
+from ...db.postgress.engine import getSession as GetSession
+
+
+auth_test = APIRouter(prefix="/dev", tags=["Development"])
+
+@auth_test.get("/test_access_token")
+@secured_endpoint
+async def test_access_token_with_session(
+    session: AsyncSession = Depends(GetSession), token: dict = Depends(JWTBearer())
+):
+    return {"msg": "Access Token is valid!", "payload": token["payload"]}
+
+@auth_test.get("/test_refresh_token")
+@secured_endpoint(security_type=SecurityRequirement.REFRESH_COOKIE)
+async def test_refresh_token_with_session(
+    session: AsyncSession = Depends(GetSession), token: dict = Depends(JWTBearer(is_refresh=True))
+):
+    return {"msg": "Refresh Token is valid!", "payload": token["payload"]}
+
+AddRouter(auth_test)
