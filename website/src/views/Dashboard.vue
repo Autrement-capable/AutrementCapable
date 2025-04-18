@@ -5,6 +5,18 @@
       'achievements-unlocked': hasNewAchievement,
     }"
   >
+    <!-- Guide Avatar pour guider l'utilisateur -->
+    <guide-avatar
+      v-if="isFirstVisit && !showRewardsModal"
+      guide-name="Léo"
+      :forced-message="guideMessage"
+      :forced-options="guideOptions"
+      :force-show-message="guideForceShow"
+      :context="guideContext"
+      :auto-show-delay="0"
+      @option-selected="handleGuideOptionSelected"
+    />
+
     <space-background v-if="animationsEnabled" :theme="currentTheme" />
     <static-backgrounds v-else :theme="currentTheme" />
     <!-- La structure principale -->
@@ -15,6 +27,17 @@
         @click="interactWithAvatar"
         :class="{ 'avatar-pulse': avatarAnimating }"
       >
+        <div 
+          v-if="highlightAvatar && isFirstVisit" 
+          class="avatar-highlight-effect"
+          @click="interactWithAvatar"
+        >
+          <div class="pulse-ring"></div>
+          <div class="hint-arrow">
+            <span class="arrow">↓</span>
+            <span class="hint-text">Clique ici!</span>
+          </div>
+        </div>
         <div class="progress-ring-container">
           <svg class="progress-ring" width="300" height="260">
             <!-- Background glow effect -->
@@ -159,6 +182,7 @@
         :current-theme="currentTheme"
         :animations-enabled="animationsEnabled"
         :progress="progress"
+        :show-profile-guide="true"
         @close="closeRewardsModal"
         @generate-cv="handleGenerateCV"
         @view-profile="handleViewProfile"
@@ -224,6 +248,9 @@
 import SpaceBackground from '@/components/SpaceBackground.vue'
 import StaticBackgrounds from '@/components/StaticBackgrounds.vue'
 import RewardsComponent from '@/components/RewardsComponent.vue'
+import GuideAvatar from '@/components/GuideComponent.vue'
+import UserJourneyService from '@/services/UserJourneyService.js'
+import { eventBus } from '@/utils/eventBus'
 
 export default {
   name: 'UserDashboard',
@@ -231,6 +258,7 @@ export default {
     SpaceBackground,
     StaticBackgrounds,
     RewardsComponent,
+    GuideAvatar,
   },
   data() {
     return {
@@ -261,9 +289,56 @@ export default {
         'Briseur de Barrières',
         'Esprit Créatif',
       ],
+      guideContext: 'dashboard',
+      guideMessage: "Bienvenue ! Clique sur ton avatar au centre pour découvrir ton profil et débloquer ton premier badge !",
+      guideOptions: [
+        { text: "Comment faire ?", action: "showProfileHelp" }
+      ],
+      guideForceShow: true,
+      highlightAvatar: false,
+      isFirstVisit: false
     }
   },
+  created() {
+    // Écouter les événements via eventBus
+    eventBus.on('hide-dashboard-guide', () => {
+      this.guideForceShow = false;
+    });
+    
+    // Autres configurations...
+  },
+  beforeUnmount() {
+    // Nettoyer les écouteurs d'événements
+    eventBus.off('hide-dashboard-guide');
+  },
   methods: {
+    // Vérifier si c'est la première visite de l'utilisateur
+    checkFirstVisit() {
+      const hasVisitedBefore = localStorage.getItem('hasVisitedDashboard');
+      this.isFirstVisit = !hasVisitedBefore;
+      
+      if (!hasVisitedBefore) {
+        localStorage.setItem('hasVisitedDashboard', 'true');
+        
+        // Mettre à jour l'étape dans le service de parcours utilisateur
+        if (typeof UserJourneyService !== 'undefined') {
+          UserJourneyService.updateStep(UserJourneyService.STEPS.DASHBOARD_INTRO);
+        }
+      }
+    },
+
+    // Afficher une aide spécifique pour accéder au profil
+    showProfileHelp() {
+      this.guideMessage = "Clique sur l'avatar brillant au centre de l'écran. C'est ton personnage qui te permettra d'accéder à ton profil !";
+      this.highlightAvatar = true; // Assurer que l'avatar est mis en évidence
+    },
+
+    // Méthode pour gérer les options sélectionnées dans le guide
+    handleGuideOptionSelected(option) {
+      if (option.action && typeof this[option.action] === 'function') {
+        this[option.action]();
+      }
+    },
     toggleThemeMenu() {
       this.themeMenuVisible = !this.themeMenuVisible
 
@@ -332,18 +407,40 @@ export default {
     },
 
     interactWithAvatar() {
-      this.avatarAnimating = true
-      this.showRewardsModal = true // Show the rewards modal instead of the interaction menu
-
+      this.avatarAnimating = true;
+      this.showRewardsModal = true;
+      
       // Animation plus longue pour un meilleur effet
       setTimeout(() => {
-        this.avatarAnimating = false
-      }, 1000)
+        this.avatarAnimating = false;
+      }, 1000);
+      
+      // Mettre à jour l'étape dans le service de parcours utilisateur
+      try {
+        if (typeof UserJourneyService !== 'undefined') {
+          UserJourneyService.updateStep(UserJourneyService.STEPS.PROFILE_INTRO);
+        }
+      } catch (error) {
+        console.error("Erreur lors de la mise à jour de l'étape du parcours:", error);
+      }
+      
+      // Envoyer un événement via eventBus
+      eventBus.emit('profile-opened');
+      
+      // Masquer le guide du dashboard quand on ouvre la modal du profil
+      this.guideForceShow = false;
+      eventBus.emit('hide-dashboard-guide');
+      
+      // Propriété pour suivre si la modal a été ouverte
+      localStorage.setItem('hasOpenedProfile', 'true');
     },
 
     // Nouvelle méthode pour fermer le modal de récompenses
     closeRewardsModal() {
       this.showRewardsModal = false
+      if (this.isFirstVisit) {
+        this.guideForceShow = true;
+      }
     },
 
     handleGenerateCV() {
@@ -472,6 +569,14 @@ export default {
         this.achievements[Math.floor(Math.random() * this.achievements.length)]
       this.triggerAchievement(randomAchievement)
     }, 5000)
+
+    // Vérifier si c'est la première visite
+    this.checkFirstVisit();
+    
+    // Ajouter un délai avant d'activer la mise en évidence de l'avatar
+    setTimeout(() => {
+      this.highlightAvatar = true;
+    }, 2000);
   },
 }
 </script>
@@ -994,6 +1099,124 @@ export default {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
   z-index: 3;
+}
+
+/* Effet de mise en évidence de l'avatar */
+.avatar-highlight-effect {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  height: 300px;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.pulse-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  border: 4px solid #76ff03;
+  box-shadow: 0 0 20px rgba(118, 255, 3, 0.7);
+  opacity: 0.7;
+  animation: pulse-ring 2s ease-out infinite;
+}
+
+.hint-arrow {
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: bounce 2s ease infinite;
+  text-align: center;
+}
+
+.arrow {
+  display: block;
+  font-size: 36px;
+  color: #76ff03;
+  text-shadow: 0 0 10px rgba(118, 255, 3, 0.7);
+}
+
+.hint-text {
+  display: block;
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+  margin-top: 5px;
+  padding: 5px 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: translate(-50%, -50%) scale(0.9);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.9);
+    opacity: 0.7;
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  40% {
+    transform: translateX(-50%) translateY(-15px);
+  }
+  60% {
+    transform: translateX(-50%) translateY(-7px);
+  }
+}
+
+/* Styles pour améliorer l'intégration du guide */
+.guide-avatar-container {
+  z-index: 1050; /* S'assurer que le guide est au-dessus des autres éléments */
+}
+
+.speech-bubble {
+  background-color: #fff;
+  font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', sans-serif;
+  color: #333;
+  border: 2px solid #58cc02; /* Couleur verte de Duolingo */
+}
+
+.speech-bubble:after {
+  border-color: #fff transparent transparent;
+}
+
+.bubble-header {
+  border-bottom: 1px solid #58cc02;
+}
+
+.guide-name {
+  color: #58cc02;
+}
+
+.option-button {
+  background-color: #fff;
+  border: 2px solid #58cc02;
+  color: #58cc02;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.option-button:hover {
+  background-color: #58cc02;
+  color: #fff;
 }
 
 .avatar-container:hover .level-badge {

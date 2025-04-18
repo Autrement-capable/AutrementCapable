@@ -1,4 +1,13 @@
 <template>
+  <div v-if="showBadgeUnlockAnimation" class="badge-unlock-overlay">
+    <div class="badge-unlock-animation">
+      <div class="badge-icon" v-if="newlyUnlockedBadge">{{ newlyUnlockedBadge.icon }}</div>
+      <h2>Badge débloqué !</h2>
+      <h3 v-if="newlyUnlockedBadge">{{ newlyUnlockedBadge.title }}</h3>
+      <p v-if="newlyUnlockedBadge">{{ newlyUnlockedBadge.description }}</p>
+      <button @click="closeBadgeAnimation" class="close-animation-btn">Continuer</button>
+    </div>
+  </div>
   <div class="rewards-container" :class="{ 'high-contrast': highContrastMode }">
     <button class="close-modal-btn" @click="$emit('close')"></button>
 
@@ -43,9 +52,9 @@
       <div class="empty-badge-icon">🏅</div>
       <h2>Pas encore de badges !</h2>
       <p>Participe aux jeux et activités pour gagner tes premiers badges.</p>
-      <button @click="$router.push('/dashboard')" class="start-button">
+      <!-- <button @click="$router.push('/dashboard')" class="start-button">
         Commencer à jouer
-      </button>
+      </button> -->
     </div>
 
     <!-- Prochaine activité -->
@@ -167,12 +176,37 @@
         </div>
       </div>
     </div>
+    <guide-avatar
+      v-if="internalShowGuide"
+      guide-name="Léo"
+      :forced-message="profileGuideMessage"
+      :forced-options="profileGuideOptions"
+      :force-show-message="true"
+      context="profile"
+      :auto-show-delay="0"
+      @option-selected="handleGuideOptionSelected"
+    />
+
+    <!-- Effet de mise en évidence de la prochaine activité -->
+    <div v-if="highlightNextActivity" class="next-activity-highlight">
+      <div class="highlight-pulse"></div>
+      <div class="highlight-arrow">
+        <span class="highlight-text">Clique ici !</span>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
+import UserJourneyService from '@/services/UserJourneyService.js'
+import { eventBus } from '@/utils/eventBus'
+import GuideAvatar from '@/components/GuideComponent.vue'
+
 export default {
   name: 'RewardsComponent',
+  components: {
+    GuideAvatar,
+  },
   props: {
     // Passer les props nécessaires depuis le Dashboard
     currentTheme: {
@@ -186,7 +220,11 @@ export default {
     progress: {
       type: Number,
       default: 37,
-    }
+    },
+    showProfileGuide: {
+      type: Boolean,
+      default: true,
+    },
   },
   data() {
     return {
@@ -197,6 +235,19 @@ export default {
         city: 'Lyon',
       },
       badges: [
+        {
+          id: 0,
+          title: 'Explorateur du Profil',
+          description: 'Tu as découvert ton profil avec succès !',
+          icon: '🧭',
+          iconColor: '#FF5722',
+          unlocked: false,
+          game: 'Profil',
+          gameRoute: '/dashboard',
+          shareable: true,
+          dateUnlocked: '2023-06-15',
+          hint: 'Badge déjà obtenu'
+        },
         {
           id: 1,
           title: 'Maître de la vitesse',
@@ -305,6 +356,15 @@ export default {
       selectedBadge: null,
       highContrastMode: false,
       textSizeLevel: 0,
+      showBadgeUnlockAnimation: false,
+      newlyUnlockedBadge: null,
+      internalShowGuide: this.showProfileGuide,
+      profileGuideMessage: "Super ! Tu as découvert ton profil. Explore tes badges et fais ton premier jeu en cliquant sur 'Jouer maintenant'.",
+      profileGuideOptions: [
+        { text: "Compris !", action: "dismissProfileGuide" },
+        { text: "Où jouer ?", action: "highlightPlayButton" }
+      ],
+      highlightNextActivity: false
     }
   },
   computed: {
@@ -326,14 +386,137 @@ export default {
       return nextBadge || this.badges[0]; // Retourne le premier badge si tout est débloqué
     }
   },
+  watch: {
+    // Observer les changements de la prop showProfileGuide
+    showProfileGuide: {
+      immediate: true,
+      handler(newValue) {
+        this.internalShowGuide = newValue;
+      }
+    }
+  },
   created() {
     // Chargement des préférences d'accessibilité
     this.loadAccessibilitySettings()
 
     // On pourrait aussi chargement les badges depuis localStorage
     this.loadBadges()
+
+    // Vérifie si le badge de profil doit être débloqué
+    this.checkProfileBadge()
+
+    // Vérifier si c'est la première fois que l'utilisateur accède au profil
+    this.checkFirstProfileVisit();
+  },
+  mounted() {
+    // Si c'est la première fois que l'utilisateur visite le profil
+    // ou si le guide est activé par la prop, montrer le guide
+    const hasVisitedProfile = localStorage.getItem('hasVisitedProfile');
+    const shouldShowGuide = !hasVisitedProfile || this.showProfileGuide;
+    
+    if (shouldShowGuide) {
+      setTimeout(() => {
+        this.internalShowGuide = true;
+      }, 800);
+    }
+
+    // Écouter l'événement pour mettre en évidence le bouton "Jouer maintenant"
+    eventBus.on('highlight-play-button', () => {
+      this.highlightPlayButton();
+    });
+    
+    // Si c'est la première fois que l'utilisateur visite le profil, débloquer le badge
+    if (!hasVisitedProfile) {
+      // Débloquer le badge du profil
+      this.checkProfileBadge();
+    }
+  },
+  beforeUnmount() {
+    // Nettoyer les événements pour éviter les fuites de mémoire
+    eventBus.off('highlight-play-button');
   },
   methods: {
+    handleGuideOptionSelected(option) {
+      if (option.action) {
+        // Vérifier si la méthode existe dans ce composant
+        if (typeof this[option.action] === 'function') {
+          this[option.action]();
+        } else {
+          console.warn(`La méthode "${option.action}" n'existe pas dans ce composant.`);
+        }
+      }
+    },
+    checkFirstProfileVisit() {
+      const hasVisitedProfile = localStorage.getItem('hasVisitedProfile');
+      
+      if (!hasVisitedProfile) {
+        // Si c'est la première visite, on le stocke dans localStorage
+        localStorage.setItem('hasVisitedProfile', 'true');
+        
+        // Mettre à jour l'étape dans le service de parcours utilisateur si disponible
+        if (typeof UserJourneyService !== 'undefined') {
+          UserJourneyService.updateStep(UserJourneyService.STEPS.PROFILE_INTRO);
+        }
+      }
+    },
+    // Fermer le guide du profil
+    dismissProfileGuide() {
+      this.internalShowGuide = false;
+      this.highlightNextActivity = false;
+    },
+    
+    // Mettre en évidence le bouton "Jouer maintenant"
+    highlightPlayButton() {
+      this.highlightNextActivity = true;
+      this.profileGuideMessage = "Clique sur le bouton 'Jouer maintenant' dans cette section pour commencer ton premier jeu !";
+    },
+    
+    // Méthode pour gérer le clic sur le bouton "Jouer maintenant"
+    goToGame(route) {
+      this.closeModal();
+      
+      // Mettre à jour l'étape du parcours utilisateur si disponible
+      if (typeof UserJourneyService !== 'undefined') {
+        UserJourneyService.updateStep(UserJourneyService.STEPS.FIRST_GAME);
+      }
+      
+      // Émettre un événement pour indiquer que l'utilisateur a commencé à jouer
+      eventBus.emit('start-game', { route }); // Utiliser eventBus.emit au lieu de $root.$emit
+      
+      this.$router.push(route);
+    },
+    checkProfileBadge() {
+      // Trouver le badge "Explorateur du Profil" (ID 0)
+      const profileBadge = this.badges.find(badge => badge.id === 0)
+      
+      // Vérifie si c'est la première visite en cherchant un flag dans localStorage
+      const hasVisitedProfile = localStorage.getItem('hasVisitedProfile')
+      
+      if (!hasVisitedProfile && profileBadge && !profileBadge.unlocked) {
+        // Marquer comme visité pour éviter de redéclencher l'animation
+        localStorage.setItem('hasVisitedProfile', 'true')
+        
+        // Débloquer le badge
+        profileBadge.unlocked = true
+        profileBadge.dateUnlocked = new Date().toISOString().split('T')[0]
+        
+        // Sauvegarder l'état des badges
+        this.saveBadges()
+        
+        // Déclencher l'animation
+        this.newlyUnlockedBadge = profileBadge
+        
+        // Attendre un peu avant d'afficher l'animation pour permettre au composant de se charger
+        setTimeout(() => {
+          this.showBadgeUnlockAnimation = true
+        }, 1000)
+      }
+    },
+
+    closeBadgeAnimation() {
+      this.showBadgeUnlockAnimation = false
+    },
+
     calculateLevel() {
       return Math.floor(this.progress / 10) + 1;
     },
@@ -400,11 +583,6 @@ export default {
 
     closeModal() {
       this.selectedBadge = null
-    },
-
-    goToGame(route) {
-      this.closeModal()
-      this.$router.push(route)
     },
 
     shareBadge(badge) {
@@ -848,6 +1026,210 @@ export default {
   margin-top: 8px;
   font-size: 14px;
   font-weight: bold;
+}
+
+.badge-unlock-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.badge-unlock-animation {
+  background-color: #fff;
+  border-radius: 20px;
+  padding: 30px;
+  text-align: center;
+  max-width: 400px;
+  box-shadow: 0 0 30px rgba(249, 71, 136, 0.6);
+  animation: scaleIn 0.5s ease-out;
+}
+
+.badge-unlock-animation .badge-icon {
+  font-size: 80px;
+  margin-bottom: 20px;
+  animation: pulse 2s infinite;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background-color: #f3f3f3;
+}
+
+.badge-unlock-animation h2 {
+  color: #FF4081;
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.badge-unlock-animation h3 {
+  color: #333;
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+}
+
+.badge-unlock-animation p {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.close-animation-btn {
+  background-color: #FF4081;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 50px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.close-animation-btn:hover {
+  background-color: #D81B60;
+  transform: scale(1.05);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.next-activity-highlight {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1010;
+  pointer-events: none;
+}
+
+.highlight-pulse {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 3px solid #76ff03;
+  border-radius: 16px;
+  box-shadow: 0 0 15px rgba(118, 255, 3, 0.7);
+  animation: highlight-pulse 2s ease-out infinite;
+}
+
+.highlight-arrow {
+  position: absolute;
+  bottom: -10px;
+  right: 25%;
+  transform: translateX(50%);
+  animation: highlight-bounce 2s ease infinite;
+}
+
+.highlight-text {
+  display: block;
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  padding: 5px 10px;
+  background-color: #58cc02; /* Couleur verte de Duolingo */
+  border-radius: 20px;
+  white-space: nowrap;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes highlight-pulse {
+  0% {
+    opacity: 0.7;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0.7;
+    transform: scale(0.98);
+  }
+}
+
+@keyframes highlight-bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateX(50%) translateY(0);
+  }
+  40% {
+    transform: translateX(50%) translateY(-15px);
+  }
+  60% {
+    transform: translateX(50%) translateY(-7px);
+  }
+}
+
+.rewards-container .guide-avatar-container {
+  position: absolute;
+  z-index: 1090;
+}
+
+.badge-unlock-overlay {
+  z-index: 2000;
+}
+
+/* Styles pour le guide */
+.guide-avatar-container {
+  z-index: 1050 !important; /* S'assurer que le guide est au-dessus des autres éléments */
+}
+
+.speech-bubble {
+  background-color: #fff;
+  font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', sans-serif;
+  color: #333;
+  border: 2px solid #58cc02; /* Couleur verte de Duolingo */
+}
+
+.speech-bubble:after {
+  border-color: #fff transparent transparent;
+}
+
+.bubble-header {
+  border-bottom: 1px solid #58cc02;
+}
+
+.guide-name {
+  color: #58cc02;
+}
+
+.option-button {
+  background-color: #fff;
+  border: 2px solid #58cc02;
+  color: #58cc02;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.option-button:hover {
+  background-color: #58cc02;
+  color: #fff;
 }
 
 .status-unlocked {
