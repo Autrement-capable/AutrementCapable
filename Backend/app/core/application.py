@@ -21,6 +21,10 @@ from .security.decorators import SecurityRequirement, secured_endpoint
 
 @singleton
 class Server:
+    def AddCronJob(self, func: Callable, **kwargs: dict):
+        """ Add a cron job to the scheduler """
+        self.scheduler.add_job(self.run_job_with_session, args=[func], **kwargs)
+
     def __init__(self):
         # First, initialize your properties
         self.port = int(getenv("PORT", 5000))
@@ -35,7 +39,7 @@ class Server:
         @asynccontextmanager
         async def lifespan(app: FastAPI):
             # Startup
-            CronJobFactory.set_add_cron_job(AddCronJob)
+            CronJobFactory.set_add_cron_job(self.AddCronJob)
 
             # Check if tables exist and initialize data if needed
             exists, _ = await self.postgress.check_all_models_exist()

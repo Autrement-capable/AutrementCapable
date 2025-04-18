@@ -7,7 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ...core.application import AddRouter
 from ...core.security.token_creation import JWTBearer
 from ...core.security.decorators import secured_endpoint, SecurityRequirement
-from ...db.postgress.engine import getSession
+from ...db.postgress.engine import getSession as GetSession
+
 
 auth_test = APIRouter(prefix="/dev", tags=["Development"])
 
