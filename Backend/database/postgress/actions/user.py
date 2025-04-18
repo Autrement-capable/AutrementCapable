@@ -52,10 +52,10 @@ class UnverifiedUserPurgeCron(BaseCronJob):
             await session.rollback()
 
 async def create_user(session: AsyncSession, username: str, email: str, password: str,
-                                 first_name: str = None, last_name: str = None,
-                                 role_name: str = "Young Person", phone_number: str = None,
-                                 address: str = None, hashed=False, commit=True, fresh=True) -> tuple[User, UnverifiedDetails] | None:
-    """ Create a user in the database asynchronously
+                     first_name: str = None, last_name: str = None,
+                     role_name: str = "Young Person", phone_number: str = None,
+                     address: str = None, hashed=False, commit=True, fresh=True) -> tuple[User, UnverifiedDetails] | None:
+    """Create a user with traditional login in the database asynchronously
 
     Args:
         session (AsyncSession): The database session
@@ -64,49 +64,79 @@ async def create_user(session: AsyncSession, username: str, email: str, password
         password (str): The user's password
         first_name (str, optional): The user's first name. Defaults to None.
         last_name (str, optional): The user's last name. Defaults to None.
-        role_name (str, optional): The user's role name. Defaults to "Young Person".
+        role_name (str, optional): The user's role. Defaults to "Young Person".
         phone_number (str, optional): The user's phone number. Defaults to None.
         address (str, optional): The user's address. Defaults to None.
-        hashed (bool, optional): Whether the password is hashed. Defaults to False.
+        hashed (bool, optional): Whether the password is already hashed. Defaults to False.
         commit (bool, optional): Whether to commit the transaction. Defaults to True.
-        fresh (bool, optional): Whether to refresh the user object from DB. Defaults to True.
+        fresh (bool, optional): Whether to return a fresh object. Defaults to True.
 
-        Returns:
-        tuple[User, UnverifiedDetails] | None: A tuple containing the user and unverified details objects if successful, None otherwise
-
-            FIY: the user object is lazily loaded with selectin strategy"""
+    Returns:
+        tuple[User, UnverifiedDetails] | None: A tuple containing the created user and unverified details if successful, None otherwise
+    """
     try:
         if not hashed:
             password = hash_password(password)
+
         role = await get_role_by_name(session, role_name)
         if not role:
             print("Role not found")
             return None
-        verification_token, expiration = generate_verification_code(email, email_verification_code_duration)
-        user = User(username=username, email=email, password_hash=password,
-                    role_id=role.id, first_name=first_name, last_name=last_name,
-                    phone_number=phone_number, address=address, role=role)
+
+        # Create base user
+        user = User(
+            username=username,
+            is_passkey=False,  # This is a traditional login user
+            role_id=role.id,
+            role=role
+        )
         session.add(user)
         await session.commit()
         await session.refresh(user)
-        unverified_details = UnverifiedDetails(user_id=user.id, verification_token=verification_token, token_expires=expiration)
+
+        # Create verification token
+        verification_token, expiration = generate_verification_code(email, email_verification_code_duration)
+
+        # Create user detail with email/password
+        user_detail = UserDetail(
+            user_id=user.id,
+            first_name=first_name,
+            last_name=last_name,
+            phone_number=phone_number,
+            address=address,
+            email=email,
+            password_hash=password
+        )
+        session.add(user_detail)
+        await session.commit()
+        await session.refresh(user_detail)
+
+        # Create unverified details linked to user_detail
+        unverified_details = UnverifiedDetails(
+            user_detail_id=user_detail.id,
+            verification_token=verification_token,
+            token_expires=expiration
+        )
         session.add(unverified_details)
+
         if commit:
             await session.commit()
+
         if fresh:
-            await asyncio.gather(session.refresh(user), session.refresh(unverified_details))
+            await asyncio.gather(
+                session.refresh(user), 
+                session.refresh(user_detail),
+                session.refresh(unverified_details)
+            )
+
         return user, unverified_details
     except IntegrityError:
         await session.rollback()
-        print("A user with this email already exists.")
+        print("A user with this email or username already exists.")
         return None
-    except OperationalError:
+    except Exception as e:
         await session.rollback()
-        print("There was an issue with the database operation.")
-        return None
-    except TypeError as e:
-        await session.rollback()
-        print(f"Type error: {e}")
+        print(f"Error creating user: {e}")
         return None
 
 async def get_user_by_email(session: AsyncSession, email: str, load_type: Literal["lazy", "eager"] = "lazy") -> User | None:
@@ -128,7 +158,7 @@ async def get_user_by_email(session: AsyncSession, email: str, load_type: Litera
         .options(joinedload(User.account_recovery), joinedload(User.verification_details)))
     else:
         raise ValueError("Invalid load type")
-    
+
     result = await session.execute(statement)
     result = result.scalars().first()
     if not result:
@@ -156,7 +186,7 @@ async def get_user_by_id(session: AsyncSession, user_id: int, load_type: Literal
                  joinedload(User.passkey_credentials)))
     else:
         raise ValueError("Invalid load type")
-    
+
     result = await session.execute(statement)
     result = result.scalars().first()
     if not result:
@@ -165,35 +195,49 @@ async def get_user_by_id(session: AsyncSession, user_id: int, load_type: Literal
     return result
 
 async def verify_user(session: AsyncSession, verification_code: str, commit=True, fresh=True) -> User:
-    """ Verify a user using their verification code.
+    """Verify a user using their verification code.
 
     Args:
         session (AsyncSession): The database session
-        verification_code (str): The code that we will verify that is legit
-        commit (bool): whether to commit on change (defaults to true)
-        fresh (bool): whether to give fresh object back (defaults to true)
-        
+        verification_code (str): The verification code
+        commit (bool, optional): Whether to commit the transaction. Defaults to True.
+        fresh (bool, optional): Whether to return a fresh object. Defaults to True.
     Returns:
-        User | None: The user object if found, None otherwise
+        User | None: The user object if successful, None otherwise
     """
-    statement = (select(UnverifiedDetails)
-    .where(UnverifiedDetails.verification_token == verification_code.strip())
-    .options(joinedload(UnverifiedDetails.user))) # Eager loading
+    statement = (
+        select(UnverifiedDetails)
+        .where(UnverifiedDetails.verification_token == verification_code.strip())
+        .options(joinedload(UnverifiedDetails.user_detail))
+    )
     result = await session.execute(statement)
     unverified_details = result.scalars().first()
+
     if not unverified_details:
-        print("User not found")
+        print("Verification details not found")
         return None
+
     if unverified_details.token_expires < datetime.utcnow():
         print("Token expired")
         return None
-    user = unverified_details.user
+
+    user_detail = unverified_details.user_detail
+    if not user_detail:
+        print("User detail not found")
+        return None
+
+    # Get the user from user_detail
+    statement = select(User).where(User.id == user_detail.user_id)
+    result = await session.execute(statement)
+    user = result.scalars().first()
+
     if user:
         await session.delete(unverified_details)
         if commit:
             await session.commit()
         if fresh:
             await session.refresh(user)
+
     return user
 
 async def del_uvf_user(session: AsyncSession, user: User, commit=True) -> bool:
@@ -218,29 +262,42 @@ async def del_uvf_user(session: AsyncSession, user: User, commit=True) -> bool:
         return False
 
 async def login_user(session: AsyncSession, password: str, username_or_email: str) -> User | None:
-    """ Login a user asynchronously
+    """Login a user asynchronously with traditional credentials
 
     Args:
         session (AsyncSession): The database session
         password (str): The user's password
         username_or_email (str): The user's username or email
-
     Returns:
-        User | None: The user object if found, None otherwise
+        User | None: The user object if successful, None otherwise
     """
+    # First try username lookup
     statement = select(User).where(User.username == username_or_email)
     result = await session.execute(statement)
     user = result.scalars().first()
 
     if not user:
-        statement = select(User).where(User.email == username_or_email)
+        # Try email lookup in UserDetail
+        statement = (
+            select(User)
+            .join(UserDetail, User.id == UserDetail.user_id)
+            .where(UserDetail.email == username_or_email)
+        )
         result = await session.execute(statement)
         user = result.scalars().first()
 
     if not user:
         return None
 
-    if not verify_password(password, user.password_hash):
+    # Get user details to check password
+    statement = select(UserDetail).where(UserDetail.user_id == user.id)
+    result = await session.execute(statement)
+    user_detail = result.scalars().first()
+
+    if not user_detail or not user_detail.password_hash:
+        return None
+
+    if not verify_password(password, user_detail.password_hash):
         return None
 
     # Update last login timestamp

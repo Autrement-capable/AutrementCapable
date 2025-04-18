@@ -6,7 +6,9 @@ from fastapi import FastAPI, Depends
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi.openapi.utils import get_openapi
 from server.cors.config import init_cors
-from server.role_config.roles import init_roles
+from server.misc_config.roles import init_roles
+from server.misc_config.init_terms import init_terms
+from utils import secured_endpoint, SecurityRequirement
 from utils.singleton import singleton
 from database.postgress.config import postgress
 from database.postgress.actions.revoked_jwt_tokens import get_revoked_token_by_jti,  get_revoked_token_by_jti_sync
@@ -17,52 +19,81 @@ from .cron_jobs.factory import CronJobFactory
 import asyncio
 import anyio
 from fastapi.concurrency import run_in_threadpool
+from contextlib import asynccontextmanager
 from typing import Callable
 
 @singleton
 class Server:
     def __init__(self):
-        self.app = FastAPI(
-            title="Autrement Capable API Dev Server",
-            description="The API for Autrement Capable Backend.",
-            version=getenv("VERSION", "0.1.0alpha"),
-            docs_url="/docs" if getenv("MODE") == "DEV" else None
-        )
-
+        # First, initialize your properties
         self.port = int(getenv("PORT", 5000))
         self.host = '0.0.0.0'
         self.log_lvl = "info"
         self.postgress = postgress
-
-        # Start the async scheduler for deleting expired tokens
+        # Initialize scheduler before setting up lifespan so we dont get stupid errors
         self.scheduler = AsyncIOScheduler()
+
+        # Acording the fast api docs this better than using on_event(deprecated)
+        # I disagree but need to make the code compatible with the rest of the code
+        @asynccontextmanager
+        async def lifespan(app: FastAPI):
+            # Startup
+            CronJobFactory.set_add_cron_job(AddCronJob)
+
+            # Check if tables exist and initialize data if needed
+            exists, _ = await self.postgress.check_all_models_exist()
+            if not exists:
+                await self.postgress.create_all()
+                await self.init_roles()
+                await init_terms()
+
+            # Start scheduler
+            self.scheduler.start()
+            CronJobFactory.register_jobs()
+
+            yield  # This is where FastAPI serves requests
+
+            # Shutdown
+            try:
+                if self.scheduler and hasattr(self.scheduler, 'running') and self.scheduler.running:
+                    print("Shutting down scheduler...")
+                    self.scheduler.shutdown(wait=False)
+            except Exception as e:
+                print(f"Error shutting down scheduler: {e}")
+
+            try:
+                if self.postgress:
+                    print("Closing database connections...")
+                    await self.postgress.close()
+            except Exception as e:
+                print(f"Error closing database connections: {e}")
+
+        self.app = FastAPI(
+            title="Autrement Capable API Dev Server",
+            description="The API for Autrement Capable Backend.",
+            version=getenv("VERSION", "0.1.0alpha"),
+            docs_url="/docs" if getenv("MODE") == "DEV" else None,
+            lifespan=lifespan,
+        )
 
         # Initialize CORS
         init_cors(self.app)
 
         # Set up custom OpenAPI
-        self.app.openapi_tags = self.get_openapi_tags()
         self.app.openapi = self.__custom_openapi__
-
-    def get_openapi_tags(self):
-        return [
-            {
-                "name": "Auth",
-                "description": "Operations requiring authentication via ACCESS Token."
-            },
-            {
-                "name": "Auth_refresh",
-                "description": "Operations requiring authentication via REFRESH Token."
-            }
-        ]
 
     async def on_startup(self):
         """ This function runs during startup of FastAPI application. """
         # Initialize the database and create tables asynchronously
-        await self.postgress.create_all()
+        exists, _ = await self.postgress.check_all_models_exist()
+        if not exists: # if tables do not exist, create them and init data
+            await self.postgress.create_all()
 
-        # Initialize roles asynchronously
-        await self.init_roles()
+            # Initialize roles asynchronously
+            await self.init_roles()
+
+            # Initialize Terms creation
+            await init_terms()
 
         server.scheduler.start()
         CronJobFactory.register_jobs()
@@ -99,20 +130,44 @@ class Server:
             tags=self.app.openapi_tags
         )
 
+        # Define security schemes
         openapi_schema["components"]["securitySchemes"] = {
             "Authorization": {
                 "type": "http",
                 "scheme": "bearer",
                 "bearerFormat": "JWT",
-                "description": "JWT Authorization header using the Bearer scheme (FYI: do not include 'Bearer ' in the value)",
+                "description": "JWT Authorization header using the Bearer scheme"
+            },
+            "RefreshCookie": {
+                "type": "apiKey",
+                "in": "cookie",
+                "name": "refresh_token",
+                "description": "JWT Refresh token stored in HTTP-only cookie"
             }
         }
 
+        # Add security requirements to endpoints based on their decorators
         for path, path_item in openapi_schema["paths"].items():
             for method, operation in path_item.items():
-                tags = operation.get("tags", [])
-                if "Auth" in tags or "Auth_refresh" in tags:
-                    operation["security"] = [{"Authorization": []}]
+                for route in self.app.routes:
+                    if route.path == path and method.upper() in route.methods:
+                        endpoint = route.endpoint
+                        if hasattr(endpoint, "requires_auth") and endpoint.requires_auth:
+                            security_type = getattr(endpoint, "security_type", SecurityRequirement.ACCESS_TOKEN)
+
+                            if security_type == SecurityRequirement.ACCESS_TOKEN:
+                                operation["security"] = [{"Authorization": []}]
+                            elif security_type == SecurityRequirement.REFRESH_COOKIE:
+                                operation["security"] = [{"RefreshCookie": []}]
+                            elif security_type == SecurityRequirement.BOTH_TOKENS:
+                                operation["security"] = [{"Authorization": [], "RefreshCookie": []}]
+
+                            # Add custom description if provided
+                            custom_desc = getattr(endpoint, "security_description", None)
+                            if custom_desc:
+                                if "description" not in operation:
+                                    operation["description"] = ""
+                                operation["description"] += f"\n\n**Auth:** {custom_desc}"
 
         self.app.openapi_schema = openapi_schema
         return self.app.openapi_schema
@@ -125,24 +180,5 @@ def AddRouter(router):
 def AddCronJob(func: Callable, **kwargs: dict):
     """ Add a cron job to the scheduler """
     server.scheduler.add_job(server.run_job_with_session, args=[func], **kwargs)
-
-@server.app.on_event("startup")
-async def start_scheduler():
-    CronJobFactory.set_add_cron_job(AddCronJob)
-    await server.on_startup()
-
-@server.app.on_event("shutdown")
-async def stop_scheduler():
-    if hasattr(server, 'scheduler') and server.scheduler is not None:
-        await server.scheduler.shutdown()
-    else:
-        print("Scheduler was already shut down or was None")
-
-@server.app.on_event("shutdown")
-async def cleanup_db_connections():
-    """Properly close all database connections on shutdown."""
-    if hasattr(server.postgress, 'engine') and server.postgress.engine is not None:
-        print("Closing database connections...")
-        await server.postgress.close()
 
 __all__ = ["server", "AddRouter", "AddCronJob"]

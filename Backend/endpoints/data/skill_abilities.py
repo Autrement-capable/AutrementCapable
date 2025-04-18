@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from server.server import AddRouter
 from server.jwt_config.token_creation import JWTBearer
+from utils import secured_endpoint
 from database.postgress.config import getSession
 from database.postgress.actions.ability_skills_user import (
     get_user_skills,
@@ -57,6 +58,7 @@ abilities_router = APIRouter(prefix="/abilities", tags=["Abilities"])
 # ============ Skills Endpoints ============
 
 @skills_router.get("", response_model=Dict[str, Any])
+@secured_endpoint
 async def get_my_skills(
     session: AsyncSession = Depends(getSession), 
     jwt: dict = Depends(JWTBearer())
@@ -74,6 +76,7 @@ async def get_my_skills(
     }
 
 @skills_router.put("", response_model=Dict[str, Any])
+@secured_endpoint
 async def update_my_skills(
     skills_data: SkillsData,
     session: AsyncSession = Depends(getSession), 
@@ -96,6 +99,7 @@ async def update_my_skills(
     }
 
 @skills_router.patch("", response_model=Dict[str, Any])
+@secured_endpoint
 async def update_single_skill(
     skill_update: SkillUpdate,
     session: AsyncSession = Depends(getSession), 
@@ -122,6 +126,7 @@ async def update_single_skill(
 # ============ Abilities Endpoints ============
 
 @abilities_router.get("", response_model=Dict[str, Any])
+@secured_endpoint
 async def get_my_abilities(
     session: AsyncSession = Depends(getSession), 
     jwt: dict = Depends(JWTBearer())
@@ -139,6 +144,7 @@ async def get_my_abilities(
     }
 
 @abilities_router.put("", response_model=Dict[str, Any])
+@secured_endpoint
 async def update_my_abilities(
     abilities_data: AbilitiesData,
     session: AsyncSession = Depends(getSession), 
@@ -161,6 +167,7 @@ async def update_my_abilities(
     }
 
 @abilities_router.put("/category", response_model=Dict[str, Any])
+@secured_endpoint
 async def update_category(
     category_update: AbilityCategoryUpdate,
     session: AsyncSession = Depends(getSession), 
@@ -185,6 +192,7 @@ async def update_category(
     }
 
 @abilities_router.post("/add", response_model=Dict[str, Any])
+@secured_endpoint
 async def add_ability(
     ability_update: AbilityUpdate,
     session: AsyncSession = Depends(getSession), 
@@ -209,6 +217,7 @@ async def add_ability(
     }
 
 @abilities_router.post("/remove", response_model=Dict[str, Any])
+@secured_endpoint
 async def remove_ability(
     ability_update: AbilityUpdate,
     session: AsyncSession = Depends(getSession), 
@@ -233,6 +242,7 @@ async def remove_ability(
     }
 
 @abilities_router.post("/move", response_model=Dict[str, Any])
+@secured_endpoint
 async def move_ability(
     ability_move: AbilityMove,
     session: AsyncSession = Depends(getSession), 

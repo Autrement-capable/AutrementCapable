@@ -7,7 +7,6 @@ import yaml
 from database.postgress.models import User, AccountRecovery
 from database.postgress.config import postgress
 from utils.verifcation_code import generate_verification_code
-from server.server import AddCronJob
 from utils.Config_loader import Config
 import asyncio
 from server.cron_jobs.base_cron import register_cron_job, BaseCronJob

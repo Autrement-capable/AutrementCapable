@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Request, HTTPException, Response, Cookie, status, Query
 from fastapi.responses import RedirectResponse
-from server.jwt_config.token_creation import create_token, decode_token, JWTBearer, set_refresh_cookie, clear_refresh_cookie
+from server.jwt_config.token_creation import create_token, decode_token, set_refresh_cookie, clear_refresh_cookie
 from pydantic import BaseModel, Field, EmailStr
 from utils.password import hash_password
 from utils.jwt_exceptions import create_response_dict

@@ -16,21 +16,17 @@ async def create_passkey_user(
     last_name: str = None, 
     age: int = None,
     role_name: str = "Young Person", 
-    commit: bool = True, 
-    fresh: bool = True
+    commit: bool = True
 ) -> User:
-    """
-    Create a new user with minimal information for passkey registration(does not set a passkey yet).
-
+    """Create a base passkey user
+    
     Args:
         session (AsyncSession): Database session
         first_name (str): User's first name
         last_name (str): User's last name (optional)
         age (int): User's age (optional)
-        role_name (str): Role name (defaults to "Young Person")
+        role_name (str): Role name for the user (default: "Young Person")
         commit (bool): Whether to commit the transaction
-        fresh (bool): Whether to refresh the user from DB
-
     Returns:
         User: The created user or None if there was an error
     """
@@ -40,39 +36,41 @@ async def create_passkey_user(
             print("Role not found")
             return None
 
-        # Generate a random username to use as a placeholder
+        # Generate a random username as placeholder
         random_suffix = secrets.token_hex(8)
         temp_username = f"user_{random_suffix}"
 
+        # Create base user
         user = User(
-            first_name=first_name,
-            last_name=last_name,
-            age=age,
-            username=temp_username,  # Temporary username that will be updated later
+            username=temp_username,
             is_passkey=True,
             role_id=role.id,
-            role=role,
-            onboarding_complete=False  # User has not completed onboarding yet
+            onboarding_complete=False
         )
-
         session.add(user)
-        await session.commit()
 
-        if fresh:
+        if commit:
+            await session.commit()
+            await session.refresh(user)
+
+        # Create user detail
+        user_detail = UserDetail(
+            user_id=user.id,
+            first_name=first_name,
+            last_name=last_name,
+            age=age
+        )
+        session.add(user_detail)
+
+        if commit:
+            await session.commit()
+            await session.refresh(user_detail)
             await session.refresh(user)
 
         return user
-    except IntegrityError:
-        await session.rollback()
-        print("Integration error creating passkey user")
-        return None
-    except OperationalError as e:
-        await session.rollback()
-        print(f"Database operation error: {e}")
-        return None
     except Exception as e:
         await session.rollback()
-        print(f"Unexpected error creating passkey user: {e}")
+        print(f"Error creating passkey user: {e}")
         return None
 
 async def register_passkey_credential(
