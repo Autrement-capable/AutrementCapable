@@ -161,9 +161,14 @@
 
     <!-- Boutons d'action -->
     <div class="action-buttons">
-      <button class="action-button generate-cv-button" @click="generateCV">
+      <button 
+        class="action-button generate-cv-button" 
+        @click="generateCV"
+        :class="{ 'locked-button': !cvUnlocked }"
+      >
         <span class="button-icon">📄</span>
         Créer mon CV
+        <span v-if="!cvUnlocked" class="lock-icon">🔒</span>
       </button>
       <button class="action-button profile-button" @click="viewProfile">
         <span class="button-icon">👤</span>
@@ -439,7 +444,7 @@ export default {
           id: 'actions',
           name: 'Actions',
           selector: '.action-buttons',
-          description: "Ces boutons te permettent de créer ton CV avec les compétences que tu as développées ou d'accéder directement à ton profil complet."
+          description: "Le boutons 'Mon profil' te permet d'accéder à un profil complet et le bouton 'Créer mon CV' te permet de générer un CV professionnel basé sur tes compétences. Il sera disponible quand tu auras fini ton parcours !"
         }
       ],
       
@@ -454,6 +459,7 @@ export default {
       guideCustomPosition: null,
       forceShowGuide: false,
       highlightPlayButtonBool: false,
+      cvUnlocked: false,
     }
   },
   computed: {
@@ -981,6 +987,9 @@ export default {
     },
     
     generateCV() {
+      if (!this.cvUnlocked) {
+        return
+      }
       // Dans un cas réel, on redirigerait vers la page de génération de CV
       this.$router.push('/cv-preview')
       
@@ -1996,6 +2005,33 @@ export default {
 
 .button-icon {
   font-size: 24px;
+}
+
+/* Styles pour le bouton verrouillé */
+.locked-button {
+  position: relative;
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.lock-icon {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  font-size: 1.2em;
+  margin-left: 8px;
+}
+
+/* Optionnel: animation subtile pour attirer l'attention */
+@keyframes lock-pulse {
+  0% { transform: translateY(-50%) scale(1); }
+  50% { transform: translateY(-50%) scale(1.1); }
+  100% { transform: translateY(-50%) scale(1); }
+}
+
+.lock-icon {
+  animation: lock-pulse 2s infinite ease-in-out;
 }
 
 /* Modal de détails de badge */
