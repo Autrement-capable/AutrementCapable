@@ -28,7 +28,7 @@
         :class="{ 'avatar-pulse': avatarAnimating }"
       >
         <div 
-          v-if="highlightAvatar && isFirstVisit" 
+          v-if="highlightAvatar && isFirstVisit && !profileTourCompleted"
           class="avatar-highlight-effect"
           @click="interactWithAvatar"
         >
@@ -282,6 +282,7 @@ export default {
       animationsEnabled: true,
       playButtonHovered: false,
       playButtonPressed: false,
+      profileTourCompleted: false,
       achievements: [
         'Explorateur Curieux',
         'Premier Pas',
@@ -304,8 +305,6 @@ export default {
     eventBus.on('hide-dashboard-guide', () => {
       this.guideForceShow = false;
     });
-    
-    // Autres configurations...
   },
   beforeUnmount() {
     // Nettoyer les écouteurs d'événements
@@ -316,6 +315,9 @@ export default {
     checkFirstVisit() {
       const hasVisitedBefore = localStorage.getItem('hasVisitedDashboard');
       this.isFirstVisit = !hasVisitedBefore;
+      
+      // Vérifier si le tour du profil a été complété
+      this.profileTourCompleted = localStorage.getItem('profile-tour-completed') === 'true';
       
       if (!hasVisitedBefore) {
         localStorage.setItem('hasVisitedDashboard', 'true');
@@ -450,7 +452,6 @@ export default {
     },
 
     handleViewProfile() {
-      console.log('Affichage du profil');
       this.closeRewardsModal();
     },
 
@@ -525,8 +526,6 @@ export default {
     },
 
     startPlaying() {
-      console.log('Commençons à jouer!')
-
       // Haptic feedback if available
       if (window.navigator && window.navigator.vibrate) {
         window.navigator.vibrate(50)
@@ -563,6 +562,8 @@ export default {
 
     this.themeChangeAchieved = false
 
+    this.profileTourCompleted = localStorage.getItem('profile-tour-completed') === 'true';
+
     // Simulate a reward after a certain time
     setTimeout(() => {
       const randomAchievement =
@@ -575,7 +576,7 @@ export default {
     
     // Ajouter un délai avant d'activer la mise en évidence de l'avatar
     setTimeout(() => {
-      this.highlightAvatar = true;
+      this.highlightAvatar = this.isFirstVisit && !this.profileTourCompleted;
     }, 2000);
   },
 }
