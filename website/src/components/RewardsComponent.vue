@@ -70,7 +70,7 @@
           </div>
           <div class="map-badge-tooltip">
             <div class="tooltip-title">{{ badge.title }}</div>
-            <div class="tooltip-game">{{ badge.game }}</div>
+            <!-- <div class="tooltip-game">{{ badge.game }}</div> -->
             <div class="tooltip-status" :class="badge.unlocked ? 'status-unlocked' : ''">
               {{ badge.unlocked ? 'Obtenu ✅' : 'À débloquer' }}
             </div>
@@ -99,12 +99,12 @@
       </div>
     </div>
 
-    <!-- Message si aucun badge -->
+    <!-- Message si aucun badge
     <div class="empty-state" v-if="!hasUnlockedBadges">
       <div class="empty-badge-icon">🏅</div>
       <h2>Pas encore de badges !</h2>
       <p>Participe aux jeux et activités pour gagner tes premiers badges.</p>
-    </div>
+    </div> -->
 
     <!-- Prochaine activité -->
     <div class="next-activity" v-if="hasUnlockedBadges || nextBadge">
@@ -453,7 +453,6 @@ export default {
       profileGuideMessage: "Bienvenue sur ton profil ! Veux-tu que je te fasse visiter pour découvrir toutes les fonctionnalités ?",
       profileGuideOptions: [
         { text: "Oui, montre-moi tout !", action: "startProfileTour" },
-        { text: "Non merci, je vais explorer seul", action: "dismissProfileGuide" }
       ],
       
       // Flag pour déterminer si le guide doit mettre en évidence des sections
@@ -519,7 +518,6 @@ export default {
         this.profileGuideMessage = "Bienvenue sur ton profil ! Veux-tu que je te fasse visiter pour découvrir toutes les fonctionnalités ?";
         this.profileGuideOptions = [
           { text: "Oui, montre-moi tout !", action: "startProfileTour" },
-          { text: "Non merci, je vais explorer seul", action: "dismissProfileGuide" }
         ];
       }, 800);
     }
@@ -561,7 +559,6 @@ export default {
      * Démarre le tour guidé du profil
      */
      startProfileTour() {
-      console.log("Démarrage du tour du profil");
       
       // Initialiser le tour du profil dans le service
       if (typeof UserJourneyService !== 'undefined') {
@@ -590,20 +587,18 @@ export default {
       
       // Vérifier si nous avons dépassé les étapes disponibles
       if (this.profileTourStep >= this.profileTourSections.length) {
-        console.log("Fin du tour atteinte");
         this.endProfileTour();
         return;
       }
       
       // Récupérer la section actuelle
       const currentSection = this.profileTourSections[this.profileTourStep];
-      console.log("Étape actuelle du tour :", this.profileTourStep, currentSection);
       
       // Mettre à jour le message et les options du guide
       this.profileGuideMessage = currentSection.description;
       this.profileGuideOptions = [
         { text: this.profileTourStep === this.profileTourSections.length - 1 ? "Terminer" : "Suivant", action: "nextProfileTourStep" },
-        { text: "Arrêter la visite", action: "endProfileTour" }
+        // { text: "Arrêter la visite", action: "endProfileTour" }
       ];
       
       // Forcer l'affichage du guide
@@ -648,6 +643,11 @@ export default {
         UserJourneyService.completeProfileTour();
       }
       
+      localStorage.setItem('profile-tour-completed', 'true');
+
+      // Vérifier si le badge "Explorateur du Profil" doit être débloqué
+      this.checkProfileBadge();
+
       // Afficher le message de fin du tour
       this.profileGuideMessage = "Tu connais maintenant toutes les sections de ton profil ! Tu peux explorer tes badges et commencer à jouer pour en débloquer de nouveaux.";
       this.profileGuideOptions = [
@@ -664,13 +664,9 @@ export default {
       // D'abord supprimer les mises en évidence existantes
       this.removeHighlights();
       
-      console.log("Mise en évidence de la section :", selector);
-      
       // Ajouter une nouvelle mise en évidence
       const element = document.querySelector(selector);
       if (element) {
-        console.log("Élément trouvé :", element);
-        
         // Créer un élément de surbrillance
         const highlight = document.createElement('div');
         highlight.className = 'section-highlight';
@@ -774,6 +770,7 @@ export default {
     dismissProfileGuide() {
       this.internalShowGuide = false;
       this.highlightNextActivity = false;
+      localStorage.setItem('profile-tour-completed', 'true');
     },
     
     // Mettre en évidence le bouton "Jouer maintenant"
@@ -800,10 +797,13 @@ export default {
       // Trouver le badge "Explorateur du Profil" (ID 0)
       const profileBadge = this.badges.find(badge => badge.id === 0)
       
-      // Vérifie si c'est la première visite en cherchant un flag dans localStorage
-      const hasVisitedProfile = localStorage.getItem('hasVisitedProfile')
+      // // Vérifie si c'est la première visite en cherchant un flag dans localStorage
+      // const hasVisitedProfile = localStorage.getItem('hasVisitedProfile')
+
+      // Vérifier si la visite du profil est terminée
+      const isProfileVisitCompleted = localStorage.getItem('profile-tour-completed')
       
-      if (!hasVisitedProfile && profileBadge && !profileBadge.unlocked) {
+      if (profileBadge && !profileBadge.unlocked && isProfileVisitCompleted) {
         // Marquer comme visité pour éviter de redéclencher l'animation
         localStorage.setItem('hasVisitedProfile', 'true')
         
@@ -1572,7 +1572,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 2000;
+  z-index: 3000;
   animation: fadeIn 0.5s ease-out;
 }
 

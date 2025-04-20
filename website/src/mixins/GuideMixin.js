@@ -218,7 +218,6 @@ export const GuideAvatarMixin = {
             this.guideForcedMessage = "Bienvenue sur ton profil ! Veux-tu que je te fasse visiter pour te montrer toutes les fonctionnalités ?";
             this.guideForcedOptions = [
               { text: "Oui, je veux découvrir mon profil", action: "startProfileTour" },
-              { text: "Non merci, je vais explorer seul", action: "dismissProfileGuide" }
             ];
             this.guideForceShow = true;
           }, 1000);
