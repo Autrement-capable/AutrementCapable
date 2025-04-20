@@ -33,18 +33,70 @@
       </div>
     </div>
 
-    <!-- Progression globale -->
-    <div class="progress-container">
-      <h2 class="section-title">Mon parcours</h2>
-      <div class="progress-bar-container">
-        <div
-          class="progress-bar"
-          :style="{ width: `${progressPercentage}%` }"
-        ></div>
+    <!-- Nouvelle carte de progression -->
+    <div class="progress-map-container">
+      <h2 class="section-title">Ma carte de progression</h2>
+      <div class="progress-stats">
+        <div class="progress-stat">
+          <span class="stat-number">{{ unlockedBadgesCount }}</span>
+          <span class="stat-label">Badges débloqués</span>
+        </div>
+        <div class="progress-stat">
+          <span class="stat-number">{{ totalBadgesCount - unlockedBadgesCount }}</span>
+          <span class="stat-label">À débloquer</span>
+        </div>
+        <div class="progress-stat">
+          <span class="stat-number">{{ calculateLevel() }}</span>
+          <span class="stat-label">Niveau actuel</span>
+        </div>
       </div>
-      <p class="progress-text">
-        <strong>{{ unlockedBadgesCount }}</strong> activités terminées sur <strong>{{ totalBadgesCount }}</strong>
-      </p>
+      
+      <div class="progress-map">
+        <div class="journey-path"></div>
+        
+        <div
+          v-for="badge in badges"
+          :key="badge.id"
+          class="map-badge-node"
+          :class="{ 'unlocked': badge.unlocked, 'active': badge.id === nextBadge.id && !badge.unlocked }"
+          @click="showBadgeDetails(badge)"
+        >
+          <div 
+            class="map-badge-icon" 
+            :style="{ backgroundColor: badge.unlocked ? badge.iconColor : '#555' }"
+          >
+            <div v-if="!badge.unlocked" class="map-badge-lock">🔒</div>
+            <span class="map-badge-emoji">{{ badge.icon }}</span>
+          </div>
+          <div class="map-badge-tooltip">
+            <div class="tooltip-title">{{ badge.title }}</div>
+            <div class="tooltip-game">{{ badge.game }}</div>
+            <div class="tooltip-status" :class="badge.unlocked ? 'status-unlocked' : ''">
+              {{ badge.unlocked ? 'Obtenu ✅' : 'À débloquer' }}
+            </div>
+          </div>
+          
+          <div v-if="badge.id === nextBadge.id && !badge.unlocked" class="map-badge-next">
+            <div class="pulse-circle"></div>
+            <div class="next-badge-text">Prochaine activité</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="map-legend">
+        <div class="legend-item">
+          <div class="legend-icon unlocked"></div>
+          <div class="legend-text">Badges débloqués</div>
+        </div>
+        <div class="legend-item">
+          <div class="legend-icon locked"></div>
+          <div class="legend-text">Badges à débloquer</div>
+        </div>
+        <div class="legend-item">
+          <div class="legend-icon active"></div>
+          <div class="legend-text">Prochaine activité suggérée</div>
+        </div>
+      </div>
     </div>
 
     <!-- Message si aucun badge -->
@@ -52,9 +104,6 @@
       <div class="empty-badge-icon">🏅</div>
       <h2>Pas encore de badges !</h2>
       <p>Participe aux jeux et activités pour gagner tes premiers badges.</p>
-      <!-- <button @click="$router.push('/dashboard')" class="start-button">
-        Commencer à jouer
-      </button> -->
     </div>
 
     <!-- Prochaine activité -->
@@ -181,11 +230,17 @@
       guide-name="Léo"
       :forced-message="profileGuideMessage"
       :forced-options="profileGuideOptions"
-      :force-show-message="true"
+      :force-show-message="profileTourActive || forceShowGuide"
+      :custom-position="guideCustomPosition"
+      :active-section-id="profileTourActive ? profileTourSections[profileTourStep].id : null"
       context="profile"
       :auto-show-delay="0"
       @option-selected="handleGuideOptionSelected"
+      @position-updated="updateGuidePosition"
     />
+
+    <!-- Overlay pour le tour guidé -->
+    <div v-if="profileTourActive" class="tour-overlay"></div>
 
     <!-- Effet de mise en évidence de la prochaine activité -->
     <div v-if="highlightNextActivity" class="next-activity-highlight">
@@ -359,12 +414,55 @@ export default {
       showBadgeUnlockAnimation: false,
       newlyUnlockedBadge: null,
       internalShowGuide: this.showProfileGuide,
-      profileGuideMessage: "Super ! Tu as découvert ton profil. Explore tes badges et fais ton premier jeu en cliquant sur 'Jouer maintenant'.",
-      profileGuideOptions: [
-        { text: "Compris !", action: "dismissProfileGuide" },
-        { text: "Où jouer ?", action: "highlightPlayButton" }
+      profileTourActive: false,
+      profileTourStep: 0,
+      profileTourSections: [
+        {
+          id: 'header',
+          name: 'En-tête du profil',
+          selector: '.profile-header',
+          description: "C'est ton profil personnel ! Tu peux voir ton avatar, ton niveau actuel et tes informations personnelles comme ton âge et ta ville."
+        },
+        {
+          id: 'progress-map',
+          name: 'Carte de progression',
+          selector: '.progress-map-container',
+          description: "Cette carte montre tous tes badges. Les badges débloqués sont en couleur, et les badges à débloquer sont grisés avec un cadenas. Le badge clignotant orange est ta prochaine activité recommandée !"
+        },
+        {
+          id: 'next-activity',
+          name: 'Prochaine activité',
+          selector: '.next-activity',
+          description: "Ici tu trouveras ta prochaine activité recommandée. Clique sur 'Jouer maintenant' pour la commencer et débloquer un nouveau badge !"
+        },
+        {
+          id: 'badges-grid',
+          name: 'Mes badges',
+          selector: '.all-badges',
+          description: "Cette section affiche tous tes badges, débloqués ou non. Clique sur un badge pour voir plus de détails et comment le débloquer si tu ne l'as pas encore."
+        },
+        {
+          id: 'actions',
+          name: 'Actions',
+          selector: '.action-buttons',
+          description: "Ces boutons te permettent de créer ton CV avec les compétences que tu as développées ou d'accéder directement à ton profil complet."
+        }
       ],
-      highlightNextActivity: false
+      
+      // Mise à jour des messages et options du guide pour inclure le tour du profil
+      profileGuideMessage: "Bienvenue sur ton profil ! Veux-tu que je te fasse visiter pour découvrir toutes les fonctionnalités ?",
+      profileGuideOptions: [
+        { text: "Oui, montre-moi tout !", action: "startProfileTour" },
+        { text: "Non merci, je vais explorer seul", action: "dismissProfileGuide" }
+      ],
+      
+      // Flag pour déterminer si le guide doit mettre en évidence des sections
+      highlightNextActivity: false,
+      
+      // Overlay pour le tour guidé
+      showTourOverlay: false,
+      guideCustomPosition: null,
+      forceShowGuide: false
     }
   },
   computed: {
@@ -409,41 +507,267 @@ export default {
     this.checkFirstProfileVisit();
   },
   mounted() {
-    // Si c'est la première fois que l'utilisateur visite le profil
-    // ou si le guide est activé par la prop, montrer le guide
+    // Vérifier si c'est la première visite du profil
     const hasVisitedProfile = localStorage.getItem('hasVisitedProfile');
-    const shouldShowGuide = !hasVisitedProfile || this.showProfileGuide;
+    const hasCompletedProfileTour = localStorage.getItem('profile-tour-completed');
     
-    if (shouldShowGuide) {
+    // Si c'est la première visite ou si le guide est activé par la prop
+    if ((!hasVisitedProfile || this.showProfileGuide) && !hasCompletedProfileTour) {
       setTimeout(() => {
         this.internalShowGuide = true;
+        this.forceShowGuide = true;
+        this.profileGuideMessage = "Bienvenue sur ton profil ! Veux-tu que je te fasse visiter pour découvrir toutes les fonctionnalités ?";
+        this.profileGuideOptions = [
+          { text: "Oui, montre-moi tout !", action: "startProfileTour" },
+          { text: "Non merci, je vais explorer seul", action: "dismissProfileGuide" }
+        ];
       }, 800);
     }
-
+    
+    // Écouter les évènements pour le redimensionnement de la fenêtre
+    window.addEventListener('resize', this.updateHighlights);
+    
     // Écouter l'événement pour mettre en évidence le bouton "Jouer maintenant"
     eventBus.on('highlight-play-button', () => {
       this.highlightPlayButton();
     });
-    
-    // Si c'est la première fois que l'utilisateur visite le profil, débloquer le badge
-    if (!hasVisitedProfile) {
-      // Débloquer le badge du profil
-      this.checkProfileBadge();
-    }
   },
   beforeUnmount() {
-    // Nettoyer les événements pour éviter les fuites de mémoire
+    // Nettoyer les évènements
+    window.removeEventListener('resize', this.updateHighlights);
     eventBus.off('highlight-play-button');
+    this.removeHighlights();
   },
   methods: {
-    handleGuideOptionSelected(option) {
-      if (option.action) {
-        // Vérifier si la méthode existe dans ce composant
-        if (typeof this[option.action] === 'function') {
-          this[option.action]();
+    /**
+     * Met à jour la position du guide lorsqu'elle est modifiée par le composant guide
+     */
+    updateGuidePosition(position) {
+      this.guideCustomPosition = position;
+    },
+    /**
+     * Met à jour les mises en évidence lors du redimensionnement de la fenêtre
+     */
+    updateHighlights() {
+      if (this.profileTourActive && this.profileTourStep < this.profileTourSections.length) {
+        // Récupérer la section actuelle
+        const section = this.profileTourSections[this.profileTourStep];
+        
+        // Mettre à jour la mise en évidence
+        this.highlightProfileSection(section.selector);
+      }
+    },
+    /**
+     * Démarre le tour guidé du profil
+     */
+     startProfileTour() {
+      console.log("Démarrage du tour du profil");
+      
+      // Initialiser le tour du profil dans le service
+      if (typeof UserJourneyService !== 'undefined') {
+        UserJourneyService.startProfileTour();
+      }
+      
+      // Initialiser les variables locales du tour
+      this.profileTourStep = 0;
+      this.profileTourActive = true;
+      
+      // Supprimer toutes les mises en évidence existantes pour être sûr
+      this.removeHighlights();
+      
+      // Commencer le tour par la première section
+      this.showProfileTourStep();
+    },
+
+    /**
+     * Affiche l'étape actuelle du tour du profil
+     */
+     showProfileTourStep() {
+      if (!this.profileTourActive) {
+        console.error("Le tour du profil n'est pas actif");
+        return;
+      }
+      
+      // Vérifier si nous avons dépassé les étapes disponibles
+      if (this.profileTourStep >= this.profileTourSections.length) {
+        console.log("Fin du tour atteinte");
+        this.endProfileTour();
+        return;
+      }
+      
+      // Récupérer la section actuelle
+      const currentSection = this.profileTourSections[this.profileTourStep];
+      console.log("Étape actuelle du tour :", this.profileTourStep, currentSection);
+      
+      // Mettre à jour le message et les options du guide
+      this.profileGuideMessage = currentSection.description;
+      this.profileGuideOptions = [
+        { text: this.profileTourStep === this.profileTourSections.length - 1 ? "Terminer" : "Suivant", action: "nextProfileTourStep" },
+        { text: "Arrêter la visite", action: "endProfileTour" }
+      ];
+      
+      // Forcer l'affichage du guide
+      this.internalShowGuide = true;
+      this.forceShowGuide = true;
+      
+      // Mettre en évidence la section actuelle
+      this.highlightProfileSection(currentSection.selector);
+      
+      // Marquer la section comme visitée dans le service
+      if (typeof UserJourneyService !== 'undefined') {
+        UserJourneyService.markProfileSectionVisited(currentSection.id);
+      }
+    },
+
+    /**
+     * Passe à l'étape suivante du tour du profil
+     */
+    nextProfileTourStep() {
+      // Supprimer la mise en évidence actuelle
+      this.removeHighlights();
+      
+      // Passer à l'étape suivante
+      this.profileTourStep++;
+      
+      // Afficher la nouvelle étape
+      this.showProfileTourStep();
+    },
+
+    /**
+     * Termine le tour du profil
+     */
+    endProfileTour() {
+      // Supprimer les mises en évidence
+      this.removeHighlights();
+      
+      // Mettre à jour l'état
+      this.profileTourActive = false;
+      
+      // Marquer le tour comme terminé dans le service
+      if (typeof UserJourneyService !== 'undefined') {
+        UserJourneyService.completeProfileTour();
+      }
+      
+      // Afficher le message de fin du tour
+      this.profileGuideMessage = "Tu connais maintenant toutes les sections de ton profil ! Tu peux explorer tes badges et commencer à jouer pour en débloquer de nouveaux.";
+      this.profileGuideOptions = [
+        { text: "Commencer à jouer", action: "highlightPlayButton" },
+        { text: "Merci !", action: "dismissProfileGuide" }
+      ];
+      this.internalShowGuide = true;
+    },
+
+    /**
+     * Met en évidence une section du profil
+     */
+     highlightProfileSection(selector) {
+      // D'abord supprimer les mises en évidence existantes
+      this.removeHighlights();
+      
+      console.log("Mise en évidence de la section :", selector);
+      
+      // Ajouter une nouvelle mise en évidence
+      const element = document.querySelector(selector);
+      if (element) {
+        console.log("Élément trouvé :", element);
+        
+        // Créer un élément de surbrillance
+        const highlight = document.createElement('div');
+        highlight.className = 'section-highlight';
+        
+        // Obtenir les coordonnées de l'élément par rapport au conteneur
+        const rect = element.getBoundingClientRect();
+        
+        // Obtenir la référence du conteneur rewards-container
+        const container = document.querySelector('.rewards-container');
+        const containerRect = container.getBoundingClientRect();
+        
+        // Calculer les coordonnées relatives au conteneur
+        // et prendre en compte le scroll du conteneur
+        const top = rect.top - containerRect.top + container.scrollTop;
+        const left = rect.left - containerRect.left + container.scrollLeft;
+        
+        // Positionner la surbrillance avec les coordonnées relatives
+        highlight.style.position = 'absolute';
+        highlight.style.top = `${top}px`;
+        highlight.style.left = `${left}px`;
+        highlight.style.width = `${rect.width}px`;
+        highlight.style.height = `${rect.height}px`;
+        highlight.style.border = '3px solid #76ff03';
+        highlight.style.borderRadius = '16px';
+        highlight.style.boxShadow = '0 0 15px rgba(118, 255, 3, 0.7)';
+        highlight.style.pointerEvents = 'none';
+        highlight.style.zIndex = '1050';
+        highlight.style.animation = 'highlight-pulse 2s ease-out infinite';
+        
+        // Ajouter la surbrillance au conteneur (non au body)
+        container.appendChild(highlight);
+        
+        // Faire défiler jusqu'à l'élément si nécessaire
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Repositionner le guide à côté de la section mise en évidence
+        // Utiliser des positions relatives au conteneur, pas absolues
+        let position = {};
+        
+        if (rect.right + 300 < containerRect.right) {
+          // Assez d'espace à droite
+          position = {
+            top: `${top + rect.height/2}px`,
+            left: `${left + rect.width + 20}px`,
+            transform: 'translateY(-50%)'
+          };
+        } else if (rect.left > 300) {
+          // Assez d'espace à gauche
+          position = {
+            top: `${top + rect.height/2}px`,
+            right: `${containerRect.width - left + 20}px`,
+            transform: 'translateY(-50%)'
+          };
+        } else if (top > 200) {
+          // Assez d'espace au-dessus
+          position = {
+            bottom: `${containerRect.height - top + 20}px`,
+            left: `${left + rect.width/2}px`,
+            transform: 'translateX(-50%)'
+          };
         } else {
-          console.warn(`La méthode "${option.action}" n'existe pas dans ce composant.`);
+          // Sinon, placer en dessous
+          position = {
+            top: `${top + rect.height + 20}px`,
+            left: `${left + rect.width/2}px`,
+            transform: 'translateX(-50%)'
+          };
         }
+        
+        // Mettre à jour la position du guide
+        this.guideCustomPosition = position;
+      } else {
+        console.error("Élément non trouvé avec le sélecteur :", selector);
+      }
+    },
+
+    /**
+     * Supprime toutes les mises en évidence
+     */
+     removeHighlights() {
+      const container = document.querySelector('.rewards-container');
+      if (container) {
+        const highlights = container.querySelectorAll('.section-highlight');
+        highlights.forEach(highlight => {
+          container.removeChild(highlight);
+        });
+      }
+    },
+
+    /**
+     * Gère les options sélectionnées dans le guide
+     */
+    handleGuideOptionSelected(option) {
+      if (option.action && typeof this[option.action] === 'function') {
+        this[option.action]();
+      } else {
+        console.warn(`L'action "${option.action}" n'est pas définie.`);
       }
     },
     checkFirstProfileVisit() {
@@ -661,7 +985,7 @@ export default {
   max-width: 1000px;
   width: 90%;
   padding: 24px;
-  background-color: rgba(30, 30, 45, 0.85);
+  background-color: rgb(30, 30, 45);
   border-radius: 24px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
   top: 50%;
@@ -799,45 +1123,268 @@ export default {
   color: white;
 }
 
-/* Section de progression */
-.progress-container {
+/* Nouvelle section carte de progression */
+.progress-map-container {
   background-color: rgba(255, 255, 255, 0.05);
   padding: 20px;
   border-radius: 16px;
   margin-bottom: 24px;
-  text-align: center;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
 }
 
-.section-title {
-  font-size: 22px;
-  color: #4fc3f7;
-  margin-top: 0;
-  margin-bottom: 16px;
+.progress-stats {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20px;
   text-align: center;
+}
+
+.progress-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-number {
+  font-size: 32px;
+  font-weight: bold;
+  color: #4fc3f7;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.progress-bar-container {
-  height: 24px;
-  background-color: rgba(255, 255, 255, 0.1);
+.stat-label {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 4px;
+}
+
+.progress-map {
+  position: relative;
+  height: 300px;
+  background-color: rgba(0, 0, 0, 0.2);
   border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 15px;
   overflow: hidden;
-  margin-bottom: 8px;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex-wrap: wrap;
+  border: 1px dashed rgba(255, 255, 255, 0.3);
 }
 
-.progress-bar {
-  height: 100%;
-  background: linear-gradient(90deg, #4caf50, #8bc34a);
-  border-radius: 12px;
-  transition: width 1s ease;
-  box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+.journey-path {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 8px;
+  background: linear-gradient(90deg, rgba(76, 175, 80, 0.8), rgba(76, 175, 80, 0.3));
+  transform: translateY(-50%);
+  z-index: 1;
+  border-radius: 4px;
 }
 
-.progress-text {
+.map-badge-node {
+  position: relative;
+  z-index: 2;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  margin: 10px;
+}
+
+.map-badge-node:hover {
+  transform: scale(1.1);
+}
+
+.map-badge-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  position: relative;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  border: 3px solid transparent;
+  transition: all 0.3s ease;
+  z-index: 3;
+}
+
+.map-badge-node.unlocked .map-badge-icon {
+  border-color: #4caf50;
+  box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
+}
+
+.map-badge-node.active .map-badge-icon {
+  border-color: #ff9800;
+  box-shadow: 0 0 20px rgba(255, 152, 0, 0.7);
+}
+
+.map-badge-lock {
+  position: absolute;
   font-size: 18px;
-  color: rgba(255, 255, 255, 0.9);
+  background-color: rgba(0, 0, 0, 0.5);
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.map-badge-emoji {
+  font-size: 30px;
+}
+
+.map-badge-tooltip {
+  position: absolute;
+  width: 140px;
+  background-color: rgba(30, 30, 45, 0.95);
+  padding: 8px;
+  border-radius: 8px;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s ease;
+  z-index: 10;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+.map-badge-node:hover .map-badge-tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(5px);
+}
+
+.tooltip-title {
+  font-weight: bold;
+  font-size: 14px;
+  margin-bottom: 4px;
+  color: white;
+}
+
+.tooltip-game {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 4px;
+}
+
+.tooltip-status {
+  font-size: 12px;
+  color: #9e9e9e;
+}
+
+.tooltip-status.status-unlocked {
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.map-badge-next {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+}
+
+.next-badge-text {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #ff9800;
+  color: white;
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 10px;
+  display: inline-block;
+  white-space: nowrap;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  z-index: 4;
+}
+
+.pulse-circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  border: 3px solid #ff9800;
+  animation: pulse-glow 2s infinite;
+  z-index: 2;
+}
+
+@keyframes pulse-glow {
+  0% {
+    transform: translate(-50%, -50%) scale(0.9);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 0.4;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.9);
+    opacity: 0.7;
+  }
+}
+
+.map-badge-node.active {
+  position: relative;
+  z-index: 3;
+}
+
+.map-legend {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 10px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+}
+
+.legend-icon {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.legend-icon.unlocked {
+  background-color: #4caf50;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+.legend-icon.locked {
+  background-color: #555;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.legend-icon.active {
+  background-color: #ff9800;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+.legend-text {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Section de progression (ancienne version masquée) */
+.progress-container {
+  display: none;
 }
 
 /* État vide - pas de badges */
@@ -1100,6 +1647,26 @@ export default {
   transform: scale(1.05);
 }
 
+/* Boutons et actions */
+.play-button {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.play-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  background-color: #43a047;
+}
+
 /* Animations */
 @keyframes fadeIn {
   from { opacity: 0; }
@@ -1153,7 +1720,7 @@ export default {
   font-weight: bold;
   font-size: 16px;
   padding: 5px 10px;
-  background-color: #58cc02; /* Couleur verte de Duolingo */
+  background-color: #58cc02;
   border-radius: 20px;
   white-space: nowrap;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
@@ -1162,16 +1729,28 @@ export default {
 @keyframes highlight-pulse {
   0% {
     opacity: 0.7;
-    transform: scale(0.98);
+    box-shadow: 0 0 15px rgba(118, 255, 3, 0.5);
+    transform: scale(0.99);
   }
   50% {
     opacity: 0.9;
+    box-shadow: 0 0 20px rgba(118, 255, 3, 0.8);
     transform: scale(1);
   }
   100% {
     opacity: 0.7;
-    transform: scale(0.98);
+    box-shadow: 0 0 15px rgba(118, 255, 3, 0.5);
+    transform: scale(0.99);
   }
+}
+
+.section-highlight {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1050;
+  animation: highlight-pulse 2s ease-out infinite;
+  border: 3px solid #76ff03;
+  border-radius: 16px;
 }
 
 @keyframes highlight-bounce {
@@ -1186,59 +1765,120 @@ export default {
   }
 }
 
-.rewards-container .guide-avatar-container {
+.guide-avatar-container {
+  position: absolute;
+  z-index: 2000;
+  transition: all 0.3s ease;
+}
+
+.rewards-container {
   position: absolute;
   z-index: 1090;
 }
 
-.badge-unlock-overlay {
-  z-index: 2000;
+.guide-container {
+  position: fixed;
+  z-index: 1100;
 }
 
-/* Styles pour le guide */
-.guide-avatar-container {
-  z-index: 1050 !important; /* S'assurer que le guide est au-dessus des autres éléments */
+/* Animation pour le déplacement du guide entre les sections */
+@keyframes guide-move {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0);
+  }
 }
 
-.speech-bubble {
-  background-color: #fff;
-  font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', sans-serif;
-  color: #333;
-  border: 2px solid #58cc02; /* Couleur verte de Duolingo */
-}
-
-.speech-bubble:after {
-  border-color: #fff transparent transparent;
-}
-
-.bubble-header {
-  border-bottom: 1px solid #58cc02;
-}
-
-.guide-name {
-  color: #58cc02;
-}
-
-.option-button {
-  background-color: #fff;
-  border: 2px solid #58cc02;
-  color: #58cc02;
+/* Style pour la flèche de guidage */
+.guide-arrow {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  background-color: #76ff03;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
   font-weight: bold;
-  transition: all 0.2s ease;
+  box-shadow: 0 0 10px rgba(118, 255, 3, 0.7);
+  animation: guide-move 1.5s ease-in-out infinite;
+  z-index: 1060;
 }
 
-.option-button:hover {
-  background-color: #58cc02;
-  color: #fff;
+.guide-arrow::before {
+  content: '→';
+  font-size: 18px;
 }
 
-.status-unlocked {
-  color: #4caf50;
-  text-shadow: 0 0 4px rgba(76, 175, 80, 0.5);
+/* Style pour la bulle d'info accompagnant la flèche */
+.guide-info-bubble {
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 14px;
+  white-space: nowrap;
+  z-index: 1060;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
-.status-locked {
-  color: #9e9e9e;
+.tour-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 1040;
+  pointer-events: none;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Appliquer l'animation aux éléments du guide */
+.guide-element {
+  animation: fade-in 0.5s ease-out forwards;
+}
+
+.play-button-highlight {
+  position: relative;
+  z-index: 1055;
+  box-shadow: 0 0 20px rgba(118, 255, 3, 0.9);
+  transform: scale(1.1);
+  transition: all 0.3s ease;
+}
+
+/* Animation de pulsation pour attirer l'attention sur un élément */
+@keyframes attention-pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.attention {
+  animation: attention-pulse 1s ease-in-out infinite;
 }
 
 /* Boutons d'action */
@@ -1430,7 +2070,7 @@ export default {
   margin-top: 15px;
 }
 
-.play-button, .play-now-button, .share-button {
+.play-now-button, .share-button {
   padding: 12px 24px;
   border-radius: 24px;
   font-size: 16px;
@@ -1442,7 +2082,7 @@ export default {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
-.play-button, .play-now-button {
+.play-now-button {
   background-color: #4caf50;
 }
 
@@ -1450,12 +2090,12 @@ export default {
   background-color: #2196f3;
 }
 
-.play-button:hover, .play-now-button:hover, .share-button:hover {
+.play-now-button:hover, .share-button:hover {
   transform: scale(1.05);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
 }
 
-/* Animations */
+/* Animations supplementaires */
 @keyframes scaleUp {
   from {
     transform: scale(0.8);
@@ -1464,18 +2104,6 @@ export default {
   to {
     transform: scale(1);
     opacity: 1;
-  }
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
   }
 }
 
@@ -1492,13 +2120,19 @@ export default {
 
 .high-contrast .badge-card,
 .high-contrast .next-activity-card,
-.high-contrast .progress-container,
+.high-contrast .progress-map-container,
 .high-contrast .empty-state,
 .high-contrast .badge-achievement,
 .high-contrast .badge-locked-info,
-.high-contrast .badge-modal {
+.high-contrast .badge-modal,
+.high-contrast .progress-map {
   background-color: #222;
   border: 2px solid #fff;
+}
+
+.high-contrast .map-badge-node.unlocked .map-badge-icon {
+  border-color: #fff;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
 }
 
 .high-contrast .user-detail-item {
@@ -1511,15 +2145,12 @@ export default {
   border: 1px solid #fff;
 }
 
-.high-contrast .progress-bar {
-  background: #fff;
-}
-
 .high-contrast .section-title,
 .high-contrast .welcome-title,
 .high-contrast .badge-title,
 .high-contrast .badge-detail-title,
-.high-contrast .next-activity-info h3 {
+.high-contrast .next-activity-info h3,
+.high-contrast .stat-number {
   color: #fff;
   text-shadow: none;
 }
@@ -1558,6 +2189,28 @@ export default {
     margin-right: 0;
     margin-bottom: 12px;
   }
+  
+  .progress-stats {
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+  
+  .progress-map {
+    height: auto;
+    min-height: 350px;
+    padding: 30px 10px;
+  }
+  
+  .map-badge-node {
+    margin: 8px;
+  }
+  
+  .map-legend {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-left: 20px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1580,6 +2233,23 @@ export default {
   
   .welcome-subtitle {
     font-size: 16px;
+  }
+  
+  .map-badge-icon {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .map-badge-emoji {
+    font-size: 24px;
+  }
+  
+  .stat-number {
+    font-size: 24px;
+  }
+  
+  .progress-map {
+    min-height: 300px;
   }
 }
 </style>

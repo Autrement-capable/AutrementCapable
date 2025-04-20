@@ -1,363 +1,324 @@
 <template>
-  <transition name="avatar-fade">
-    <div v-if="showGuide" class="guide-avatar-container" :class="{ 'is-mini': mini }">
-      <div class="avatar-wrapper" @click="toggleExpand">
-        <img :src="avatarImage" alt="Guide" class="guide-avatar" :class="{ 'pulse': isAnimating }" />
-        <div v-if="!expanded && hasUnreadMessage" class="notification-badge">!</div>
+  <div 
+    class="guide-avatar-container" 
+    :style="positionStyle"
+    :class="{ 'guide-visible': isVisible, 'guide-with-message': showMessage }"
+  >
+    <!-- Avatar du guide -->
+    <div class="guide-avatar" @click="toggleMessage">
+      <img :src="guideImage" alt="Guide avatar" class="guide-img" />
+      <div v-if="hasNewMessage" class="new-message-indicator"></div>
+    </div>
+    
+    <!-- Message du guide (bulle de dialogue) -->
+    <div 
+      v-if="showMessage" 
+      class="guide-message"
+      :class="{ 'message-visible': showMessage, 'message-top': position === 'bottom', 'message-bottom': position === 'top' }"
+    >
+      <div class="message-content">
+        <h3 v-if="showGuideName">{{ guideName }}</h3>
+        <p>{{ currentMessage }}</p>
+        
+        <!-- Options de réponse -->
+        <div v-if="displayOptions.length > 0" class="guide-options">
+          <button 
+            v-for="(option, index) in displayOptions" 
+            :key="index"
+            class="guide-option-button"
+            @click="selectOption(option)"
+          >
+            {{ option.text }}
+          </button>
+        </div>
       </div>
       
-      <transition name="bubble-fade">
-        <div v-if="expanded || forceShowMessage" class="speech-bubble" :class="{ 'mini-bubble': mini }">
-          <div class="bubble-header">
-            <span class="guide-name">{{ guideName }}</span>
-          </div>
-          
-          <div class="bubble-content">
-            <p>{{ currentMessage }}</p>
-            
-            <div v-if="currentOptions.length > 0" class="guide-options">
-              <button 
-                v-for="(option, index) in currentOptions" 
-                :key="index" 
-                @click="selectOption(option)" 
-                class="option-button"
-              >
-                {{ option.text }}
-              </button>
-            </div>
-            
-            <div v-if="showControls" class="guide-controls">
-              <button 
-                v-if="hasPrevious" 
-                @click="previousMessage" 
-                class="control-button previous-button"
-              >
-                ← Précédent
-              </button>
-              <button 
-                v-if="hasNext" 
-                @click="nextMessage" 
-                class="control-button next-button"
-              >
-                Suivant →
-              </button>
-            </div>
-          </div>
-        </div>
-      </transition>
+      <!-- Bouton de fermeture -->
+      <button v-if="!forceShowMessage" class="close-message-button" @click="closeMessage">×</button>
     </div>
-  </transition>
+  </div>
 </template>
 
 <script>
 export default {
   name: 'GuideAvatar',
   props: {
+    // Nom du guide
     guideName: {
       type: String,
-      default: 'Leo'
+      default: 'Léo'
     },
-    avatarImage: {
+    // Position (top-right, bottom-left, etc.)
+    position: {
       type: String,
-      default: () => require('@/assets/avatars/guide.png')
+      default: 'bottom-right'
     },
+    // Contexte actuel pour les messages adaptés
     context: {
       type: String,
-      default: 'dashboard'
+      default: 'default'
     },
-    allowClose: {
-      type: Boolean,
-      default: true
-    },
-    allowMinimize: {
-      type: Boolean,
-      default: true
-    },
+    // Message forcé à afficher (prioritaire)
     forcedMessage: {
       type: String,
       default: null
     },
+    // Options forcées à afficher
     forcedOptions: {
       type: Array,
       default: () => []
     },
+    // Si on doit forcer l'affichage du message
     forceShowMessage: {
       type: Boolean,
       default: false
     },
-    showControls: {
-      type: Boolean,
-      default: true
-    },
+    // Délai avant affichage automatique
     autoShowDelay: {
       type: Number,
-      default: 1500
+      default: 2000
+    },
+    customPosition: {
+      type: Object,
+      default: null
+    },
+    
+    // ID de la section active (pour le tour guidé)
+    activeSectionId: {
+      type: String,
+      default: null
     }
   },
   data() {
     return {
-      showGuide: false,
-      expanded: false,
-      messageIndex: 0,
-      isAnimating: false,
-      mini: false,
-      hasUnreadMessage: false,
-      intervalId: null,
-      // État du parcours utilisateur stocké localement
-      userJourney: {
-        currentStep: 0,
-        completedGames: [],
-        visitedScreens: [],
-        needsHelp: false
-      }
+      isVisible: true,
+      showMessage: false,
+      hasNewMessage: true,
+      messageTimeout: null,
+      messagesMap: {
+        default: [
+          "Salut ! Je suis là pour t'aider à explorer l'application. Clique sur moi si tu as besoin d'aide !",
+          "Tu peux me poser des questions ou explorer l'interface à ton rythme."
+        ],
+        dashboard: [
+          "Bienvenue sur ton tableau de bord ! Ici tu peux accéder à tous les jeux et activités.",
+          "Clique sur l'avatar au centre pour accéder à ton profil."
+        ],
+        profile: [
+          "Voici ton profil ! Tu peux voir tes badges et ta progression ici.",
+          "Clique sur 'Jouer maintenant' pour commencer une activité."
+        ]
+      },
+      optionsMap: {
+        default: [
+          { text: "Quels jeux sont disponibles ?", action: "showGames" },
+          { text: "Comment gagner des badges ?", action: "explainBadges" }
+        ],
+        dashboard: [
+          { text: "Aller à mon profil", action: "goToProfile" },
+          { text: "Explorer les jeux", action: "exploreGames" }
+        ],
+        profile: [
+          { text: "Commencer à jouer", action: "startPlaying" },
+          { text: "Découvrir mes badges", action: "exploreBadges" }
+        ]
+      },
+      currentMessageIndex: 0,
+      dismissedCount: 0
     };
   },
   computed: {
+    // Style de positionnement basé sur la prop position
+    positionStyle() {
+      // Si une position personnalisée est fournie, l'utiliser
+      if (this.customPosition) {
+        return this.customPosition;
+      }
+      
+      // Sinon, utiliser la position par défaut basée sur la prop position
+      const positions = {
+        'top-left': { top: '20px', left: '20px' },
+        'top-right': { top: '20px', right: '20px' },
+        'bottom-left': { bottom: '20px', left: '20px' },
+        'bottom-right': { bottom: '20px', right: '20px' },
+        'top': { top: '20px', left: '50%', transform: 'translateX(-50%)' },
+        'bottom': { bottom: '20px', left: '50%', transform: 'translateX(-50%)' },
+        'left': { left: '20px', top: '50%', transform: 'translateY(-50%)' },
+        'right': { right: '20px', top: '50%', transform: 'translateY(-50%)' }
+      };
+      
+      return positions[this.position] || positions['bottom-right'];
+    },
+    
+    // Image du guide (peut changer selon le contexte)
+    guideImage() {
+      // Ici, on pourrait définir différentes images selon le contexte
+      return require('@/assets/avatars/guide.png'); // Image par défaut
+    },
+    
+    // Message actuel à afficher
     currentMessage() {
+      // Priorité au message forcé s'il existe
       if (this.forcedMessage) {
         return this.forcedMessage;
       }
       
-      const messages = this.getContextMessages();
-      return messages[this.messageIndex] || "Je suis là pour t'aider ! Que veux-tu faire ?";
+      // Sinon, prendre le message du contexte actuel
+      const messages = this.messagesMap[this.context] || this.messagesMap.default;
+      return messages[this.currentMessageIndex % messages.length];
     },
-    currentOptions() {
+    
+    // Options à afficher
+    displayOptions() {
+      // Priorité aux options forcées
       if (this.forcedOptions && this.forcedOptions.length > 0) {
         return this.forcedOptions;
       }
       
-      return this.getContextOptions();
+      // Sinon, prendre les options du contexte actuel
+      return this.optionsMap[this.context] || this.optionsMap.default;
     },
-    hasPrevious() {
-      if (this.forcedMessage) return false;
-      return this.messageIndex > 0;
-    },
-    hasNext() {
-      if (this.forcedMessage) return false;
-      const messages = this.getContextMessages();
-      return this.messageIndex < messages.length - 1;
+    
+    // Si on doit afficher le nom du guide
+    showGuideName() {
+      return true; // On peut ajouter une logique si nécessaire
     }
   },
-  created() {
-    // Charger l'état du parcours utilisateur depuis le localStorage
-    this.loadUserJourney();
+  watch: {
+    // Surveiller les changements de contexte
+    context() {
+      // Réinitialiser l'index des messages
+      this.currentMessageIndex = 0;
+      
+      // Afficher une notification
+      this.hasNewMessage = true;
+    },
     
-    // Afficher l'avatar après un court délai
-    setTimeout(() => {
-      this.showGuide = true;
-      
-      // Animer pour attirer l'attention
-      this.pulseAnimation();
-      
-      // Afficher automatiquement le message après un délai défini
-      if (this.autoShowDelay > 0) {
-        setTimeout(() => {
-          this.expanded = true;
-          this.hasUnreadMessage = false;
-        }, this.autoShowDelay);
-      } else {
-        this.hasUnreadMessage = true;
+    // Surveiller les messages forcés
+    forcedMessage(newMessage) {
+      if (newMessage) {
+        this.hasNewMessage = true;
+        
+        // Afficher automatiquement le message forcé
+        if (this.forceShowMessage) {
+          this.showMessage = true;
+        }
       }
-    }, 500);
+    },
     
-    // Démarrer un intervalle pour rappeler occasionnellement à l'utilisateur
-    this.startReminderInterval();
+    // Surveiller forceShowMessage
+    forceShowMessage(newValue) {
+      if (newValue) {
+        this.showMessage = true;
+      }
+    }
   },
+
+  // Remplacez beforeDestroy par beforeUnmount
   beforeUnmount() {
-    // Nettoyer l'intervalle lors de la destruction du composant
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
+    // Nettoyer le timeout
+    if (this.messageTimeout) {
+      clearTimeout(this.messageTimeout);
+    }
+  },
+  mounted() {
+    // Afficher automatiquement le message après un délai si autoShowDelay > 0
+    if (this.autoShowDelay > 0) {
+      this.messageTimeout = setTimeout(() => {
+        this.showMessage = this.forceShowMessage || this.dismissedCount < 2;
+      }, this.autoShowDelay);
     }
   },
   methods: {
-    toggleExpand() {
-      this.expanded = !this.expanded;
-      if (this.expanded) {
-        this.hasUnreadMessage = false;
+    /**
+     * Positionne le guide près d'un élément spécifique
+     * @param {String} selector - Sélecteur CSS de l'élément
+     * @param {String} position - Position relative (top, right, bottom, left)
+     */
+    positionNearElement(selector, position = 'right') {
+      const element = document.querySelector(selector);
+      if (!element) return;
+      
+      const rect = element.getBoundingClientRect();
+      let newPosition = {};
+      
+      switch (position) {
+        case 'top':
+          newPosition = {
+            bottom: `${window.innerHeight - rect.top + 20}px`,
+            left: `${rect.left + rect.width / 2}px`,
+            transform: 'translateX(-50%)'
+          };
+          break;
+        case 'right':
+          newPosition = {
+            top: `${rect.top + rect.height / 2}px`,
+            left: `${rect.right + 20}px`,
+            transform: 'translateY(-50%)'
+          };
+          break;
+        case 'bottom':
+          newPosition = {
+            top: `${rect.bottom + 20}px`,
+            left: `${rect.left + rect.width / 2}px`,
+            transform: 'translateX(-50%)'
+          };
+          break;
+        case 'left':
+          newPosition = {
+            top: `${rect.top + rect.height / 2}px`,
+            right: `${window.innerWidth - rect.left + 20}px`,
+            transform: 'translateY(-50%)'
+          };
+          break;
       }
-      // Notifie le parent que l'avatar a été cliqué
-      this.$emit('avatar-clicked', this.expanded);
+      
+      this.$emit('position-updated', newPosition);
     },
-    closeGuide() {
-      this.showGuide = false;
-      this.$emit('guide-closed');
+    // Basculer l'affichage du message
+    toggleMessage() {
+      // Si on a un message forcé et forceShowMessage est true, ne rien faire
+      if (this.forcedMessage && this.forceShowMessage) {
+        return;
+      }
+      
+      this.showMessage = !this.showMessage;
+      
+      if (this.showMessage) {
+        // Marquer comme lu
+        this.hasNewMessage = false;
+      }
     },
-    minimize() {
-      this.mini = true;
-      this.expanded = false;
-      this.$emit('guide-minimized');
+    
+    // Fermer le message
+    closeMessage() {
+      // Si on a un message forcé et forceShowMessage est true, ne rien faire
+      if (this.forcedMessage && this.forceShowMessage) {
+        return;
+      }
+      
+      this.showMessage = false;
+      this.dismissedCount++;
     },
-    maximize() {
-      this.mini = false;
-      this.expanded = true;
-      this.$emit('guide-maximized');
-    },
+    
+    // Passer au message suivant
     nextMessage() {
-      const messages = this.getContextMessages();
-      if (this.messageIndex < messages.length - 1) {
-        this.messageIndex++;
-      }
-      this.$emit('message-changed', this.messageIndex);
+      this.currentMessageIndex++;
     },
-    previousMessage() {
-      if (this.messageIndex > 0) {
-        this.messageIndex--;
-      }
-      this.$emit('message-changed', this.messageIndex);
-    },
+    
+    // Gérer la sélection d'une option
     selectOption(option) {
-      // IMPORTANT: Modification ici pour corriger l'erreur
-      // Envoyer l'option sélectionnée au parent au lieu d'exécuter l'action directement
+      // Émettre un événement avec l'option sélectionnée
       this.$emit('option-selected', option);
       
-      // Gérer les aspects locaux du composant uniquement
-      
-      // Si l'option a une route, naviguer vers cette route
-      if (option.route) {
-        this.$router.push(option.route);
+      // Si l'option n'a pas d'action qui maintient la bulle ouverte, fermer le message
+      if (!option.keepOpen) {
+        this.showMessage = false;
       }
       
-      // Si l'option a un nouveau message, le définir
-      if (option.nextMessage !== undefined) {
-        this.messageIndex = option.nextMessage;
-      }
-      
-      // REMARQUE: Nous avons supprimé this[option.action]() car ces méthodes sont dans le parent
-    },
-    pulseAnimation() {
-      this.isAnimating = true;
-      setTimeout(() => {
-        this.isAnimating = false;
-      }, 1000);
-    },
-    startReminderInterval() {
-      // Rappel toutes les 45 secondes si l'utilisateur n'interagit pas
-      this.intervalId = setInterval(() => {
-        if (!this.expanded && !this.hasUnreadMessage) {
-          this.hasUnreadMessage = true;
-          this.pulseAnimation();
-        }
-      }, 45000);
-    },
-    getContextMessages() {
-      // Récupérer les messages adaptés au contexte actuel
-      const allMessages = {
-        dashboard: [
-          "Bienvenue dans ton tableau de bord ! Clique sur ton avatar au centre pour commencer ton aventure.",
-          "Regarde tous les jeux disponibles ! Lequel voudrais-tu essayer en premier ?",
-          "Pour progresser, commence par explorer ton profil en cliquant sur l'avatar central.",
-          "N'oublie pas de consulter tes badges en cliquant sur ton avatar."
-        ],
-        profile: [
-          "Voici ton profil ! Tu peux voir tes compétences et tes badges ici.",
-          "Pour continuer ton aventure, clique sur \"Jouer maintenant\" dans la section \"Ma prochaine activité\".",
-          "Tu peux personnaliser ton profil en cliquant sur le bouton d'édition."
-        ],
-        scenario: [
-          "Dans ce jeu, tu vas pouvoir mettre en pratique tes compétences sociales.",
-          "N'hésite pas à prendre ton temps pour réfléchir à chaque situation.",
-          "Si tu veux essayer un autre jeu, tu peux toujours y revenir plus tard !"
-        ],
-        skills: [
-          "Ce jeu te permet de découvrir tes forces et tes axes d'amélioration.",
-          "Tourne la roue pour découvrir une compétence et indiquer ton niveau !",
-          "Tu peux faire une pause et reprendre plus tard si tu le souhaites."
-        ],
-        metier: [
-          "Découvre différents métiers qui pourraient t'intéresser !",
-          "Tu peux liker les métiers qui t'intéressent ou passer à un autre.",
-          "N'hésite pas à explorer tous les métiers pour élargir tes horizons."
-        ],
-        games: [
-          "Ces mini-jeux sont conçus pour te faire découvrir différentes compétences.",
-          "Tu peux choisir celui qui t'intéresse le plus, ou les essayer tous !",
-          "Chaque jeu te permettra de gagner des badges. Collecte-les tous !"
-        ],
-        environment: [
-          "Tu peux personnaliser ton environnement ici !",
-          "Choisis le thème qui te plaît le plus pour te sentir à l'aise.",
-          "Bravo ! Tu as presque terminé ton parcours de découverte."
-        ],
-        default: [
-          "Je suis là pour t'aider ! Clique sur moi si tu as besoin de conseils.",
-          "N'hésite pas à explorer toutes les fonctionnalités disponibles.",
-          "Tu progresses bien, continue comme ça !"
-        ]
-      };
-      
-      return allMessages[this.context] || allMessages.default;
-    },
-    getContextOptions() {
-      // Options adaptées au contexte actuel
-      const allOptions = {
-        dashboard: [
-          { text: "Comment commencer ?", nextMessage: 0 },
-          { text: "Voir mon profil", route: "/user-profile" },
-          { text: "Explorer les jeux", action: "showGamesInfo" }
-        ],
-        profile: [
-          { text: "Jouer maintenant", action: "startNextGame" },
-          { text: "Voir mes badges", action: "showBadges" },
-          { text: "Retour au tableau de bord", route: "/dashboard" }
-        ],
-        games: [
-          { text: "Jouer aux scénarios", route: "/scenarios" },
-          { text: "Découvrir les métiers", route: "/metier" },
-          { text: "Tester mes compétences", route: "/roue-des-competences" }
-        ],
-        default: [
-          { text: "Retour au tableau de bord", route: "/dashboard" },
-          { text: "Voir mon parcours", action: "showProgress" }
-        ]
-      };
-      
-      // Ajouter une option pour changer de jeu si on est dans un jeu
-      if (['scenario', 'skills', 'metier'].includes(this.context)) {
-        return [
-          { text: "Continuer ce jeu", nextMessage: 0 },
-          { text: "Essayer un autre jeu", action: "suggestOtherGame" },
-          { text: "Voir mon parcours", action: "showProgress" }
-        ];
-      }
-      
-      return allOptions[this.context] || allOptions.default;
-    },
-    loadUserJourney() {
-      // Charger l'état du parcours utilisateur depuis le localStorage
-      const savedJourney = localStorage.getItem('userJourney');
-      if (savedJourney) {
-        try {
-          this.userJourney = JSON.parse(savedJourney);
-        } catch (error) {
-          console.error('Erreur de chargement du parcours utilisateur:', error);
-        }
-      }
-    },
-    saveUserJourney() {
-      // Sauvegarder l'état du parcours utilisateur dans le localStorage
-      localStorage.setItem('userJourney', JSON.stringify(this.userJourney));
-    },
-    addCompletedGame(gameId) {
-      // Ajouter un jeu à la liste des jeux complétés
-      if (!this.userJourney.completedGames.includes(gameId)) {
-        this.userJourney.completedGames.push(gameId);
-        this.saveUserJourney();
-      }
-    },
-    addVisitedScreen(screenId) {
-      // Ajouter un écran à la liste des écrans visités
-      if (!this.userJourney.visitedScreens.includes(screenId)) {
-        this.userJourney.visitedScreens.push(screenId);
-        this.saveUserJourney();
-      }
-    },
-    updateCurrentStep(step) {
-      // Mettre à jour l'étape actuelle du parcours
-      this.userJourney.currentStep = step;
-      this.saveUserJourney();
+      // Marquer comme lu
+      this.hasNewMessage = false;
     }
-    // Remarque: Nous avons retiré les méthodes qui sont en conflit avec le parent comme showGamesInfo, startNextGame, etc.
-    // Ces méthodes doivent être implémentées dans le composant parent et non dans le guide
   }
 };
 </script>
@@ -365,219 +326,197 @@ export default {
 <style scoped>
 .guide-avatar-container {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
   z-index: 1000;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-}
-
-.guide-avatar-container.is-mini {
-  bottom: 10px;
-  right: 10px;
-}
-
-.avatar-wrapper {
-  position: relative;
-  cursor: pointer;
-  transition: transform 0.3s ease;
-}
-
-.avatar-wrapper:hover {
-  transform: scale(1.05);
-}
-
-.guide-avatar {
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
-  border: 3px solid #ffc107;
-  background-color: #fff;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
 }
 
-.is-mini .guide-avatar {
-  width: 50px;
-  height: 50px;
-}
-
-.guide-avatar.pulse {
-  animation: avatarPulse 1s ease-in-out;
-}
-
-.notification-badge {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 22px;
-  height: 22px;
-  background-color: #ff5722;
-  color: white;
+.guide-avatar {
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
+  background-color: #4caf50;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
-  font-size: 14px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  animation: badgePulse 2s infinite;
-}
-
-.speech-bubble {
   position: relative;
-  background-color: #fff;
-  border-radius: 15px;
-  padding: 15px;
-  margin-bottom: 15px;
-  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.2);
-  max-width: 350px;
-  width: 300px;
-  margin-right: 20px;
+  transition: transform 0.3s ease;
+  border: 2px solid white;
 }
 
-.mini-bubble {
-  width: 250px;
-  padding: 10px;
-  margin-right: 10px;
+.guide-avatar:hover {
+  transform: scale(1.1);
 }
 
-.speech-bubble:after {
-  content: '';
+.guide-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.new-message-indicator {
   position: absolute;
-  bottom: -10px;
-  right: 25px;
-  border-width: 10px 10px 0;
-  border-style: solid;
-  border-color: #fff transparent transparent;
+  top: 0;
+  right: 0;
+  width: 15px;
+  height: 15px;
+  background-color: #ff4081;
+  border-radius: 50%;
+  border: 2px solid white;
+  animation: pulse 2s infinite;
 }
 
-.bubble-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.guide-message {
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  padding: 15px;
+  width: 280px;
+  max-width: 80vw;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.3s ease;
+  z-index: 1001;
+  color: #333;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.message-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.message-content {
   margin-bottom: 10px;
-  padding-bottom: 5px;
-  border-bottom: 1px solid #eee;
 }
 
-.guide-name {
-  font-weight: bold;
-  color: #4a4d9e;
-}
-
-.close-button, .minimize-button, .maximize-button {
-  background: none;
-  border: none;
+.message-content h3 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  color: #4caf50;
   font-size: 18px;
+}
+
+.message-content p {
+  margin: 0 0 15px 0;
+  line-height: 1.4;
+  font-size: 14px;
+}
+
+.close-message-button {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 20px;
+  height: 20px;
+  background: rgba(0, 0, 0, 0.1);
+  border: none;
+  border-radius: 50%;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  color: #999;
-  transition: color 0.2s ease;
+  transition: background 0.3s ease;
 }
 
-.close-button:hover, .minimize-button:hover, .maximize-button:hover {
-  color: #333;
-}
-
-.bubble-content p {
-  margin: 0 0 15px;
-  line-height: 1.5;
-  color: #333;
+.close-message-button:hover {
+  background: rgba(0, 0, 0, 0.2);
 }
 
 .guide-options {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: 15px;
 }
 
-.option-button {
-  padding: 8px 15px;
-  background-color: #f5f8ff;
-  border: 1px solid #ddd;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: left;
+.guide-option-button {
+  background-color: #f5f5f5;
   color: #333;
-}
-
-.option-button:hover {
-  background-color: #e3f2fd;
-  border-color: #2196f3;
-}
-
-.guide-controls {
-  display: flex;
-  justify-content: space-between;
-}
-
-.control-button {
-  padding: 5px 10px;
-  background-color: transparent;
-  border: none;
-  color: #2196f3;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  padding: 8px 16px;
+  text-align: left;
   cursor: pointer;
+  font-size: 13px;
   transition: all 0.2s ease;
-  font-size: 0.9rem;
 }
 
-.control-button:hover {
-  text-decoration: underline;
+.guide-option-button:hover {
+  background-color: #e0e0e0;
 }
 
-/* Animations */
-@keyframes avatarPulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
+/* Positionnement de la bulle par rapport à l'avatar */
+.message-top {
+  bottom: 70px;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
-@keyframes badgePulse {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.1); opacity: 0.8; }
-  100% { transform: scale(1); opacity: 1; }
+.message-bottom {
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
-.avatar-fade-enter-active, .avatar-fade-leave-active {
-  transition: opacity 0.5s, transform 0.5s;
-}
-
-.avatar-fade-enter-from, .avatar-fade-leave-to {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.bubble-fade-enter-active, .bubble-fade-leave-active {
-  transition: opacity 0.3s, transform 0.3s;
-}
-
-.bubble-fade-enter-from, .bubble-fade-leave-to {
-  opacity: 0;
-  transform: translateX(20px);
-}
-
-@media (max-width: 768px) {
-  .speech-bubble {
-    width: calc(100vw - 100px);
-    max-width: 300px;
+/* Animation pour l'indicateur de nouveau message */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 64, 129, 0.6);
   }
-  
-  .mini-bubble {
-    width: calc(100vw - 120px);
-    max-width: 250px;
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 64, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 64, 129, 0);
+  }
+}
+
+/* Animation pour la mise en évidence des sections */
+@keyframes highlight-pulse {
+  0% {
+    opacity: 0.7;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0.7;
+    transform: scale(0.98);
+  }
+}
+
+/* Styles pour la mise en évidence des sections */
+.section-highlight {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1050;
+  animation: highlight-pulse 2s ease-out infinite;
+}
+
+/* Styles responsifs */
+@media (max-width: 480px) {
+  .guide-message {
+    width: 240px;
   }
   
   .guide-avatar {
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
   }
   
-  .is-mini .guide-avatar {
-    width: 40px;
-    height: 40px;
+  .guide-options {
+    gap: 5px;
+  }
+  
+  .guide-option-button {
+    padding: 6px 12px;
+    font-size: 12px;
   }
 }
 </style>

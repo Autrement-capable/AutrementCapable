@@ -1,334 +1,236 @@
-import { UserJourneyService } from '@/services/UserJourneyService';
-
+// Ajout au GuideAvatarMixin.js
 export const GuideAvatarMixin = {
   data() {
     return {
-      // États liés au guide
+      // États existants...
       guideVisible: true,
       guideContext: 'default',
       guideForcedMessage: null,
       guideForcedOptions: [],
       guideForceShow: false,
-      guideAutoShowDelay: 1500, // délai avant affichage automatique en ms
-      // États liés au parcours utilisateur
+      guideAutoShowDelay: 1500,
       currentJourneyStep: 0,
       completedGames: [],
-      currentGame: null
+      currentGame: null,
+      
+      // Nouvel état pour le tour guidé du profil
+      profileTourStep: 0,
+      profileTourActive: false,
+      highlightedSection: null,
+      profileSections: [
+        {
+          id: 'header',
+          name: 'En-tête du profil',
+          selector: '.profile-header',
+          description: "C'est ton profil personnel ! Tu peux voir ton avatar, ton niveau actuel et tes informations personnelles comme ton âge et ta ville."
+        },
+        {
+          id: 'progress-map',
+          name: 'Carte de progression',
+          selector: '.progress-map-container',
+          description: "Cette carte montre tous tes badges. Les badges débloqués sont en couleur, et les badges à débloquer sont grisés avec un cadenas. Le badge clignotant orange est ta prochaine activité recommandée !"
+        },
+        {
+          id: 'next-activity',
+          name: 'Prochaine activité',
+          selector: '.next-activity',
+          description: "Ici tu trouveras ta prochaine activité recommandée. Clique sur 'Jouer maintenant' pour la commencer et débloquer un nouveau badge !"
+        },
+        {
+          id: 'badges-grid',
+          name: 'Mes badges',
+          selector: '.all-badges',
+          description: "Cette section affiche tous tes badges, débloqués ou non. Clique sur un badge pour voir plus de détails et comment le débloquer si tu ne l'as pas encore."
+        },
+        {
+          id: 'actions',
+          name: 'Actions',
+          selector: '.action-buttons',
+          description: "Ces boutons te permettent de créer ton CV avec les compétences que tu as développées ou d'accéder directement à ton profil complet."
+        }
+      ]
     };
   },
   
-  created() {
-    // Initialiser les données du parcours utilisateur
-    this.initUserJourneyData();
-    
-    // Définir le contexte en fonction de la route actuelle
-    this.setGuideContextFromRoute();
-    
-    // Mettre à jour la dernière route visitée
-    UserJourneyService.updateLastVisitedRoute(this.$route.path);
-    
-    // Si la page est un jeu, définir le jeu courant
-    this.detectCurrentGame();
-  },
-  
   methods: {
+    // Méthodes existantes...
+    
     /**
-     * Initialise les données du parcours utilisateur
+     * Démarre le tour guidé du profil
      */
-    initUserJourneyData() {
-      const state = UserJourneyService.getState();
-      this.currentJourneyStep = state.currentStep;
-      this.completedGames = state.completedGames;
+    startProfileTour() {
+      this.profileTourActive = true;
+      this.profileTourStep = 0;
+      this.showProfileTourStep();
+      
+      // Mettre à jour l'étape du parcours utilisateur
+      UserJourneyService.updateStep(UserJourneyService.STEPS.PROFILE_INTRO);
     },
     
     /**
-     * Définit le contexte du guide en fonction de la route actuelle
+     * Affiche l'étape actuelle du tour du profil
      */
-    setGuideContextFromRoute() {
-      const path = this.$route.path;
-      
-      if (path === '/dashboard' || path === '/') {
-        this.guideContext = 'dashboard';
-      } else if (path === '/user-profile') {
-        this.guideContext = 'profile';
-      } else if (path.includes('/scenario')) {
-        this.guideContext = 'scenario';
-      } else if (path.includes('/roue-des-competences')) {
-        this.guideContext = 'skills';
-      } else if (path.includes('/metier')) {
-        this.guideContext = 'metier';
-      } else if (path.includes('/game-')) {
-        this.guideContext = 'games';
-      } else if (path.includes('/environment')) {
-        this.guideContext = 'environment';
-      } else {
-        this.guideContext = 'default';
+    showProfileTourStep() {
+      if (!this.profileTourActive || this.profileTourStep >= this.profileSections.length) {
+        this.endProfileTour();
+        return;
       }
       
-      // Récupérer des messages et options contextuels
-      this.updateContextualContent();
-    },
-    
-    /**
-     * Met à jour le contenu contextuel (messages et options)
-     */
-    updateContextualContent() {
-      const messages = UserJourneyService.getContextualMessages(this.guideContext, this.currentJourneyStep);
-      const suggestions = UserJourneyService.getContextualSuggestions(this.guideContext, this.currentJourneyStep);
+      const section = this.profileSections[this.profileTourStep];
+      this.highlightedSection = section.id;
       
-      if (messages && messages.length > 0) {
-        this.guideForcedMessage = messages[0]; // Utiliser le premier message
-      }
-      
-      if (suggestions && suggestions.length > 0) {
-        this.guideForcedOptions = suggestions;
-      }
-    },
-    
-    /**
-     * Détecte le jeu actuel en fonction de la route
-     */
-    detectCurrentGame() {
-      const path = this.$route.path;
-      
-      // Correspondance entre routes et identifiants de jeux
-      const gameMapping = {
-        '/scenarios': 'scenarios',
-        '/roue-des-competences': 'skills-wheel',
-        '/metier': 'metiers',
-        '/game-speed': 'game-speed',
-        '/shape-sequence-game': 'shape-game',
-        '/environment': 'environment'
-      };
-      
-      // Trouver la correspondance exacte ou partielle
-      let gameId = gameMapping[path];
-      
-      if (!gameId) {
-        // Chercher une correspondance partielle
-        for (const [route, id] of Object.entries(gameMapping)) {
-          if (path.includes(route)) {
-            gameId = id;
-            break;
-          }
-        }
-      }
-      
-      this.currentGame = gameId;
-    },
-    
-    /**
-     * Marque le jeu actuel comme complété
-     */
-    completeCurrentGame() {
-      if (this.currentGame) {
-        UserJourneyService.completeGame(this.currentGame);
-        // Mettre à jour les données locales
-        this.initUserJourneyData();
-        // Mettre à jour le contenu contextuel
-        this.updateContextualContent();
-        
-        // Afficher un message de félicitations
-        this.showCompletionMessage();
-      }
-    },
-    
-    /**
-     * Affiche un message de félicitations
-     */
-    showCompletionMessage() {
-      this.guideForcedMessage = "Félicitations ! Tu as terminé ce jeu avec succès.";
+      // Forcer l'affichage du guide avec le message approprié
+      this.guideForcedMessage = section.description;
       this.guideForcedOptions = [
-        { text: "Continuer mon parcours", action: "continueJourney" },
-        { text: "Voir ma progression", action: "showProgress" }
+        { text: "Suivant", action: "nextProfileTourStep" },
+        { text: "Terminer le tour", action: "endProfileTour" }
       ];
+      
+      // Si c'est la dernière étape, changer le texte du bouton
+      if (this.profileTourStep === this.profileSections.length - 1) {
+        this.guideForcedOptions[0].text = "Terminer";
+      }
+      
       this.guideForceShow = true;
       
-      // Réinitialiser après un délai
+      // Créer un effet de mise en évidence pour la section actuelle
+      this.highlightSection(section.selector);
+    },
+    
+    /**
+     * Passe à l'étape suivante du tour du profil
+     */
+    nextProfileTourStep() {
+      // Supprimer la mise en évidence actuelle
+      this.removeHighlight();
+      
+      // Passer à l'étape suivante
+      this.profileTourStep++;
+      
+      // Vérifier si on a terminé le tour
+      if (this.profileTourStep >= this.profileSections.length) {
+        this.endProfileTour();
+        return;
+      }
+      
+      // Afficher la nouvelle étape
+      this.showProfileTourStep();
+    },
+    
+    /**
+     * Termine le tour du profil
+     */
+    endProfileTour() {
+      // Supprimer toutes les mises en évidence
+      this.removeHighlight();
+      
+      this.profileTourActive = false;
+      this.highlightedSection = null;
+      
+      // Afficher un message de fin de tour
+      this.guideForcedMessage = "Tu connais maintenant toutes les sections de ton profil ! N'hésite pas à explorer et à cliquer sur 'Jouer maintenant' pour commencer une activité.";
+      this.guideForcedOptions = [
+        { text: "Compris !", action: "dismissProfileGuide" },
+        { text: "Jouer maintenant", action: "highlightPlayButton" }
+      ];
+      
+      // Marquer le tour du profil comme terminé dans le service de parcours utilisateur
+      if (typeof UserJourneyService !== 'undefined') {
+        // Ajouter une nouvelle propriété pour suivre si le tour du profil a été fait
+        const state = UserJourneyService.getState();
+        state.hasCompletedProfileTour = true;
+        UserJourneyService.saveState(state);
+      }
+    },
+    
+    /**
+     * Met en évidence une section spécifique
+     */
+    highlightSection(selector) {
+      // Supprimer d'abord toutes les mises en évidence existantes
+      this.removeHighlight();
+      
+      // Ajouter une nouvelle mise en évidence
       setTimeout(() => {
-        this.guideForceShow = false;
-        this.updateContextualContent();
-      }, 5000);
-    },
-    
-    /**
-     * Traite une option sélectionnée par l'utilisateur
-     */
-    handleGuideOptionSelected(option) {
-      console.log("Option sélectionnée:", option);
-      
-      // Exécuter l'action associée à l'option
-      if (option.action && typeof this[option.action] === 'function') {
-        this[option.action](option);
-      }
-      
-      // Naviguer vers la route si elle est spécifiée
-      if (option.route) {
-        this.$router.push(option.route);
-      }
-    },
-    
-    /**
-     * Guide l'utilisateur vers la prochaine étape de son parcours
-     */
-    continueJourney() {
-      // Déterminer la prochaine étape en fonction de l'état actuel
-      const nextGame = UserJourneyService.getNextRecommendedGame();
-      
-      if (nextGame) {
-        // Proposer le prochain jeu
-        this.guideForcedMessage = `Je te suggère d'essayer ${nextGame.name} maintenant. Tu veux y aller ?`;
-        this.guideForcedOptions = [
-          { text: "Oui, allons-y", route: nextGame.route },
-          { text: "Non, pas maintenant", action: "declineNextGame" }
-        ];
-        this.guideForceShow = true;
-      } else {
-        // Tous les jeux sont complétés
-        this.guideForcedMessage = "Félicitations ! Tu as terminé tous les jeux du parcours.";
-        this.guideForcedOptions = [
-          { text: "Voir mon profil", route: "/user-profile" },
-          { text: "Explorer librement", action: "exploreFreely" }
-        ];
-        this.guideForceShow = true;
-      }
-    },
-    
-    /**
-     * Affiche la progression de l'utilisateur
-     */
-    showProgress() {
-      const progress = UserJourneyService.getProgressPercentage();
-      const completedGames = UserJourneyService.getCompletedGames();
-      const totalGames = UserJourneyService.GAMES.length;
-      
-      this.guideForcedMessage = `Tu as complété ${completedGames.length} jeux sur ${totalGames} (${progress}% du parcours).`;
-      
-      const incompleteGames = UserJourneyService.getIncompleteGames();
-      if (incompleteGames.length > 0) {
-        this.guideForcedOptions = incompleteGames.slice(0, 3).map(game => ({
-          text: `Essayer ${game.name}`,
-          route: game.route
-        }));
-        
-        if (incompleteGames.length > 3) {
-          this.guideForcedOptions.push({
-            text: "Voir plus de jeux",
-            action: "showMoreGames"
-          });
+        const element = document.querySelector(selector);
+        if (element) {
+          // Créer un élément de surbrillance
+          const highlight = document.createElement('div');
+          highlight.className = 'section-highlight';
+          
+          // Positionner la surbrillance autour de l'élément
+          const rect = element.getBoundingClientRect();
+          highlight.style.position = 'absolute';
+          highlight.style.top = `${rect.top}px`;
+          highlight.style.left = `${rect.left}px`;
+          highlight.style.width = `${rect.width}px`;
+          highlight.style.height = `${rect.height}px`;
+          highlight.style.border = '3px solid #76ff03';
+          highlight.style.borderRadius = '16px';
+          highlight.style.boxShadow = '0 0 15px rgba(118, 255, 3, 0.7)';
+          highlight.style.pointerEvents = 'none';
+          highlight.style.zIndex = '1050';
+          highlight.style.animation = 'highlight-pulse 2s ease-out infinite';
+          
+          // Ajouter la surbrillance au DOM
+          document.body.appendChild(highlight);
+          
+          // Faire défiler jusqu'à l'élément si nécessaire
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-      } else {
-        this.guideForcedOptions = [
-          { text: "Super !", action: "exploreFreely" }
-        ];
-      }
-      
-      this.guideForceShow = true;
+      }, 100);
     },
     
     /**
-     * Affiche les jeux recommandés à l'utilisateur
+     * Supprime toutes les mises en évidence
      */
-    suggestGames() {
-      const incompleteGames = UserJourneyService.getIncompleteGames();
-      
-      if (incompleteGames.length === 0) {
-        this.guideForcedMessage = "Tu as déjà complété tous les jeux. Bravo !";
-        this.guideForcedOptions = [
-          { text: "Merci !", action: "exploreFreely" }
-        ];
-      } else {
-        this.guideForcedMessage = "Voici d'autres jeux que tu pourrais essayer :";
-        this.guideForcedOptions = incompleteGames.slice(0, 4).map(game => ({
-          text: game.name,
-          route: game.route
-        }));
-      }
-      
-      this.guideForceShow = true;
+    removeHighlight() {
+      const highlights = document.querySelectorAll('.section-highlight');
+      highlights.forEach(highlight => {
+        highlight.parentNode.removeChild(highlight);
+      });
     },
     
     /**
-     * Actions spécifiques en fonction du contexte
+     * Met en évidence le bouton "Jouer maintenant"
      */
-    showGameRules() {
-      // Afficher les règles du jeu actuel
-      if (this.currentGame === 'scenarios') {
-        this.guideForcedMessage = "Dans ce jeu, tu vas rencontrer des situations de la vie quotidienne et tu devras choisir comment réagir. Tes choix influenceront tes compétences sociales !";
-      } else if (this.currentGame === 'skills-wheel') {
-        this.guideForcedMessage = "Tourne la roue pour découvrir différentes compétences et indique ton niveau de maîtrise pour chacune d'elles. Cela t'aidera à mieux te connaître !";
-      } else if (this.currentGame === 'metiers') {
-        this.guideForcedMessage = "Découvre différents métiers et indique ceux qui t'intéressent. Tu peux aussi obtenir plus d'informations sur chaque métier.";
-      } else if (this.currentGame === 'game-speed') {
-        this.guideForcedMessage = "Teste ta vitesse de frappe ! Tape le texte qui apparaît à l'écran le plus rapidement et précisément possible.";
-      } else if (this.currentGame === 'shape-game') {
-        this.guideForcedMessage = "Observe attentivement les formes qui apparaissent et retrouve la forme manquante dans la séquence.";
-      } else {
-        this.guideForcedMessage = "Explore ce jeu à ton rythme. Je suis là si tu as besoin d'aide !";
-      }
+    highlightPlayButton() {
+      this.removeHighlight();
+      this.highlightSection('.next-activity .play-button');
       
+      this.guideForcedMessage = "Clique sur le bouton 'Jouer maintenant' pour commencer ta prochaine activité recommandée !";
       this.guideForcedOptions = [
-        { text: "Compris !", action: "dismissMessage" },
-        { text: "Besoin d'aide supplémentaire", action: "showMoreHelp" }
-      ];
-      
-      this.guideForceShow = true;
-    },
-    
-    /**
-     * Affiche plus d'aide sur le jeu actuel
-     */
-    showMoreHelp() {
-      // Aide supplémentaire en fonction du jeu
-      if (this.currentGame === 'scenarios') {
-        this.guideForcedMessage = "Prends ton temps pour lire chaque situation et les options de réponse. Il n'y a pas de bonne ou mauvaise réponse absolue, mais certains choix peuvent développer différentes compétences.";
-      } else if (this.currentGame === 'skills-wheel') {
-        this.guideForcedMessage = "Sois honnête dans ton auto-évaluation ! C'est le meilleur moyen d'identifier tes forces et tes axes d'amélioration.";
-      } else {
-        this.guideForcedMessage = "N'hésite pas à explorer toutes les fonctionnalités du jeu. L'important est d'apprendre et de t'améliorer à ton rythme.";
-      }
-      
-      this.guideForcedOptions = [
-        { text: "Merci pour ces conseils", action: "dismissMessage" }
-      ];
-      
-      this.guideForceShow = true;
-    },
-    
-    /**
-     * Masque le message forcé
-     */
-    dismissMessage() {
-      this.guideForceShow = false;
-      // Réinitialiser les messages et options
-      setTimeout(() => {
-        this.updateContextualContent();
-      }, 300);
-    },
-    
-    /**
-     * Permet à l'utilisateur d'explorer librement
-     */
-    exploreFreely() {
-      this.guideForcedMessage = "N'hésite pas à explorer toutes les fonctionnalités de la plateforme à ton rythme. Je suis toujours là si tu as besoin d'aide !";
-      this.guideForcedOptions = [
-        { text: "Voir mon tableau de bord", route: "/dashboard" },
-        { text: "Merci !", action: "dismissMessage" }
-      ];
-      this.guideForceShow = true;
-    },
-    
-    /**
-     * Décline la suggestion de prochain jeu
-     */
-    declineNextGame() {
-      this.guideForcedMessage = "Pas de problème ! Tu peux explorer à ton rythme. Je serai là quand tu auras besoin de moi.";
-      this.guideForcedOptions = [
-        { text: "Voir mon tableau de bord", route: "/dashboard" },
-        { text: "Merci !", action: "dismissMessage" }
+        { text: "Compris !", action: "dismissMessage" }
       ];
       this.guideForceShow = true;
     }
+  },
+  
+  // Ajouter un hook de cycle de vie pour détecter quand on est sur la page de profil
+  mounted() {
+    // Vérifier si on est sur la page de profil
+    if (this.guideContext === 'profile') {
+      // Vérifier si le tour du profil a déjà été effectué
+      if (typeof UserJourneyService !== 'undefined') {
+        const state = UserJourneyService.getState();
+        if (!state.hasCompletedProfileTour) {
+          // Proposer de commencer le tour du profil après un court délai
+          setTimeout(() => {
+            this.guideForcedMessage = "Bienvenue sur ton profil ! Veux-tu que je te fasse visiter pour te montrer toutes les fonctionnalités ?";
+            this.guideForcedOptions = [
+              { text: "Oui, je veux découvrir mon profil", action: "startProfileTour" },
+              { text: "Non merci, je vais explorer seul", action: "dismissProfileGuide" }
+            ];
+            this.guideForceShow = true;
+          }, 1000);
+        }
+      }
+    }
+  },
+  
+  // Nettoyage des effets visuels lors de la destruction du composant
+  beforeDestroy() {
+    this.removeHighlight();
   }
 };
 

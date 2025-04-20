@@ -1,9 +1,8 @@
 /**
- * Service pour gérer le parcours utilisateur guidé
- * Stocke l'état de progression, les étapes à suivre et les messages contextuels
+ * Extension du UserJourneyService pour le tour guidé du profil
  */
 export const UserJourneyService = {
-  // Clé pour le stockage localStorage
+  // Propriétés existantes
   STORAGE_KEY: 'user-guided-journey',
   
   // Étapes du parcours
@@ -11,6 +10,7 @@ export const UserJourneyService = {
     DASHBOARD_INTRO: 0,
     CLICK_AVATAR: 1,
     PROFILE_INTRO: 2,
+    PROFILE_TOUR_COMPLETED: 2.5, // Nouvelle étape pour le tour du profil
     FIRST_GAME: 3,
     CONTINUE_GAMES: 4,
     COMPLETE_GAMES: 5,
@@ -18,7 +18,36 @@ export const UserJourneyService = {
     JOURNEY_COMPLETE: 7
   },
   
-  // Liste des jeux à compléter
+  // Sections du profil pour le tour guidé
+  PROFILE_SECTIONS: [
+    {
+      id: 'header',
+      name: 'En-tête du profil',
+      description: "C'est ton profil personnel ! Tu peux voir ton avatar, ton niveau actuel et tes informations personnelles comme ton âge et ta ville."
+    },
+    {
+      id: 'progress-map',
+      name: 'Carte de progression',
+      description: "Cette carte montre tous tes badges. Les badges débloqués sont en couleur, et les badges à débloquer sont grisés avec un cadenas. Le badge clignotant orange est ta prochaine activité recommandée !"
+    },
+    {
+      id: 'next-activity',
+      name: 'Prochaine activité',
+      description: "Ici tu trouveras ta prochaine activité recommandée. Clique sur 'Jouer maintenant' pour la commencer et débloquer un nouveau badge !"
+    },
+    {
+      id: 'badges-grid',
+      name: 'Mes badges',
+      description: "Cette section affiche tous tes badges, débloqués ou non. Clique sur un badge pour voir plus de détails et comment le débloquer si tu ne l'as pas encore."
+    },
+    {
+      id: 'actions',
+      name: 'Actions',
+      description: "Ces boutons te permettent de créer ton CV avec les compétences que tu as développées ou d'accéder directement à ton profil complet."
+    }
+  ],
+  
+  // Liste des jeux existante...
   GAMES: [
     { id: 'scenarios', name: 'Scénarios sociaux', route: '/scenarios' },
     { id: 'skills-wheel', name: 'Roue des compétences', route: '/roue-des-competences' },
@@ -42,7 +71,7 @@ export const UserJourneyService = {
       console.error('Erreur lors de la récupération de l\'état du parcours:', error);
     }
     
-    // État par défaut si rien n'est trouvé ou en cas d'erreur
+    // État par défaut avec ajout des propriétés pour le tour du profil
     return {
       currentStep: this.STEPS.DASHBOARD_INTRO,
       completedGames: [],
@@ -50,7 +79,10 @@ export const UserJourneyService = {
       hasSeenGuide: false,
       dismissCount: 0,
       customPreferences: {},
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      profileTourStep: 0,
+      profileTourCompleted: false,
+      visitedProfileSections: []
     };
   },
   
@@ -172,6 +204,83 @@ export const UserJourneyService = {
   },
   
   /**
+   * Vérifie si le tour du profil a été complété
+   */
+  isProfileTourCompleted() {
+    const state = this.getState();
+    return state.profileTourCompleted;
+  },
+  
+  /**
+   * Démarre le tour guidé du profil
+   */
+  startProfileTour() {
+    const state = this.getState();
+    state.profileTourStep = 0;
+    state.visitedProfileSections = [];
+    return this.saveState(state);
+  },
+  
+  /**
+   * Avance à l'étape suivante du tour du profil
+   */
+  nextProfileTourStep() {
+    const state = this.getState();
+    state.profileTourStep++;
+    
+    // Si on a atteint la fin du tour
+    if (state.profileTourStep >= this.PROFILE_SECTIONS.length) {
+      this.completeProfileTour();
+    } else {
+      this.saveState(state);
+    }
+    
+    return state.profileTourStep;
+  },
+  
+  /**
+   * Marque le tour du profil comme terminé
+   */
+  completeProfileTour() {
+    const state = this.getState();
+    state.profileTourCompleted = true;
+    
+    // Mettre à jour l'étape du parcours si nécessaire
+    if (state.currentStep === this.STEPS.PROFILE_INTRO) {
+      state.currentStep = this.STEPS.PROFILE_TOUR_COMPLETED;
+    }
+    
+    return this.saveState(state);
+  },
+  
+  /**
+   * Marque une section du profil comme visitée
+   */
+  markProfileSectionVisited(sectionId) {
+    const state = this.getState();
+    
+    if (!state.visitedProfileSections.includes(sectionId)) {
+      state.visitedProfileSections.push(sectionId);
+      this.saveState(state);
+    }
+    
+    // Vérifier si toutes les sections ont été visitées
+    if (state.visitedProfileSections.length === this.PROFILE_SECTIONS.length) {
+      this.completeProfileTour();
+    }
+    
+    return state.visitedProfileSections;
+  },
+  
+  /**
+   * Obtient les messages contextuels pour le profil selon l'étape du tour
+   */
+  getProfileTourMessage(sectionId) {
+    const section = this.PROFILE_SECTIONS.find(s => s.id === sectionId);
+    return section ? section.description : "Explore cette section pour découvrir ses fonctionnalités.";
+  },
+  
+  /**
    * Obtient des messages contextuels en fonction de l'étape actuelle et du contexte
    */
   getContextualMessages(context, step = null) {
@@ -214,7 +323,13 @@ export const UserJourneyService = {
       },
       [this.STEPS.PROFILE_INTRO]: {
         profile: [
-          "Te voilà sur ton profil ! Tu peux voir tes informations et tes compétences.",
+          "Te voilà sur ton profil ! Veux-tu que je te fasse visiter pour te montrer toutes les sections ?",
+          "Clique sur \"Oui\" pour découvrir chaque section de ton profil en détail."
+        ]
+      },
+      [this.STEPS.PROFILE_TOUR_COMPLETED]: {
+        profile: [
+          "Tu connais maintenant toutes les sections de ton profil !",
           "Pour commencer ton aventure, cherche la section \"Ma prochaine activité\" et clique sur \"Jouer maintenant\"."
         ]
       },
@@ -325,8 +440,14 @@ export const UserJourneyService = {
       },
       [this.STEPS.PROFILE_INTRO]: {
         profile: [
+          { text: "Explorer mon profil en détail", action: "startProfileTour" },
+          { text: "Jouer directement", highlight: "playNowButton", action: "startNextGame" }
+        ]
+      },
+      [this.STEPS.PROFILE_TOUR_COMPLETED]: {
+        profile: [
           { text: "Jouer maintenant", highlight: "playNowButton", action: "startNextGame" },
-          { text: "Explorer mon profil", action: "exploreProfile" }
+          { text: "Voir mes badges en détail", action: "exploreProfile" }
         ]
       },
       [this.STEPS.FIRST_GAME]: {
@@ -363,6 +484,14 @@ export const UserJourneyService = {
       }
     };
     
+    // Suggestions spécifiques pour le tour du profil
+    if (context === 'profile' && !state.profileTourCompleted) {
+      return [
+        { text: "Faire le tour du profil", action: "startProfileTour" },
+        { text: "Plus tard", action: "dismissProfileGuide" }
+      ];
+    }
+    
     // Déterminer les suggestions à afficher
     const stepContextSuggestions = stepSuggestions[currentStep] && stepSuggestions[currentStep][context];
     const defaultContextSuggestions = defaultSuggestions[context];
@@ -385,7 +514,10 @@ export const UserJourneyService = {
       hasSeenGuide: false,
       dismissCount: 0,
       customPreferences: {},
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      profileTourStep: 0,
+      profileTourCompleted: false,
+      visitedProfileSections: []
     });
   }
 };
