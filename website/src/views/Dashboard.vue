@@ -28,7 +28,7 @@
         @click="interactWithAvatar"
         :class="{ 'avatar-pulse': avatarAnimating }"
       >
-        <div 
+        <div
           v-if="highlightAvatar && isFirstVisit && !profileTourCompleted"
           class="avatar-highlight-effect"
           @click="interactWithAvatar"
@@ -305,6 +305,9 @@ export default {
         right: '20%',
         zIndex: 2000
       },
+      guideTourStep: 0,
+      highlightedElement: null,
+      showGuideArrow: false,
     }
   },
   created() {
@@ -314,9 +317,9 @@ export default {
     });
   },
   beforeUnmount() {
-    // Nettoyer les écouteurs d'événements
     eventBus.off('hide-dashboard-guide');
     window.removeEventListener('resize', this.updateGuidePosition);
+    this.removeAllHighlights();
   },
   watch: {
     isFirstVisit(newVal) {
@@ -327,10 +330,9 @@ export default {
         });
       }
     },
-    
+
     showRewardsModal(newVal) {
       if (!newVal && this.isFirstVisit) {
-        // Quand on ferme la modal et que c'est la première visite, réafficher le guide
         this.guideForceShow = true;
         this.$nextTick(() => {
           this.updateGuidePosition();
@@ -342,8 +344,173 @@ export default {
     // Méthode pour fermer le guide
     dismissGuide() {
       this.guideForceShow = false;
-      this.highlightAvatar = false;
+      // this.highlightAvatar = false;
+      this.removeAllHighlights();
     },
+    advanceTutorial() {
+      // Incrémenter l'étape du tutoriel
+      this.guideTourStep++;
+
+      // Retirer les surlignages précédents
+      this.removeAllHighlights();
+
+      // Définir le contenu en fonction de l'étape actuelle
+      switch (this.guideTourStep) {
+        case 1: // Explications sur l'anneau de progression autour de l'avatar
+          this.guideMessage = "L'avatar au centre représente ton personnage. L'anneau autour montre ta progression globale, et le niveau affiché augmente au fur et à mesure que tu gagnes des badges !";
+          this.guideOptions = [{ text: "Suivant", action: "advanceTutorial" }];
+          this.highlightElement('.progress-ring-container', true);
+          break;
+
+        case 2: // Explications sur le bouton des thèmes
+          this.guideMessage = "Ce bouton te permet de changer le thème visuel de ton tableau de bord. Tu peux choisir parmi plusieurs ambiances selon tes préférences mais aussi désactiver les animations.";
+          this.guideOptions = [{ text: "Suivant", action: "advanceTutorial" }];
+          this.highlightElement('.theme-tab');
+          break;
+
+        case 3: // Explications sur le bouton d'accessibilité
+          this.guideMessage = "Le bouton d'accessibilité te permet d'adapter l'interface à tes besoins spécifiques, comme modifier la taille du texte ou les contrastes de couleurs.";
+          this.guideOptions = [{ text: "Suivant", action: "advanceTutorial" }];
+          this.highlightElement('.accessibility-widget');
+          break;
+
+        case 4: // Explications sur le bouton plein écran
+          this.guideMessage = "Ce bouton te permet de passer en mode plein écran pour une expérience plus immersive, sans distractions.";
+          this.guideOptions = [{ text: "Suivant", action: "advanceTutorial" }];
+          this.highlightElement('.fullscreen-button');
+          break;
+
+        case 5: // Explications sur le bouton "Commencer à jouer"
+          this.guideMessage = "Le bouton \"Commencer à jouer\" sera ton point de départ pour accéder aux différentes activités et jeux disponibles.";
+          this.guideOptions = [{ text: "Suivant", action: "advanceTutorial" }];
+          this.highlightElement('.play-button');
+          break;
+
+        case 6: // Invitation à débloquer le premier badge
+          this.guideMessage = "Maintenant que tu connais les bases, découvre ton profil pour débloquer ton premier badge !";
+          this.guideOptions = [{ text: "Comment accéder à mon profil ?", action: "showProfileHelp" }];
+          break;
+
+        default:
+          this.dismissGuide();
+          break;
+      }
+    },
+
+    highlightElement(selector, isSpecial = false) {
+      const element = document.querySelector(selector);
+      if (element) {
+        // Retirer les surlignages précédents
+        this.removeAllHighlights();
+        
+        // Obtenir les coordonnées de l'élément
+        const rect = element.getBoundingClientRect();
+        
+        // Créer un élément de surbrillance
+        const highlight = document.createElement('div');
+        highlight.className = 'guide-highlight';
+        
+        // Détecter si l'élément est rond (avatar, boutons ronds)
+        const isRound = selector.includes('avatar-container') || 
+                       selector.includes('progress-ring-container') || 
+                       selector.includes('theme-tab') || 
+                       selector.includes('theme-icon') ||
+                       selector.includes('fullscreen-button') ||
+                       selector.includes('accessibility-widget');
+        
+        // Positionner la surbrillance
+        highlight.style.position = 'fixed';
+        highlight.style.top = `${rect.top - 5}px`;
+        highlight.style.left = `${rect.left - 5}px`;
+        highlight.style.width = `${rect.width + 10}px`;
+        highlight.style.height = `${rect.height + 10}px`;
+        highlight.style.border = '3px solid #76ff03';
+        
+        // Appliquer un rayon de bordure approprié selon la forme de l'élément
+        if (isRound) {
+          // Pour les éléments ronds comme l'avatar, utiliser 50%
+          highlight.style.borderRadius = '50%';
+        } else if (selector.includes('play-button')) {
+          // Pour le bouton jouer qui a un rayon précis
+          highlight.style.borderRadius = '30px';
+        } else {
+          // Pour les autres éléments, conserver un rayon par défaut
+          highlight.style.borderRadius = '12px';
+        }
+        
+        highlight.style.boxShadow = '0 0 15px rgba(118, 255, 3, 0.7)';
+        highlight.style.pointerEvents = 'none';
+        highlight.style.zIndex = '1050';
+        
+        // Ajouter une animation si c'est l'élément spécial (avatar)
+        if (isSpecial) {
+          highlight.style.animation = 'highlight-pulse 2s ease-out infinite';
+          
+          // Ajouter une flèche si nécessaire
+          if (this.showGuideArrow) {
+            const arrow = document.createElement('div');
+            arrow.className = 'guide-arrow';
+            arrow.textContent = '↓';
+            arrow.style.position = 'fixed';
+            arrow.style.top = `${rect.top - 40}px`;
+            arrow.style.left = `${rect.left + rect.width/2}px`;
+            arrow.style.transform = 'translateX(-50%)';
+            arrow.style.color = '#76ff03';
+            arrow.style.fontSize = '36px';
+            arrow.style.fontWeight = 'bold';
+            arrow.style.textShadow = '0 0 10px rgba(118, 255, 3, 0.7)';
+            arrow.style.animation = 'bounce 2s ease infinite';
+            arrow.style.zIndex = '1051';
+            
+            document.body.appendChild(arrow);
+          }
+        }
+        
+        // Ajouter au DOM
+        document.body.appendChild(highlight);
+        
+        // Stocker l'élément surligné
+        this.highlightedElement = selector;
+        
+        // Ne pas utiliser scrollIntoView pour les éléments déjà visibles
+        // ou pour les éléments en bas de l'écran (thème, bouton accessibilité, etc.)
+        const isBottomElement = selector.includes('theme') || 
+                               selector.includes('fullscreen') || 
+                               selector.includes('accessibility') ||
+                               selector.includes('play-button');
+                               
+        // Vérifier si l'élément est déjà visible dans la fenêtre
+        const isVisible = rect.top >= 0 && 
+                         rect.bottom <= window.innerHeight &&
+                         rect.left >= 0 && 
+                         rect.right <= window.innerWidth;
+                         
+        // Faire défiler uniquement si nécessaire et pas pour les éléments du bas
+        if (!isBottomElement && !isVisible) {
+          // Défilement plus doux avec une marge
+          window.scrollTo({
+            top: window.scrollY + rect.top - 200, // 200px de marge en haut
+            behavior: 'smooth'
+          });
+        }
+      }
+    },
+
+    // Méthode pour retirer tous les surlignages
+    removeAllHighlights() {
+      // Retirer les surlignages
+      const highlights = document.querySelectorAll('.guide-highlight');
+      highlights.forEach(el => el.remove());
+
+      // Retirer les flèches
+      const arrows = document.querySelectorAll('.guide-arrow');
+      arrows.forEach(el => el.remove());
+
+      // Réinitialiser l'état
+      this.highlightedElement = null;
+      this.showGuideArrow = false;
+    },
+
     // Méthode pour expliquer le bouton de jeu
     explainPlayButton() {
       this.guideMessage = "Pour commencer à jouer et gagner des badges, clique sur le bouton 'Commencer à jouer' en bas de l'écran.";
@@ -352,7 +519,7 @@ export default {
       ];
       // Désactiver la mise en évidence de l'avatar
       this.highlightAvatar = false;
-      
+
       // Scroll automatique vers le bouton de jeu si nécessaire
       this.$nextTick(() => {
         const playButton = document.querySelector('.play-button');
@@ -366,9 +533,11 @@ export default {
       this.guideOptions = [
         { text: "D'accord, je vais essayer !", action: "dismissGuide" }
       ];
-      // Activer la mise en évidence de l'avatar UNIQUEMENT quand on explique comment y accéder
+      // Conserver la mise en évidence de l'avatar
       this.highlightAvatar = true;
-      
+      this.showGuideArrow = true;
+      // this.highlightElement('.avatar-container', true);
+
       // Scroll automatique vers l'avatar si nécessaire
       this.$nextTick(() => {
         const avatarElement = document.querySelector('.avatar-container');
@@ -381,7 +550,7 @@ export default {
       if (this.isFirstVisit && !this.showRewardsModal) {
         this.guideForceShow = true;
         this.updateGuidePosition();
-        
+
         // Émettre un événement via eventBus pour informer le guide qu'il doit s'afficher
         eventBus.emit('force-guide-display');
       }
@@ -392,7 +561,7 @@ export default {
         const avatarElement = document.querySelector('.avatar-container');
         if (avatarElement) {
           const rect = avatarElement.getBoundingClientRect();
-          
+
           // Positionner le guide à droite de l'avatar et centré verticalement
           this.guidePosition = {
             position: 'fixed',
@@ -406,24 +575,20 @@ export default {
     },
     // Nouvelle méthode pour expliquer le dashboard
     explainDashboard() {
-      this.guideMessage = "Sur ce tableau de bord, tu peux voir ton niveau actuel et ta progression dans l'anneau autour de ton avatar. Tu pourras aussi changer le thème avec le bouton en bas à gauche, et commencer à jouer avec le bouton en bas.";
-      this.guideOptions = [
-        { text: "Comment accéder à mon profil ?", action: "showProfileHelp" },
-      ];
-      // Désactiver la mise en évidence de l'avatar pendant cette explication
-      this.highlightAvatar = false;
+      this.guideTourStep = 0; // Réinitialiser le compteur
+      this.advanceTutorial(); // Commencer le tutoriel
     },
     // Vérifier si c'est la première visite de l'utilisateur
     checkFirstVisit() {
       const hasVisitedBefore = localStorage.getItem('hasVisitedDashboard');
       this.isFirstVisit = !hasVisitedBefore;
-      
+
       // Vérifier si le tour du profil a été complété
       this.profileTourCompleted = localStorage.getItem('profile-tour-completed') === 'true';
-      
+
       if (!hasVisitedBefore) {
         localStorage.setItem('hasVisitedDashboard', 'true');
-        
+
         // Mettre à jour l'étape dans le service de parcours utilisateur
         if (typeof UserJourneyService !== 'undefined') {
           UserJourneyService.updateStep(UserJourneyService.STEPS.DASHBOARD_INTRO);
@@ -507,12 +672,12 @@ export default {
     interactWithAvatar() {
       this.avatarAnimating = true;
       this.showRewardsModal = true;
-      
+
       // Animation plus longue pour un meilleur effet
       setTimeout(() => {
         this.avatarAnimating = false;
       }, 1000);
-      
+
       // Mettre à jour l'étape dans le service de parcours utilisateur
       try {
         if (typeof UserJourneyService !== 'undefined') {
@@ -521,7 +686,7 @@ export default {
       } catch (error) {
         console.error("Erreur lors de la mise à jour de l'étape du parcours:", error);
       }
-      
+
       // Mettre à jour la position du guide si nécessaire
       if (this.isFirstVisit && !this.showRewardsModal) {
         this.updateGuidePosition();
@@ -529,11 +694,11 @@ export default {
 
       // Envoyer un événement via eventBus
       eventBus.emit('profile-opened');
-      
+
       // Masquer le guide du dashboard quand on ouvre la modal du profil
       this.guideForceShow = false;
       eventBus.emit('hide-dashboard-guide');
-      
+
       // Propriété pour suivre si la modal a été ouverte
       localStorage.setItem('hasOpenedProfile', 'true');
     },
@@ -677,14 +842,14 @@ export default {
 
     // Mettre à jour la position du guide
     this.updateGuidePosition();
-    
+
     // Recalculer la position lors du redimensionnement de la fenêtre
     window.addEventListener('resize', this.updateGuidePosition);
-    
+
     if (this.isFirstVisit && !this.showRewardsModal) {
       // S'assurer que guideForceShow est bien à true
       this.guideForceShow = true;
-      
+
       // Attendre un peu pour s'assurer que le composant est bien monté
       setTimeout(() => {
         // Déclencher à nouveau la mise à jour du message pour forcer l'affichage
@@ -692,11 +857,42 @@ export default {
         this.guideForceShow = true;
       }, 300);
     }
-    // Ajouter un délai avant d'activer la mise en évidence de l'avatar
-    // setTimeout(() => {
-    //   this.highlightAvatar = this.isFirstVisit && !this.profileTourCompleted;
-    // }, 2000);
-  },
+
+    // Ajouter ces styles pour les animations du guide
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes highlight-pulse {
+        0% {
+          opacity: 0.7;
+          box-shadow: 0 0 15px rgba(118, 255, 3, 0.5);
+          transform: scale(0.99);
+        }
+        50% {
+          opacity: 0.9;
+          box-shadow: 0 0 20px rgba(118, 255, 3, 0.8);
+          transform: scale(1);
+        }
+        100% {
+          opacity: 0.7;
+          box-shadow: 0 0 15px rgba(118, 255, 3, 0.5);
+          transform: scale(0.99);
+        }
+      }
+
+      @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {
+          transform: translateX(-50%) translateY(0);
+        }
+        40% {
+          transform: translateX(-50%) translateY(-15px);
+        }
+        60% {
+          transform: translateX(-50%) translateY(-7px);
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
 }
 </script>
 
