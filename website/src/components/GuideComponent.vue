@@ -2,7 +2,7 @@
   <div 
     class="guide-avatar-container" 
     :style="positionStyle"
-    :class="{ 'guide-visible': isVisible, 'guide-with-message': showMessage }"
+    :class="{ 'guide-visible': isVisible, 'guide-with-message': showMessage, 'guide-external': position === 'external' }"
   >
     <!-- Avatar du guide -->
     <div class="guide-avatar" @click="toggleMessage">
@@ -14,7 +14,12 @@
     <div 
       v-if="showMessage" 
       class="guide-message"
-      :class="{ 'message-visible': showMessage, 'message-top': position === 'bottom', 'message-bottom': position === 'top' }"
+      :class="{ 
+        'message-visible': showMessage, 
+        'message-top': position === 'bottom', 
+        'message-bottom': position === 'top',
+        'guide-external': position === 'external'
+      }"
     >
       <div class="message-content">
         <h3 v-if="showGuideName">{{ guideName }}</h3>
@@ -135,16 +140,22 @@ export default {
         return this.customPosition;
       }
       
-      // Sinon, utiliser la position par défaut basée sur la prop position
+      // Cas spécial pour le positionnement externe (hors du composant parent)
+      if (this.position === 'external') {
+        return {
+          position: 'fixed',  // fixed au lieu de absolute
+          top: '50%',
+          right: '20px',      // Toujours à droite de l'écran
+          transform: 'translateY(-50%)',
+          zIndex: '2000'      // z-index élevé pour rester au-dessus de tout
+        };
+      }
+      
+      // Positions standard existantes...
       const positions = {
         'top-left': { top: '20px', left: '20px' },
         'top-right': { top: '20px', right: '20px' },
-        'bottom-left': { bottom: '20px', left: '20px' },
-        'bottom-right': { bottom: '20px', right: '20px' },
-        'top': { top: '20px', left: '50%', transform: 'translateX(-50%)' },
-        'bottom': { bottom: '20px', left: '50%', transform: 'translateX(-50%)' },
-        'left': { left: '20px', top: '50%', transform: 'translateY(-50%)' },
-        'right': { right: '20px', top: '50%', transform: 'translateY(-50%)' }
+        // ... autres positions ...
       };
       
       return positions[this.position] || positions['bottom-right'];
@@ -328,6 +339,29 @@ export default {
   position: fixed;
   z-index: 1000;
   transition: all 0.3s ease;
+}
+
+.guide-avatar-container.guide-external {
+  position: fixed;
+  z-index: 2500;
+}
+
+.guide-message.guide-external {
+  position: absolute;
+  right: 70px;
+  left: auto;
+  transform: translateY(-50%);
+}
+
+.tour-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 1040;
+  pointer-events: none;
 }
 
 .guide-avatar {

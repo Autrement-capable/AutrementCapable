@@ -1,4 +1,3 @@
-// Ajout au GuideAvatarMixin.js
 export const GuideAvatarMixin = {
   data() {
     return {

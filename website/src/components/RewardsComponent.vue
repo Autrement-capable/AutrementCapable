@@ -225,22 +225,6 @@
         </div>
       </div>
     </div>
-    <guide-avatar
-      v-if="internalShowGuide"
-      guide-name="Léo"
-      :forced-message="profileGuideMessage"
-      :forced-options="profileGuideOptions"
-      :force-show-message="profileTourActive || forceShowGuide"
-      :custom-position="guideCustomPosition"
-      :active-section-id="profileTourActive ? profileTourSections[profileTourStep].id : null"
-      context="profile"
-      :auto-show-delay="0"
-      @option-selected="handleGuideOptionSelected"
-      @position-updated="updateGuidePosition"
-    />
-
-    <!-- Overlay pour le tour guidé -->
-    <div v-if="profileTourActive" class="tour-overlay"></div>
 
     <!-- Effet de mise en évidence de la prochaine activité -->
     <div v-if="highlightNextActivity" class="next-activity-highlight">
@@ -250,6 +234,22 @@
       </div>
     </div>
   </div>
+  <guide-avatar
+    v-if="internalShowGuide"
+    guide-name="Léo"
+    :forced-message="profileGuideMessage"
+    :forced-options="profileGuideOptions"
+    :force-show-message="profileTourActive || forceShowGuide"
+    :custom-position="guideCustomPosition"
+    :active-section-id="profileTourActive ? profileTourSections[profileTourStep].id : null"
+    context="profile"
+    :auto-show-delay="0"
+    @option-selected="handleGuideOptionSelected"
+    @position-updated="updateGuidePosition"
+  />
+
+  <!-- Overlay pour le tour guidé -->
+  <div v-if="profileTourActive" class="tour-overlay"></div>
 </template>
 
 <script>
@@ -703,42 +703,30 @@ export default {
         // Ajouter la surbrillance au conteneur (non au body)
         container.appendChild(highlight);
         
-        // Faire défiler jusqu'à l'élément si nécessaire
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
         
-        // Repositionner le guide à côté de la section mise en évidence
-        // Utiliser des positions relatives au conteneur, pas absolues
-        let position = {};
+        // Calculer où l'élément devrait être visible dans le conteneur
+        const elementTopRelativeToContainer = top;
+        const elementBottomRelativeToContainer = top + rect.height;
+        const containerVisibleTop = container.scrollTop;
+        const containerVisibleBottom = container.scrollTop + container.clientHeight;
         
-        if (rect.right + 300 < containerRect.right) {
-          // Assez d'espace à droite
-          position = {
-            top: `${top + rect.height/2}px`,
-            left: `${left + rect.width + 20}px`,
-            transform: 'translateY(-50%)'
-          };
-        } else if (rect.left > 300) {
-          // Assez d'espace à gauche
-          position = {
-            top: `${top + rect.height/2}px`,
-            right: `${containerRect.width - left + 20}px`,
-            transform: 'translateY(-50%)'
-          };
-        } else if (top > 200) {
-          // Assez d'espace au-dessus
-          position = {
-            bottom: `${containerRect.height - top + 20}px`,
-            left: `${left + rect.width/2}px`,
-            transform: 'translateX(-50%)'
-          };
-        } else {
-          // Sinon, placer en dessous
-          position = {
-            top: `${top + rect.height + 20}px`,
-            left: `${left + rect.width/2}px`,
-            transform: 'translateX(-50%)'
-          };
+        // Vérifier si l'élément est déjà visible dans la zone visible du conteneur
+        if (elementTopRelativeToContainer < containerVisibleTop || elementBottomRelativeToContainer > containerVisibleBottom) {
+          // Element n'est pas entièrement visible, faire défiler seulement le conteneur
+          container.scrollTo({
+            top: elementTopRelativeToContainer - container.clientHeight / 2 + rect.height / 2,
+            behavior: 'smooth'
+          });
         }
+        
+        // Position fixe pour le guide - toujours visible à côté du composant
+        const rewardsRight = containerRect.right;
+        const position = {
+          position: 'fixed',
+          top: '150px', // Position fixe plus bas pour éviter tout conflit
+          left: `${rewardsRight + 10}px`, // 10px à droite du conteneur Rewards
+          zIndex: 2500
+        };
         
         // Mettre à jour la position du guide
         this.guideCustomPosition = position;
@@ -746,7 +734,6 @@ export default {
         console.error("Élément non trouvé avec le sélecteur :", selector);
       }
     },
-
     /**
      * Supprime toutes les mises en évidence
      */
