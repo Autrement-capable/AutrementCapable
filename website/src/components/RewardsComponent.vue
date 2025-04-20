@@ -107,7 +107,7 @@
     </div> -->
 
     <!-- Prochaine activité -->
-    <div class="next-activity" v-if="hasUnlockedBadges || nextBadge">
+    <div class="next-activity" v-if="hasUnlockedBadges || nextBadge" ref="nextActivitySection">
       <h2 class="section-title">Ma prochaine activité</h2>
       <div class="next-activity-card">
         <div 
@@ -121,7 +121,9 @@
           <p>{{ nextBadge.hint || 'Joue pour débloquer ce badge !' }}</p>
           <button 
             class="play-button"
+            :class="{ 'play-button-highlight': highlightPlayButtonBool }"
             @click="goToGame(nextBadge.gameRoute)"
+            ref="playButton"
           >
             Jouer maintenant →
           </button>
@@ -223,14 +225,6 @@
             </button>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- Effet de mise en évidence de la prochaine activité -->
-    <div v-if="highlightNextActivity" class="next-activity-highlight">
-      <div class="highlight-pulse"></div>
-      <div class="highlight-arrow">
-        <span class="highlight-text">Clique ici !</span>
       </div>
     </div>
   </div>
@@ -455,13 +449,11 @@ export default {
         { text: "Oui, montre-moi tout !", action: "startProfileTour" },
       ],
       
-      // Flag pour déterminer si le guide doit mettre en évidence des sections
-      highlightNextActivity: false,
-      
       // Overlay pour le tour guidé
       showTourOverlay: false,
       guideCustomPosition: null,
-      forceShowGuide: false
+      forceShowGuide: false,
+      highlightPlayButtonBool: false,
     }
   },
   computed: {
@@ -484,6 +476,16 @@ export default {
     }
   },
   watch: {
+    internalShowGuide: {
+      handler(newValue) {
+        if (newValue && !this.profileTourActive && !this.forceShowGuide) {
+          // Quand le guide est affiché mais pas forcé ou dans un tour actif
+          this.$nextTick(() => {
+            this.positionGuideByCloseButton();
+          });
+        }
+      }
+    },
     // Observer les changements de la prop showProfileGuide
     showProfileGuide: {
       immediate: true,
@@ -529,6 +531,11 @@ export default {
     eventBus.on('highlight-play-button', () => {
       this.highlightPlayButton();
     });
+    this.$nextTick(() => {
+      if (this.internalShowGuide && !this.profileTourActive && !this.forceShowGuide) {
+        this.positionGuideByCloseButton();
+      }
+    });
   },
   beforeUnmount() {
     // Nettoyer les évènements
@@ -538,10 +545,42 @@ export default {
   },
   methods: {
     /**
+     * Positionne le guide près du bouton de fermeture quand la bulle n'est pas ouverte
+     */
+    positionGuideByCloseButton() {
+      // Ne rien faire si le guide est déjà positionné ailleurs (comme pendant le tour)
+      if (this.profileTourActive || this.forceShowGuide) {
+        return;
+      }
+
+      // Trouver le bouton de fermeture
+      const closeButton = document.querySelector('.close-modal-btn');
+      if (closeButton) {
+        const rect = closeButton.getBoundingClientRect();
+        
+        // Positionner le guide à gauche du bouton fermer
+        // Nous devons prendre en compte la taille approximative du guide (environ 40px)
+        const position = {
+          position: 'fixed',
+          top: `${rect.top}px`,
+          left: `${rect.left - 75}px`,
+          zIndex: 2500
+        };
+        
+        // Mettre à jour la position du guide
+        this.guideCustomPosition = position;
+      }
+    },
+    /**
      * Met à jour la position du guide lorsqu'elle est modifiée par le composant guide
      */
     updateGuidePosition(position) {
-      this.guideCustomPosition = position;
+      if (this.profileTourActive || this.forceShowGuide) {
+        this.guideCustomPosition = position;
+      } else {
+        // Sinon, remettre près du bouton fermer
+        this.positionGuideByCloseButton();
+      }
     },
     /**
      * Met à jour les mises en évidence lors du redimensionnement de la fenêtre
@@ -631,7 +670,7 @@ export default {
     /**
      * Termine le tour du profil
      */
-    endProfileTour() {
+     endProfileTour() {
       // Supprimer les mises en évidence
       this.removeHighlights();
       
@@ -648,11 +687,10 @@ export default {
       // Vérifier si le badge "Explorateur du Profil" doit être débloqué
       this.checkProfileBadge();
 
-      // Afficher le message de fin du tour
+      // Afficher le message de fin du tour SANS activer l'animation du bouton
       this.profileGuideMessage = "Tu connais maintenant toutes les sections de ton profil ! Tu peux explorer tes badges et commencer à jouer pour en débloquer de nouveaux.";
       this.profileGuideOptions = [
         { text: "Commencer à jouer", action: "highlightPlayButton" },
-        { text: "Merci !", action: "dismissProfileGuide" }
       ];
       this.internalShowGuide = true;
     },
@@ -769,14 +807,55 @@ export default {
     // Fermer le guide du profil
     dismissProfileGuide() {
       this.internalShowGuide = false;
-      this.highlightNextActivity = false;
+      this.highlightPlayButtonBool = false;
+      
+      // Réinitialiser les styles de mise en évidence
+      if (this.$refs.nextActivitySection) {
+        this.$refs.nextActivitySection.style.border = '';
+        this.$refs.nextActivitySection.style.boxShadow = '';
+      }
+      
+      if (this.$refs.playButton) {
+        this.$refs.playButton.classList.remove('play-button-highlight');
+      }
+      
       localStorage.setItem('profile-tour-completed', 'true');
     },
     
     // Mettre en évidence le bouton "Jouer maintenant"
     highlightPlayButton() {
-      this.highlightNextActivity = true;
-      this.profileGuideMessage = "Clique sur le bouton 'Jouer maintenant' dans cette section pour commencer ton premier jeu !";
+      // Désactiver l'ancien highlight
+      this.highlightNextActivity = false;
+      
+      // Activer notre animation de bouton
+      this.highlightPlayButtonBool = true;
+      
+      // Faire défiler vers la section d'activité si nécessaire
+      if (this.$refs.nextActivitySection) {
+        // Ajout d'une bordure verte autour de la section
+        this.$refs.nextActivitySection.style.border = '3px solid #5ecc02';
+        this.$refs.nextActivitySection.style.boxShadow = '0 0 15px rgba(94, 204, 2, 0.7)';
+        this.$refs.nextActivitySection.style.borderRadius = '16px';
+        
+        // Faire défiler vers la section
+        const container = document.querySelector('.rewards-container');
+        const sectionRect = this.$refs.nextActivitySection.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+        
+        const scrollTo = sectionRect.top - containerRect.top + container.scrollTop - (container.clientHeight / 2) + (sectionRect.height / 2);
+        
+        container.scrollTo({
+          top: scrollTo,
+          behavior: 'smooth'
+        });
+      }
+      
+      // Mettre à jour le message du guide pour indiquer explicitement de cliquer sur le bouton
+      this.profileGuideMessage = "Maintenant, clique sur le bouton \"Jouer maintenant →\" dans la section \"Ma prochaine activité\" pour commencer ton premier jeu !";
+      this.profileGuideOptions = [
+        { text: "J'ai compris !", action: "dismissProfileGuide" }
+      ];
+      this.forceShowGuide = true;
     },
     
     // Méthode pour gérer le clic sur le bouton "Jouer maintenant"
@@ -796,9 +875,6 @@ export default {
     checkProfileBadge() {
       // Trouver le badge "Explorateur du Profil" (ID 0)
       const profileBadge = this.badges.find(badge => badge.id === 0)
-      
-      // // Vérifie si c'est la première visite en cherchant un flag dans localStorage
-      // const hasVisitedProfile = localStorage.getItem('hasVisitedProfile')
 
       // Vérifier si la visite du profil est terminée
       const isProfileVisitCompleted = localStorage.getItem('profile-tour-completed')
@@ -1846,21 +1922,23 @@ export default {
 .play-button-highlight {
   position: relative;
   z-index: 1055;
-  box-shadow: 0 0 20px rgba(118, 255, 3, 0.9);
+  background-color: #5ecc02;
+  animation: button-pulse 1.5s infinite;
   transform: scale(1.1);
-  transition: all 0.3s ease;
 }
 
-/* Animation de pulsation pour attirer l'attention sur un élément */
-@keyframes attention-pulse {
+@keyframes button-pulse {
   0% {
-    transform: scale(1);
+    box-shadow: 0 0 10px rgba(94, 204, 2, 0.7);
+    transform: scale(1.1);
   }
   50% {
-    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(94, 204, 2, 1);
+    transform: scale(1.15);
   }
   100% {
-    transform: scale(1);
+    box-shadow: 0 0 10px rgba(94, 204, 2, 0.7);
+    transform: scale(1.1);
   }
 }
 
