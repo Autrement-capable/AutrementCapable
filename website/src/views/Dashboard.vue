@@ -14,6 +14,7 @@
       :force-show-message="guideForceShow"
       :context="guideContext"
       :auto-show-delay="0"
+      :custom-position="guidePosition"
       @option-selected="handleGuideOptionSelected"
     />
 
@@ -291,13 +292,19 @@ export default {
         'Esprit Créatif',
       ],
       guideContext: 'dashboard',
-      guideMessage: "Bienvenue ! Clique sur ton avatar au centre pour découvrir ton profil et débloquer ton premier badge !",
+      guideMessage: "Salut ! Je suis Léo, ton guide. Bienvenue sur ton tableau de bord personnel ! C'est ici que tu pourras suivre ta progression, accéder à ton profil et commencer les jeux.",
       guideOptions: [
-        { text: "Comment faire ?", action: "showProfileHelp" }
+        { text: "Comment utiliser le dashboard ?", action: "explainDashboard" },
       ],
       guideForceShow: true,
       highlightAvatar: false,
-      isFirstVisit: false
+      isFirstVisit: false,
+      guidePosition: {
+        position: 'fixed',
+        top: '30%',
+        right: '20%',
+        zIndex: 2000
+      },
     }
   },
   created() {
@@ -309,8 +316,103 @@ export default {
   beforeUnmount() {
     // Nettoyer les écouteurs d'événements
     eventBus.off('hide-dashboard-guide');
+    window.removeEventListener('resize', this.updateGuidePosition);
+  },
+  watch: {
+    isFirstVisit(newVal) {
+      if (newVal && !this.showRewardsModal) {
+        this.guideForceShow = true;
+        this.$nextTick(() => {
+          this.updateGuidePosition();
+        });
+      }
+    },
+    
+    showRewardsModal(newVal) {
+      if (!newVal && this.isFirstVisit) {
+        // Quand on ferme la modal et que c'est la première visite, réafficher le guide
+        this.guideForceShow = true;
+        this.$nextTick(() => {
+          this.updateGuidePosition();
+        });
+      }
+    }
   },
   methods: {
+    // Méthode pour fermer le guide
+    dismissGuide() {
+      this.guideForceShow = false;
+      this.highlightAvatar = false;
+    },
+    // Méthode pour expliquer le bouton de jeu
+    explainPlayButton() {
+      this.guideMessage = "Pour commencer à jouer et gagner des badges, clique sur le bouton 'Commencer à jouer' en bas de l'écran.";
+      this.guideOptions = [
+        { text: "Je comprends !", action: "dismissGuide" }
+      ];
+      // Désactiver la mise en évidence de l'avatar
+      this.highlightAvatar = false;
+      
+      // Scroll automatique vers le bouton de jeu si nécessaire
+      this.$nextTick(() => {
+        const playButton = document.querySelector('.play-button');
+        if (playButton) {
+          playButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      });
+    },
+    showProfileHelp() {
+      this.guideMessage = "Pour accéder à ton profil et voir tes badges, clique sur ton avatar au centre de l'écran. C'est là que tu pourras découvrir tes réalisations !";
+      this.guideOptions = [
+        { text: "D'accord, je vais essayer !", action: "dismissGuide" }
+      ];
+      // Activer la mise en évidence de l'avatar UNIQUEMENT quand on explique comment y accéder
+      this.highlightAvatar = true;
+      
+      // Scroll automatique vers l'avatar si nécessaire
+      this.$nextTick(() => {
+        const avatarElement = document.querySelector('.avatar-container');
+        if (avatarElement) {
+          avatarElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      });
+    },
+    forceGuideDisplay() {
+      if (this.isFirstVisit && !this.showRewardsModal) {
+        this.guideForceShow = true;
+        this.updateGuidePosition();
+        
+        // Émettre un événement via eventBus pour informer le guide qu'il doit s'afficher
+        eventBus.emit('force-guide-display');
+      }
+    },
+    updateGuidePosition() {
+      // Attendre que le DOM soit rendu
+      this.$nextTick(() => {
+        const avatarElement = document.querySelector('.avatar-container');
+        if (avatarElement) {
+          const rect = avatarElement.getBoundingClientRect();
+          
+          // Positionner le guide à droite de l'avatar et centré verticalement
+          this.guidePosition = {
+            position: 'fixed',
+            // Centrer verticalement par rapport à l'avatar (milieu de l'avatar)
+            top: `${rect.top + (rect.height / 2) - 30}px`, // -30px pour ajuster avec la taille du guide
+            left: `${rect.right + 20}px`, // 20px à droite de l'avatar
+            zIndex: 2000
+          };
+        }
+      });
+    },
+    // Nouvelle méthode pour expliquer le dashboard
+    explainDashboard() {
+      this.guideMessage = "Sur ce tableau de bord, tu peux voir ton niveau actuel et ta progression dans l'anneau autour de ton avatar. Tu pourras aussi changer le thème avec le bouton en bas à gauche, et commencer à jouer avec le bouton en bas.";
+      this.guideOptions = [
+        { text: "Comment accéder à mon profil ?", action: "showProfileHelp" },
+      ];
+      // Désactiver la mise en évidence de l'avatar pendant cette explication
+      this.highlightAvatar = false;
+    },
     // Vérifier si c'est la première visite de l'utilisateur
     checkFirstVisit() {
       const hasVisitedBefore = localStorage.getItem('hasVisitedDashboard');
@@ -327,12 +429,6 @@ export default {
           UserJourneyService.updateStep(UserJourneyService.STEPS.DASHBOARD_INTRO);
         }
       }
-    },
-
-    // Afficher une aide spécifique pour accéder au profil
-    showProfileHelp() {
-      this.guideMessage = "Clique sur l'avatar brillant au centre de l'écran. C'est ton personnage qui te permettra d'accéder à ton profil !";
-      this.highlightAvatar = true; // Assurer que l'avatar est mis en évidence
     },
 
     // Méthode pour gérer les options sélectionnées dans le guide
@@ -426,6 +522,11 @@ export default {
         console.error("Erreur lors de la mise à jour de l'étape du parcours:", error);
       }
       
+      // Mettre à jour la position du guide si nécessaire
+      if (this.isFirstVisit && !this.showRewardsModal) {
+        this.updateGuidePosition();
+      }
+
       // Envoyer un événement via eventBus
       eventBus.emit('profile-opened');
       
@@ -573,11 +674,28 @@ export default {
 
     // Vérifier si c'est la première visite
     this.checkFirstVisit();
+
+    // Mettre à jour la position du guide
+    this.updateGuidePosition();
     
+    // Recalculer la position lors du redimensionnement de la fenêtre
+    window.addEventListener('resize', this.updateGuidePosition);
+    
+    if (this.isFirstVisit && !this.showRewardsModal) {
+      // S'assurer que guideForceShow est bien à true
+      this.guideForceShow = true;
+      
+      // Attendre un peu pour s'assurer que le composant est bien monté
+      setTimeout(() => {
+        // Déclencher à nouveau la mise à jour du message pour forcer l'affichage
+        this.guideMessage = this.guideMessage + " "; // Ajouter un espace pour forcer le changement
+        this.guideForceShow = true;
+      }, 300);
+    }
     // Ajouter un délai avant d'activer la mise en évidence de l'avatar
-    setTimeout(() => {
-      this.highlightAvatar = this.isFirstVisit && !this.profileTourCompleted;
-    }, 2000);
+    // setTimeout(() => {
+    //   this.highlightAvatar = this.isFirstVisit && !this.profileTourCompleted;
+    // }, 2000);
   },
 }
 </script>
