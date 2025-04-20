@@ -7,7 +7,7 @@
   >
     <!-- Guide Avatar pour guider l'utilisateur -->
     <guide-avatar
-      v-if="isFirstVisit && !showRewardsModal"
+      v-if="!showRewardsModal"
       guide-name="Léo"
       :forced-message="guideMessage"
       :forced-options="guideOptions"
@@ -312,9 +312,9 @@ export default {
   },
   created() {
     // Écouter les événements via eventBus
-    eventBus.on('hide-dashboard-guide', () => {
-      this.guideForceShow = false;
-    });
+    // eventBus.on('hide-dashboard-guide', () => {
+    //   this.guideForceShow = false;
+    // });
   },
   beforeUnmount() {
     eventBus.off('hide-dashboard-guide');
@@ -345,7 +345,7 @@ export default {
     dismissGuide() {
       this.guideForceShow = false;
       // this.highlightAvatar = false;
-      this.removeAllHighlights();
+      // this.removeAllHighlights();
     },
     advanceTutorial() {
       // Incrémenter l'étape du tutoriel
