@@ -19,7 +19,6 @@ import ShapeSequenceGame from '@/views/skillGames/ShapeSequenceGame.vue'
 
 // Tinder des metiers
 import TinderMetiers from '@/components/JobsComponent.vue'
-import MetierPage from '@/views/MetierPage.vue'
 import SoudeurCard from '@/components/jobsCards/SoudeurCard.vue'
 import JardinerCard from '@/components/jobsCards/JardinerCard.vue'
 import CoiffeurCard from '@/components/jobsCards/CoiffeurCard.vue'
@@ -66,15 +65,9 @@ const routes = [
     component: ShapeSequenceGame,
   },
   {
-    path: '/metier',
+    path: '/metiers',
     name: 'TinderMetiers',
     component: TinderMetiers,
-  },
-  {
-    path: '/metier/:metierId',
-    name: 'MetierPage',
-    component: MetierPage,
-    props: true,
   },
   {
     path: '/metier/soudeur',
