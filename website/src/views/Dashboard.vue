@@ -157,16 +157,12 @@
           :src="getCurrentBadgeImage()" 
           :alt="`Badge niveau ${calculateLevel()}`" 
           class="current-badge-image"
-          @mouseenter="showCurrentBadgeTooltip"
-          @mouseleave="hideBadgeTooltip"
+          @click="handleBadgeClick"
         />
-        
-        <!-- Tooltip pour les informations du badge -->
-        <div v-if="activeBadgeTooltip" class="badge-tooltip" :style="tooltipStyle">
-          <div class="tooltip-title">{{ activeBadgeTooltip.name }}</div>
-          <div class="tooltip-description">{{ activeBadgeTooltip.description }}</div>
-          <div class="tooltip-requirement">Niveau actuel: {{ calculateLevel() }}</div>
-        </div>
+      </div>
+
+      <div v-if="badgeNeedsEvolution" class="badge-evolution-text">
+        Clique 10 fois pour évoluer ({{ badgeClickCount }}/10)
       </div>
 
       <!-- Bouton Commencer à jouer -->
@@ -368,6 +364,9 @@ export default {
         top: '0px',
         left: '0px'
       },
+      badgeClickCount: 0,
+      badgeNeedsEvolution: false,
+      lastEvolvedLevel: 0,
     }
   },
   created() {
@@ -405,48 +404,58 @@ export default {
       // Obtenir le niveau actuel
       const currentLevel = this.calculateLevel();
       
+      // Vérifier si le badge doit évoluer (seulement à partir du niveau 2)
+      if (currentLevel > this.lastEvolvedLevel && !this.badgeNeedsEvolution && currentLevel > 1) {
+        this.badgeNeedsEvolution = true;
+        this.badgeClickCount = 0;
+      }
+      
       // Trouver le badge le plus élevé débloqué
       const highestUnlockedBadge = this.levelBadges
-        .filter(badge => badge.level <= currentLevel)
+        .filter(badge => badge.level <= (this.badgeNeedsEvolution ? this.lastEvolvedLevel : currentLevel))
         .sort((a, b) => b.level - a.level)[0];
       
       if (highestUnlockedBadge) {
-        return highestUnlockedBadge.image(true); // Passer true pour obtenir la version débloquée
+        return highestUnlockedBadge.image(true);
       }
       
-      // Badge par défaut si aucun badge n'est débloqué (ne devrait jamais arriver avec le niveau 1)
+      // Badge par défaut si aucun badge n'est débloqué
       return this.levelBadges[0].image(false);
     },
 
-    showCurrentBadgeTooltip() {
-      // Obtenir le niveau actuel
-      const currentLevel = this.calculateLevel();
-      
-      // Trouver le badge le plus élevé débloqué
-      const highestUnlockedBadge = this.levelBadges
-        .filter(badge => badge.level <= currentLevel)
-        .sort((a, b) => b.level - a.level)[0];
-      
-      if (highestUnlockedBadge) {
-        this.activeBadgeTooltip = highestUnlockedBadge;
+    handleBadgeClick() {
+      if (this.badgeNeedsEvolution) {
+        this.badgeClickCount++;
         
-        // Position du tooltip
-        this.$nextTick(() => {
-          const tooltipElement = document.querySelector('.badge-tooltip');
-          if (tooltipElement) {
-            const rect = event.target.getBoundingClientRect();
-            this.tooltipStyle = {
-              top: `${rect.bottom + 10}px`,
-              left: `${rect.left + (rect.width / 2)}px`,
-              transform: 'translateX(-50%)'
-            };
-          }
-        });
+        // Animer le badge lors du clic
+        const badgeElement = document.querySelector('.current-badge-image');
+        if (badgeElement) {
+          badgeElement.classList.add('badge-click-animation');
+          setTimeout(() => {
+            badgeElement.classList.remove('badge-click-animation');
+          }, 300);
+        }
+        
+        // Si 10 clics atteints, faire évoluer le badge
+        if (this.badgeClickCount >= 10) {
+          this.evolveBadge();
+        }
       }
     },
 
-    hideBadgeTooltip() {
-      this.activeBadgeTooltip = null;
+    evolveBadge() {
+      // Mettre à jour le dernier niveau évolué
+      this.lastEvolvedLevel = this.calculateLevel();
+      this.badgeNeedsEvolution = false;
+      
+      // Animation spéciale pour l'évolution
+      const badgeElement = document.querySelector('.current-badge-image');
+      if (badgeElement) {
+        badgeElement.classList.add('badge-evolve-animation');
+        setTimeout(() => {
+          badgeElement.classList.remove('badge-evolve-animation');
+        }, 1000);
+      }
     },
 
     // Méthode pour fermer le guide
@@ -1342,7 +1351,6 @@ export default {
 .current-level-badge {
   position: relative;
   margin-top: 5px;
-  margin-bottom: 15px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1409,6 +1417,41 @@ export default {
   font-size: 12px;
   color: #4fc3f7;
   font-style: italic;
+}
+
+.badge-evolution-text {
+  margin-top: 3px;
+  font-size: 14px;
+  color: #ff9800;
+  text-align: center;
+  font-weight: bold;
+  animation: pulse-text 1.5s infinite;
+}
+
+@keyframes pulse-text {
+  0% { opacity: 0.7; }
+  50% { opacity: 1; }
+  100% { opacity: 0.7; }
+}
+
+.badge-click-animation {
+  animation: badge-click 0.3s ease;
+}
+
+@keyframes badge-click {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+.badge-evolve-animation {
+  animation: badge-evolve 1s ease;
+}
+
+@keyframes badge-evolve {
+  0% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.3); filter: brightness(1.5); }
+  100% { transform: scale(1); filter: brightness(1); }
 }
 
 /* Bouton pour accéder au parcours */
