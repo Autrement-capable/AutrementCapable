@@ -243,6 +243,7 @@
     :active-section-id="profileTourActive ? profileTourSections[profileTourStep].id : null"
     context="profile"
     :auto-show-delay="0"
+    class="guide-top-left"
     @option-selected="handleGuideOptionSelected"
     @position-updated="updateGuidePosition"
   />
@@ -456,7 +457,12 @@ export default {
       
       // Overlay pour le tour guidé
       showTourOverlay: false,
-      guideCustomPosition: null,
+      guideCustomPosition: {
+        position: 'fixed',
+        top: '20px',
+        left: '20px',
+        zIndex: 2500
+      },
       forceShowGuide: false,
       highlightPlayButtonBool: false,
       cvUnlocked: false,
@@ -551,6 +557,23 @@ export default {
   },
   methods: {
     /**
+     * Positionne le guide en haut à gauche quand la bulle n'est pas ouverte
+     */
+     positionGuideTopLeft() {
+      // Ne rien faire si le guide est déjà positionné ailleurs (comme pendant le tour)
+      if (this.profileTourActive || this.forceShowGuide) {
+        return;
+      }
+
+      // Positionner le guide en haut à gauche de la fenêtre
+      this.guideCustomPosition = {
+        position: 'fixed',
+        top: '20px',
+        left: '20px',
+        zIndex: 2500
+      };
+    },
+    /**
      * Positionne le guide près du bouton de fermeture quand la bulle n'est pas ouverte
      */
     positionGuideByCloseButton() {
@@ -580,12 +603,13 @@ export default {
     /**
      * Met à jour la position du guide lorsqu'elle est modifiée par le composant guide
      */
-    updateGuidePosition(position) {
+     updateGuidePosition(position) {
       if (this.profileTourActive || this.forceShowGuide) {
+        // En mode tour ou forcé, accepter la position fournie
         this.guideCustomPosition = position;
       } else {
-        // Sinon, remettre près du bouton fermer
-        this.positionGuideByCloseButton();
+        // Sinon, toujours positionner en haut à gauche
+        this.positionGuideTopLeft();
       }
     },
     /**
@@ -1851,6 +1875,13 @@ export default {
 .guide-container {
   position: fixed;
   z-index: 1100;
+}
+
+.guide-top-left:not(.force-show-message) {
+  position: fixed !important;
+  top: 20px !important;
+  left: 20px !important;
+  z-index: 2500 !important;
 }
 
 /* Animation pour le déplacement du guide entre les sections */
