@@ -152,6 +152,23 @@
         </div>
       </div>
 
+      <div class="current-level-badge">
+        <img 
+          :src="getCurrentBadgeImage()" 
+          :alt="`Badge niveau ${calculateLevel()}`" 
+          class="current-badge-image"
+          @mouseenter="showCurrentBadgeTooltip"
+          @mouseleave="hideBadgeTooltip"
+        />
+        
+        <!-- Tooltip pour les informations du badge -->
+        <div v-if="activeBadgeTooltip" class="badge-tooltip" :style="tooltipStyle">
+          <div class="tooltip-title">{{ activeBadgeTooltip.name }}</div>
+          <div class="tooltip-description">{{ activeBadgeTooltip.description }}</div>
+          <div class="tooltip-requirement">Niveau actuel: {{ calculateLevel() }}</div>
+        </div>
+      </div>
+
       <!-- Bouton Commencer à jouer -->
       <div class="play-button-container">
         <button
@@ -271,7 +288,7 @@ export default {
         { value: 'cyberpunk', label: 'Cyberpunk' },
         { value: 'forest', label: 'Forêt' },
       ],
-      progress: 37,
+      progress: 0,
       activeSection: null,
       avatarAnimating: false,
       showAvatarInteraction: false,
@@ -308,6 +325,49 @@ export default {
       guideTourStep: 0,
       highlightedElement: null,
       showGuideArrow: false,
+      levelBadges: [
+        { 
+          level: 1, 
+          name: "Apprenti",
+          description: "Tu as fait tes premiers pas dans ton parcours !",
+          image: () => require('@/assets/badges/badge1.png') 
+        },
+        { 
+          level: 2, 
+          name: "Explorateur",
+          description: "Tu commences à explorer les différentes activités disponibles.",
+          image: () => require('@/assets/badges/badge2.png') 
+        },
+        { 
+          level: 3, 
+          name: "Aventurier",
+          description: "Tu progresses rapidement dans ton parcours d'apprentissage !",
+          image: () => require('@/assets/badges/badge3.png') 
+        },
+        { 
+          level: 4, 
+          name: "Champion",
+          description: "Tu as atteint un niveau impressionnant, continue ainsi !",
+          image: () => require('@/assets/badges/badge4.png') 
+        },
+        { 
+          level: 5, 
+          name: "Maître",
+          description: "Tu es devenu un véritable maître dans ton parcours !",
+          image: () => require('@/assets/badges/badge5.png') 
+        },
+        { 
+          level: 6, 
+          name: "Légende",
+          description: "Tu es maintenant une légende !",
+          image: () => require('@/assets/badges/badge6.png') 
+        },
+      ],
+      activeBadgeTooltip: null,
+      tooltipStyle: {
+        top: '0px',
+        left: '0px'
+      },
     }
   },
   created() {
@@ -341,6 +401,54 @@ export default {
     }
   },
   methods: {
+    getCurrentBadgeImage() {
+      // Obtenir le niveau actuel
+      const currentLevel = this.calculateLevel();
+      
+      // Trouver le badge le plus élevé débloqué
+      const highestUnlockedBadge = this.levelBadges
+        .filter(badge => badge.level <= currentLevel)
+        .sort((a, b) => b.level - a.level)[0];
+      
+      if (highestUnlockedBadge) {
+        return highestUnlockedBadge.image(true); // Passer true pour obtenir la version débloquée
+      }
+      
+      // Badge par défaut si aucun badge n'est débloqué (ne devrait jamais arriver avec le niveau 1)
+      return this.levelBadges[0].image(false);
+    },
+
+    showCurrentBadgeTooltip() {
+      // Obtenir le niveau actuel
+      const currentLevel = this.calculateLevel();
+      
+      // Trouver le badge le plus élevé débloqué
+      const highestUnlockedBadge = this.levelBadges
+        .filter(badge => badge.level <= currentLevel)
+        .sort((a, b) => b.level - a.level)[0];
+      
+      if (highestUnlockedBadge) {
+        this.activeBadgeTooltip = highestUnlockedBadge;
+        
+        // Position du tooltip
+        this.$nextTick(() => {
+          const tooltipElement = document.querySelector('.badge-tooltip');
+          if (tooltipElement) {
+            const rect = event.target.getBoundingClientRect();
+            this.tooltipStyle = {
+              top: `${rect.bottom + 10}px`,
+              left: `${rect.left + (rect.width / 2)}px`,
+              transform: 'translateX(-50%)'
+            };
+          }
+        });
+      }
+    },
+
+    hideBadgeTooltip() {
+      this.activeBadgeTooltip = null;
+    },
+
     // Méthode pour fermer le guide
     dismissGuide() {
       this.guideForceShow = false;
@@ -1231,6 +1339,78 @@ export default {
   }
 }
 
+.current-level-badge {
+  position: relative;
+  margin-top: 5px;
+  margin-bottom: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.current-badge-image {
+  width: 160px;
+  height: 160px;
+  object-fit: contain;
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 5px 15px rgba(255, 215, 0, 0.5));
+  cursor: pointer;
+}
+
+.current-badge-image:hover {
+  transform: scale(1.1);
+  filter: drop-shadow(0 8px 20px rgba(255, 215, 0, 0.7));
+}
+
+/* Conserver les styles existants pour le tooltip */
+.badge-tooltip {
+  position: fixed;
+  background: rgba(30, 30, 45, 0.95);
+  border-radius: 12px;
+  padding: 15px;
+  max-width: 250px;
+  z-index: 1000;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.badge-tooltip:after {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid rgba(30, 30, 45, 0.95);
+}
+
+.tooltip-title {
+  font-weight: bold;
+  font-size: 16px;
+  color: white;
+  margin-bottom: 8px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.tooltip-description {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.tooltip-requirement {
+  font-size: 12px;
+  color: #4fc3f7;
+  font-style: italic;
+}
+
 /* Bouton pour accéder au parcours */
 .parcours-button-container {
   position: absolute;
@@ -1971,6 +2151,11 @@ export default {
 
   .play-button-container {
     bottom: -100px;
+  }
+
+  .current-badge-image {
+    width: 70px;
+    height: 70px;
   }
 }
 </style>
