@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
-from .config import settings
+from .config import settings as S
 from ...db.postgress.engine import getSession
 from ...db.postgress.models import RevokedToken
 
