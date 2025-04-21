@@ -15,6 +15,7 @@
       :context="guideContext"
       :auto-show-delay="0"
       :custom-position="guidePosition"
+      class="guide-top-left"
       @option-selected="handleGuideOptionSelected"
     />
 
@@ -315,8 +316,8 @@ export default {
       isFirstVisit: false,
       guidePosition: {
         position: 'fixed',
-        top: '30%',
-        right: '20%',
+        top: '20px',
+        left: '20px',
         zIndex: 2000
       },
       guideTourStep: 0,
@@ -674,22 +675,32 @@ export default {
       }
     },
     updateGuidePosition() {
-      // Attendre que le DOM soit rendu
-      this.$nextTick(() => {
-        const avatarElement = document.querySelector('.avatar-container');
-        if (avatarElement) {
-          const rect = avatarElement.getBoundingClientRect();
-
-          // Positionner le guide à droite de l'avatar et centré verticalement
-          this.guidePosition = {
-            position: 'fixed',
-            // Centrer verticalement par rapport à l'avatar (milieu de l'avatar)
-            top: `${rect.top + (rect.height / 2) - 30}px`, // -30px pour ajuster avec la taille du guide
-            left: `${rect.right + 20}px`, // 20px à droite de l'avatar
-            zIndex: 2000
-          };
-        }
-      });
+      // Si le guide est en mode conversation (bulle visible)
+      if (this.guideForceShow && this.isFirstVisit) {
+        // Attendre que le DOM soit rendu
+        this.$nextTick(() => {
+          const avatarElement = document.querySelector('.avatar-container');
+          if (avatarElement) {
+            const rect = avatarElement.getBoundingClientRect();
+            
+            // Positionner le guide à droite de l'avatar et centré verticalement
+            this.guidePosition = {
+              position: 'fixed',
+              top: `${rect.top + (rect.height / 2) - 30}px`,
+              left: `${rect.right + 20}px`,
+              zIndex: 2000
+            };
+          }
+        });
+      } else {
+        // Position par défaut quand la bulle n'est pas affichée
+        this.guidePosition = {
+          position: 'fixed',
+          top: '20px',
+          left: '20px',
+          zIndex: 2000
+        };
+      }
     },
     // Nouvelle méthode pour expliquer le dashboard
     explainDashboard() {
@@ -1713,6 +1724,13 @@ export default {
 /* Styles pour améliorer l'intégration du guide */
 .guide-avatar-container {
   z-index: 1050; /* S'assurer que le guide est au-dessus des autres éléments */
+}
+
+.guide-top-left {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 2000;
 }
 
 .speech-bubble {
