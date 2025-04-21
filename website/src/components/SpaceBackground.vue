@@ -75,6 +75,34 @@
             <div class="planet-moon moon-2"></div>
           </div>
         </div>
+
+        <!-- Planet 4: Gas Giant with Bands and Spot -->
+        <div class="planet planet-4">
+          <div class="planet-bands">
+            <div class="band band-1"></div>
+            <div class="band band-2"></div>
+            <div class="band band-3"></div>
+            <div class="band band-4"></div>
+          </div>
+          <div class="planet-great-spot"></div>
+        </div>
+
+        <!-- Planet 5: Rocky, Cratered Planet with Small Moon -->
+        <div class="planet planet-5">
+          <div class="planet-surface-texture"></div>
+          <!-- Add multiple crater divs for detail -->
+          <div class="crater crater-1"></div>
+          <div class="crater crater-2"></div>
+          <div class="crater crater-3"></div>
+          <div class="planet-moons moons-p5"> <!-- Unique class for this moon orbit -->
+             <div class="planet-moon moon-3"></div>
+          </div>
+        </div>
+
+        <!-- Planet 6: Distant Icy Body -->
+        <div class="planet planet-6">
+           <div class="planet-haze"></div>
+        </div>
       </template>
 
       <!-- Ocean theme elements -->
@@ -460,36 +488,70 @@
         </div>
       </template>
 
+      <!-- Snow Theme -->
       <template v-else-if="theme === 'snow'">
-        <!-- Ciel avec dégradé bleu -->
-        <div class="alpine-sky"></div>
-        
-        <!-- Penguin -->
-        <div class="penguin-container">
-          <div class="penguin">
-            <div class="penguin-body">
-              <div class="penguin-head">
-                <div class="penguin-face">
-                  <div class="penguin-eye penguin-eye-left">
-                    <div class="penguin-eye-pupil"></div>
-                  </div>
-                  <div class="penguin-eye penguin-eye-right">
-                    <div class="penguin-eye-pupil"></div>
-                  </div>
-                  <div class="penguin-beak"></div>
-                </div>
-              </div>
-              <div class="penguin-belly"></div>
-              <div class="penguin-wing penguin-wing-left"></div>
-              <div class="penguin-wing penguin-wing-right"></div>
-              <div class="penguin-foot penguin-foot-left"></div>
-              <div class="penguin-foot penguin-foot-right"></div>
-            </div>
-            <div class="penguin-shadow"></div>
+        <!-- Base Sky & Stars -->
+        <div class="snow-sky">
+          <div class="stars-layer stars-far"></div>
+          <div class="stars-layer stars-mid"></div>
+          <!-- Optional Moon -->
+          <div class="moon"></div>
+        </div>
+
+        <!-- Aurora Borealis -->
+        <div class="aurora-borealis-container">
+          <div class="aurora-ribbon ribbon-1"></div>
+          <div class="aurora-ribbon ribbon-2"></div>
+          <div class="aurora-ribbon ribbon-3"></div>
+          <div class="aurora-ribbon ribbon-4"></div>
+        </div>
+
+        <!-- Mountain Layers -->
+        <div class="mountains-distant">
+          <div class="mountain-peak peak-distant-1"></div>
+          <div class="mountain-peak peak-distant-2"></div>
+        </div>
+        <div class="mountains-mid">
+          <div class="mountain-peak peak-mid-1">
+             <div class="mountain-texture"></div>
+          </div>
+          <div class="mountain-peak peak-mid-2">
+             <div class="mountain-texture"></div>
+          </div>
+           <div class="mountain-peak peak-mid-3">
+             <div class="mountain-texture"></div>
           </div>
         </div>
 
-        <!-- Ours polaire -->
+        <!-- Forest Layers -->
+        <div class="forest-layer-mid">
+           <div v-for="i in 5" :key="`tree-mid-${i}`" class="pine-tree tree-mid" :style="getTreeStyle(i, 'mid')">
+             <div class="tree-trunk"></div>
+             <div class="tree-branch branch-1"><div class="snow-on-branch"></div></div>
+             <div class="tree-branch branch-2"><div class="snow-on-branch"></div></div>
+             <div class="tree-branch branch-3"><div class="snow-on-branch"></div></div>
+           </div>
+        </div>
+
+        <!-- Mist/Fog -->
+        <div class="mist-container">
+          <div class="mist-layer mist-1"></div>
+          <div class="mist-layer mist-2"></div>
+          <div class="mist-layer mist-3"></div>
+        </div>
+
+        <div class="mountains-near">
+          <div class="mountain-peak peak-near-1">
+             <div class="mountain-texture rock-texture"></div>
+             <div class="mountain-texture snow-texture"></div>
+          </div>
+           <div class="mountain-peak peak-near-2">
+             <div class="mountain-texture rock-texture"></div>
+             <div class="mountain-texture snow-texture"></div>
+           </div>
+        </div>
+
+         <!-- Animals -->
         <div class="polar-bear-container">
           <div class="polar-bear">
             <div class="polar-bear-body">
@@ -528,45 +590,63 @@
             <div class="polar-bear-shadow"></div>
           </div>
         </div>
-
-        <!-- Aurore boréale subtile -->
-        <div class="alpine-aurora-container">
-          <div class="alpine-aurora aurora-1"></div>
-          <div class="alpine-aurora aurora-2"></div>
-          <div class="alpine-aurora aurora-3"></div>
-          <div class="alpine-aurora aurora-4"></div>
-        </div>
-        
-        <!-- Chutes de neige -->
-        <div class="alpine-snowfall-container">
-          <div v-for="i in 60" :key="`snowflake-bg-${i}`" class="alpine-snowflake snowflake-small" :style="getAlpineSnowflakeStyle(i, 'small')"></div>
-        </div>
-        
-        <!-- Brume de montagne -->
-        <div class="alpine-mist alpine-mist-1"></div>
-        <div class="alpine-mist alpine-mist-2"></div>
-        
-        <!-- Montagnes principales selon l'image -->
-        <div class="alpine-mountains-container">
-          <div class="alpine-mountain mountain-1"></div>
-          <div class="alpine-mountain mountain-2"></div>
-          <div class="alpine-mountain mountain-3"></div>
-          <div class="alpine-mountain mountain-4"></div>
-        </div>
-        
-        <!-- Montagnes intermédiaires plus sombres -->
-        <div class="alpine-mid-mountains-container">
-          <div class="alpine-mid-mountain mid-1"></div>
-          <div class="alpine-mid-mountain mid-2"></div>
-          <div class="alpine-mid-mountain mid-3"></div>
+        <div class="penguin-container">
+          <div class="penguin">
+            <div class="penguin-body">
+              <div class="penguin-head">
+                <div class="penguin-face">
+                  <div class="penguin-eye penguin-eye-left">
+                    <div class="penguin-eye-pupil"></div>
+                  </div>
+                  <div class="penguin-eye penguin-eye-right">
+                    <div class="penguin-eye-pupil"></div>
+                  </div>
+                  <div class="penguin-beak"></div>
+                </div>
+              </div>
+              <div class="penguin-belly"></div>
+              <div class="penguin-wing penguin-wing-left"></div>
+              <div class="penguin-wing penguin-wing-right"></div>
+              <div class="penguin-foot penguin-foot-left"></div>
+              <div class="penguin-foot penguin-foot-right"></div>
+            </div>
+            <div class="penguin-shadow"></div>
+          </div>
         </div>
 
-        <!-- Terrain enneigé au premier plan -->
-        <div class="alpine-snow-terrain">
-          <div class="snow-drift drift-1"></div>
-          <div class="snow-drift drift-2"></div>
-          <div class="snow-drift drift-3"></div>
+
+        <!-- Snow Ground/Terrain -->
+        <div class="snow-ground">
+          <div class="snow-drift drift-large-1"></div>
+          <div class="snow-drift drift-medium-1"></div>
+          <div class="snow-drift drift-small-1"></div>
+          <div class="snow-drift drift-medium-2"></div>
+           <div class="snow-drift drift-large-2"></div>
         </div>
+
+         <div class="forest-layer-near">
+           <div v-for="i in 4" :key="`tree-near-${i}`" class="pine-tree tree-near" :style="getTreeStyle(i, 'near')">
+             <div class="tree-trunk"></div>
+             <div class="tree-branch branch-1"><div class="snow-on-branch"></div></div>
+             <div class="tree-branch branch-2"><div class="snow-on-branch"></div></div>
+             <div class="tree-branch branch-3"><div class="snow-on-branch"></div></div>
+             <div class="tree-branch branch-4"><div class="snow-on-branch"></div></div> <!-- More branches for near trees -->
+           </div>
+        </div>
+
+        <!-- Snowfall Layers -->
+        <div class="snowfall-layer-far">
+          <div v-for="i in 80" :key="`snow-far-${i}`" class="snowflake snow-far" :style="getSnowflakeStyle(i, 'far')"></div>
+        </div>
+        <div class="snowfall-layer-mid">
+          <div v-for="i in 60" :key="`snow-mid-${i}`" class="snowflake snow-mid" :style="getSnowflakeStyle(i, 'mid')"></div>
+        </div>
+         <div class="snowfall-layer-near">
+          <div v-for="i in 40" :key="`snow-near-${i}`" class="snowflake snow-near" :style="getSnowflakeStyle(i, 'near')"></div>
+        </div>
+
+        <!-- Vignette Overlay -->
+        <div class="vignette-overlay"></div>
       </template>
     </div>
   </div>
@@ -598,6 +678,64 @@ export default {
         left: `${leftPosition}%`,
         top: `${topPosition}px`,
         animationDelay: `${animationDelay}s`
+      };
+    },
+
+    getTreeStyle(index, layer) {
+      const baseLeft = (index * (layer === 'near' ? 22 : 18)) + (layer === 'near' ? 5 : 10);
+      const randomOffset = Math.random() * 8 - 4; // +/- 4% offset
+      const left = baseLeft + randomOffset;
+
+      const baseScale = layer === 'near' ? 1 + Math.random() * 0.2 : 0.7 + Math.random() * 0.2;
+      const heightVariation = layer === 'near' ? 80 + Math.random() * 20 : 50 + Math.random() * 15; // Base height %
+
+      return {
+        left: `${left}%`,
+        transform: `scale(${baseScale})`,
+        height: `${heightVariation}%`,
+        zIndex: layer === 'near' ? 8 : 4, // Ensure near trees are in front of mid
+         '--tree-delay': `${Math.random() * 0.5}s` // For potential subtle sway animation later
+      };
+    },
+
+     // New method for dynamic snowflake styling across layers
+    getSnowflakeStyle(index, layer) {
+      const left = Math.random() * 100;
+      const top = -10 - Math.random() * 20; // Start above screen
+      const animDelay = Math.random() * 10; // Spread out start times
+
+      let animDuration, scale, opacity, blur, zIndex;
+
+      if (layer === 'near') {
+        animDuration = 5 + Math.random() * 3; // Faster
+        scale = 1 + Math.random() * 0.5;
+        opacity = 0.9 + Math.random() * 0.1;
+        blur = '0px';
+        zIndex = 15; // Topmost
+      } else if (layer === 'mid') {
+        animDuration = 8 + Math.random() * 4; // Medium speed
+        scale = 0.6 + Math.random() * 0.4;
+        opacity = 0.7 + Math.random() * 0.2;
+        blur = '1px';
+        zIndex = 12; // Middle
+      } else { // far
+        animDuration = 12 + Math.random() * 6; // Slower
+        scale = 0.3 + Math.random() * 0.3;
+        opacity = 0.5 + Math.random() * 0.2;
+        blur = '2px';
+        zIndex = 9; // Furthest back snow
+      }
+
+      return {
+        left: `${left}%`,
+        top: `${top}vh`,
+        transform: `scale(${scale})`,
+        opacity: opacity,
+        filter: `blur(${blur})`,
+        animationDelay: `${animDelay}s`,
+        animationDuration: `${animDuration}s`,
+        zIndex: zIndex,
+         '--wind-drift': `${Math.random() * 40 - 20}px` // Horizontal drift amount
       };
     },
 
@@ -1451,6 +1589,203 @@ export default {
   100% {
     transform: rotateZ(1deg) rotateY(2deg);
   }
+}
+
+/* Planet 4: Gas Giant with Bands and Spot */
+.planet-4 {
+  width: 120px;
+  height: 120px;
+  top: 60%;
+  left: 8%;
+  background: radial-gradient(
+    circle at 40% 60%,
+    #f8d7a8 0%, /* Light beige */
+    #e0ac69 30%, /* Tan */
+    #c68642 60%, /* Brownish */
+    #a0522d 100% /* Sienna */
+  );
+  box-shadow: 0 0 35px rgba(224, 172, 105, 0.3), inset -20px -10px 50px rgba(0, 0, 0, 0.6);
+  animation: planetFloat4 160s linear infinite;
+  overflow: hidden; /* Hide overflowing bands/spot */
+  z-index: 2;
+}
+
+.planet-4 .planet-bands {
+  position: absolute;
+  width: 150%; /* Wider than planet for rotation effect */
+  height: 100%;
+  top: 0;
+  left: -25%; /* Center the oversized bands */
+  /* animation: planetBandsRotate 40s linear infinite; */ /* Add if desired */
+   transform-origin: center center;
+   animation: planetTextureRotate 40s linear infinite; /* Rotate texture */
+
+}
+
+.planet-4 .band {
+  position: absolute;
+  width: 100%;
+  left: 0;
+  height: 20%; /* Adjust band height */
+  opacity: 0.6;
+}
+
+.planet-4 .band-1 { top: 10%; background: rgba(255, 248, 220, 0.5); height: 15%; } /* Lighter band */
+.planet-4 .band-2 { top: 30%; background: rgba(210, 180, 140, 0.6); } /* Tan band */
+.planet-4 .band-3 { top: 55%; background: rgba(160, 82, 45, 0.7); }   /* Sienna band */
+.planet-4 .band-4 { top: 80%; background: rgba(245, 222, 179, 0.5); height: 15%; } /* Wheat band */
+
+.planet-4 .planet-great-spot {
+  position: absolute;
+  width: 35%;
+  height: 25%;
+  top: 55%;
+  left: 15%;
+  border-radius: 50%;
+  filter: blur(3px);
+  opacity: 0.8;
+  z-index: 4;
+  /* animation: spotMove 40s linear infinite; Add if bands rotate */
+  transform-origin: center center;
+   animation: planetTextureRotate 40s linear infinite reverse; /* Rotate with bands but opposite */
+
+}
+
+/* Planet 5: Rocky, Cratered Planet */
+.planet-5 {
+  width: 60px;
+  height: 60px;
+  top: 20%;
+  left: 80%;
+  background: radial-gradient(
+    circle at 70% 30%,
+    #a9a9a9 0%, /* Dark Gray */
+    #808080 40%, /* Gray */
+    #696969 70%, /* Dim Gray */
+    #404040 100% /* Darker Gray */
+  );
+  box-shadow: 0 0 15px rgba(128, 128, 128, 0.3), inset -10px -5px 25px rgba(0, 0, 0, 0.7);
+  animation: planetFloat5 200s linear infinite;
+  z-index: 4;
+  overflow: hidden;
+}
+
+.planet-5 .planet-surface-texture {
+   position: absolute;
+   width: 100%;
+   height: 100%;
+   top: 0;
+   left: 0;
+   border-radius: 50%;
+   background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+   background-size: 5px 5px; /* Subtle dot pattern */
+   opacity: 0.3;
+   animation: planetTextureRotate 80s linear infinite; /* Slow texture rotation */
+   z-index: 1;
+}
+
+
+.planet-5 .crater {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.3); /* Dark inner shadow */
+  box-shadow: inset 1px 1px 2px rgba(0,0,0,0.6), 0 0 1px 1px rgba(255, 255, 255, 0.05); /* Inner shadow & slight rim light */
+  z-index: 2;
+  animation: planetTextureRotate 80s linear infinite; /* Rotate with texture */
+}
+
+.planet-5 .crater-1 { width: 25%; height: 25%; top: 20%; left: 30%; }
+.planet-5 .crater-2 { width: 15%; height: 15%; top: 55%; left: 60%; }
+.planet-5 .crater-3 { width: 20%; height: 20%; top: 40%; left: 10%; }
+
+.planet-5 .moons-p5 { /* Specific orbit animation class */
+  position: absolute;
+  width: 150%; /* Orbit radius */
+  height: 150%;
+  top: -25%;
+  left: -25%;
+  z-index: 1;
+  animation: moonsOrbitP5 45s linear infinite; /* Different speed */
+}
+
+.planet-5 .moon-3 {
+  /* Style inherited from .planet-moon, just position it */
+  width: 8px;
+  height: 8px;
+  top: 10px; /* Position relative to orbit container */
+  left: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient( circle at 30% 30%, #666, #444, #222); /* Darker moon */
+}
+
+
+/* Planet 6: Distant Icy Body */
+.planet-6 {
+  width: 40px;
+  height: 40px;
+  top: 70%;   /* High up */
+  left: 60%; /* Far left */
+  background: radial-gradient(
+    circle at 50% 50%,
+    #e0ffff 0%, /* Light Cyan */
+    #afeeee 50%, /* Pale Turquoise */
+    #90dcdc 100% /* Medium Turquoise slightly darker */
+  );
+  box-shadow: 0 0 15px rgba(175, 238, 238, 0.6), inset -5px -5px 15px rgba(0, 0, 0, 0.3);
+  animation: planetFloat6 250s linear infinite alternate; /* Very slow drift */
+  z-index: 1; /* Further back */
+  filter: blur(0.5px); /* Slightly blurred for distance */
+}
+
+.planet-6 .planet-haze {
+  position: absolute;
+  width: 130%;
+  height: 130%;
+  top: -15%;
+  left: -15%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at center,
+    rgba(224, 255, 255, 0.2) 0%,
+    rgba(175, 238, 238, 0.1) 70%,
+    transparent 100%
+  );
+  filter: blur(5px);
+  opacity: 0.7;
+  animation: atmospherePulse 15s ease-in-out infinite alternate; /* Slower pulse */
+}
+
+
+/* New Planet Animations */
+@keyframes planetFloat4 { /* Gas Giant */
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(15px, -10px); }
+  50% { transform: translate(30px, 0px); }
+  75% { transform: translate(15px, 10px); }
+  100% { transform: translate(0, 0); }
+}
+
+@keyframes planetFloat5 { /* Rocky */
+  0% { transform: translate(0, 0) rotate(5deg); }
+  50% { transform: translate(-40px, -20px) rotate(-5deg); }
+  100% { transform: translate(0, 0) rotate(5deg); }
+}
+
+@keyframes planetFloat6 { /* Icy */
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(30px, 15px) scale(1.05); } /* Slow drift and slight zoom */
+}
+
+@keyframes planetTextureRotate { /* Reusable texture rotation */
+   0% { transform: rotate(0deg); }
+   100% { transform: rotate(360deg); }
+}
+
+
+/* Specific orbit for planet 5's moon */
+@keyframes moonsOrbitP5 {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(-360deg); } /* Can rotate opposite direction */
 }
 
 /* 
@@ -2467,130 +2802,377 @@ export default {
 .sand-dune-2 { left: 30%; height: 25px; }
 .sand-dune-3 { left: 70%; height: 30px; }
 
-/* Thème Neige Alpine basé sur l'image */
-.snow-alpine {
-  background: linear-gradient(to bottom, #6a96d6 0%, #85a8db 100%);
-  overflow: hidden;
+.snow {
+  /* Slightly darker, deeper blue gradient for the base sky */
+  background: linear-gradient(to bottom, #1c2a4f 0%, #3a4a7a 50%, #6a86b8 100%);
+  overflow: hidden; /* Critical to prevent elements spilling */
 }
 
-/* Ciel alpin */
-.alpine-sky {
+/* --- Sky & Stars --- */
+.snow-sky {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(to bottom, #5589d1 0%, #6a96d6 40%, #85a8db 100%);
+  inset: 0;
   z-index: 0;
 }
 
-/* Aurores douces */
-.alpine-aurora-container {
+.stars-layer {
+  position: absolute;
+  inset: 0;
+  background-repeat: repeat;
+  opacity: 0.6;
+  animation: starsDrift 240s linear infinite;
+}
+
+.stars-far {
+   background-image: radial-gradient(1px 1px at 20% 30%, white, transparent),
+                     radial-gradient(1px 1px at 80% 50%, white, transparent),
+                     radial-gradient(1px 1px at 50% 80%, white, transparent);
+   background-size: 400px 400px;
+   opacity: 0.4;
+   animation-duration: 300s; /* Slower drift */
+}
+
+.stars-mid {
+   background-image: radial-gradient(1.5px 1.5px at 10% 70%, white, transparent),
+                     radial-gradient(1px 1px at 60% 10%, white, transparent),
+                     radial-gradient(1.5px 1.5px at 90% 90%, white, transparent);
+   background-size: 300px 300px;
+    opacity: 0.7;
+   animation: starsDrift 180s linear infinite, starsTwinkle 8s ease-in-out infinite alternate;
+}
+
+@keyframes starsDrift {
+  from { background-position: 0 0; }
+  to { background-position: 100% 50%; } /* Slight downward drift */
+}
+/* starsTwinkle animation reused from cosmic theme */
+
+/* --- Aurora Borealis --- */
+.aurora-borealis-container {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  height: 70%;
+  height: 75%; /* Encore un peu plus haut */
   overflow: hidden;
-  z-index: 1;
-  opacity: 1;
+  z-index: 1; /* DERRIERE les montagnes distantes (qui sont z-index: 2) */
+  mix-blend-mode: screen; /* Retour à 'screen' qui est souvent plus fiable */
+  filter: blur(12px); /* Encore moins de flou pour plus de présence */
+   /* Optionnel: Ajouter une légère lueur externe si désiré, mais testons sans d'abord */
+   /* -webkit-filter: blur(12px) drop-shadow(0 0 15px rgba(120, 220, 180, 0.2));
+   filter: blur(12px) drop-shadow(0 0 15px rgba(120, 220, 180, 0.2)); */
 }
 
-.alpine-aurora {
+.aurora-ribbon {
   position: absolute;
   bottom: 0;
-  width: 100%;
+  left: 0;
+  width: 170%; /* Encore plus large */
   height: 100%;
-  opacity: 0.8;
-  filter: blur(20px);
-  mix-blend-mode: screen;
+  opacity: 0.75; /* Base opacity augmentée */
   transform-origin: bottom center;
-  animation: alpineAuroraWave 30s ease-in-out infinite alternate;
+  /* Simplification: Une seule animation gère le mouvement ET l'opacité */
+  animation: auroraCombinedWave 25s ease-in-out infinite alternate;
+   /* On retire l'animation Shimmer pour simplifier */
 }
 
-.alpine-aurora.aurora-1 {
-  background: linear-gradient(to top, transparent 0%, rgba(170, 255, 200, 0.5) 100%);
-  left: -20%;
-  height: 60%;
+.moon {
+  position: absolute;
+  top: 10%;
+  left: 5%;
+  width: 80px;
+  height: 80px;
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, 0.8) 0%,
+    rgba(255, 255, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0.4) 100%
+  );
+  border-radius: 50%;
+  box-shadow: inset -5px -5px rgba(200, 200, 200, 0.5);
+}
+
+.ribbon-1 {
+  background: linear-gradient(to top, transparent 5%, rgba(100, 255, 150, 0.9) 40%, rgba(180, 255, 200, 0.7) 60%, transparent 95%);
+  left: -45%;
+  animation-duration: 20s;
   animation-delay: 0s;
+  --base-opacity: 0.8; /* Variable pour l'animation */
+}
+.ribbon-2 {
+  background: linear-gradient(to top, transparent 10%, rgba(80, 180, 255, 0.85) 50%, rgba(160, 210, 255, 0.6) 70%, transparent 90%);
+  left: -20%;
+  animation-duration: 28s;
+  animation-delay: 4s;
+   --base-opacity: 0.75;
+}
+.ribbon-3 {
+  background: linear-gradient(to top, transparent 0%, rgba(190, 100, 255, 0.8) 40%, rgba(220, 170, 255, 0.6) 65%, transparent 85%);
+  left: 0%;
+  animation-duration: 24s;
+  animation-delay: 8s;
+   --base-opacity: 0.7;
+}
+.ribbon-4 {
+   background: linear-gradient(to top, transparent 5%, rgba(255, 120, 200, 0.9) 45%, rgba(255, 170, 220, 0.7) 65%, transparent 90%);
+   left: -10%;
+   animation-duration: 32s;
+   animation-delay: 12s;
+   --base-opacity: 0.8;
 }
 
-.alpine-aurora.aurora-2 {
-  background: linear-gradient(to top, transparent 0%, rgba(120, 200, 255, 0.5) 100%);
-  left: 10%;
-  height: 40%;
-  animation-delay: 5s;
-}
-
-.alpine-aurora.aurora-3 {
-  background: linear-gradient(to top, transparent 0%, rgba(200, 160, 255, 0.5) 100%);
-  left: 40%;
-  height: 50%;
-  animation-delay: 10s;
-}
-
-.alpine-aurora.aurora-4 {
-  background: linear-gradient(to top, transparent 0%, rgba(255, 200, 255, 0.5) 100%);
-  left: 60%;
-  height: 45%;
-  animation-delay: 7s;
-}
-
-@keyframes alpineAuroraWave {
+@keyframes auroraCombinedWave {
   0% {
-    transform: translateX(-5%) scaleX(1.1) scaleY(0.8);
-    opacity: 0.4;
+    transform: translateX(-15%) scaleY(0.8) skewX(-20deg);
+    opacity: calc(var(--base-opacity) * 0.7); /* Commence moins opaque */
   }
   50% {
-    transform: translateX(2%) scaleX(0.9) scaleY(1.1);
-    opacity: 0.8;
+    transform: translateX(8%) scaleY(1.15) skewX(15deg);
+    opacity: var(--base-opacity); /* Atteint l'opacité de base */
   }
   100% {
-    transform: translateX(-3%) scaleX(1) scaleY(1);
-    opacity: 0.6;
+    transform: translateX(-10%) scaleY(0.9) skewX(-12deg);
+    opacity: calc(var(--base-opacity) * 0.8); /* Termine un peu moins opaque */
   }
 }
 
-/* Chutes de neige */
-.alpine-snowfall-container {
+@keyframes auroraWave {
+  0% {
+    transform: translateX(-15%) scaleY(0.7) skewX(-20deg);
+    opacity: var(--wave-opacity-start, 0.5);
+  }
+  50% {
+    transform: translateX(8%) scaleY(1.2) skewX(15deg);
+    opacity: var(--wave-opacity-mid, 0.8);
+  }
+  100% {
+    transform: translateX(-8%) scaleY(0.9) skewX(-10deg);
+    opacity: var(--wave-opacity-end, 0.6);
+  }
+}
+
+.ribbon-1 { --wave-opacity-start: 0.6; --wave-opacity-mid: 0.9; --wave-opacity-end: 0.7; }
+.ribbon-2 { --wave-opacity-start: 0.5; --wave-opacity-mid: 0.8; --wave-opacity-end: 0.6; }
+.ribbon-3 { --wave-opacity-start: 0.4; --wave-opacity-mid: 0.7; --wave-opacity-end: 0.5; }
+.ribbon-4 { --wave-opacity-start: 0.55; --wave-opacity-mid: 0.85; --wave-opacity-end: 0.65; }
+
+@keyframes auroraShimmer {
+  0%, 100% { opacity: var(--shimmer-opacity-1, 0.6); }
+  25% { opacity: var(--shimmer-opacity-2, 0.75); }
+  50% { opacity: var(--shimmer-opacity-3, 0.5); }
+  75% { opacity: var(--shimmer-opacity-4, 0.8); }
+}
+/* Define opacity variables for shimmer keyframes */
+.ribbon-1 { --shimmer-opacity-1: 0.6; --shimmer-opacity-2: 0.8; --shimmer-opacity-3: 0.5; --shimmer-opacity-4: 0.9; }
+.ribbon-2 { --shimmer-opacity-1: 0.5; --shimmer-opacity-2: 0.7; --shimmer-opacity-3: 0.4; --shimmer-opacity-4: 0.75; }
+.ribbon-3 { --shimmer-opacity-1: 0.4; --shimmer-opacity-2: 0.6; --shimmer-opacity-3: 0.3; --shimmer-opacity-4: 0.65; }
+.ribbon-4 { --shimmer-opacity-1: 0.55; --shimmer-opacity-2: 0.75; --shimmer-opacity-3: 0.45; --shimmer-opacity-4: 0.8; }
+
+
+/* --- Mountains --- */
+.mountains-distant, .mountains-mid, .mountains-near {
   position: absolute;
-  width: 100%;
-  height: 120%;
-  top: -20%;
+  bottom: 0;
   left: 0;
-  z-index: 8;
+  width: 100%;
+  height: 70%; /* Adjust height per layer */
+}
+
+.mountains-distant { z-index: 2; height: 50%; opacity: 0.6; filter: blur(3px); }
+.mountains-mid { z-index: 3; height: 65%; opacity: 0.8; filter: blur(1px); }
+.mountains-near { z-index: 6; height: 75%; } /* In front of mid forest */
+
+.mountain-peak {
+  position: absolute;
+  bottom: 0;
+  background-color: #8a9ec4; /* Base mountain color */
+  overflow: hidden; /* Contain textures */
+   /* Add a subtle shadow for depth */
+   filter: drop-shadow(5px -5px 10px rgba(0, 0, 0, 0.2));
+}
+
+/* Jagged shapes using clip-path */
+.peak-distant-1 { left: 5%; width: 40%; height: 80%; clip-path: polygon(0 100%, 20% 40%, 50% 15%, 70% 50%, 100% 100%); background-color: #6a7c9f; }
+.peak-distant-2 { left: 55%; width: 45%; height: 70%; clip-path: polygon(0 100%, 30% 50%, 55% 25%, 80% 60%, 100% 100%); background-color: #788aac; }
+
+.peak-mid-1 { left: -5%; width: 55%; height: 85%; clip-path: polygon(0 100%, 15% 50%, 40% 20%, 65% 60%, 90% 55%, 100% 100%); }
+.peak-mid-2 { left: 40%; width: 50%; height: 95%; clip-path: polygon(0 100%, 25% 60%, 50% 10%, 75% 55%, 100% 100%); background-color: #93a4cb; }
+.peak-mid-3 { left: 75%; width: 30%; height: 75%; clip-path: polygon(0 100%, 40% 40%, 60% 30%, 100% 100%); }
+
+.peak-near-1 { left: -10%; width: 60%; height: 90%; clip-path: polygon(0 100%, 20% 45%, 50% 5%, 70% 50%, 100% 100%); background-color: #aab8d3; }
+.peak-near-2 { left: 50%; width: 70%; height: 100%; clip-path: polygon(0 100%, 15% 60%, 40% 15%, 65% 70%, 85% 65%, 100% 100%); background-color: #b5c3dd; }
+
+.mountain-texture {
+  position: absolute;
+  inset: 0;
+  opacity: 0.3;
+}
+/* Example texture for mid mountains */
+.mountains-mid .mountain-texture {
+  background: linear-gradient(160deg, rgba(255,255,255,0.15) 20%, transparent 50%),
+              linear-gradient(20deg, rgba(255,255,255,0.1) 30%, transparent 60%);
+}
+/* Textures for near mountains */
+.rock-texture {
+  background: linear-gradient(135deg, rgba(0,0,0,0.1) 0%, transparent 10%),
+              linear-gradient(225deg, rgba(0,0,0,0.1) 0%, transparent 10%);
+  background-size: 40px 40px;
+  opacity: 0.15;
+}
+.snow-texture {
+   background: linear-gradient(to bottom, rgba(255,255,255,0.5) 0%, transparent 30%),
+               radial-gradient(circle at 30% 20%, rgba(255,255,255,0.3) 5%, transparent 20%);
+   opacity: 0.6;
+   mix-blend-mode: overlay; /* Blend snow nicely */
+}
+
+
+/* --- Forests --- */
+.forest-layer-mid, .forest-layer-near {
+  position: absolute;
+  bottom: 10%; /* Start slightly above ground baseline */
+  left: 0;
+  width: 100%;
+  height: 35%; /* Adjust height */
+}
+.forest-layer-mid { z-index: 4; height: 25%; bottom: 15%; opacity: 0.7; filter: blur(0.5px); }
+.forest-layer-near { z-index: 8; height: 30%; bottom: 5%; } /* Near trees in front of ground */
+
+.pine-tree {
+  position: absolute;
+  bottom: 0;
+  width: 40px; /* Base width, scale modifies this */
+  /* height is set dynamically */
+}
+
+.tree-trunk {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px; /* Slimmer trunk */
+  height: 25%; /* Proportion of tree height */
+  background: #5a3a22; /* Darker brown */
+  border-radius: 2px 2px 0 0;
+}
+
+.tree-branch {
+  position: absolute;
+  left: 50%;
+  width: 100%;
+  background: linear-gradient(to bottom right, #1a4d2e, #10351e); /* Dark green gradient */
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%); /* Triangle */
+  transform-origin: bottom center;
+}
+
+.tree-branch.branch-1 { height: 40%; bottom: 20%; transform: translateX(-50%) scale(1); }
+.tree-branch.branch-2 { height: 35%; bottom: 40%; transform: translateX(-50%) scale(0.85); }
+.tree-branch.branch-3 { height: 30%; bottom: 60%; transform: translateX(-50%) scale(0.7); }
+.tree-near .tree-branch.branch-4 { height: 25%; bottom: 75%; transform: translateX(-50%) scale(0.55); } /* Extra branch for near */
+
+.snow-on-branch {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 40%; /* Covers top part of branch */
+  background: rgba(240, 248, 255, 0.8); /* Alice blue, slightly transparent */
+  clip-path: polygon(50% 0%, 10% 100%, 90% 100%); /* Similar shape but slightly offset */
+  filter: blur(0.5px);
+  border-radius: 3px 3px 0 0;
+}
+
+/* --- Mist/Fog --- */
+.mist-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 40%; /* Covers lower area */
+  z-index: 5; /* Between mid and near mountains/forest */
+  overflow: hidden;
   pointer-events: none;
 }
 
-.alpine-snowflake {
+.mist-layer {
+  position: absolute;
+  width: 150%; /* Wider for horizontal movement */
+  height: 60%;
+  left: -25%;
+  background: radial-gradient(ellipse at center, rgba(180, 190, 210, 0.25) 0%, rgba(150, 160, 180, 0.1) 50%, transparent 80%);
+  filter: blur(20px);
+  opacity: 0.8;
+  animation: mistDrift 40s ease-in-out infinite alternate;
+}
+
+.mist-1 { bottom: 0; height: 50%; animation-duration: 50s; animation-delay: 0s; opacity: 0.7;}
+.mist-2 { bottom: 10%; height: 70%; animation-duration: 35s; animation-delay: 10s; opacity: 0.6;}
+.mist-3 { bottom: 25%; height: 60%; animation-duration: 45s; animation-delay: 5s; opacity: 0.5;}
+
+@keyframes mistDrift {
+  0% { transform: translateX(-10%) scale(1); opacity: var(--start-opacity, 0.6); }
+  100% { transform: translateX(10%) scale(1.1); opacity: var(--end-opacity, 0.8); }
+}
+/* Set variables for keyframes */
+.mist-1 { --start-opacity: 0.7; --end-opacity: 0.5; }
+.mist-2 { --start-opacity: 0.6; --end-opacity: 0.8; }
+.mist-3 { --start-opacity: 0.5; --end-opacity: 0.7; }
+
+/* --- Snow Ground --- */
+.snow-ground {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 25%; /* Slightly higher ground */
+  z-index: 7; /* In front of near mountains, behind near trees */
+  overflow: hidden;
+}
+
+.snow-drift {
+  position: absolute;
+  bottom: 0;
+  background: linear-gradient(to top, #e8f0ff 0%, #ffffff 50%, #f8faff 100%); /* More nuanced white */
+  box-shadow: 0 -5px 15px rgba(106, 134, 184, 0.1); /* Subtle blue shadow */
+  /* Smoother, more organic shapes */
+}
+.drift-large-1 { left: -20%; width: 80%; height: 90%; border-radius: 60% 40% 0 0 / 100% 100% 0 0; }
+.drift-medium-1 { left: 30%; width: 50%; height: 70%; border-radius: 50% 50% 0 0 / 100% 100% 0 0; background-color: #f0f8ff; }
+.drift-small-1 { left: 65%; width: 30%; height: 50%; border-radius: 70% 30% 0 0 / 100% 100% 0 0; }
+.drift-medium-2 { left: 75%; width: 45%; height: 80%; border-radius: 40% 60% 0 0 / 100% 100% 0 0; background-color: #f4faff;}
+.drift-large-2 { left: 40%; width: 50%; height: 100%; border-radius: 50% 50% 0 0 / 80% 80% 0 0; z-index: -1;} /* Layer behind */
+
+
+/* --- Snowfall --- */
+.snowfall-layer-far, .snowfall-layer-mid, .snowfall-layer-near {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+/* z-index handled by getSnowflakeStyle */
+
+.snowflake {
   position: absolute;
   background: white;
   border-radius: 50%;
-  filter: blur(1px);
-  box-shadow: 0 0 4px 1px rgba(255, 255, 255, 0.6);
-  animation: alpineSnowfall linear infinite;
+  /* box-shadow removed for layered blur effect */
+  animation-name: snowfall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform, opacity;
 }
 
-.alpine-snowflake.snowflake-small {
-  width: 5px;
-  height: 5px;
-  opacity: 0.9;
-}
-
-@keyframes alpineSnowfall {
-  0% {
-    transform: translateY(0) translateX(0) rotate(0deg);
-    opacity: 0;
+@keyframes snowfall {
+  from {
+    /* Commence la translation Y à 0 PAR RAPPORT à la position top initiale de l'élément */
+    transform: translateY(0) translateX(0) scale(var(--scale, 1)) rotate(0deg);
+    /* L'opacité est bien définie dynamiquement par le style inline, mais on garde la valeur par défaut au cas où */
+    opacity: var(--start-opacity, 1);
   }
-  10% {
-    opacity: 0.9;
-    transform: translateY(10%) translateX(5px) rotate(36deg);
-  }
-  90% {
-    opacity: 0.9;
-  }
-  100% {
-    transform: translateY(100vh) translateX(calc(20px + var(--wind, 10px))) rotate(360deg);
+  to {
+    /* Augmente un peu la distance de chute pour être sûr de sortir de l'écran */
+    /* Utilise la variable --wind-drift pour le déplacement horizontal */
+    transform: translateY(115vh) translateX(var(--wind-drift)) scale(var(--scale, 1)) rotate(720deg); /* Rotation ajoutée/augmentée pour plus de 'flottement' */
     opacity: 0;
   }
 }
@@ -2602,7 +3184,7 @@ export default {
   left: 20%;
   width: 200px;
   height: 200px;
-  z-index: 7;
+  z-index: 8;
   animation: penguinWaddle 40s linear infinite;
 }
 
@@ -2821,202 +3403,9 @@ export default {
   50% { transform: translateX(-50%) scaleX(0.8); opacity: 0.3; }
 }
 
-/* Brume de montagne */
-.alpine-mist {
-  position: absolute;
-  height: 20%;
-  width: 100%;
-  background: radial-gradient(
-    ellipse at center,
-    rgba(255, 255, 255, 0.2) 0%,
-    rgba(255, 255, 255, 0.1) 60%,
-    transparent 100%
-  );
-  filter: blur(15px);
-  z-index: 7;
-  animation: alpineMistFloat 40s ease-in-out infinite alternate;
-}
-
-.alpine-mist-1 {
-  bottom: 35%;
-  left: -10%;
-  height: 15%;
-}
-
-.alpine-mist-2 {
-  bottom: 20%;
-  left: 20%;
-  height: 10%;
-  animation-delay: 15s;
-}
-
-@keyframes alpineMistFloat {
-  0% {
-    transform: translateX(0) translateY(0);
-    opacity: 0.15;
-  }
-  50% {
-    transform: translateX(8%) translateY(-5px);
-    opacity: 0.2;
-  }
-  100% {
-    transform: translateX(0) translateY(0);
-    opacity: 0.15;
-  }
-}
-
-/* Montagnes Principales */
-.alpine-mountains-container {
-  position: absolute;
-  bottom: 25%;
-  left: 0;
-  width: 100%;
-  height: 55%;
-  z-index: 3;
-}
-
-.alpine-mountain {
-  position: absolute;
-  bottom: 0;
-  height: 100%;
-  background: linear-gradient(to bottom right, #ffffff 0%, #d6e6ff 30%, #a7c5f2 60%, #7ba0db 100%);
-  clip-path: polygon(var(--mountain-shape));
-  z-index: 3;
-}
-
-.alpine-mountain.mountain-1 {
-  left: 10%;
-  width: 30%;
-  height: 90%;
-  --mountain-shape: 50% 0, 75% 30%, 100% 100%, 0 100%, 25% 30%;
-  z-index: 4;
-}
-
-.alpine-mountain.mountain-2 {
-  left: 25%;
-  width: 40%;
-  height: 100%;
-  --mountain-shape: 50% 0, 70% 40%, 100% 100%, 0 100%, 30% 40%;
-  z-index: 3;
-}
-
-.alpine-mountain.mountain-3 {
-  left: 45%;
-  width: 35%;
-  height: 80%;
-  --mountain-shape: 50% 0, 80% 50%, 100% 100%, 0 100%, 20% 50%;
-  z-index: 4;
-}
-
-.alpine-mountain.mountain-4 {
-  left: 65%;
-  width: 30%;
-  height: 75%;
-  --mountain-shape: 50% 0, 75% 40%, 100% 100%, 0 100%, 25% 40%;
-  z-index: 3;
-}
-
-/* Montagnes intermédiaires */
-.alpine-mid-mountains-container {
-  position: absolute;
-  bottom: 20%;
-  left: 0;
-  width: 100%;
-  height: 40%;
-  z-index: 2;
-}
-
-.alpine-mid-mountain {
-  position: absolute;
-  bottom: 0;
-  height: 100%;
-  background: linear-gradient(to bottom, #5a7cb5 0%, #3a5c95 40%, #2a4880 100%);
-  clip-path: polygon(var(--mid-mountain-shape));
-}
-
-.alpine-mid-mountain.mid-1 {
-  left: 0%;
-  width: 35%;
-  height: 90%;
-  --mid-mountain-shape: 50% 10%, 100% 100%, 0 100%;
-}
-
-.alpine-mid-mountain.mid-2 {
-  left: 30%;
-  width: 40%;
-  height: 80%;
-  --mid-mountain-shape: 50% 0, 100% 100%, 0 100%;
-}
-
-.alpine-mid-mountain.mid-3 {
-  left: 65%;
-  width: 35%;
-  height: 70%;
-  --mid-mountain-shape: 50% 10%, 100% 100%, 0 100%;
-}
-
-/* Forêts de pins */
-.alpine-forest-left, .alpine-forest-right {
-  position: absolute;
-  bottom: 18%;
-  width: 30%;
-  height: 15%;
-  background-image: repeating-linear-gradient(
-    to right,
-    transparent 0px,
-    transparent 5px,
-    #1a2e52 5px,
-    #1a2e52 15px,
-    transparent 15px,
-    transparent 25px
-  );
-  z-index: 5;
-}
-
-.alpine-forest-left {
-  left: 5%;
-}
-
-.alpine-forest-right {
-  right: 5%;
-}
-
-/* Terrain de neige */
-.alpine-snow-terrain {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 20%;
-  background: #d6e6ff;
-  z-index: 6;
-}
-
-.snow-drift {
-  position: absolute;
-  bottom: 0;
-  height: 100%;
-  background: #ffffff;
-  border-radius: 50% 50% 0 0;
-}
-
-.snow-drift.drift-1 {
-  left: -10%;
-  width: 60%;
-  height: 80%;
-}
-
-.snow-drift.drift-2 {
-  left: 40%;
-  width: 70%;
-  height: 60%;
-}
-
-.snow-drift.drift-3 {
-  left: 30%;
-  width: 40%;
-  height: 40%;
-  background: #f0f5ff;
+.penguin-shadow, .polar-bear-shadow {
+   background: rgba(58, 74, 122, 0.15); /* Softer blue shadow */
+   filter: blur(8px);
 }
 
 .polar-bear-container {
@@ -3025,7 +3414,7 @@ export default {
   right: 15%;
   width: 300px;
   height: 220px;
-  z-index: 20;  /* Z-index élevé pour être sûr qu'il soit visible */
+  z-index: 8;  /* Z-index élevé pour être sûr qu'il soit visible */
   animation: polarBearMove 20s ease-in-out infinite alternate;
 }
 
@@ -3345,6 +3734,15 @@ export default {
   25% { transform: scaleX(0.95) translateX(5px); opacity: 0.25; }
   75% { transform: scaleX(0.95) translateX(-5px); opacity: 0.25; }
 }
+
+.vignette-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(10, 15, 30, 0.4) 100%);
+  z-index: 20; /* Absolutely on top */
+  pointer-events: none; /* Doesn't interfere with interactions */
+}
+
 
 /* 
 * STYLES DU THÈME CYBERPUNK
