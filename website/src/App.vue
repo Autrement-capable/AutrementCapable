@@ -525,12 +525,24 @@ export default {
         document.fullscreenElement ||
         document.webkitFullscreenElement ||
         document.mozFullScreenElement ||
-        document.msFullscreenElement
+        document.msFullscreenElement;
 
-      this.isFullScreen = !!fullscreenElement
+      // Update the state variable
+      this.isFullScreen = !!fullscreenElement;
 
-      // Enregistrer la préférence utilisateur
-      this.saveUserPreferences()
+      // Enregistrer la préférence utilisateur uniquement si nous sommes en plein écran
+      // This prevents saving "false" when exiting fullscreen due to a page reload
+      if (this.isFullScreen) {
+        this.saveUserPreferences();
+      } else {
+        // When exiting fullscreen mode, update localStorage with the current state
+        const savedPrefs = localStorage.getItem('accessibilityPreferences');
+        if (savedPrefs) {
+          const prefs = JSON.parse(savedPrefs);
+          prefs.isFullScreen = false;
+          localStorage.setItem('accessibilityPreferences', JSON.stringify(prefs));
+        }
+      }
     },
 
     checkIfDashboardPage() {
@@ -1126,7 +1138,13 @@ export default {
         // Apply saved preferences
         Object.keys(preferences).forEach((key) => {
           if (this[key] !== undefined) {
-            this[key] = preferences[key]
+            // Special handling for fullscreen state
+            if (key === 'isFullScreen') {
+              // Just update the UI state but don't auto-enter fullscreen
+              this.isFullScreen = false; // Force to false regardless of saved state
+            } else {
+              this[key] = preferences[key]
+            }
           }
         })
 
@@ -1141,12 +1159,108 @@ export default {
           if (this.isSpacedText) document.body.classList.add('spaced-text')
           if (this.isLargeCursor) document.body.classList.add('large-cursor')
           if (this.isHighlightClickable) this.highlightClickableElements()
-          if (this.isFullScreen) this.enterFullScreen()
-
+          // Removed the automatic fullscreen restoration
+          
           document.body.classList.add(`align-${this.textAlignment}`)
           document.body.classList.add(`theme-${this.colorTheme}`)
+          
+          // Optionally: Show a notification that fullscreen mode was previously enabled
+          if (preferences.isFullScreen) {
+            this.showFullscreenRestoreNotification();
+          }
         })
       }
+    },
+
+    showFullscreenRestoreNotification() {
+      // Create a notification element
+      const notification = document.createElement('div');
+      notification.className = 'fullscreen-restore-notification';
+      notification.innerHTML = `
+        <div class="notification-content">
+          <span>Vous étiez précédemment en mode plein écran.</span>
+          <button class="restore-fullscreen-btn">Restaurer</button>
+          <button class="close-notification-btn">×</button>
+        </div>
+      `;
+      
+      // Style the notification
+      notification.style.position = 'fixed';
+      notification.style.top = '20px';
+      notification.style.left = '50%';
+      notification.style.transform = 'translateX(-50%)';
+      notification.style.backgroundColor = 'rgba(30, 30, 45, 0.9)';
+      notification.style.color = 'white';
+      notification.style.padding = '12px 20px';
+      notification.style.borderRadius = '8px';
+      notification.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+      notification.style.zIndex = '9999';
+      notification.style.display = 'flex';
+      notification.style.alignItems = 'center';
+      notification.style.backdropFilter = 'blur(5px)';
+      notification.style.border = '1px solid rgba(255, 255, 255, 0.1)';
+      notification.style.animation = 'fadeIn 0.3s ease';
+      
+      // Style the content
+      const content = notification.querySelector('.notification-content');
+      content.style.display = 'flex';
+      content.style.alignItems = 'center';
+      content.style.gap = '15px';
+      
+      // Style the buttons
+      const restoreBtn = notification.querySelector('.restore-fullscreen-btn');
+      restoreBtn.style.padding = '6px 12px';
+      restoreBtn.style.backgroundColor = '#007bff';
+      restoreBtn.style.border = 'none';
+      restoreBtn.style.borderRadius = '4px';
+      restoreBtn.style.color = 'white';
+      restoreBtn.style.cursor = 'pointer';
+      restoreBtn.style.transition = 'background-color 0.2s';
+      
+      const closeBtn = notification.querySelector('.close-notification-btn');
+      closeBtn.style.padding = '6px 12px';
+      closeBtn.style.backgroundColor = 'transparent';
+      closeBtn.style.border = '1px solid rgba(255, 255, 255, 0.3)';
+      closeBtn.style.borderRadius = '4px';
+      closeBtn.style.color = 'white';
+      closeBtn.style.cursor = 'pointer';
+      closeBtn.style.transition = 'background-color 0.2s';
+      closeBtn.style.fontSize = '16px';
+      
+      // Add animation styles
+      const styleElement = document.createElement('style');
+      styleElement.textContent = `
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translate(-50%, -20px); }
+          to { opacity: 1; transform: translate(-50%, 0); }
+        }
+      `;
+      document.head.appendChild(styleElement);
+      
+      // Add event listeners
+      restoreBtn.addEventListener('click', () => {
+        this.enterFullScreen();
+        document.body.removeChild(notification);
+      });
+      
+      closeBtn.addEventListener('click', () => {
+        document.body.removeChild(notification);
+      });
+      
+      // Auto-dismiss after 10 seconds
+      setTimeout(() => {
+        if (document.body.contains(notification)) {
+          notification.style.animation = 'fadeIn 0.3s ease reverse';
+          setTimeout(() => {
+            if (document.body.contains(notification)) {
+              document.body.removeChild(notification);
+            }
+          }, 300);
+        }
+      }, 10000);
+      
+      // Add to the DOM
+      document.body.appendChild(notification);
     },
 
     resetAllSettings() {
