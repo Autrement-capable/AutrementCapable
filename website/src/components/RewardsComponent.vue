@@ -433,7 +433,7 @@ export default {
           id: 'next-activity',
           name: 'Prochaine activité',
           selector: '.next-activity',
-          description: "Ici tu trouveras ta prochaine activité recommandée. Clique sur 'Jouer maintenant' pour la commencer et débloquer un nouveau badge !"
+          description: "Ici tu trouveras ta prochaine activité recommandée. C'est en jouant que tu pourras débloquer de nouveaux badges !"
         },
         {
           id: 'badges-grid',
@@ -484,7 +484,7 @@ export default {
     nextBadge() {
       // Trouve le premier badge non débloqué
       const nextBadge = this.badges.find(badge => !badge.unlocked);
-      return nextBadge || this.badges[0]; // Retourne le premier badge si tout est débloqué
+      return nextBadge || this.badges[0];
     }
   },
   watch: {
