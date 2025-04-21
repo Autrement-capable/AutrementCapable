@@ -1,109 +1,125 @@
-import { createRouter, createWebHistory } from "vue-router";
-import StartButton from "../components/StartButton.vue";
-import AccountCreation from "../components/AccountCreation.vue";
-import Explanation from "../components/Explanation.vue";
-import LoginPage from "../components/LoginPage.vue";
-import PersonalTest from "../components/PersonalTest.vue";
-import UserQuestionnaire from "../components/Questionnaire.vue";
-import GameSpeed from "../components/GameSpeed.vue";
-import GameShape from "../components/GameShape.vue";
-import GameMemory from "../components/GameMemory.vue";
-import CompDashboard from "../components/CompDashboard.vue";
-import CvPreview from "../components/CvPreview.vue";
-import PostsList from '../components/forum/PostsList.vue';
-import Post from '../components/forum/PostPage.vue';
-import Forum from '../components/forum/ForumPage.vue';
-import CoursePage from "../components/CoursePage.vue";
-import ShapeSequenceGame from "../components/ShapeSequenceGame.vue";
+import { createRouter, createWebHistory } from 'vue-router'
+import LoginPage from '@/views/LoginPage.vue'
+import Onboarding from '@/views/Onboarding.vue'
+import Environment from '@/views/Environment.vue'
+import FormationPage from '@/views/FormationPage.vue'
+import SkillsWheelPage from '@/views/SkillsWheelPage.vue'
+import Dashboard from '@/views/Dashboard.vue'
+import UserProfile from '@/views/UserProfile.vue'
+
+// Scenarios
+import ScenarioList from '@/views/ScenarioList.vue'
+import ScenarioPage from '@/views/ScenarioPage.vue'
+import ResultsPage from '@/views/ResultsPage.vue'
+
+// Hard skills mini games
+import GameSpeed from '@/views/skillGames/GameSpeed.vue'
+import GameShape from '@/views/skillGames/GameShape.vue'
+import ShapeSequenceGame from '@/views/skillGames/ShapeSequenceGame.vue'
+
+// Tinder des metiers
+import TinderMetiers from '@/components/JobsComponent.vue'
+import SoudeurCard from '@/components/jobsCards/SoudeurCard.vue'
+import JardinerCard from '@/components/jobsCards/JardinerCard.vue'
+import CoiffeurCard from '@/components/jobsCards/CoiffeurCard.vue'
 
 const routes = [
   {
-    path: "/",
-    name: "StartButton",
-    component: StartButton,
+    path: '/',
+    name: 'onboarding',
+    component: Onboarding,
   },
   {
-    path: "/account-creation",
-    name: "AccountCreation",
-    component: AccountCreation,
+    path: '/onboarding',
+    name: 'Onboarding',
+    component: Onboarding,
   },
   {
-    path: "/explanation",
-    name: "Explanation",
-    component: Explanation,
-  },
-  {
-    path: "/login",
-    name: "Login",
+    path: '/login',
+    name: 'Login',
     component: LoginPage,
   },
   {
-    path: "/personal-test",
-    name: "PersonalTest",
-    component: PersonalTest,
+    path: '/dashboard',
+    name: 'Dashboard',
+    component: Dashboard,
   },
   {
-    path: "/questionnaire",
-    name: "Questionnaire",
-    component: UserQuestionnaire,
+    path: '/user-profile',
+    name: 'UserProfile',
+    component: UserProfile,
   },
   {
-    path: "/game-speed",
-    name: "GameSpeed",
+    path: '/game-speed',
+    name: 'GameSpeed',
     component: GameSpeed,
   },
   {
-    path: "/game-shape",
-    name: "GameShape",
+    path: '/game-shape',
+    name: 'GameShape',
     component: GameShape,
   },
   {
-    path: "/game-memory",
-    name: "GameMemory",
-    component: GameMemory,
-  },
-  {
-    path: "/shape-sequence-game",
-    name: "ShapeSequenceGame",
+    path: '/shape-sequence-game',
+    name: 'ShapeSequenceGame',
     component: ShapeSequenceGame,
   },
   {
-    path: "/dashboard",
-    name: "CompDashboard",
-    component: CompDashboard,
+    path: '/metiers',
+    name: 'TinderMetiers',
+    component: TinderMetiers,
   },
   {
-    path: "/cv-preview",
-    name: "CvPreview",
-    component: CvPreview,
+    path: '/metier/soudeur',
+    name: 'SoudeurCard',
+    component: SoudeurCard,
   },
   {
-    path: '/forum',
-    name: 'forum',
-    component: Forum,
+    path: '/metier/jardinier',
+    name: 'JardinerCard',
+    component: JardinerCard,
   },
   {
-    path: '/forum/posts/:category/',
-    name: 'postsList',
-    component: PostsList,
-    props: true
+    path: '/metier/coiffeur',
+    name: 'CoiffeurCard',
+    component: CoiffeurCard,
   },
   {
-    path: '/forum/posts/:category/:id',
-    name: 'post',
-    component: Post,
-    props: true
+    path: '/environment',
+    name: 'Environment',
+    component: Environment,
   },
   {
-    path: "/courses",
-    name: "CoursePage",
-    component: CoursePage,
+    path: '/scenarios',
+    name: 'ScenarioList',
+    component: ScenarioList,
   },
-];
+  {
+    path: '/scenarios/:urlName',
+    name: 'ScenarioPage',
+    component: ScenarioPage,
+    props: true,
+  },
+  {
+    path: '/resultats',
+    name: 'ResultsPage',
+    component: ResultsPage,
+  },
+  {
+    path: '/formation',
+    name: 'FormationPage',
+    component: FormationPage,
+  },
+  {
+    path: '/roue-des-competences',
+    name: 'SkillsWheelPage',
+    component: SkillsWheelPage,
+  },
+]
 
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes,
-});
+})
 
-export default router;
+export default router

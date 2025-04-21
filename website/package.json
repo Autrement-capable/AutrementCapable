@@ -9,19 +9,42 @@
     "start": "vue-cli-service serve"
   },
   "dependencies": {
+    "@mdi/font": "^7.4.47",
+    "@simplewebauthn/browser": "^13.1.0",
+    "@tresjs/cientos": "^4.1.0",
+    "@tresjs/core": "^4.3.3",
+    "@vue/runtime-dom": "^3.5.13",
+    "apexcharts": "^4.5.0",
+    "axios": "^1.7.9",
     "core-js": "^3.8.3",
+    "dotenv": "^16.4.7",
+    "mitt": "^3.0.1",
+    "openai": "^4.77.0",
+    "pixi-isometric-tilemaps": "github:holywyvern/pixi-isometric-tilemaps",
+    "pixi.js": "^8.8.1",
+    "three": "^0.173.0",
     "vue": "^3.2.13",
     "vue-router": "^4.0.3",
-    "@mdi/font": "^7.4.47"
+    "vue3-apexcharts": "^1.8.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.16",
-    "@babel/eslint-parser": "^7.12.16",
+    "@babel/core": "^7.26.0",
+    "@babel/eslint-parser": "^7.25.9",
+    "@babel/preset-env": "^7.26.0",
+    "@tailwindcss/postcss": "^4.0.3",
+    "@types/three": "^0.173.0",
     "@vue/cli-plugin-babel": "~5.0.0",
     "@vue/cli-plugin-eslint": "~5.0.0",
     "@vue/cli-plugin-router": "~5.0.0",
     "@vue/cli-service": "~5.0.0",
+    "@vue/eslint-config-prettier": "^10.2.0",
+    "autoprefixer": "^10.4.20",
+    "babel-eslint": "^10.1.0",
     "eslint": "^7.32.0",
-    "eslint-plugin-vue": "^8.0.3"
+    "eslint-plugin-prettier": "^5.2.5",
+    "eslint-plugin-vue": "^8.7.1",
+    "postcss": "^8.5.1",
+    "prettier": "^3.5.3",
+    "tailwindcss": "^4.0.3"
   }
 }
