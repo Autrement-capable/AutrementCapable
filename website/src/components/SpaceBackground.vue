@@ -14,20 +14,60 @@
         <div class="cometInverse comet-3"></div>
         <div class="comet comet-4"></div>
         <div class="cometInverse comet-5"></div>
-        
+
         <!-- Galaxy -->
         <div class="galaxy galaxy-1"></div>
-        
+
+        <div class="rocket-container">
+          <div class="rocket">
+            <div class="rocket-body">
+              <div class="rocket-window"></div>
+            </div>
+            <div class="rocket-nose"></div>
+            <div class="rocket-fin rocket-fin-left"></div>
+            <div class="rocket-fin rocket-fin-right"></div>
+            <div class="rocket-flame-container">
+              <div class="rocket-flame flame-core"></div>
+              <div class="rocket-flame flame-outer-1"></div>
+              <div class="rocket-flame flame-outer-2"></div>
+              <div class="rocket-smoke smoke-1"></div>
+              <div class="rocket-smoke smoke-2"></div>
+              <div class="rocket-smoke smoke-3"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Satellite -->
+        <div class="satellite-container">
+          <div class="satellite">
+            <div class="satellite-body">
+              <!-- You can add small details with ::before/::after if needed -->
+            </div>
+            <div class="solar-panels">
+              <div class="solar-panel panel-left">
+                 <div class="panel-cells"></div>
+              </div>
+              <div class="solar-panel panel-right">
+                 <div class="panel-cells"></div>
+              </div>
+            </div>
+            <div class="satellite-dish">
+              <div class="dish-inner"></div>
+            </div>
+            <div class="satellite-antenna-small"></div>
+          </div>
+        </div>
+
         <!-- Planets -->
         <div class="planet planet-1">
           <div class="planet-rings"></div>
         </div>
-        
+
         <div class="planet planet-2">
           <div class="planet-atmosphere"></div>
           <div class="planet-storm"></div>
         </div>
-        
+
         <div class="planet planet-3">
           <div class="planet-ice-caps"></div>
           <div class="planet-moons">
@@ -1021,6 +1061,396 @@ export default {
     #bdbdbd 50%,
     #9e9e9e 100%
   );
+}
+
+/* Rocket Styles */
+.rocket-container {
+  position: absolute;
+  bottom: -150px; /* Start below the screen, adjusted */
+  left: -5%;     /* Start from the left edge */
+  width: 80px;
+  height: 150px;
+  z-index: 10;
+  animation: rocketLaunchDiagonal 25s linear infinite;
+  animation-delay: 5s; /* Delay before the first launch */
+  /* Initial rotation for diagonal path */
+  transform: rotate(45deg);
+  transform-origin: center bottom;
+}
+
+.rocket {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 15px rgba(255, 165, 0, 0.6));
+}
+
+.rocket-body {
+  position: absolute;
+  bottom: 30px; /* Make space for the flame */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 80px;
+  background: linear-gradient(to right, #f0f0f0, #c0c0c0, #a0a0a0);
+  border-radius: 5px 5px 0 0;
+  box-shadow: inset 2px 0 5px rgba(0, 0, 0, 0.3);
+}
+
+.rocket-window {
+  position: absolute;
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 18px;
+  height: 18px;
+  background: radial-gradient(circle at 30% 30%, #a1d1ff, #3a7fbf);
+  border-radius: 50%;
+  border: 2px solid #707070;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+.rocket-nose {
+  position: absolute;
+  bottom: 105px; /* Positioned above the body */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 20px solid transparent;
+  border-right: 20px solid transparent;
+  border-bottom: 35px solid #e04040; /* Red nose cone */
+  filter: drop-shadow(0 -2px 3px rgba(0, 0, 0, 0.3));
+}
+
+.rocket-fin {
+  position: absolute;
+  bottom: 30px;
+  width: 0;
+  height: 0;
+  border-bottom: 30px solid #b03030; /* Darker red fins */
+}
+
+.rocket-fin-left {
+  left: -5px;
+  border-left: 25px solid transparent;
+  transform: skewY(15deg);
+}
+
+.rocket-fin-right {
+  right: -5px;
+  border-right: 25px solid transparent;
+  transform: skewY(-15deg);
+}
+
+.rocket-flame-container {
+  position: absolute;
+  bottom: -10px; /* Extend below the rocket base */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 60px;
+  z-index: -1; /* Behind the rocket */
+}
+
+.rocket-flame {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  /* Corrected: Round the bottom corners, keep top flat */
+  border-radius: 0 0 50% 50%;
+  animation: rocketFlameFlicker 0.15s linear infinite alternate;
+  will-change: height, opacity;
+  /* Ensure flames start from the top of their container (which is positioned at the bottom of the rocket) */
+  top: 0;
+  bottom: auto; /* Remove previous bottom positioning */
+}
+
+.flame-core {
+  bottom: 0;
+  width: 15px;
+  height: 45px;
+  background: linear-gradient(to top, #ffffff, #fff8b0, #ffea00);
+  opacity: 0.95;
+  filter: blur(2px);
+  animation-duration: 0.1s;
+}
+
+.flame-outer-1 {
+  bottom: 0;
+  width: 25px;
+  height: 55px;
+  background: linear-gradient(to top, #ffcc00, #ffa500, rgba(255, 165, 0, 0.5));
+  opacity: 0.8;
+  filter: blur(4px);
+  animation-duration: 0.12s;
+}
+
+.flame-outer-2 {
+  bottom: 0;
+  width: 35px;
+  height: 65px;
+  background: linear-gradient(to top, #ff8c00, #ff4500, rgba(255, 69, 0, 0.3));
+  opacity: 0.6;
+  filter: blur(8px);
+  animation-duration: 0.15s;
+}
+
+.rocket-smoke {
+  position: absolute;
+  left: 50%;
+  background: rgba(220, 220, 220, 0.6);
+  border-radius: 50%;
+  filter: blur(10px);
+  opacity: 0;
+  animation: rocketSmokeDrift 3s ease-out infinite;
+}
+
+.smoke-1 {
+  width: 40px;
+  height: 40px;
+  bottom: -40px;
+  transform: translateX(-70%);
+  animation-delay: 0s;
+}
+
+.smoke-2 {
+  width: 50px;
+  height: 50px;
+  bottom: -55px;
+  transform: translateX(-40%);
+  animation-delay: 0.3s;
+}
+
+.smoke-3 {
+  width: 35px;
+  height: 35px;
+  bottom: -30px;
+  transform: translateX(-50%);
+  animation-delay: 0.6s;
+}
+
+/* Rocket Animations */
+/* Modified for diagonal launch from bottom-left to top-right */
+@keyframes rocketLaunchDiagonal {
+  0% {
+    bottom: -150px;
+    left: -5%;
+    opacity: 0;
+    transform: rotate(45deg); /* Consistent angle */
+  }
+  10% {
+    bottom: 5vh;
+    left: 5%;
+    opacity: 1;
+    transform: rotate(45deg);
+  }
+  50% {
+    bottom: 55vh;
+    left: 50%;
+    transform: rotate(47deg); /* Slight angle adjustment/wobble */
+  }
+  90% {
+    bottom: 105vh; /* Ensure it goes off screen */
+    left: 95%;
+    opacity: 1;
+    transform: rotate(44deg);
+  }
+  100% {
+    bottom: 115vh;
+    left: 105%; /* Fully off screen */
+    opacity: 0;
+    transform: rotate(45deg);
+  }
+}
+
+/* Apply the new animation */
+.rocket-container {
+  animation-name: rocketLaunchDiagonal;
+}
+
+
+@keyframes rocketFlameFlicker {
+  0% {
+    height: calc(var(--base-height, 60px) * 0.9);
+    opacity: calc(var(--base-opacity, 0.8) * 0.9);
+    transform: translateX(-50%) scaleX(0.95);
+  }
+  100% {
+    height: calc(var(--base-height, 60px) * 1.1);
+    opacity: calc(var(--base-opacity, 0.8) * 1.1);
+    transform: translateX(-50%) scaleX(1.05);
+  }
+}
+
+/* Apply base heights/opacities for flicker animation */
+.flame-core { --base-height: 45px; --base-opacity: 0.95; }
+.flame-outer-1 { --base-height: 55px; --base-opacity: 0.8; }
+.flame-outer-2 { --base-height: 65px; --base-opacity: 0.6; }
+
+@keyframes rocketSmokeDrift {
+   0% {
+    opacity: 0.6;
+    /* Adjust smoke offset relative to the rotated rocket */
+    transform: translate(calc(-50% + var(--offset-x, 0px)), 10px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    /* Smoke drifts downwards and slightly away */
+    transform: translate(calc(-50% + var(--offset-x, 0px) + (RANDOM_X * 20 - 10px)), 80px) scale(2.5);
+  }
+}
+
+/* Random offsets for smoke animation (Needs JS or preprocessor for true random) */
+.smoke-1 { --offset-x: -10px; }
+.smoke-2 { --offset-x: 5px; }
+.smoke-3 { --offset-x: 0px; }
+
+/* Satellite Styles */
+.satellite-container {
+  position: absolute;
+  top: 25%; /* Starting vertical position */
+  left: -150px; /* Start off-screen to the left */
+  width: 120px; /* Adjust size as needed */
+  height: 80px;
+  z-index: 5; /* Ensure it's visible */
+  animation: satelliteOrbit 45s linear infinite;
+  animation-delay: 8s; /* Stagger its appearance */
+  will-change: transform, opacity;
+}
+
+.satellite {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d; /* For potential 3D effects */
+  animation: satelliteWobble 10s ease-in-out infinite alternate;
+}
+
+.satellite-body {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #c0c0c0, #a0a0a0, #808080); /* Metallic gradient */
+  border-radius: 4px;
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.4);
+  /* Add a subtle texture or pattern if desired */
+   background-image: linear-gradient(45deg, rgba(255,255,255,0.05) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.05) 75%, transparent 75%, transparent);
+   background-size: 10px 10px;
+}
+
+.solar-panels {
+  position: absolute;
+  /* Center the pivot point for panels */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 10px; /* Just a structural container */
+}
+
+.solar-panel {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 50px;
+  height: 70px;
+  background: linear-gradient(to bottom, #1a237e, #0d113b); /* Dark blue/black */
+  border: 1px solid #707080;
+  border-radius: 2px;
+  box-shadow: 0 0 5px rgba(0, 100, 200, 0.2);
+}
+
+.panel-left {
+  left: -25px; /* Position left of the body */
+  transform: translateY(-50%) rotateY(20deg) rotateZ(-5deg); /* Slight angle */
+  transform-origin: right center;
+}
+
+.panel-right {
+  right: -25px; /* Position right of the body */
+  transform: translateY(-50%) rotateY(-20deg) rotateZ(5deg); /* Slight angle */
+  transform-origin: left center;
+}
+
+.panel-cells {
+  position: absolute;
+  inset: 2px; /* Small margin inside the border */
+  background-image:
+    repeating-linear-gradient(0deg, rgba(150, 180, 255, 0.15), rgba(150, 180, 255, 0.15) 1px, transparent 1px, transparent 8px), /* Horizontal lines */
+    repeating-linear-gradient(90deg, rgba(150, 180, 255, 0.15), rgba(150, 180, 255, 0.15) 1px, transparent 1px, transparent 8px); /* Vertical lines */
+  opacity: 0.8;
+}
+
+.satellite-dish {
+  position: absolute;
+  top: -5px; /* Position above the body */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 25px;
+  height: 25px;
+  background: radial-gradient(circle at 70% 70%, #f0f0f0, #b0b0b0); /* Dish gradient */
+  border-radius: 50%;
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+.dish-inner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 6px;
+  background: #333;
+  border-radius: 50%;
+  border: 1px solid #555;
+}
+
+.satellite-antenna-small {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%) rotate(10deg);
+  width: 2px;
+  height: 15px;
+  background: #a0a0a0;
+  border-radius: 2px 2px 0 0;
+}
+
+/* Satellite Animations */
+@keyframes satelliteOrbit {
+  0% {
+    left: -150px; /* Start off-screen left */
+    top: 25%;
+    opacity: 0;
+    transform: scale(0.9) rotateZ(-5deg);
+  }
+  10% {
+    opacity: 1;
+    transform: scale(1) rotateZ(0deg);
+  }
+  90% {
+    opacity: 1;
+    transform: scale(1.1) rotateZ(5deg);
+  }
+  100% {
+    left: calc(100% + 150px); /* End off-screen right */
+    top: 65%; /* Move diagonally down */
+    opacity: 0;
+    transform: scale(1) rotateZ(10deg);
+  }
+}
+
+@keyframes satelliteWobble {
+  0% {
+    transform: rotateZ(-1deg) rotateY(-2deg);
+  }
+  100% {
+    transform: rotateZ(1deg) rotateY(2deg);
+  }
 }
 
 /* 

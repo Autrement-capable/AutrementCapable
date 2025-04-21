@@ -743,7 +743,6 @@ export default {
 
       // Optional: trigger achievement for first theme change
       if (!this.themeChangeAchieved && theme !== 'cosmic') {
-        this.triggerAchievement('Explorateur de Mondes')
         this.themeChangeAchieved = true
       }
     },
@@ -831,19 +830,11 @@ export default {
 
     handleGenerateCV() {
       // Déclenche un accomplissement et ferme le modal
-      this.triggerAchievement('CV professionnel');
       this.closeRewardsModal();
     },
 
     handleViewProfile() {
       this.closeRewardsModal();
-    },
-
-    // Personnalisation de l'avatar
-    customizeAvatar() {
-      this.showAvatarInteraction = false
-      this.activeModal = 'customize'
-      this.triggerAchievement('Esprit Créatif')
     },
 
     // Voir les réalisations
@@ -947,13 +938,6 @@ export default {
     this.themeChangeAchieved = false
 
     this.profileTourCompleted = localStorage.getItem('profile-tour-completed') === 'true';
-
-    // Simulate a reward after a certain time
-    setTimeout(() => {
-      const randomAchievement =
-        this.achievements[Math.floor(Math.random() * this.achievements.length)]
-      this.triggerAchievement(randomAchievement)
-    }, 5000)
 
     // Vérifier si c'est la première visite
     this.checkFirstVisit();
