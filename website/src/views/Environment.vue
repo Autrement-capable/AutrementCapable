@@ -92,20 +92,7 @@
 
       <!-- Visualisation 3D de l'environnement -->
       <div class="environment-view">
-        <div class="room-visualization" ref="container"></div>
-
-        <!-- Instructions du guide -->
-        <div v-if="showGuide" class="guide-overlay">
-          <div class="guide-content">
-            <h3>{{ currentGuide.title }}</h3>
-            <p>{{ currentGuide.description }}</p>
-            <button @click="dismissGuide" class="guide-button">
-              Continuer
-            </button>
-          </div>
-        </div>
-
-        <!-- Contrôles de l'environnement actuel -->
+        <!-- Contrôles de l'environnement actuel - DÉPLACÉS À GAUCHE -->
         <div class="environment-controls">
           <div class="environment-header">
             <h2>{{ currentEnvironment.name }}</h2>
@@ -116,80 +103,115 @@
 
           <p class="env-description">{{ currentEnvironment.description }}</p>
 
-          <!-- Onglets de contrôles -->
-          <div class="control-tabs">
-            <button
-              v-for="tab in controlTabs"
-              :key="tab.id"
-              @click="isTabAccessible(tab.id) ? selectTab(tab.id) : null"
-              :class="[
-                'tab-button',
-                {
-                  active: activeControlTab === tab.id,
-                  completed: completedTabs.includes(tab.id),
-                  disabled: !isTabAccessible(tab.id),
-                },
-              ]"
-              :disabled="!isTabAccessible(tab.id)"
-            >
-              {{ tab.label }}
-            </button>
+          <!-- Indicateur de progression des étapes -->
+          <div class="step-progress">
+            <div class="step-dots">
+              <div 
+                v-for="(step, index) in controlTabs" 
+                :key="index"
+                :class="[
+                  'step-dot', 
+                  { 
+                    'active': activeControlTab === step.id,
+                    'completed': completedTabs.includes(step.id)
+                  }
+                ]"
+              ></div>
+            </div>
+            <div class="step-label">
+              Étape {{ currentStep }} sur {{ controlTabs.length }}: 
+              <span>{{ getCurrentStepLabel() }}</span>
+            </div>
           </div>
 
-          <!-- Contenu des onglets -->
-          <div class="tab-content">
-            <!-- Onglet Lumière -->
-            <div v-if="activeControlTab === 'light'" class="control-panel">
+          <!-- Contenu des étapes -->
+          <div class="step-content">
+            <!-- Étape 1: Lumière -->
+            <div v-if="activeControlTab === 'light'" class="control-panel accessibility-enhanced">
               <div class="control-group">
-                <h3>Luminosité</h3>
-                <div class="slider-control">
-                  <div class="slider-labels">
-                    <span>Sombre</span>
-                    <span>Lumineux</span>
+                <h3>
+                  <span class="icon-light">💡</span> 
+                  Choisis la lumière
+                </h3>
+
+                <!-- Luminosité simplifiée avec images -->
+                <div class="simple-control">
+                  <p class="simple-label">Comment veux-tu la lumière?</p>
+                  
+                  <div class="big-button-group">
+                    <button 
+                      @click="lightIntensity = 0.8; updateLighting(true)" 
+                      :class="['big-button', { active: lightIntensity <= 1.2 }]"
+                    >
+                      <div class="big-button-icon">🌙</div>
+                      <div class="big-button-label">Douce</div>
+                    </button>
+                    
+                    <button 
+                      @click="lightIntensity = 2; updateLighting(true)" 
+                      :class="['big-button', { active: lightIntensity > 1.2 && lightIntensity < 3 }]"
+                    >
+                      <div class="big-button-icon">☀️</div>
+                      <div class="big-button-label">Normale</div>
+                    </button>
+                    
+                    <button 
+                      @click="lightIntensity = 4; updateLighting(true)" 
+                      :class="['big-button', { active: lightIntensity >= 3 }]"
+                    >
+                      <div class="big-button-icon">🔆</div>
+                      <div class="big-button-label">Forte</div>
+                    </button>
                   </div>
-                  <input
-                    type="range"
-                    v-model.number="lightIntensity"
-                    min="0.2"
-                    max="8"
-                    step="0.1"
-                    @change="updateLighting(true)"
-                  />
+                  
+                  <!-- Aperçu visuel -->
+                  <div class="visual-feedback-light">
+                    <div class="light-preview" :style="{ opacity: (lightIntensity/8) + 0.2 }">
+                      <span v-if="lightIntensity <= 1.2">🌙 Lumière douce</span>
+                      <span v-else-if="lightIntensity >= 3">🔆 Lumière forte</span>
+                      <span v-else>☀️ Lumière normale</span>
+                    </div>
+                  </div>
                 </div>
 
-                <div class="control-item">
-                  <label>Couleur de la lumière:</label>
-                  <div class="light-presets">
+                <!-- Couleur de la lumière simplifiée -->
+                <div class="simple-control">
+                  <p class="simple-label">Quelle couleur de lumière?</p>
+                  
+                  <div class="color-buttons">
                     <button
                       v-for="(preset, idx) in lightPresets"
                       :key="idx"
                       @click="selectLightPreset(preset)"
-                      :class="[
-                        'preset-btn',
-                        { selected: lightColor === preset.color },
-                      ]"
+                      :class="['color-button', { active: lightColor === preset.color }]"
                       :style="{ backgroundColor: preset.color }"
                     >
-                      <span>{{ preset.name }}</span>
+                      <span class="color-button-label">{{ preset.name }}</span>
                     </button>
                   </div>
                 </div>
 
-                <div class="toggle-control">
-                  <label>
-                    <input
-                      type="checkbox"
-                      v-model="ambientLight"
-                      @change="updateLighting(true)"
-                    />
-                    <span>Lumière ambiante douce</span>
-                  </label>
-                </div>
-
-                <div class="tab-navigation">
-                  <button @click="completeCurrentTab()" class="next-button">
-                    Suivant
-                  </button>
+                <!-- Option simplifiée pour la lumière ambiante -->
+                <div class="simple-control">
+                  <p class="simple-label">Veux-tu une lumière douce partout?</p>
+                  
+                  <div class="yes-no-buttons">
+                    <button
+                      @click="ambientLight = true; updateLighting(true)"
+                      :class="['yes-no-button', { active: ambientLight }]"
+                    >
+                      <span class="big-emoji">👍</span>
+                      <span>Oui</span>
+                    </button>
+                    
+                    <button
+                      @click="ambientLight = false; updateLighting(true)"
+                      :class="['yes-no-button', { active: !ambientLight }]"
+                    >
+                      <span class="big-emoji">👎</span>
+                      <span>Non</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -267,7 +289,7 @@
               </div>
             </div>
 
-            <!-- Onglet Sons -->
+            <!-- Étape 3: Sons -->
             <div v-if="activeControlTab === 'sounds'" class="control-panel">
               <div class="control-group">
                 <h3>Ambiance sonore</h3>
@@ -309,16 +331,10 @@
                     @change="updatePeopleCount"
                   />
                 </div>
-
-                <div class="tab-navigation">
-                  <button @click="completeCurrentTab()" class="next-button">
-                    Suivant
-                  </button>
-                </div>
               </div>
             </div>
 
-            <!-- Onglet Feedback -->
+            <!-- Étape 4: Feedback -->
             <div v-if="activeControlTab === 'feedback'" class="control-panel">
               <div class="control-group">
                 <h3>Votre ressenti</h3>
@@ -347,25 +363,46 @@
                     placeholder="Décrivez ce que vous aimez ou n'aimez pas..."
                   ></textarea>
                 </div>
-
-                <div class="tab-navigation">
-                  <button
-                    @click="saveFeedback"
-                    class="primary-button2"
-                    :disabled="!getCurrentFeedback().mood"
-                  >
-                    Enregistrer mon ressenti
-                  </button>
-                </div>
               </div>
             </div>
+
+            <!-- Navigation entre étapes -->
+            <div class="step-navigation">
+              <button 
+                v-if="currentStep > 1" 
+                @click="goToPreviousStep()" 
+                class="primary-button2"
+              >
+                Précédent
+              </button>
+              <button 
+                v-if="currentStep < controlTabs.length && activeControlTab !== 'feedback'" 
+                @click="goToNextStep()" 
+                class="primary-button2"
+              >
+                Suivant
+              </button>
+              <button 
+                v-if="activeControlTab === 'feedback' && getCurrentFeedback().mood" 
+                @click="finishAndShowPreferences()" 
+                class="primary-button2"
+              >
+                Terminer
+              </button>
+            </div>
           </div>
-          <div
-            class="finish-exploration"
-            v-if="activeControlTab === 'feedback' && getCurrentFeedback().mood"
-          >
-            <button @click="showFeedbackMessage = true" class="primary-button">
-              Terminer et voir mes préférences
+        </div>
+        
+        <!-- Visualisation de la pièce - DÉPLACÉE À DROITE -->
+        <div class="room-visualization" ref="container"></div>
+
+        <!-- Instructions du guide -->
+        <div v-if="showGuide" class="guide-overlay">
+          <div class="guide-content">
+            <h3>{{ currentGuide.title }}</h3>
+            <p>{{ currentGuide.description }}</p>
+            <button @click="dismissGuide" class="guide-button">
+              Continuer
             </button>
           </div>
         </div>
@@ -477,7 +514,7 @@ export default {
       modelsLoading: false,
       loadingProgress: 0,
 
-      // Onglets de contrôle
+      // Étapes de contrôle (remplace les onglets)
       controlTabs: [
         { id: 'light', label: 'Lumière', order: 1 },
         { id: 'colors', label: 'Couleurs', order: 2 },
@@ -757,7 +794,7 @@ export default {
       const totalEnvironments = this.environments.length
       const completedCount = this.completedEnvironments.length
 
-      // Si l'environnement actuel a des onglets complétés, ajouter une progression partielle
+      // Si l'environnement actuel a des étapes complétées, ajouter une progression partielle
       let partialProgress = 0
       if (!this.completedEnvironments.includes(this.currentEnvironmentIndex)) {
         const totalTabs = this.controlTabs.length
@@ -788,6 +825,76 @@ export default {
     }
   },
   methods: {
+    // Nouvelle méthode pour obtenir le libellé de l'étape actuelle
+    getCurrentStepLabel() {
+      const currentTab = this.controlTabs.find(tab => tab.id === this.activeControlTab);
+      return currentTab ? currentTab.label : '';
+    },
+
+    getCurrentPaletteName() {
+      // Parcourir toutes les palettes
+      for (const palette of this.colorPalettes) {
+        // Vérifier si c'est la palette actuelle en utilisant la méthode existante
+        if (this.isCurrentPalette(palette)) {
+          return palette.name;
+        }
+      }
+      // Retourner un nom par défaut si aucune palette ne correspond
+      return 'Palette personnalisée';
+    },
+
+
+    // Nouvelle méthode pour terminer et afficher les préférences
+    finishAndShowPreferences() {
+      // Sauvegarder le feedback d'abord
+      this.saveFeedback();
+      
+      // Puis afficher le message de préférences
+      this.showFeedbackMessage = true;
+    },
+
+    // Méthodes de navigation entre étapes
+    goToNextStep() {
+      // Sauvegarder les personnalisations avant de changer d'étape
+      this.saveCurrentCustomization(this.activeControlTab);
+      
+      // Ajouter l'onglet actuel aux onglets complétés s'il ne l'est pas déjà
+      if (!this.completedTabs.includes(this.activeControlTab)) {
+        this.completedTabs.push(this.activeControlTab);
+      }
+      
+      // Trouver l'étape suivante
+      const currentTabOrder = this.controlTabs.find(
+        (tab) => tab.id === this.activeControlTab
+      ).order;
+      const nextTab = this.controlTabs.find(
+        (tab) => tab.order === currentTabOrder + 1
+      );
+      
+      if (nextTab) {
+        this.activeControlTab = nextTab.id;
+        this.currentStep++;
+        
+        // Afficher le guide approprié pour la nouvelle étape
+        this.showTabGuide(nextTab.id);
+      }
+    },
+    
+    goToPreviousStep() {
+      // Trouver l'étape précédente
+      const currentTabOrder = this.controlTabs.find(
+        (tab) => tab.id === this.activeControlTab
+      ).order;
+      const prevTab = this.controlTabs.find(
+        (tab) => tab.order === currentTabOrder - 1
+      );
+      
+      if (prevTab) {
+        this.activeControlTab = prevTab.id;
+        this.currentStep--;
+      }
+    },
+
     // Initialiser le renderer
     initRenderer() {
       if (this.$refs.container) {
@@ -904,7 +1011,15 @@ export default {
       // Mise à jour du son
       this.selectedAmbience = settings.sound.type
       this.soundVolume = settings.sound.volume
-      this.peopleCount = settings.sound.peopleCount
+      
+      // S'assurer que le peopleCount est correctement réinitialisé et appliqué
+      const newPeopleCount = settings.sound.peopleCount || 0
+      this.peopleCount = newPeopleCount
+      
+      // Forcer la mise à jour des personnes si le renderer est déjà initialisé
+      if (this.renderer && this.rendererInitialized) {
+        this.renderer.updatePeople(newPeopleCount)
+      }
 
       // Déterminer les préréglages de taille
       this.determineSizePresets()
@@ -926,7 +1041,7 @@ export default {
       this.showGuideMessage({
         title: 'Bienvenue dans ' + this.currentEnvironment.name,
         description:
-          'Personnalisez cet environnement selon vos préférences en utilisant les onglets de contrôle.',
+          'Personnalisez cet environnement selon vos préférences en suivant les étapes.',
       })
     },
 
@@ -939,7 +1054,7 @@ export default {
       ) {
         this.selectEnvironment(index)
 
-        // Si c'est l'environnement actuel qui n'est pas complété, réinitialiser à l'onglet Lumière
+        // Si c'est l'environnement actuel qui n'est pas complété, réinitialiser à l'étape Lumière
         if (
           index === this.currentEnvironmentIndex &&
           !this.completedEnvironments.includes(index)
@@ -1007,22 +1122,6 @@ export default {
       }
     },
 
-    // Aller à l'onglet précédent
-    goToPreviousTab() {
-      // Trouver l'onglet précédent
-      const currentTabOrder = this.controlTabs.find(
-        (tab) => tab.id === this.activeControlTab
-      ).order
-      const prevTab = this.controlTabs.find(
-        (tab) => tab.order === currentTabOrder - 1
-      )
-
-      if (prevTab) {
-        this.activeControlTab = prevTab.id
-        this.currentStep--
-      }
-    },
-
     // Afficher le guide approprié pour chaque onglet
     showTabGuide(tabId) {
       let guideMessage = {
@@ -1081,7 +1180,8 @@ export default {
 
         this.updateRoom()
         this.updateLighting(false)
-        this.updateAmbientSound()
+        // Mettre à jour l'ambiance sonore sans marquer l'étape comme complétée
+        this.updateAmbientSoundWithoutCompletion()
         this.updateClutterLevel()
       } catch (error) {
         console.error(
@@ -1089,6 +1189,63 @@ export default {
           error
         )
       }
+    },
+    
+    // Version de updateAmbientSound qui ne marque pas l'étape comme complétée
+    updateAmbientSoundWithoutCompletion() {
+      if (!this.$refs.ambientAudio) return
+
+      // Mise à jour de la source audio en fonction de la sélection
+      let audioSrc
+      this.soundEnabled = this.selectedAmbience !== 'none'
+
+      switch (this.selectedAmbience) {
+        case 'none':
+          this.$refs.ambientAudio.pause()
+          return
+        case 'whitenoise':
+          audioSrc =
+            'https://cdn.pixabay.com/download/audio/2022/03/10/audio_6629de9d6b.mp3'
+          break
+        case 'nature':
+          audioSrc =
+            'https://cdn.pixabay.com/download/audio/2021/08/09/audio_c80427e13b.mp3'
+          break
+        case 'cafe':
+          audioSrc =
+            'https://cdn.pixabay.com/download/audio/2022/01/26/audio_31e2b19a63.mp3'
+          break
+        case 'crowd':
+          audioSrc =
+            'https://cdn.pixabay.com/download/audio/2021/08/09/audio_8eb4af9c81.mp3'
+          break
+      }
+
+      // N'actualiser la source que si elle a changé
+      if (this.$refs.ambientAudio.src !== audioSrc) {
+        this.$refs.ambientAudio.src = audioSrc
+      }
+
+      // Appliquer le volume
+      this.$refs.ambientAudio.volume = this.soundVolume
+
+      // Lire l'audio si activé
+      if (this.soundEnabled) {
+        this.$refs.ambientAudio
+          .play()
+          .catch((e) => console.log('Audio play failed:', e))
+      }
+      
+      // Mettre à jour également le nombre de personnes sans marquer comme complété
+      if (this.renderer && this.rendererInitialized) {
+        try {
+          this.renderer.updatePeople(this.peopleCount)
+        } catch (error) {
+          console.error('Erreur lors de la mise à jour des personnes:', error)
+        }
+      }
+      
+      // Ne pas sauvegarder la personnalisation ici
     },
 
     // Obtenir les données de feedback actuelles de manière sécurisée
@@ -1585,6 +1742,19 @@ export default {
       this.currentEnvironmentIndex = 0
       this.currentStep = 1
       this.activeControlTab = 'light'
+      
+      // Réinitialiser les personnes à zéro
+      this.peopleCount = 0
+      if (this.renderer && this.rendererInitialized) {
+        this.renderer.updatePeople(0)
+      }
+      
+      // Réinitialiser l'audio
+      if (this.$refs.ambientAudio) {
+        this.$refs.ambientAudio.pause()
+        this.selectedAmbience = 'none'
+        this.soundEnabled = false
+      }
 
       // Réinitialiser les feedbacks
       this.environments.forEach((env, index) => {
@@ -1596,15 +1766,6 @@ export default {
       })
 
       this.showEnvironmentSelector = true
-
-      // // Sélectionner le premier environnement
-      // this.selectEnvironment(0);
-
-      // // Afficher le guide d'introduction
-      // this.showGuideMessage({
-      //   title: "Bienvenue dans " + this.currentEnvironment.name,
-      //   description: "Commençons par ajuster la lumière de cet environnement. Utilisez les contrôles pour trouver l'éclairage qui vous convient le mieux."
-      // });
     },
 
     // Méthodes de mise à jour du renderer
@@ -1744,6 +1905,182 @@ export default {
   margin-bottom: 30px;
   color: #555;
   line-height: 1.5;
+}
+
+/* Styles pour rendre les contrôles plus accessibles */
+.accessibility-enhanced h3 {
+  font-size: 1.4rem;
+  color: #333;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.icon-light {
+  font-size: 1.8rem;
+  margin-right: 10px;
+}
+
+.simple-control {
+  margin-bottom: 30px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.simple-label {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #444;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+/* Grands boutons image+texte */
+.big-button-group {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.big-button {
+  flex: 1;
+  background: white;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  padding: 8px 5px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 70px;
+}
+
+.big-button.active {
+  border-color: #4caf50;
+  background: #e8f5e9;
+  transform: scale(1.05);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.big-button-icon {
+  font-size: 1.5rem;
+  margin-bottom: 5px;
+}
+
+.big-button-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #444;
+}
+
+/* Aperçu visuel de la lumière */
+.visual-feedback-light {
+  display: flex;
+  justify-content: center;
+  margin: 15px 0;
+}
+
+.light-preview {
+  width: 85%;
+  height: 45px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #333;
+  box-shadow: inset 0 0 15px rgba(255, 215, 0, 0.6);
+  border: 1px solid #ddd;
+  transition: all 0.3s ease;
+}
+
+/* Boutons de couleur */
+.color-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.color-button {
+  width: 60px;
+  height: 60px;
+  border: 3px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s;
+}
+
+.color-button.active {
+  border-color: #4caf50;
+  transform: scale(1.1);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+.color-button-label {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  font-size: 0.9rem;
+  padding: 5px 0;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* Boutons Oui/Non */
+.yes-no-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 10px;
+}
+
+.yes-no-button {
+  width: 70px;
+  background: white;
+  border-radius: 10px;
+  padding: 8px 5px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.yes-no-button.active {
+  border-color: #4caf50;
+  background: #e8f5e9;
+  transform: scale(1.05);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.yes-no-button span:not(.big-emoji) {
+  font-weight: bold;
+  font-size: 1rem;
+  color: #333;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-top: 2px;
+}
+
+.big-emoji {
+  font-size: 1.8rem;
+  margin-bottom: 5px;
 }
 
 .object-categories {
@@ -1994,91 +2331,6 @@ export default {
   flex-direction: column;
 }
 
-/* Barre de progression */
-.progress-bar-container {
-  padding: 15px;
-  background: white;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.progress-steps {
-  display: flex;
-  justify-content: space-between;
-  position: relative;
-  margin-bottom: 10px;
-}
-
-.progress-step {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 20%;
-  position: relative;
-  z-index: 2;
-}
-
-.step-dot {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #e0e0e0;
-  border: 2px solid white;
-  margin-bottom: 5px;
-  transition: all 0.3s;
-}
-
-.progress-step.completed .step-dot {
-  background: #4caf50;
-}
-
-.progress-step.current .step-dot {
-  background: #3a57e8;
-  transform: scale(1.2);
-  box-shadow: 0 0 0 4px rgba(58, 87, 232, 0.2);
-}
-
-.step-label {
-  font-size: 0.8rem;
-  color: #888;
-  text-align: center;
-  transition: all 0.3s;
-}
-
-.progress-step.current .step-label {
-  color: #3a57e8;
-  font-weight: 600;
-}
-
-.progress-step.completed .step-label {
-  color: #4caf50;
-}
-
-.progress-line {
-  height: 4px;
-  background: #e0e0e0;
-  position: relative;
-  z-index: 1;
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.progress-filled {
-  height: 100%;
-  background: #3a57e8;
-  transition: width 0.4s ease;
-}
-
-/* Sélecteur d'environnement (masqué mais gardé pour la structure) */
-.environment-selector {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 20px;
-  justify-content: center;
-  margin: 15px 0;
-  width: 100%;
-}
-
 /* Vue de l'environnement */
 .environment-view {
   height: calc(
@@ -2189,15 +2441,16 @@ export default {
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Contrôles de l'environnement */
+/* Contrôles de l'environnement - MODIFIÉ POUR ÊTRE À GAUCHE */
 .environment-controls {
   width: 320px;
   background: white;
-  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.05);
-  padding: 10px;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05); /* Ombre vers la droite */
+  padding: 15px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  z-index: 2; /* Pour s'assurer que les contrôles sont au-dessus */
 }
 
 .environment-header {
@@ -2213,98 +2466,65 @@ export default {
   font-size: 1.4rem;
 }
 
-.step-indicator {
-  text-align: right;
-}
-
-.step-indicator span {
-  font-size: 0.8rem;
-  color: #888;
-  margin-bottom: 5px;
-  display: block;
-}
-
-.step-dots {
-  display: flex;
-  gap: 5px;
-}
-
-.step-dots .step-dot {
-  width: 8px;
-  height: 8px;
-  background: #e0e0e0;
-  margin: 0;
-}
-
-.step-dots .step-dot.active {
-  background: #3a57e8;
-}
-
 .env-description {
-  margin-bottom: 20px;
+  margin-bottom: 15px;
   color: #666;
   font-size: 0.9rem;
   line-height: 1.5;
 }
 
-/* Onglets de contrôle */
-.control-tabs {
+/* Indicateur de progression des étapes */
+.step-progress {
+  margin-bottom: 20px;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 10px;
+}
+
+.step-dots {
   display: flex;
-  border-bottom: 1px solid #e9ecef;
-  margin-bottom: 0px;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-bottom: 8px;
 }
 
-.tab-button {
-  padding: 10px 15px;
-  background: none;
-  border: none;
-  border-bottom: 3px solid transparent;
-  cursor: pointer;
-  font-size: 0.9rem;
-  color: #666;
-  transition: all 0.2s;
-  margin-right: 5px;
-}
-
-.tab-button:hover {
-  color: #333;
-}
-
-.tab-button.active {
-  color: #3a57e8;
-  border-bottom-color: #3a57e8;
-}
-
-.tab-button.completed:not(.active)::after {
-  content: '✓';
-  position: absolute;
-  top: 3px;
-  right: 3px;
-  font-size: 0.7rem;
-  color: #4caf50;
-  background: white;
+.step-dot {
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
-  width: 14px;
-  height: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: #e0e0e0;
+  margin-right: 5px;
+  transition: all 0.3s ease;
 }
 
-.tab-button.disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  color: #ccc;
+.step-dot.active {
+  background: #3a57e8;
+  transform: scale(1.2);
+  box-shadow: 0 0 0 3px rgba(58, 87, 232, 0.2);
 }
 
-/* Contenu des onglets */
+.step-dot.completed {
+  background: #4caf50;
+}
+
+.step-label {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.step-label span {
+  font-weight: bold;
+  color: #3a57e8;
+}
+
+/* Contenu des étapes */
 .control-panel {
-  padding-top: 20px;
+  padding: 15px 0;
+  animation: fadeIn 0.3s ease;
 }
 
 .control-group {
-  margin-bottom: 25px;
+  margin-bottom: 20px;
 }
 
 .control-group h3 {
@@ -2322,29 +2542,6 @@ export default {
   margin-bottom: 8px;
   font-size: 0.9rem;
   color: #555;
-}
-
-.environment-info {
-  margin-top: 20px;
-}
-
-.object-info {
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  padding: 15px;
-  margin-top: 10px;
-}
-
-.environment-objects {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.object-category-info {
-  display: flex;
-  align-items: center;
-  gap: 15px;
 }
 
 /* Contrôles pour la lumière */
@@ -2480,19 +2677,19 @@ input[type='text'] {
   margin-right: 10px;
 }
 
-/* Navigation entre onglets */
-.tab-navigation {
+/* Navigation entre étapes */
+.step-navigation {
   display: flex;
   justify-content: space-between;
-  margin-top: 20px;
+  border-top: 1px solid #eee;
 }
 
 .prev-button,
 .next-button {
-  padding: 8px 15px;
-  border-radius: 4px;
+  padding: 10px 15px;
   cursor: pointer;
   font-size: 0.9rem;
+  border-radius: 6px;
   transition: all 0.2s;
 }
 
@@ -2511,7 +2708,6 @@ input[type='text'] {
   background: #3a57e8;
   color: white;
   border: none;
-  border-radius: 6px;
   cursor: pointer;
   font-size: 0.9rem;
   font-weight: bold;
@@ -2522,10 +2718,9 @@ input[type='text'] {
   background: #304dc9;
 }
 
-.next-button:disabled {
-  background: #a4b0e5;
-  border-color: #a4b0e5;
-  cursor: not-allowed;
+.finish-feedback {
+  text-align: center;
+  margin-top: 10px;
 }
 
 /* Mood selection */
@@ -2588,7 +2783,6 @@ input[type='text'] {
 
 .primary-button2 {
   width: auto;
-  height: 60%;
   padding: 12px 20px;
   background: #4caf50;
   color: white;
@@ -2598,16 +2792,18 @@ input[type='text'] {
   font-size: 1.2rem;
   font-weight: bold;
   transition: transform 0.2s, background 0.2s;
-  margin: 15px auto 0;
+  margin: 5px 5px 0;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.primary-button:hover {
+.primary-button:hover,
+.primary-button2:hover {
   background: #3d8b40;
-  transform: scale(1.05);
+  transform: scale(1);
 }
 
-.primary-button:disabled {
+.primary-button:disabled,
+.primary-button2:disabled {
   background: #a4b0e5;
   cursor: not-allowed;
 }
@@ -2688,51 +2884,6 @@ input[type='text'] {
 .recommendation-box li {
   margin-bottom: 10px;
   color: #333;
-}
-
-.header-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px;
-  background: white;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.main-title {
-  margin: 0;
-  color: #2b6bff;
-  font-size: 1.5rem;
-}
-
-.change-env-button {
-  padding: 8px 15px;
-  background: #3a57e8;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: background 0.2s;
-}
-
-.change-env-button:hover {
-  background: #304dc9;
-}
-
-.change-env-button-small {
-  padding: 5px 10px;
-  background: #f0f0f0;
-  color: #555;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.change-env-button-small:hover {
-  background: #e0e0e0;
 }
 
 .environment-selector-overlay {
@@ -2859,11 +3010,7 @@ input[type='text'] {
   background: #e0e0e0;
 }
 
-.finish-exploration {
-  text-align: center;
-}
-
-/* Responsive */
+/* Responsive - MISE À JOUR POUR LE NOUVEL ORDRE */
 @media screen and (max-width: 600px) {
   .main-interface {
     flex-direction: column;
@@ -2875,16 +3022,16 @@ input[type='text'] {
 
   .room-visualization {
     height: 50vh;
+    order: 1; /* Placer la visualisation en haut sur mobile */
   }
 
   .environment-controls {
     width: 100%;
     height: auto;
     max-height: 40vh;
-  }
-
-  .progress-step .step-label {
-    display: none;
+    overflow-y: auto;
+    order: 2; /* Placer les contrôles en bas sur mobile */
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05); /* Ombre vers le haut */
   }
 
   .welcome-content h1 {
