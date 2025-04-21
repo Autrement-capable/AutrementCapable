@@ -162,7 +162,7 @@
       </div>
 
       <div v-if="badgeNeedsEvolution" class="badge-evolution-text">
-        Clique 10 fois pour évoluer ({{ badgeClickCount }}/10)
+        Clique 10 fois sur le badge pour l'évoluer ({{ badgeClickCount }}/10)
       </div>
 
       <!-- Bouton Commencer à jouer -->
@@ -1422,7 +1422,7 @@ export default {
 .badge-evolution-text {
   margin-top: 3px;
   font-size: 14px;
-  color: #ff9800;
+  color: #0062ff;
   text-align: center;
   font-weight: bold;
   animation: pulse-text 1.5s infinite;
