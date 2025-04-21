@@ -636,13 +636,13 @@
 
         <!-- Snowfall Layers -->
         <div class="snowfall-layer-far">
-          <div v-for="i in 80" :key="`snow-far-${i}`" class="snowflake snow-far" :style="getSnowflakeStyle(i, 'far')"></div>
+          <div v-for="i in 20" :key="`snow-far-${i}`" class="snowflake snow-far" :style="getSnowflakeStyle(i, 'far')"></div>
         </div>
         <div class="snowfall-layer-mid">
-          <div v-for="i in 60" :key="`snow-mid-${i}`" class="snowflake snow-mid" :style="getSnowflakeStyle(i, 'mid')"></div>
+          <div v-for="i in 15" :key="`snow-mid-${i}`" class="snowflake snow-mid" :style="getSnowflakeStyle(i, 'mid')"></div>
         </div>
          <div class="snowfall-layer-near">
-          <div v-for="i in 40" :key="`snow-near-${i}`" class="snowflake snow-near" :style="getSnowflakeStyle(i, 'near')"></div>
+          <div v-for="i in 10" :key="`snow-near-${i}`" class="snowflake snow-near" :style="getSnowflakeStyle(i, 'near')"></div>
         </div>
 
         <!-- Vignette Overlay -->
@@ -698,44 +698,47 @@ export default {
       };
     },
 
-     // New method for dynamic snowflake styling across layers
-    getSnowflakeStyle(index, layer) {
+     getSnowflakeStyle(index, layer) {
       const left = Math.random() * 100;
       const top = -10 - Math.random() * 20; // Start above screen
       const animDelay = Math.random() * 10; // Spread out start times
 
       let animDuration, scale, opacity, blur, zIndex;
+      let startOpacity; // To pass to the animation
 
       if (layer === 'near') {
-        animDuration = 5 + Math.random() * 3; // Faster
+        animDuration = 6 + Math.random() * 4; // Slightly longer duration
         scale = 1 + Math.random() * 0.5;
         opacity = 0.9 + Math.random() * 0.1;
         blur = '0px';
-        zIndex = 15; // Topmost
+        zIndex = 18; // Increased Z-index (higher than animals/near trees)
       } else if (layer === 'mid') {
-        animDuration = 8 + Math.random() * 4; // Medium speed
+        animDuration = 9 + Math.random() * 5; // Slightly longer duration
         scale = 0.6 + Math.random() * 0.4;
         opacity = 0.7 + Math.random() * 0.2;
         blur = '1px';
-        zIndex = 12; // Middle
+        zIndex = 16; // Increased Z-index
       } else { // far
-        animDuration = 12 + Math.random() * 6; // Slower
+        animDuration = 14 + Math.random() * 6; // Slightly longer duration
         scale = 0.3 + Math.random() * 0.3;
         opacity = 0.5 + Math.random() * 0.2;
         blur = '2px';
-        zIndex = 9; // Furthest back snow
+        zIndex = 14; // Increased Z-index (above most background elements)
       }
+      startOpacity = opacity; // Capture the initial opacity
 
       return {
         left: `${left}%`,
         top: `${top}vh`,
         transform: `scale(${scale})`,
-        opacity: opacity,
+        opacity: opacity, // Set initial opacity directly too
         filter: `blur(${blur})`,
         animationDelay: `${animDelay}s`,
         animationDuration: `${animDuration}s`,
-        zIndex: zIndex,
-         '--wind-drift': `${Math.random() * 40 - 20}px` // Horizontal drift amount
+        zIndex: zIndex, // Apply the new zIndex
+         '--wind-drift': `${Math.random() * 40 - 20}px`, // Horizontal drift amount
+         '--start-opacity': startOpacity, // Pass initial opacity for animation
+         '--scale': scale // Pass scale value
       };
     },
 
@@ -2853,27 +2856,26 @@ export default {
   top: 0;
   left: 0;
   width: 100%;
-  height: 75%; /* Encore un peu plus haut */
+  height: 75%;
   overflow: hidden;
-  z-index: 1; /* DERRIERE les montagnes distantes (qui sont z-index: 2) */
-  mix-blend-mode: screen; /* Retour à 'screen' qui est souvent plus fiable */
-  filter: blur(12px); /* Encore moins de flou pour plus de présence */
-   /* Optionnel: Ajouter une légère lueur externe si désiré, mais testons sans d'abord */
-   /* -webkit-filter: blur(12px) drop-shadow(0 0 15px rgba(120, 220, 180, 0.2));
-   filter: blur(12px) drop-shadow(0 0 15px rgba(120, 220, 180, 0.2)); */
+  z-index: 1; /* Behind distant mountains */
+  mix-blend-mode: screen;
+  /* Slightly increase blur for more softness */
+  filter: blur(18px); /* Increased blur value */
+  opacity: 0.9; /* Slightly reduce container opacity if needed */
 }
 
 .aurora-ribbon {
   position: absolute;
   bottom: 0;
   left: 0;
-  width: 170%; /* Encore plus large */
+  width: 180%; /* Make ribbons wider for smoother side-to-side movement */
   height: 100%;
-  opacity: 0.75; /* Base opacity augmentée */
+  /* Base opacity is set per ribbon below */
   transform-origin: bottom center;
-  /* Simplification: Une seule animation gère le mouvement ET l'opacité */
-  animation: auroraCombinedWave 25s ease-in-out infinite alternate;
-   /* On retire l'animation Shimmer pour simplifier */
+  /* Use the modified animation */
+  animation: auroraSmoothWave infinite alternate; /* Renamed animation */
+  will-change: transform, opacity; /* Optimization hint */
 }
 
 .moon {
@@ -2893,75 +2895,58 @@ export default {
 }
 
 .ribbon-1 {
-  background: linear-gradient(to top, transparent 5%, rgba(100, 255, 150, 0.9) 40%, rgba(180, 255, 200, 0.7) 60%, transparent 95%);
-  left: -45%;
-  animation-duration: 20s;
+  background: linear-gradient(to top, transparent 5%, rgba(100, 255, 150, 0.7) 40%, rgba(180, 255, 200, 0.5) 60%, transparent 95%);
+  left: -50%; /* Adjusted starting position */
+  animation-duration: 45s; /* Much longer duration */
   animation-delay: 0s;
-  --base-opacity: 0.8; /* Variable pour l'animation */
+  --base-opacity: 0.65; /* Slightly reduced base opacity */
 }
 .ribbon-2 {
-  background: linear-gradient(to top, transparent 10%, rgba(80, 180, 255, 0.85) 50%, rgba(160, 210, 255, 0.6) 70%, transparent 90%);
-  left: -20%;
-  animation-duration: 28s;
-  animation-delay: 4s;
-   --base-opacity: 0.75;
+  background: linear-gradient(to top, transparent 10%, rgba(80, 180, 255, 0.65) 50%, rgba(160, 210, 255, 0.4) 70%, transparent 90%);
+  left: -30%;
+  animation-duration: 55s; /* Much longer duration */
+  animation-delay: 8s;  /* Increased delay */
+   --base-opacity: 0.6;
 }
 .ribbon-3 {
-  background: linear-gradient(to top, transparent 0%, rgba(190, 100, 255, 0.8) 40%, rgba(220, 170, 255, 0.6) 65%, transparent 85%);
-  left: 0%;
-  animation-duration: 24s;
-  animation-delay: 8s;
-   --base-opacity: 0.7;
+  background: linear-gradient(to top, transparent 0%, rgba(190, 100, 255, 0.6) 40%, rgba(220, 170, 255, 0.4) 65%, transparent 85%);
+  left: -10%;
+  animation-duration: 50s; /* Much longer duration */
+  animation-delay: 16s; /* Increased delay */
+   --base-opacity: 0.55;
 }
 .ribbon-4 {
-   background: linear-gradient(to top, transparent 5%, rgba(255, 120, 200, 0.9) 45%, rgba(255, 170, 220, 0.7) 65%, transparent 90%);
-   left: -10%;
-   animation-duration: 32s;
-   animation-delay: 12s;
-   --base-opacity: 0.8;
+   background: linear-gradient(to top, transparent 5%, rgba(255, 120, 200, 0.7) 45%, rgba(255, 170, 220, 0.5) 65%, transparent 90%);
+   left: -20%;
+   animation-duration: 60s; /* Much longer duration */
+   animation-delay: 24s; /* Increased delay */
+   --base-opacity: 0.65;
 }
 
-@keyframes auroraCombinedWave {
+@keyframes auroraSmoothWave {
   0% {
-    transform: translateX(-15%) scaleY(0.8) skewX(-20deg);
-    opacity: calc(var(--base-opacity) * 0.7); /* Commence moins opaque */
+    /* Start with slightly different transform and closer to base opacity */
+    transform: translateX(-12%) scaleY(0.9) skewX(-15deg);
+    opacity: calc(var(--base-opacity) * 0.85); /* Start less transparent */
   }
   50% {
-    transform: translateX(8%) scaleY(1.15) skewX(15deg);
-    opacity: var(--base-opacity); /* Atteint l'opacité de base */
+    /* Middle point - peak movement and opacity */
+    transform: translateX(10%) scaleY(1.1) skewX(12deg);
+    opacity: var(--base-opacity);
   }
   100% {
-    transform: translateX(-10%) scaleY(0.9) skewX(-12deg);
-    opacity: calc(var(--base-opacity) * 0.8); /* Termine un peu moins opaque */
+    /* End with different transform and closer to base opacity */
+    transform: translateX(-8%) scaleY(0.95) skewX(-10deg);
+    opacity: calc(var(--base-opacity) * 0.9); /* End less transparent */
   }
 }
 
-@keyframes auroraWave {
-  0% {
-    transform: translateX(-15%) scaleY(0.7) skewX(-20deg);
-    opacity: var(--wave-opacity-start, 0.5);
-  }
-  50% {
-    transform: translateX(8%) scaleY(1.2) skewX(15deg);
-    opacity: var(--wave-opacity-mid, 0.8);
-  }
-  100% {
-    transform: translateX(-8%) scaleY(0.9) skewX(-10deg);
-    opacity: var(--wave-opacity-end, 0.6);
-  }
-}
 
 .ribbon-1 { --wave-opacity-start: 0.6; --wave-opacity-mid: 0.9; --wave-opacity-end: 0.7; }
 .ribbon-2 { --wave-opacity-start: 0.5; --wave-opacity-mid: 0.8; --wave-opacity-end: 0.6; }
 .ribbon-3 { --wave-opacity-start: 0.4; --wave-opacity-mid: 0.7; --wave-opacity-end: 0.5; }
 .ribbon-4 { --wave-opacity-start: 0.55; --wave-opacity-mid: 0.85; --wave-opacity-end: 0.65; }
 
-@keyframes auroraShimmer {
-  0%, 100% { opacity: var(--shimmer-opacity-1, 0.6); }
-  25% { opacity: var(--shimmer-opacity-2, 0.75); }
-  50% { opacity: var(--shimmer-opacity-3, 0.5); }
-  75% { opacity: var(--shimmer-opacity-4, 0.8); }
-}
 /* Define opacity variables for shimmer keyframes */
 .ribbon-1 { --shimmer-opacity-1: 0.6; --shimmer-opacity-2: 0.8; --shimmer-opacity-3: 0.5; --shimmer-opacity-4: 0.9; }
 .ribbon-2 { --shimmer-opacity-1: 0.5; --shimmer-opacity-2: 0.7; --shimmer-opacity-3: 0.4; --shimmer-opacity-4: 0.75; }
@@ -3155,6 +3140,9 @@ export default {
   position: absolute;
   background: white;
   border-radius: 50%;
+  width: 6px;
+  height: 6px;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
   /* box-shadow removed for layered blur effect */
   animation-name: snowfall;
   animation-timing-function: linear;
@@ -3163,17 +3151,18 @@ export default {
 }
 
 @keyframes snowfall {
-  from {
-    /* Commence la translation Y à 0 PAR RAPPORT à la position top initiale de l'élément */
+  from { /* Use 'from' or '0%' */
     transform: translateY(0) translateX(0) scale(var(--scale, 1)) rotate(0deg);
-    /* L'opacité est bien définie dynamiquement par le style inline, mais on garde la valeur par défaut au cas où */
-    opacity: var(--start-opacity, 1);
+    /* Explicitly use the passed opacity variable for the start */
+    opacity: var(--start-opacity, 0.8); /* Default to 0.8 if variable fails */
   }
-  to {
-    /* Augmente un peu la distance de chute pour être sûr de sortir de l'écran */
-    /* Utilise la variable --wind-drift pour le déplacement horizontal */
-    transform: translateY(115vh) translateX(var(--wind-drift)) scale(var(--scale, 1)) rotate(720deg); /* Rotation ajoutée/augmentée pour plus de 'flottement' */
-    opacity: 0;
+  /* Optional: Add a mid-point keyframe to ensure visibility longer */
+  50% {
+     opacity: calc(var(--start-opacity, 0.8) * 0.7); /* Fade slightly mid-way */
+  }
+  to { /* Use 'to' or '100%' */
+    transform: translateY(115vh) translateX(var(--wind-drift, 0px)) scale(var(--scale, 1)) rotate(720deg);
+    opacity: 0; /* Fade out completely at the end */
   }
 }
 
