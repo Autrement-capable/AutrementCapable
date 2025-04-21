@@ -5,6 +5,20 @@
       'achievements-unlocked': hasNewAchievement,
     }"
   >
+    <!-- Guide Avatar pour guider l'utilisateur -->
+    <guide-avatar
+      v-if="!showRewardsModal"
+      guide-name="Léo"
+      :forced-message="guideMessage"
+      :forced-options="guideOptions"
+      :force-show-message="guideForceShow"
+      :context="guideContext"
+      :auto-show-delay="0"
+      :custom-position="guidePosition"
+      class="guide-top-left"
+      @option-selected="handleGuideOptionSelected"
+    />
+
     <space-background v-if="animationsEnabled" :theme="currentTheme" />
     <static-backgrounds v-else :theme="currentTheme" />
     <!-- La structure principale -->
@@ -15,6 +29,17 @@
         @click="interactWithAvatar"
         :class="{ 'avatar-pulse': avatarAnimating }"
       >
+        <div
+          v-if="highlightAvatar && isFirstVisit && !profileTourCompleted"
+          class="avatar-highlight-effect"
+          @click="interactWithAvatar"
+        >
+          <div class="pulse-ring"></div>
+          <div class="hint-arrow">
+            <span class="arrow">↓</span>
+            <span class="hint-text">Clique ici!</span>
+          </div>
+        </div>
         <div class="progress-ring-container">
           <svg class="progress-ring" width="300" height="260">
             <!-- Background glow effect -->
@@ -128,6 +153,19 @@
         </div>
       </div>
 
+      <div class="current-level-badge">
+        <img 
+          :src="getCurrentBadgeImage()" 
+          :alt="`Badge niveau ${calculateLevel()}`" 
+          class="current-badge-image"
+          @click="handleBadgeClick"
+        />
+      </div>
+
+      <div v-if="badgeNeedsEvolution" class="badge-evolution-text">
+        Clique 10 fois sur le badge pour l'évoluer ({{ badgeClickCount }}/10)
+      </div>
+
       <!-- Bouton Commencer à jouer -->
       <div class="play-button-container">
         <button
@@ -158,7 +196,11 @@
         v-if="showRewardsModal"
         :current-theme="currentTheme"
         :animations-enabled="animationsEnabled"
+        :progress="progress"
+        :show-profile-guide="true"
         @close="closeRewardsModal"
+        @generate-cv="handleGenerateCV"
+        @view-profile="handleViewProfile"
       />
 
       <!-- Onglet de contrôle du thème -->
@@ -221,6 +263,9 @@
 import SpaceBackground from '@/components/SpaceBackground.vue'
 import StaticBackgrounds from '@/components/StaticBackgrounds.vue'
 import RewardsComponent from '@/components/RewardsComponent.vue'
+import GuideAvatar from '@/components/GuideComponent.vue'
+import UserJourneyService from '@/services/UserJourneyService.js'
+import { eventBus } from '@/utils/eventBus'
 
 export default {
   name: 'UserDashboard',
@@ -228,6 +273,7 @@ export default {
     SpaceBackground,
     StaticBackgrounds,
     RewardsComponent,
+    GuideAvatar,
   },
   data() {
     return {
@@ -238,8 +284,9 @@ export default {
         { value: 'ocean', label: 'Ocean' },
         { value: 'cyberpunk', label: 'Cyberpunk' },
         { value: 'forest', label: 'Forêt' },
+        { value: 'snow', label: 'Neige' },
       ],
-      progress: 37,
+      progress: 0,
       activeSection: null,
       avatarAnimating: false,
       showAvatarInteraction: false,
@@ -251,6 +298,7 @@ export default {
       animationsEnabled: true,
       playButtonHovered: false,
       playButtonPressed: false,
+      profileTourCompleted: false,
       achievements: [
         'Explorateur Curieux',
         'Premier Pas',
@@ -258,9 +306,431 @@ export default {
         'Briseur de Barrières',
         'Esprit Créatif',
       ],
+      guideContext: 'dashboard',
+      guideMessage: "Salut ! Je suis Léo, ton guide. Bienvenue sur ton tableau de bord personnel ! C'est ici que tu pourras suivre ta progression, accéder à ton profil et commencer les jeux.",
+      guideOptions: [
+        { text: "Comment utiliser le dashboard ?", action: "explainDashboard" },
+      ],
+      guideForceShow: true,
+      highlightAvatar: false,
+      isFirstVisit: false,
+      guidePosition: {
+        position: 'fixed',
+        top: '20px',
+        left: '20px',
+        zIndex: 2000
+      },
+      guideTourStep: 0,
+      highlightedElement: null,
+      showGuideArrow: false,
+      levelBadges: [
+        { 
+          level: 1, 
+          name: "Apprenti",
+          description: "Tu as fait tes premiers pas dans ton parcours !",
+          image: () => require('@/assets/badges/badge1.png') 
+        },
+        { 
+          level: 2, 
+          name: "Explorateur",
+          description: "Tu commences à explorer les différentes activités disponibles.",
+          image: () => require('@/assets/badges/badge2.png') 
+        },
+        { 
+          level: 3, 
+          name: "Aventurier",
+          description: "Tu progresses rapidement dans ton parcours d'apprentissage !",
+          image: () => require('@/assets/badges/badge3.png') 
+        },
+        { 
+          level: 4, 
+          name: "Champion",
+          description: "Tu as atteint un niveau impressionnant, continue ainsi !",
+          image: () => require('@/assets/badges/badge4.png') 
+        },
+        { 
+          level: 5, 
+          name: "Maître",
+          description: "Tu es devenu un véritable maître dans ton parcours !",
+          image: () => require('@/assets/badges/badge5.png') 
+        },
+        { 
+          level: 6, 
+          name: "Légende",
+          description: "Tu es maintenant une légende !",
+          image: () => require('@/assets/badges/badge6.png') 
+        },
+      ],
+      activeBadgeTooltip: null,
+      tooltipStyle: {
+        top: '0px',
+        left: '0px'
+      },
+      badgeClickCount: 0,
+      badgeNeedsEvolution: false,
+      lastEvolvedLevel: 0,
+    }
+  },
+  created() {
+    // Écouter les événements via eventBus
+    // eventBus.on('hide-dashboard-guide', () => {
+    //   this.guideForceShow = false;
+    // });
+  },
+  beforeUnmount() {
+    eventBus.off('hide-dashboard-guide');
+    window.removeEventListener('resize', this.updateGuidePosition);
+    this.removeAllHighlights();
+  },
+  watch: {
+    isFirstVisit(newVal) {
+      if (newVal && !this.showRewardsModal) {
+        this.guideForceShow = true;
+        this.$nextTick(() => {
+          this.updateGuidePosition();
+        });
+      }
+    },
+
+    showRewardsModal(newVal) {
+      if (!newVal && this.isFirstVisit) {
+        this.guideForceShow = true;
+        this.$nextTick(() => {
+          this.updateGuidePosition();
+        });
+      }
     }
   },
   methods: {
+    getCurrentBadgeImage() {
+      // Obtenir le niveau actuel
+      const currentLevel = this.calculateLevel();
+      
+      // Vérifier si le badge doit évoluer (seulement à partir du niveau 2)
+      if (currentLevel > this.lastEvolvedLevel && !this.badgeNeedsEvolution && currentLevel > 1) {
+        this.badgeNeedsEvolution = true;
+        this.badgeClickCount = 0;
+      }
+      
+      // Trouver le badge le plus élevé débloqué
+      const highestUnlockedBadge = this.levelBadges
+        .filter(badge => badge.level <= (this.badgeNeedsEvolution ? this.lastEvolvedLevel : currentLevel))
+        .sort((a, b) => b.level - a.level)[0];
+      
+      if (highestUnlockedBadge) {
+        return highestUnlockedBadge.image(true);
+      }
+      
+      // Badge par défaut si aucun badge n'est débloqué
+      return this.levelBadges[0].image(false);
+    },
+
+    handleBadgeClick() {
+      if (this.badgeNeedsEvolution) {
+        this.badgeClickCount++;
+        
+        // Animer le badge lors du clic
+        const badgeElement = document.querySelector('.current-badge-image');
+        if (badgeElement) {
+          badgeElement.classList.add('badge-click-animation');
+          setTimeout(() => {
+            badgeElement.classList.remove('badge-click-animation');
+          }, 300);
+        }
+        
+        // Si 10 clics atteints, faire évoluer le badge
+        if (this.badgeClickCount >= 10) {
+          this.evolveBadge();
+        }
+      }
+    },
+
+    evolveBadge() {
+      // Mettre à jour le dernier niveau évolué
+      this.lastEvolvedLevel = this.calculateLevel();
+      this.badgeNeedsEvolution = false;
+      
+      // Animation spéciale pour l'évolution
+      const badgeElement = document.querySelector('.current-badge-image');
+      if (badgeElement) {
+        badgeElement.classList.add('badge-evolve-animation');
+        setTimeout(() => {
+          badgeElement.classList.remove('badge-evolve-animation');
+        }, 1000);
+      }
+    },
+
+    // Méthode pour fermer le guide
+    dismissGuide() {
+      this.guideForceShow = false;
+      // this.highlightAvatar = false;
+      // this.removeAllHighlights();
+    },
+    advanceTutorial() {
+      // Incrémenter l'étape du tutoriel
+      this.guideTourStep++;
+
+      // Retirer les surlignages précédents
+      this.removeAllHighlights();
+
+      // Définir le contenu en fonction de l'étape actuelle
+      switch (this.guideTourStep) {
+        case 1: // Explications sur l'anneau de progression autour de l'avatar
+          this.guideMessage = "L'avatar au centre représente ton personnage. L'anneau autour montre ta progression globale, et le niveau affiché augmente au fur et à mesure que tu gagnes des badges !";
+          this.guideOptions = [{ text: "Suivant", action: "advanceTutorial" }];
+          this.highlightElement('.progress-ring-container', true);
+          break;
+
+        case 2: // Explications sur le bouton des thèmes
+          this.guideMessage = "Ce bouton te permet de changer le thème visuel de ton tableau de bord. Tu peux choisir parmi plusieurs ambiances selon tes préférences mais aussi désactiver les animations.";
+          this.guideOptions = [{ text: "Suivant", action: "advanceTutorial" }];
+          this.highlightElement('.theme-tab');
+          break;
+
+        case 3: // Explications sur le bouton d'accessibilité
+          this.guideMessage = "Le bouton d'accessibilité te permet d'adapter l'interface à tes besoins spécifiques, comme modifier la taille du texte ou les contrastes de couleurs.";
+          this.guideOptions = [{ text: "Suivant", action: "advanceTutorial" }];
+          this.highlightElement('.accessibility-widget');
+          break;
+
+        case 4: // Explications sur le bouton plein écran
+          this.guideMessage = "Ce bouton te permet de passer en mode plein écran pour une expérience plus immersive, sans distractions.";
+          this.guideOptions = [{ text: "Suivant", action: "advanceTutorial" }];
+          this.highlightElement('.fullscreen-button');
+          break;
+
+        case 5: // Explications sur le bouton "Commencer à jouer"
+          this.guideMessage = "Le bouton \"Commencer à jouer\" sera ton point de départ pour accéder aux différentes activités et jeux disponibles.";
+          this.guideOptions = [{ text: "Suivant", action: "advanceTutorial" }];
+          this.highlightElement('.play-button');
+          break;
+
+        case 6: // Invitation à débloquer le premier badge
+          this.guideMessage = "Maintenant que tu connais les bases, découvre ton profil pour débloquer ton premier badge !";
+          this.guideOptions = [{ text: "Comment accéder à mon profil ?", action: "showProfileHelp" }];
+          break;
+
+        default:
+          this.dismissGuide();
+          break;
+      }
+    },
+
+    highlightElement(selector, isSpecial = false) {
+      const element = document.querySelector(selector);
+      if (element) {
+        // Retirer les surlignages précédents
+        this.removeAllHighlights();
+        
+        // Obtenir les coordonnées de l'élément
+        const rect = element.getBoundingClientRect();
+        
+        // Créer un élément de surbrillance
+        const highlight = document.createElement('div');
+        highlight.className = 'guide-highlight';
+        
+        // Détecter si l'élément est rond (avatar, boutons ronds)
+        const isRound = selector.includes('avatar-container') || 
+                       selector.includes('progress-ring-container') || 
+                       selector.includes('theme-tab') || 
+                       selector.includes('theme-icon') ||
+                       selector.includes('fullscreen-button') ||
+                       selector.includes('accessibility-widget');
+        
+        // Positionner la surbrillance
+        highlight.style.position = 'fixed';
+        highlight.style.top = `${rect.top - 5}px`;
+        highlight.style.left = `${rect.left - 5}px`;
+        highlight.style.width = `${rect.width + 10}px`;
+        highlight.style.height = `${rect.height + 10}px`;
+        highlight.style.border = '3px solid #76ff03';
+        
+        // Appliquer un rayon de bordure approprié selon la forme de l'élément
+        if (isRound) {
+          // Pour les éléments ronds comme l'avatar, utiliser 50%
+          highlight.style.borderRadius = '50%';
+        } else if (selector.includes('play-button')) {
+          // Pour le bouton jouer qui a un rayon précis
+          highlight.style.borderRadius = '30px';
+        } else {
+          // Pour les autres éléments, conserver un rayon par défaut
+          highlight.style.borderRadius = '12px';
+        }
+        
+        highlight.style.boxShadow = '0 0 15px rgba(118, 255, 3, 0.7)';
+        highlight.style.pointerEvents = 'none';
+        highlight.style.zIndex = '1050';
+        
+        // Ajouter une animation si c'est l'élément spécial (avatar)
+        if (isSpecial) {
+          highlight.style.animation = 'highlight-pulse 2s ease-out infinite';
+          
+          // Ajouter une flèche si nécessaire
+          if (this.showGuideArrow) {
+            const arrow = document.createElement('div');
+            arrow.className = 'guide-arrow';
+            arrow.textContent = '↓';
+            arrow.style.position = 'fixed';
+            arrow.style.top = `${rect.top - 40}px`;
+            arrow.style.left = `${rect.left + rect.width/2}px`;
+            arrow.style.transform = 'translateX(-50%)';
+            arrow.style.color = '#76ff03';
+            arrow.style.fontSize = '36px';
+            arrow.style.fontWeight = 'bold';
+            arrow.style.textShadow = '0 0 10px rgba(118, 255, 3, 0.7)';
+            arrow.style.animation = 'bounce 2s ease infinite';
+            arrow.style.zIndex = '1051';
+            
+            document.body.appendChild(arrow);
+          }
+        }
+        
+        // Ajouter au DOM
+        document.body.appendChild(highlight);
+        
+        // Stocker l'élément surligné
+        this.highlightedElement = selector;
+        
+        // Ne pas utiliser scrollIntoView pour les éléments déjà visibles
+        // ou pour les éléments en bas de l'écran (thème, bouton accessibilité, etc.)
+        const isBottomElement = selector.includes('theme') || 
+                               selector.includes('fullscreen') || 
+                               selector.includes('accessibility') ||
+                               selector.includes('play-button');
+                               
+        // Vérifier si l'élément est déjà visible dans la fenêtre
+        const isVisible = rect.top >= 0 && 
+                         rect.bottom <= window.innerHeight &&
+                         rect.left >= 0 && 
+                         rect.right <= window.innerWidth;
+                         
+        // Faire défiler uniquement si nécessaire et pas pour les éléments du bas
+        if (!isBottomElement && !isVisible) {
+          // Défilement plus doux avec une marge
+          window.scrollTo({
+            top: window.scrollY + rect.top - 200, // 200px de marge en haut
+            behavior: 'smooth'
+          });
+        }
+      }
+    },
+
+    // Méthode pour retirer tous les surlignages
+    removeAllHighlights() {
+      // Retirer les surlignages
+      const highlights = document.querySelectorAll('.guide-highlight');
+      highlights.forEach(el => el.remove());
+
+      // Retirer les flèches
+      const arrows = document.querySelectorAll('.guide-arrow');
+      arrows.forEach(el => el.remove());
+
+      // Réinitialiser l'état
+      this.highlightedElement = null;
+      this.showGuideArrow = false;
+    },
+
+    // Méthode pour expliquer le bouton de jeu
+    explainPlayButton() {
+      this.guideMessage = "Pour commencer à jouer et gagner des badges, clique sur le bouton 'Commencer à jouer' en bas de l'écran.";
+      this.guideOptions = [
+        { text: "Je comprends !", action: "dismissGuide" }
+      ];
+      // Désactiver la mise en évidence de l'avatar
+      this.highlightAvatar = false;
+
+      // Scroll automatique vers le bouton de jeu si nécessaire
+      this.$nextTick(() => {
+        const playButton = document.querySelector('.play-button');
+        if (playButton) {
+          playButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      });
+    },
+    showProfileHelp() {
+      this.guideMessage = "Pour accéder à ton profil et voir tes badges, clique sur ton avatar au centre de l'écran. C'est là que tu pourras découvrir tes réalisations !";
+      this.guideOptions = [
+        { text: "D'accord, je vais essayer !", action: "dismissGuide" }
+      ];
+      // Conserver la mise en évidence de l'avatar
+      this.highlightAvatar = true;
+      this.showGuideArrow = true;
+      // this.highlightElement('.avatar-container', true);
+
+      // Scroll automatique vers l'avatar si nécessaire
+      this.$nextTick(() => {
+        const avatarElement = document.querySelector('.avatar-container');
+        if (avatarElement) {
+          avatarElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      });
+    },
+    forceGuideDisplay() {
+      if (this.isFirstVisit && !this.showRewardsModal) {
+        this.guideForceShow = true;
+        this.updateGuidePosition();
+
+        // Émettre un événement via eventBus pour informer le guide qu'il doit s'afficher
+        eventBus.emit('force-guide-display');
+      }
+    },
+    updateGuidePosition() {
+      // Si le guide est en mode conversation (bulle visible)
+      if (this.guideForceShow && this.isFirstVisit) {
+        // Attendre que le DOM soit rendu
+        this.$nextTick(() => {
+          const avatarElement = document.querySelector('.avatar-container');
+          if (avatarElement) {
+            const rect = avatarElement.getBoundingClientRect();
+            
+            // Positionner le guide à droite de l'avatar et centré verticalement
+            this.guidePosition = {
+              position: 'fixed',
+              top: `${rect.top + (rect.height / 2) - 30}px`,
+              left: `${rect.right + 20}px`,
+              zIndex: 2000
+            };
+          }
+        });
+      } else {
+        // Position par défaut quand la bulle n'est pas affichée
+        this.guidePosition = {
+          position: 'fixed',
+          top: '20px',
+          left: '20px',
+          zIndex: 2000
+        };
+      }
+    },
+    // Nouvelle méthode pour expliquer le dashboard
+    explainDashboard() {
+      this.guideTourStep = 0; // Réinitialiser le compteur
+      this.advanceTutorial(); // Commencer le tutoriel
+    },
+    // Vérifier si c'est la première visite de l'utilisateur
+    checkFirstVisit() {
+      const hasVisitedBefore = localStorage.getItem('hasVisitedDashboard');
+      this.isFirstVisit = !hasVisitedBefore;
+
+      // Vérifier si le tour du profil a été complété
+      this.profileTourCompleted = localStorage.getItem('profile-tour-completed') === 'true';
+
+      if (!hasVisitedBefore) {
+        localStorage.setItem('hasVisitedDashboard', 'true');
+
+        // Mettre à jour l'étape dans le service de parcours utilisateur
+        if (typeof UserJourneyService !== 'undefined') {
+          UserJourneyService.updateStep(UserJourneyService.STEPS.DASHBOARD_INTRO);
+        }
+      }
+    },
+
+    // Méthode pour gérer les options sélectionnées dans le guide
+    handleGuideOptionSelected(option) {
+      if (option.action && typeof this[option.action] === 'function') {
+        this[option.action]();
+      }
+    },
     toggleThemeMenu() {
       this.themeMenuVisible = !this.themeMenuVisible
 
@@ -284,7 +754,6 @@ export default {
 
       // Optional: trigger achievement for first theme change
       if (!this.themeChangeAchieved && theme !== 'cosmic') {
-        this.triggerAchievement('Explorateur de Mondes')
         this.themeChangeAchieved = true
       }
     },
@@ -329,25 +798,54 @@ export default {
     },
 
     interactWithAvatar() {
-      this.avatarAnimating = true
-      this.showRewardsModal = true // Show the rewards modal instead of the interaction menu
+      this.avatarAnimating = true;
+      this.showRewardsModal = true;
 
       // Animation plus longue pour un meilleur effet
       setTimeout(() => {
-        this.avatarAnimating = false
-      }, 1000)
+        this.avatarAnimating = false;
+      }, 1000);
+
+      // Mettre à jour l'étape dans le service de parcours utilisateur
+      try {
+        if (typeof UserJourneyService !== 'undefined') {
+          UserJourneyService.updateStep(UserJourneyService.STEPS.PROFILE_INTRO);
+        }
+      } catch (error) {
+        console.error("Erreur lors de la mise à jour de l'étape du parcours:", error);
+      }
+
+      // Mettre à jour la position du guide si nécessaire
+      if (this.isFirstVisit && !this.showRewardsModal) {
+        this.updateGuidePosition();
+      }
+
+      // Envoyer un événement via eventBus
+      eventBus.emit('profile-opened');
+
+      // Masquer le guide du dashboard quand on ouvre la modal du profil
+      this.guideForceShow = false;
+      eventBus.emit('hide-dashboard-guide');
+
+      // Propriété pour suivre si la modal a été ouverte
+      localStorage.setItem('hasOpenedProfile', 'true');
     },
 
     // Nouvelle méthode pour fermer le modal de récompenses
     closeRewardsModal() {
       this.showRewardsModal = false
+      if (this.isFirstVisit) {
+        this.guideForceShow = true;
+      }
     },
 
-    // Personnalisation de l'avatar
-    customizeAvatar() {
-      this.showAvatarInteraction = false
-      this.activeModal = 'customize'
-      this.triggerAchievement('Esprit Créatif')
+    handleGenerateCV() {
+      // Déclenche un accomplissement et ferme le modal
+      this.closeRewardsModal();
+    },
+
+    handleViewProfile() {
+      this.closeRewardsModal();
     },
 
     // Voir les réalisations
@@ -414,8 +912,6 @@ export default {
     },
 
     startPlaying() {
-      console.log('Commençons à jouer!')
-
       // Haptic feedback if available
       if (window.navigator && window.navigator.vibrate) {
         window.navigator.vibrate(50)
@@ -452,13 +948,64 @@ export default {
 
     this.themeChangeAchieved = false
 
-    // Simulate a reward after a certain time
-    setTimeout(() => {
-      const randomAchievement =
-        this.achievements[Math.floor(Math.random() * this.achievements.length)]
-      this.triggerAchievement(randomAchievement)
-    }, 5000)
-  },
+    this.profileTourCompleted = localStorage.getItem('profile-tour-completed') === 'true';
+
+    // Vérifier si c'est la première visite
+    this.checkFirstVisit();
+
+    // Mettre à jour la position du guide
+    this.updateGuidePosition();
+
+    // Recalculer la position lors du redimensionnement de la fenêtre
+    window.addEventListener('resize', this.updateGuidePosition);
+
+    if (this.isFirstVisit && !this.showRewardsModal) {
+      // S'assurer que guideForceShow est bien à true
+      this.guideForceShow = true;
+
+      // Attendre un peu pour s'assurer que le composant est bien monté
+      setTimeout(() => {
+        // Déclencher à nouveau la mise à jour du message pour forcer l'affichage
+        this.guideMessage = this.guideMessage + " "; // Ajouter un espace pour forcer le changement
+        this.guideForceShow = true;
+      }, 300);
+    }
+
+    // Ajouter ces styles pour les animations du guide
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes highlight-pulse {
+        0% {
+          opacity: 0.7;
+          box-shadow: 0 0 15px rgba(118, 255, 3, 0.5);
+          transform: scale(0.99);
+        }
+        50% {
+          opacity: 0.9;
+          box-shadow: 0 0 20px rgba(118, 255, 3, 0.8);
+          transform: scale(1);
+        }
+        100% {
+          opacity: 0.7;
+          box-shadow: 0 0 15px rgba(118, 255, 3, 0.5);
+          transform: scale(0.99);
+        }
+      }
+
+      @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {
+          transform: translateX(-50%) translateY(0);
+        }
+        40% {
+          transform: translateX(-50%) translateY(-15px);
+        }
+        60% {
+          transform: translateX(-50%) translateY(-7px);
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
 }
 </script>
 
@@ -600,6 +1147,11 @@ export default {
 .theme-icon.forest {
   background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
   box-shadow: 0 0 10px rgba(46, 125, 50, 0.5);
+}
+
+.theme-icon.snow {
+  background: linear-gradient(135deg, #6ebeff 0%, #eff5ff 100%);
+  box-shadow: 0 0 10px rgba(144, 202, 249, 0.5);
 }
 
 .theme-option span {
@@ -797,6 +1349,146 @@ export default {
   }
 }
 
+.current-level-badge {
+  position: relative;
+  margin-top: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.current-badge-image {
+  width: 160px;
+  height: 160px;
+  object-fit: contain;
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 5px 15px rgba(255, 215, 0, 0.5));
+  cursor: pointer;
+}
+
+.current-badge-image:hover {
+  transform: scale(1.1);
+  filter: drop-shadow(0 8px 20px rgba(255, 215, 0, 0.7));
+}
+
+/* Conserver les styles existants pour le tooltip */
+.badge-tooltip {
+  position: fixed;
+  background: rgba(30, 30, 45, 0.95);
+  border-radius: 12px;
+  padding: 15px;
+  max-width: 250px;
+  z-index: 1000;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.badge-tooltip:after {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid rgba(30, 30, 45, 0.95);
+}
+
+.tooltip-title {
+  font-weight: bold;
+  font-size: 16px;
+  color: white;
+  margin-bottom: 8px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.tooltip-description {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.tooltip-requirement {
+  font-size: 12px;
+  color: #4fc3f7;
+  font-style: italic;
+}
+
+.badge-evolution-text {
+  margin-top: 3px;
+  font-size: 14px;
+  color: #0062ff;
+  text-align: center;
+  font-weight: bold;
+  animation: pulse-text 1.5s infinite;
+}
+
+@keyframes pulse-text {
+  0% { opacity: 0.7; }
+  50% { opacity: 1; }
+  100% { opacity: 0.7; }
+}
+
+.badge-click-animation {
+  animation: badge-click 0.3s ease;
+}
+
+@keyframes badge-click {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+.badge-evolve-animation {
+  animation: badge-evolve 1s ease;
+}
+
+@keyframes badge-evolve {
+  0% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.3); filter: brightness(1.5); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+/* Bouton pour accéder au parcours */
+.parcours-button-container {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  z-index: 30;
+}
+
+.parcours-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(30, 30, 45, 0.7);
+  padding: 10px 20px;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  backdrop-filter: blur(5px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.parcours-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4);
+  background: rgba(40, 40, 60, 0.8);
+}
+
+.parcours-button-icon {
+  font-size: 20px;
+}
+
 /* Avatar and Progress Ring - Highly enhanced! */
 .avatar-container {
   position: relative;
@@ -946,6 +1638,131 @@ export default {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
   z-index: 3;
+}
+
+/* Effet de mise en évidence de l'avatar */
+.avatar-highlight-effect {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  height: 300px;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.pulse-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  border: 4px solid #76ff03;
+  box-shadow: 0 0 20px rgba(118, 255, 3, 0.7);
+  opacity: 0.7;
+  animation: pulse-ring 2s ease-out infinite;
+}
+
+.hint-arrow {
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: bounce 2s ease infinite;
+  text-align: center;
+}
+
+.arrow {
+  display: block;
+  font-size: 36px;
+  color: #76ff03;
+  text-shadow: 0 0 10px rgba(118, 255, 3, 0.7);
+}
+
+.hint-text {
+  display: block;
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+  margin-top: 5px;
+  padding: 5px 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: translate(-50%, -50%) scale(0.9);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.9);
+    opacity: 0.7;
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  40% {
+    transform: translateX(-50%) translateY(-15px);
+  }
+  60% {
+    transform: translateX(-50%) translateY(-7px);
+  }
+}
+
+/* Styles pour améliorer l'intégration du guide */
+.guide-avatar-container {
+  z-index: 1050; /* S'assurer que le guide est au-dessus des autres éléments */
+}
+
+.guide-top-left {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 2000;
+}
+
+.speech-bubble {
+  background-color: #fff;
+  font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', sans-serif;
+  color: #333;
+  border: 2px solid #58cc02; /* Couleur verte de Duolingo */
+}
+
+.speech-bubble:after {
+  border-color: #fff transparent transparent;
+}
+
+.bubble-header {
+  border-bottom: 1px solid #58cc02;
+}
+
+.guide-name {
+  color: #58cc02;
+}
+
+.option-button {
+  background-color: #fff;
+  border: 2px solid #58cc02;
+  color: #58cc02;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.option-button:hover {
+  background-color: #58cc02;
+  color: #fff;
 }
 
 .avatar-container:hover .level-badge {
@@ -1385,6 +2202,11 @@ export default {
 
   .play-button-container {
     bottom: -100px;
+  }
+
+  .current-badge-image {
+    width: 70px;
+    height: 70px;
   }
 }
 </style>

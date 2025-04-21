@@ -14,26 +14,94 @@
         <div class="cometInverse comet-3"></div>
         <div class="comet comet-4"></div>
         <div class="cometInverse comet-5"></div>
-        
+
         <!-- Galaxy -->
         <div class="galaxy galaxy-1"></div>
-        
+
+        <div class="rocket-container">
+          <div class="rocket">
+            <div class="rocket-body">
+              <div class="rocket-window"></div>
+            </div>
+            <div class="rocket-nose"></div>
+            <div class="rocket-fin rocket-fin-left"></div>
+            <div class="rocket-fin rocket-fin-right"></div>
+            <div class="rocket-flame-container">
+              <div class="rocket-flame flame-core"></div>
+              <div class="rocket-flame flame-outer-1"></div>
+              <div class="rocket-flame flame-outer-2"></div>
+              <div class="rocket-smoke smoke-1"></div>
+              <div class="rocket-smoke smoke-2"></div>
+              <div class="rocket-smoke smoke-3"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Satellite -->
+        <div class="satellite-container">
+          <div class="satellite">
+            <div class="satellite-body">
+              <!-- You can add small details with ::before/::after if needed -->
+            </div>
+            <div class="solar-panels">
+              <div class="solar-panel panel-left">
+                 <div class="panel-cells"></div>
+              </div>
+              <div class="solar-panel panel-right">
+                 <div class="panel-cells"></div>
+              </div>
+            </div>
+            <div class="satellite-dish">
+              <div class="dish-inner"></div>
+            </div>
+            <div class="satellite-antenna-small"></div>
+          </div>
+        </div>
+
         <!-- Planets -->
         <div class="planet planet-1">
           <div class="planet-rings"></div>
         </div>
-        
+
         <div class="planet planet-2">
           <div class="planet-atmosphere"></div>
           <div class="planet-storm"></div>
         </div>
-        
+
         <div class="planet planet-3">
           <div class="planet-ice-caps"></div>
           <div class="planet-moons">
             <div class="planet-moon moon-1"></div>
             <div class="planet-moon moon-2"></div>
           </div>
+        </div>
+
+        <!-- Planet 4: Gas Giant with Bands and Spot -->
+        <div class="planet planet-4">
+          <div class="planet-bands">
+            <div class="band band-1"></div>
+            <div class="band band-2"></div>
+            <div class="band band-3"></div>
+            <div class="band band-4"></div>
+          </div>
+          <div class="planet-great-spot"></div>
+        </div>
+
+        <!-- Planet 5: Rocky, Cratered Planet with Small Moon -->
+        <div class="planet planet-5">
+          <div class="planet-surface-texture"></div>
+          <!-- Add multiple crater divs for detail -->
+          <div class="crater crater-1"></div>
+          <div class="crater crater-2"></div>
+          <div class="crater crater-3"></div>
+          <div class="planet-moons moons-p5"> <!-- Unique class for this moon orbit -->
+             <div class="planet-moon moon-3"></div>
+          </div>
+        </div>
+
+        <!-- Planet 6: Distant Icy Body -->
+        <div class="planet planet-6">
+           <div class="planet-haze"></div>
         </div>
       </template>
 
@@ -419,6 +487,167 @@
           <div v-for="i in 15" :key="`firefly-${i}`" class="firefly" :style="getFireflyStyle(i)"></div>
         </div>
       </template>
+
+      <!-- Snow Theme -->
+      <template v-else-if="theme === 'snow'">
+        <!-- Base Sky & Stars -->
+        <div class="snow-sky">
+          <div class="stars-layer stars-far"></div>
+          <div class="stars-layer stars-mid"></div>
+          <!-- Optional Moon -->
+          <div class="moon"></div>
+        </div>
+
+        <!-- Aurora Borealis -->
+        <div class="aurora-borealis-container">
+          <div class="aurora-ribbon ribbon-1"></div>
+          <div class="aurora-ribbon ribbon-2"></div>
+          <div class="aurora-ribbon ribbon-3"></div>
+          <div class="aurora-ribbon ribbon-4"></div>
+        </div>
+
+        <!-- Mountain Layers -->
+        <div class="mountains-distant">
+          <div class="mountain-peak peak-distant-1"></div>
+          <div class="mountain-peak peak-distant-2"></div>
+        </div>
+        <div class="mountains-mid">
+          <div class="mountain-peak peak-mid-1">
+             <div class="mountain-texture"></div>
+          </div>
+          <div class="mountain-peak peak-mid-2">
+             <div class="mountain-texture"></div>
+          </div>
+           <div class="mountain-peak peak-mid-3">
+             <div class="mountain-texture"></div>
+          </div>
+        </div>
+
+        <!-- Forest Layers -->
+        <div class="forest-layer-mid">
+           <div v-for="i in 5" :key="`tree-mid-${i}`" class="pine-tree tree-mid" :style="getTreeStyle(i, 'mid')">
+             <div class="tree-trunk"></div>
+             <div class="tree-branch branch-1"><div class="snow-on-branch"></div></div>
+             <div class="tree-branch branch-2"><div class="snow-on-branch"></div></div>
+             <div class="tree-branch branch-3"><div class="snow-on-branch"></div></div>
+           </div>
+        </div>
+
+        <!-- Mist/Fog -->
+        <div class="mist-container">
+          <div class="mist-layer mist-1"></div>
+          <div class="mist-layer mist-2"></div>
+          <div class="mist-layer mist-3"></div>
+        </div>
+
+        <div class="mountains-near">
+          <div class="mountain-peak peak-near-1">
+             <div class="mountain-texture rock-texture"></div>
+             <div class="mountain-texture snow-texture"></div>
+          </div>
+           <div class="mountain-peak peak-near-2">
+             <div class="mountain-texture rock-texture"></div>
+             <div class="mountain-texture snow-texture"></div>
+           </div>
+        </div>
+
+         <!-- Animals -->
+        <div class="polar-bear-container">
+          <div class="polar-bear">
+            <div class="polar-bear-body">
+              <div class="polar-bear-head">
+                <div class="polar-bear-ear polar-bear-ear-left"></div>
+                <div class="polar-bear-ear polar-bear-ear-right"></div>
+                <div class="polar-bear-snout">
+                  <div class="polar-bear-nose"></div>
+                  <div class="polar-bear-mouth"></div>
+                </div>
+                <div class="polar-bear-eye polar-bear-eye-left">
+                  <div class="polar-bear-eye-pupil"></div>
+                </div>
+                <div class="polar-bear-eye polar-bear-eye-right">
+                  <div class="polar-bear-eye-pupil"></div>
+                </div>
+              </div>
+              <div class="polar-bear-torso">
+                <div class="polar-bear-fur-detail fur-detail-1"></div>
+                <div class="polar-bear-fur-detail fur-detail-2"></div>
+                <div class="polar-bear-fur-detail fur-detail-3"></div>
+              </div>
+              <div class="polar-bear-leg polar-bear-leg-front-left">
+                <div class="polar-bear-paw polar-bear-paw-front-left"></div>
+              </div>
+              <div class="polar-bear-leg polar-bear-leg-front-right">
+                <div class="polar-bear-paw polar-bear-paw-front-right"></div>
+              </div>
+              <div class="polar-bear-leg polar-bear-leg-back-left">
+                <div class="polar-bear-paw polar-bear-paw-back-left"></div>
+              </div>
+              <div class="polar-bear-leg polar-bear-leg-back-right">
+                <div class="polar-bear-paw polar-bear-paw-back-right"></div>
+              </div>
+            </div>
+            <div class="polar-bear-shadow"></div>
+          </div>
+        </div>
+        <div class="penguin-container">
+          <div class="penguin">
+            <div class="penguin-body">
+              <div class="penguin-head">
+                <div class="penguin-face">
+                  <div class="penguin-eye penguin-eye-left">
+                    <div class="penguin-eye-pupil"></div>
+                  </div>
+                  <div class="penguin-eye penguin-eye-right">
+                    <div class="penguin-eye-pupil"></div>
+                  </div>
+                  <div class="penguin-beak"></div>
+                </div>
+              </div>
+              <div class="penguin-belly"></div>
+              <div class="penguin-wing penguin-wing-left"></div>
+              <div class="penguin-wing penguin-wing-right"></div>
+              <div class="penguin-foot penguin-foot-left"></div>
+              <div class="penguin-foot penguin-foot-right"></div>
+            </div>
+            <div class="penguin-shadow"></div>
+          </div>
+        </div>
+
+
+        <!-- Snow Ground/Terrain -->
+        <div class="snow-ground">
+          <div class="snow-drift drift-large-1"></div>
+          <div class="snow-drift drift-medium-1"></div>
+          <div class="snow-drift drift-small-1"></div>
+          <div class="snow-drift drift-medium-2"></div>
+           <div class="snow-drift drift-large-2"></div>
+        </div>
+
+         <div class="forest-layer-near">
+           <div v-for="i in 4" :key="`tree-near-${i}`" class="pine-tree tree-near" :style="getTreeStyle(i, 'near')">
+             <div class="tree-trunk"></div>
+             <div class="tree-branch branch-1"><div class="snow-on-branch"></div></div>
+             <div class="tree-branch branch-2"><div class="snow-on-branch"></div></div>
+             <div class="tree-branch branch-3"><div class="snow-on-branch"></div></div>
+             <div class="tree-branch branch-4"><div class="snow-on-branch"></div></div> <!-- More branches for near trees -->
+           </div>
+        </div>
+
+        <!-- Snowfall Layers -->
+        <div class="snowfall-layer-far">
+          <div v-for="i in 20" :key="`snow-far-${i}`" class="snowflake snow-far" :style="getSnowflakeStyle(i, 'far')"></div>
+        </div>
+        <div class="snowfall-layer-mid">
+          <div v-for="i in 15" :key="`snow-mid-${i}`" class="snowflake snow-mid" :style="getSnowflakeStyle(i, 'mid')"></div>
+        </div>
+         <div class="snowfall-layer-near">
+          <div v-for="i in 10" :key="`snow-near-${i}`" class="snowflake snow-near" :style="getSnowflakeStyle(i, 'near')"></div>
+        </div>
+
+        <!-- Vignette Overlay -->
+        <div class="vignette-overlay"></div>
+      </template>
     </div>
   </div>
 </template>
@@ -431,7 +660,7 @@ export default {
     theme: {
       type: String,
       default: 'cosmic',
-      validator: (value) => ['cosmic', 'ocean', 'cyberpunk', 'forest'].includes(value)
+      validator: (value) => ['cosmic', 'ocean', 'cyberpunk', 'forest', 'snow'].includes(value)
     },
     animationsEnabled: {
       type: Boolean,
@@ -449,6 +678,83 @@ export default {
         left: `${leftPosition}%`,
         top: `${topPosition}px`,
         animationDelay: `${animationDelay}s`
+      };
+    },
+
+    getTreeStyle(index, layer) {
+      const baseLeft = (index * (layer === 'near' ? 22 : 18)) + (layer === 'near' ? 5 : 10);
+      const randomOffset = Math.random() * 8 - 4; // +/- 4% offset
+      const left = baseLeft + randomOffset;
+
+      const baseScale = layer === 'near' ? 1 + Math.random() * 0.2 : 0.7 + Math.random() * 0.2;
+      const heightVariation = layer === 'near' ? 80 + Math.random() * 20 : 50 + Math.random() * 15; // Base height %
+
+      return {
+        left: `${left}%`,
+        transform: `scale(${baseScale})`,
+        height: `${heightVariation}%`,
+        zIndex: layer === 'near' ? 8 : 4, // Ensure near trees are in front of mid
+         '--tree-delay': `${Math.random() * 0.5}s` // For potential subtle sway animation later
+      };
+    },
+
+     getSnowflakeStyle(index, layer) {
+      const left = Math.random() * 100;
+      const top = -10 - Math.random() * 20; // Start above screen
+      const animDelay = Math.random() * 10; // Spread out start times
+
+      let animDuration, scale, opacity, blur, zIndex;
+      let startOpacity; // To pass to the animation
+
+      if (layer === 'near') {
+        animDuration = 6 + Math.random() * 4; // Slightly longer duration
+        scale = 1 + Math.random() * 0.5;
+        opacity = 0.9 + Math.random() * 0.1;
+        blur = '0px';
+        zIndex = 18; // Increased Z-index (higher than animals/near trees)
+      } else if (layer === 'mid') {
+        animDuration = 9 + Math.random() * 5; // Slightly longer duration
+        scale = 0.6 + Math.random() * 0.4;
+        opacity = 0.7 + Math.random() * 0.2;
+        blur = '1px';
+        zIndex = 16; // Increased Z-index
+      } else { // far
+        animDuration = 14 + Math.random() * 6; // Slightly longer duration
+        scale = 0.3 + Math.random() * 0.3;
+        opacity = 0.5 + Math.random() * 0.2;
+        blur = '2px';
+        zIndex = 14; // Increased Z-index (above most background elements)
+      }
+      startOpacity = opacity; // Capture the initial opacity
+
+      return {
+        left: `${left}%`,
+        top: `${top}vh`,
+        transform: `scale(${scale})`,
+        opacity: opacity, // Set initial opacity directly too
+        filter: `blur(${blur})`,
+        animationDelay: `${animDelay}s`,
+        animationDuration: `${animDuration}s`,
+        zIndex: zIndex, // Apply the new zIndex
+         '--wind-drift': `${Math.random() * 40 - 20}px`, // Horizontal drift amount
+         '--start-opacity': startOpacity, // Pass initial opacity for animation
+         '--scale': scale // Pass scale value
+      };
+    },
+
+    getAlpineSnowflakeStyle(index, size) {
+      const leftPosition = Math.random() * 100;
+      const topPosition = Math.random() * -50; // Position initiale variée
+      const animationDelay = Math.random() * 8;
+      const animationDuration = (size === 'small') ? 15 + Math.random() * 10 : 8 + Math.random() * 5;
+      const scale = (size === 'small') ? 0.3 + Math.random() * 0.4 : 0.7 + Math.random() * 0.8;
+      
+      return {
+        left: `${leftPosition}%`,
+        top: `${topPosition}px`,
+        animationDelay: `${animationDelay}s`,
+        animationDuration: `${animationDuration}s`,
+        transform: `scale(${scale})`,
       };
     },
 
@@ -896,6 +1202,593 @@ export default {
     #bdbdbd 50%,
     #9e9e9e 100%
   );
+}
+
+/* Rocket Styles */
+.rocket-container {
+  position: absolute;
+  bottom: -150px; /* Start below the screen, adjusted */
+  left: -5%;     /* Start from the left edge */
+  width: 80px;
+  height: 150px;
+  z-index: 10;
+  animation: rocketLaunchDiagonal 25s linear infinite;
+  animation-delay: 5s; /* Delay before the first launch */
+  /* Initial rotation for diagonal path */
+  transform: rotate(45deg);
+  transform-origin: center bottom;
+}
+
+.rocket {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 15px rgba(255, 165, 0, 0.6));
+}
+
+.rocket-body {
+  position: absolute;
+  bottom: 30px; /* Make space for the flame */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 80px;
+  background: linear-gradient(to right, #f0f0f0, #c0c0c0, #a0a0a0);
+  border-radius: 5px 5px 0 0;
+  box-shadow: inset 2px 0 5px rgba(0, 0, 0, 0.3);
+}
+
+.rocket-window {
+  position: absolute;
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 18px;
+  height: 18px;
+  background: radial-gradient(circle at 30% 30%, #a1d1ff, #3a7fbf);
+  border-radius: 50%;
+  border: 2px solid #707070;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+.rocket-nose {
+  position: absolute;
+  bottom: 105px; /* Positioned above the body */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 20px solid transparent;
+  border-right: 20px solid transparent;
+  border-bottom: 35px solid #e04040; /* Red nose cone */
+  filter: drop-shadow(0 -2px 3px rgba(0, 0, 0, 0.3));
+}
+
+.rocket-fin {
+  position: absolute;
+  bottom: 30px;
+  width: 0;
+  height: 0;
+  border-bottom: 30px solid #b03030; /* Darker red fins */
+}
+
+.rocket-fin-left {
+  left: -5px;
+  border-left: 25px solid transparent;
+  transform: skewY(15deg);
+}
+
+.rocket-fin-right {
+  right: -5px;
+  border-right: 25px solid transparent;
+  transform: skewY(-15deg);
+}
+
+.rocket-flame-container {
+  position: absolute;
+  bottom: -10px; /* Extend below the rocket base */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 60px;
+  z-index: -1; /* Behind the rocket */
+}
+
+.rocket-flame {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  /* Corrected: Round the bottom corners, keep top flat */
+  border-radius: 0 0 50% 50%;
+  animation: rocketFlameFlicker 0.15s linear infinite alternate;
+  will-change: height, opacity;
+  /* Ensure flames start from the top of their container (which is positioned at the bottom of the rocket) */
+  top: 0;
+  bottom: auto; /* Remove previous bottom positioning */
+}
+
+.flame-core {
+  bottom: 0;
+  width: 15px;
+  height: 45px;
+  background: linear-gradient(to top, #ffffff, #fff8b0, #ffea00);
+  opacity: 0.95;
+  filter: blur(2px);
+  animation-duration: 0.1s;
+}
+
+.flame-outer-1 {
+  bottom: 0;
+  width: 25px;
+  height: 55px;
+  background: linear-gradient(to top, #ffcc00, #ffa500, rgba(255, 165, 0, 0.5));
+  opacity: 0.8;
+  filter: blur(4px);
+  animation-duration: 0.12s;
+}
+
+.flame-outer-2 {
+  bottom: 0;
+  width: 35px;
+  height: 65px;
+  background: linear-gradient(to top, #ff8c00, #ff4500, rgba(255, 69, 0, 0.3));
+  opacity: 0.6;
+  filter: blur(8px);
+  animation-duration: 0.15s;
+}
+
+.rocket-smoke {
+  position: absolute;
+  left: 50%;
+  background: rgba(220, 220, 220, 0.6);
+  border-radius: 50%;
+  filter: blur(10px);
+  opacity: 0;
+  animation: rocketSmokeDrift 3s ease-out infinite;
+}
+
+.smoke-1 {
+  width: 40px;
+  height: 40px;
+  bottom: -40px;
+  transform: translateX(-70%);
+  animation-delay: 0s;
+}
+
+.smoke-2 {
+  width: 50px;
+  height: 50px;
+  bottom: -55px;
+  transform: translateX(-40%);
+  animation-delay: 0.3s;
+}
+
+.smoke-3 {
+  width: 35px;
+  height: 35px;
+  bottom: -30px;
+  transform: translateX(-50%);
+  animation-delay: 0.6s;
+}
+
+/* Rocket Animations */
+/* Modified for diagonal launch from bottom-left to top-right */
+@keyframes rocketLaunchDiagonal {
+  0% {
+    bottom: -150px;
+    left: -5%;
+    opacity: 0;
+    transform: rotate(45deg); /* Consistent angle */
+  }
+  10% {
+    bottom: 5vh;
+    left: 5%;
+    opacity: 1;
+    transform: rotate(45deg);
+  }
+  50% {
+    bottom: 55vh;
+    left: 50%;
+    transform: rotate(47deg); /* Slight angle adjustment/wobble */
+  }
+  90% {
+    bottom: 105vh; /* Ensure it goes off screen */
+    left: 95%;
+    opacity: 1;
+    transform: rotate(44deg);
+  }
+  100% {
+    bottom: 115vh;
+    left: 105%; /* Fully off screen */
+    opacity: 0;
+    transform: rotate(45deg);
+  }
+}
+
+/* Apply the new animation */
+.rocket-container {
+  animation-name: rocketLaunchDiagonal;
+}
+
+
+@keyframes rocketFlameFlicker {
+  0% {
+    height: calc(var(--base-height, 60px) * 0.9);
+    opacity: calc(var(--base-opacity, 0.8) * 0.9);
+    transform: translateX(-50%) scaleX(0.95);
+  }
+  100% {
+    height: calc(var(--base-height, 60px) * 1.1);
+    opacity: calc(var(--base-opacity, 0.8) * 1.1);
+    transform: translateX(-50%) scaleX(1.05);
+  }
+}
+
+/* Apply base heights/opacities for flicker animation */
+.flame-core { --base-height: 45px; --base-opacity: 0.95; }
+.flame-outer-1 { --base-height: 55px; --base-opacity: 0.8; }
+.flame-outer-2 { --base-height: 65px; --base-opacity: 0.6; }
+
+@keyframes rocketSmokeDrift {
+   0% {
+    opacity: 0.6;
+    /* Adjust smoke offset relative to the rotated rocket */
+    transform: translate(calc(-50% + var(--offset-x, 0px)), 10px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    /* Smoke drifts downwards and slightly away */
+    transform: translate(calc(-50% + var(--offset-x, 0px) + (RANDOM_X * 20 - 10px)), 80px) scale(2.5);
+  }
+}
+
+/* Random offsets for smoke animation (Needs JS or preprocessor for true random) */
+.smoke-1 { --offset-x: -10px; }
+.smoke-2 { --offset-x: 5px; }
+.smoke-3 { --offset-x: 0px; }
+
+/* Satellite Styles */
+.satellite-container {
+  position: absolute;
+  top: 25%; /* Starting vertical position */
+  left: -150px; /* Start off-screen to the left */
+  width: 120px; /* Adjust size as needed */
+  height: 80px;
+  z-index: 5; /* Ensure it's visible */
+  animation: satelliteOrbit 45s linear infinite;
+  animation-delay: 8s; /* Stagger its appearance */
+  will-change: transform, opacity;
+}
+
+.satellite {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d; /* For potential 3D effects */
+  animation: satelliteWobble 10s ease-in-out infinite alternate;
+}
+
+.satellite-body {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #c0c0c0, #a0a0a0, #808080); /* Metallic gradient */
+  border-radius: 4px;
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.4);
+  /* Add a subtle texture or pattern if desired */
+   background-image: linear-gradient(45deg, rgba(255,255,255,0.05) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.05) 75%, transparent 75%, transparent);
+   background-size: 10px 10px;
+}
+
+.solar-panels {
+  position: absolute;
+  /* Center the pivot point for panels */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 10px; /* Just a structural container */
+}
+
+.solar-panel {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 50px;
+  height: 70px;
+  background: linear-gradient(to bottom, #1a237e, #0d113b); /* Dark blue/black */
+  border: 1px solid #707080;
+  border-radius: 2px;
+  box-shadow: 0 0 5px rgba(0, 100, 200, 0.2);
+}
+
+.panel-left {
+  left: -25px; /* Position left of the body */
+  transform: translateY(-50%) rotateY(20deg) rotateZ(-5deg); /* Slight angle */
+  transform-origin: right center;
+}
+
+.panel-right {
+  right: -25px; /* Position right of the body */
+  transform: translateY(-50%) rotateY(-20deg) rotateZ(5deg); /* Slight angle */
+  transform-origin: left center;
+}
+
+.panel-cells {
+  position: absolute;
+  inset: 2px; /* Small margin inside the border */
+  background-image:
+    repeating-linear-gradient(0deg, rgba(150, 180, 255, 0.15), rgba(150, 180, 255, 0.15) 1px, transparent 1px, transparent 8px), /* Horizontal lines */
+    repeating-linear-gradient(90deg, rgba(150, 180, 255, 0.15), rgba(150, 180, 255, 0.15) 1px, transparent 1px, transparent 8px); /* Vertical lines */
+  opacity: 0.8;
+}
+
+.satellite-dish {
+  position: absolute;
+  top: -5px; /* Position above the body */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 25px;
+  height: 25px;
+  background: radial-gradient(circle at 70% 70%, #f0f0f0, #b0b0b0); /* Dish gradient */
+  border-radius: 50%;
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+.dish-inner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 6px;
+  background: #333;
+  border-radius: 50%;
+  border: 1px solid #555;
+}
+
+.satellite-antenna-small {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%) rotate(10deg);
+  width: 2px;
+  height: 15px;
+  background: #a0a0a0;
+  border-radius: 2px 2px 0 0;
+}
+
+/* Satellite Animations */
+@keyframes satelliteOrbit {
+  0% {
+    left: -150px; /* Start off-screen left */
+    top: 25%;
+    opacity: 0;
+    transform: scale(0.9) rotateZ(-5deg);
+  }
+  10% {
+    opacity: 1;
+    transform: scale(1) rotateZ(0deg);
+  }
+  90% {
+    opacity: 1;
+    transform: scale(1.1) rotateZ(5deg);
+  }
+  100% {
+    left: calc(100% + 150px); /* End off-screen right */
+    top: 65%; /* Move diagonally down */
+    opacity: 0;
+    transform: scale(1) rotateZ(10deg);
+  }
+}
+
+@keyframes satelliteWobble {
+  0% {
+    transform: rotateZ(-1deg) rotateY(-2deg);
+  }
+  100% {
+    transform: rotateZ(1deg) rotateY(2deg);
+  }
+}
+
+/* Planet 4: Gas Giant with Bands and Spot */
+.planet-4 {
+  width: 120px;
+  height: 120px;
+  top: 60%;
+  left: 8%;
+  background: radial-gradient(
+    circle at 40% 60%,
+    #f8d7a8 0%, /* Light beige */
+    #e0ac69 30%, /* Tan */
+    #c68642 60%, /* Brownish */
+    #a0522d 100% /* Sienna */
+  );
+  box-shadow: 0 0 35px rgba(224, 172, 105, 0.3), inset -20px -10px 50px rgba(0, 0, 0, 0.6);
+  animation: planetFloat4 160s linear infinite;
+  overflow: hidden; /* Hide overflowing bands/spot */
+  z-index: 2;
+}
+
+.planet-4 .planet-bands {
+  position: absolute;
+  width: 150%; /* Wider than planet for rotation effect */
+  height: 100%;
+  top: 0;
+  left: -25%; /* Center the oversized bands */
+  /* animation: planetBandsRotate 40s linear infinite; */ /* Add if desired */
+   transform-origin: center center;
+   animation: planetTextureRotate 40s linear infinite; /* Rotate texture */
+
+}
+
+.planet-4 .band {
+  position: absolute;
+  width: 100%;
+  left: 0;
+  height: 20%; /* Adjust band height */
+  opacity: 0.6;
+}
+
+.planet-4 .band-1 { top: 10%; background: rgba(255, 248, 220, 0.5); height: 15%; } /* Lighter band */
+.planet-4 .band-2 { top: 30%; background: rgba(210, 180, 140, 0.6); } /* Tan band */
+.planet-4 .band-3 { top: 55%; background: rgba(160, 82, 45, 0.7); }   /* Sienna band */
+.planet-4 .band-4 { top: 80%; background: rgba(245, 222, 179, 0.5); height: 15%; } /* Wheat band */
+
+.planet-4 .planet-great-spot {
+  position: absolute;
+  width: 35%;
+  height: 25%;
+  top: 55%;
+  left: 15%;
+  border-radius: 50%;
+  filter: blur(3px);
+  opacity: 0.8;
+  z-index: 4;
+  /* animation: spotMove 40s linear infinite; Add if bands rotate */
+  transform-origin: center center;
+   animation: planetTextureRotate 40s linear infinite reverse; /* Rotate with bands but opposite */
+
+}
+
+/* Planet 5: Rocky, Cratered Planet */
+.planet-5 {
+  width: 60px;
+  height: 60px;
+  top: 20%;
+  left: 80%;
+  background: radial-gradient(
+    circle at 70% 30%,
+    #a9a9a9 0%, /* Dark Gray */
+    #808080 40%, /* Gray */
+    #696969 70%, /* Dim Gray */
+    #404040 100% /* Darker Gray */
+  );
+  box-shadow: 0 0 15px rgba(128, 128, 128, 0.3), inset -10px -5px 25px rgba(0, 0, 0, 0.7);
+  animation: planetFloat5 200s linear infinite;
+  z-index: 4;
+  overflow: hidden;
+}
+
+.planet-5 .planet-surface-texture {
+   position: absolute;
+   width: 100%;
+   height: 100%;
+   top: 0;
+   left: 0;
+   border-radius: 50%;
+   background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+   background-size: 5px 5px; /* Subtle dot pattern */
+   opacity: 0.3;
+   animation: planetTextureRotate 80s linear infinite; /* Slow texture rotation */
+   z-index: 1;
+}
+
+
+.planet-5 .crater {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.3); /* Dark inner shadow */
+  box-shadow: inset 1px 1px 2px rgba(0,0,0,0.6), 0 0 1px 1px rgba(255, 255, 255, 0.05); /* Inner shadow & slight rim light */
+  z-index: 2;
+  animation: planetTextureRotate 80s linear infinite; /* Rotate with texture */
+}
+
+.planet-5 .crater-1 { width: 25%; height: 25%; top: 20%; left: 30%; }
+.planet-5 .crater-2 { width: 15%; height: 15%; top: 55%; left: 60%; }
+.planet-5 .crater-3 { width: 20%; height: 20%; top: 40%; left: 10%; }
+
+.planet-5 .moons-p5 { /* Specific orbit animation class */
+  position: absolute;
+  width: 150%; /* Orbit radius */
+  height: 150%;
+  top: -25%;
+  left: -25%;
+  z-index: 1;
+  animation: moonsOrbitP5 45s linear infinite; /* Different speed */
+}
+
+.planet-5 .moon-3 {
+  /* Style inherited from .planet-moon, just position it */
+  width: 8px;
+  height: 8px;
+  top: 10px; /* Position relative to orbit container */
+  left: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient( circle at 30% 30%, #666, #444, #222); /* Darker moon */
+}
+
+
+/* Planet 6: Distant Icy Body */
+.planet-6 {
+  width: 40px;
+  height: 40px;
+  top: 70%;   /* High up */
+  left: 60%; /* Far left */
+  background: radial-gradient(
+    circle at 50% 50%,
+    #e0ffff 0%, /* Light Cyan */
+    #afeeee 50%, /* Pale Turquoise */
+    #90dcdc 100% /* Medium Turquoise slightly darker */
+  );
+  box-shadow: 0 0 15px rgba(175, 238, 238, 0.6), inset -5px -5px 15px rgba(0, 0, 0, 0.3);
+  animation: planetFloat6 250s linear infinite alternate; /* Very slow drift */
+  z-index: 1; /* Further back */
+  filter: blur(0.5px); /* Slightly blurred for distance */
+}
+
+.planet-6 .planet-haze {
+  position: absolute;
+  width: 130%;
+  height: 130%;
+  top: -15%;
+  left: -15%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at center,
+    rgba(224, 255, 255, 0.2) 0%,
+    rgba(175, 238, 238, 0.1) 70%,
+    transparent 100%
+  );
+  filter: blur(5px);
+  opacity: 0.7;
+  animation: atmospherePulse 15s ease-in-out infinite alternate; /* Slower pulse */
+}
+
+
+/* New Planet Animations */
+@keyframes planetFloat4 { /* Gas Giant */
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(15px, -10px); }
+  50% { transform: translate(30px, 0px); }
+  75% { transform: translate(15px, 10px); }
+  100% { transform: translate(0, 0); }
+}
+
+@keyframes planetFloat5 { /* Rocky */
+  0% { transform: translate(0, 0) rotate(5deg); }
+  50% { transform: translate(-40px, -20px) rotate(-5deg); }
+  100% { transform: translate(0, 0) rotate(5deg); }
+}
+
+@keyframes planetFloat6 { /* Icy */
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(30px, 15px) scale(1.05); } /* Slow drift and slight zoom */
+}
+
+@keyframes planetTextureRotate { /* Reusable texture rotation */
+   0% { transform: rotate(0deg); }
+   100% { transform: rotate(360deg); }
+}
+
+
+/* Specific orbit for planet 5's moon */
+@keyframes moonsOrbitP5 {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(-360deg); } /* Can rotate opposite direction */
 }
 
 /* 
@@ -1911,6 +2804,934 @@ export default {
 .sand-dune-1 { left: 0; height: 35px; }
 .sand-dune-2 { left: 30%; height: 25px; }
 .sand-dune-3 { left: 70%; height: 30px; }
+
+.snow {
+  /* Slightly darker, deeper blue gradient for the base sky */
+  background: linear-gradient(to bottom, #1c2a4f 0%, #3a4a7a 50%, #6a86b8 100%);
+  overflow: hidden; /* Critical to prevent elements spilling */
+}
+
+/* --- Sky & Stars --- */
+.snow-sky {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.stars-layer {
+  position: absolute;
+  inset: 0;
+  background-repeat: repeat;
+  opacity: 0.6;
+  animation: starsDrift 240s linear infinite;
+}
+
+.stars-far {
+   background-image: radial-gradient(1px 1px at 20% 30%, white, transparent),
+                     radial-gradient(1px 1px at 80% 50%, white, transparent),
+                     radial-gradient(1px 1px at 50% 80%, white, transparent);
+   background-size: 400px 400px;
+   opacity: 0.4;
+   animation-duration: 300s; /* Slower drift */
+}
+
+.stars-mid {
+   background-image: radial-gradient(1.5px 1.5px at 10% 70%, white, transparent),
+                     radial-gradient(1px 1px at 60% 10%, white, transparent),
+                     radial-gradient(1.5px 1.5px at 90% 90%, white, transparent);
+   background-size: 300px 300px;
+    opacity: 0.7;
+   animation: starsDrift 180s linear infinite, starsTwinkle 8s ease-in-out infinite alternate;
+}
+
+@keyframes starsDrift {
+  from { background-position: 0 0; }
+  to { background-position: 100% 50%; } /* Slight downward drift */
+}
+/* starsTwinkle animation reused from cosmic theme */
+
+/* --- Aurora Borealis --- */
+.aurora-borealis-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 75%;
+  overflow: hidden;
+  z-index: 1; /* Behind distant mountains */
+  mix-blend-mode: screen;
+  /* Slightly increase blur for more softness */
+  filter: blur(18px); /* Increased blur value */
+  opacity: 0.9; /* Slightly reduce container opacity if needed */
+}
+
+.aurora-ribbon {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 180%; /* Make ribbons wider for smoother side-to-side movement */
+  height: 100%;
+  /* Base opacity is set per ribbon below */
+  transform-origin: bottom center;
+  /* Use the modified animation */
+  animation: auroraSmoothWave infinite alternate; /* Renamed animation */
+  will-change: transform, opacity; /* Optimization hint */
+}
+
+.moon {
+  position: absolute;
+  top: 10%;
+  left: 5%;
+  width: 80px;
+  height: 80px;
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 255, 255, 0.8) 0%,
+    rgba(255, 255, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0.4) 100%
+  );
+  border-radius: 50%;
+  box-shadow: inset -5px -5px rgba(200, 200, 200, 0.5);
+}
+
+.ribbon-1 {
+  background: linear-gradient(to top, transparent 5%, rgba(100, 255, 150, 0.7) 40%, rgba(180, 255, 200, 0.5) 60%, transparent 95%);
+  left: -50%; /* Adjusted starting position */
+  animation-duration: 45s; /* Much longer duration */
+  animation-delay: 0s;
+  --base-opacity: 0.65; /* Slightly reduced base opacity */
+}
+.ribbon-2 {
+  background: linear-gradient(to top, transparent 10%, rgba(80, 180, 255, 0.65) 50%, rgba(160, 210, 255, 0.4) 70%, transparent 90%);
+  left: -30%;
+  animation-duration: 55s; /* Much longer duration */
+  animation-delay: 8s;  /* Increased delay */
+   --base-opacity: 0.6;
+}
+.ribbon-3 {
+  background: linear-gradient(to top, transparent 0%, rgba(190, 100, 255, 0.6) 40%, rgba(220, 170, 255, 0.4) 65%, transparent 85%);
+  left: -10%;
+  animation-duration: 50s; /* Much longer duration */
+  animation-delay: 16s; /* Increased delay */
+   --base-opacity: 0.55;
+}
+.ribbon-4 {
+   background: linear-gradient(to top, transparent 5%, rgba(255, 120, 200, 0.7) 45%, rgba(255, 170, 220, 0.5) 65%, transparent 90%);
+   left: -20%;
+   animation-duration: 60s; /* Much longer duration */
+   animation-delay: 24s; /* Increased delay */
+   --base-opacity: 0.65;
+}
+
+@keyframes auroraSmoothWave {
+  0% {
+    /* Start with slightly different transform and closer to base opacity */
+    transform: translateX(-12%) scaleY(0.9) skewX(-15deg);
+    opacity: calc(var(--base-opacity) * 0.85); /* Start less transparent */
+  }
+  50% {
+    /* Middle point - peak movement and opacity */
+    transform: translateX(10%) scaleY(1.1) skewX(12deg);
+    opacity: var(--base-opacity);
+  }
+  100% {
+    /* End with different transform and closer to base opacity */
+    transform: translateX(-8%) scaleY(0.95) skewX(-10deg);
+    opacity: calc(var(--base-opacity) * 0.9); /* End less transparent */
+  }
+}
+
+
+.ribbon-1 { --wave-opacity-start: 0.6; --wave-opacity-mid: 0.9; --wave-opacity-end: 0.7; }
+.ribbon-2 { --wave-opacity-start: 0.5; --wave-opacity-mid: 0.8; --wave-opacity-end: 0.6; }
+.ribbon-3 { --wave-opacity-start: 0.4; --wave-opacity-mid: 0.7; --wave-opacity-end: 0.5; }
+.ribbon-4 { --wave-opacity-start: 0.55; --wave-opacity-mid: 0.85; --wave-opacity-end: 0.65; }
+
+/* Define opacity variables for shimmer keyframes */
+.ribbon-1 { --shimmer-opacity-1: 0.6; --shimmer-opacity-2: 0.8; --shimmer-opacity-3: 0.5; --shimmer-opacity-4: 0.9; }
+.ribbon-2 { --shimmer-opacity-1: 0.5; --shimmer-opacity-2: 0.7; --shimmer-opacity-3: 0.4; --shimmer-opacity-4: 0.75; }
+.ribbon-3 { --shimmer-opacity-1: 0.4; --shimmer-opacity-2: 0.6; --shimmer-opacity-3: 0.3; --shimmer-opacity-4: 0.65; }
+.ribbon-4 { --shimmer-opacity-1: 0.55; --shimmer-opacity-2: 0.75; --shimmer-opacity-3: 0.45; --shimmer-opacity-4: 0.8; }
+
+
+/* --- Mountains --- */
+.mountains-distant, .mountains-mid, .mountains-near {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 70%; /* Adjust height per layer */
+}
+
+.mountains-distant { z-index: 2; height: 50%; opacity: 0.6; filter: blur(3px); }
+.mountains-mid { z-index: 3; height: 65%; opacity: 0.8; filter: blur(1px); }
+.mountains-near { z-index: 6; height: 75%; } /* In front of mid forest */
+
+.mountain-peak {
+  position: absolute;
+  bottom: 0;
+  background-color: #8a9ec4; /* Base mountain color */
+  overflow: hidden; /* Contain textures */
+   /* Add a subtle shadow for depth */
+   filter: drop-shadow(5px -5px 10px rgba(0, 0, 0, 0.2));
+}
+
+/* Jagged shapes using clip-path */
+.peak-distant-1 { left: 5%; width: 40%; height: 80%; clip-path: polygon(0 100%, 20% 40%, 50% 15%, 70% 50%, 100% 100%); background-color: #6a7c9f; }
+.peak-distant-2 { left: 55%; width: 45%; height: 70%; clip-path: polygon(0 100%, 30% 50%, 55% 25%, 80% 60%, 100% 100%); background-color: #788aac; }
+
+.peak-mid-1 { left: -5%; width: 55%; height: 85%; clip-path: polygon(0 100%, 15% 50%, 40% 20%, 65% 60%, 90% 55%, 100% 100%); }
+.peak-mid-2 { left: 40%; width: 50%; height: 95%; clip-path: polygon(0 100%, 25% 60%, 50% 10%, 75% 55%, 100% 100%); background-color: #93a4cb; }
+.peak-mid-3 { left: 75%; width: 30%; height: 75%; clip-path: polygon(0 100%, 40% 40%, 60% 30%, 100% 100%); }
+
+.peak-near-1 { left: -10%; width: 60%; height: 90%; clip-path: polygon(0 100%, 20% 45%, 50% 5%, 70% 50%, 100% 100%); background-color: #aab8d3; }
+.peak-near-2 { left: 50%; width: 70%; height: 100%; clip-path: polygon(0 100%, 15% 60%, 40% 15%, 65% 70%, 85% 65%, 100% 100%); background-color: #b5c3dd; }
+
+.mountain-texture {
+  position: absolute;
+  inset: 0;
+  opacity: 0.3;
+}
+/* Example texture for mid mountains */
+.mountains-mid .mountain-texture {
+  background: linear-gradient(160deg, rgba(255,255,255,0.15) 20%, transparent 50%),
+              linear-gradient(20deg, rgba(255,255,255,0.1) 30%, transparent 60%);
+}
+/* Textures for near mountains */
+.rock-texture {
+  background: linear-gradient(135deg, rgba(0,0,0,0.1) 0%, transparent 10%),
+              linear-gradient(225deg, rgba(0,0,0,0.1) 0%, transparent 10%);
+  background-size: 40px 40px;
+  opacity: 0.15;
+}
+.snow-texture {
+   background: linear-gradient(to bottom, rgba(255,255,255,0.5) 0%, transparent 30%),
+               radial-gradient(circle at 30% 20%, rgba(255,255,255,0.3) 5%, transparent 20%);
+   opacity: 0.6;
+   mix-blend-mode: overlay; /* Blend snow nicely */
+}
+
+
+/* --- Forests --- */
+.forest-layer-mid, .forest-layer-near {
+  position: absolute;
+  bottom: 10%; /* Start slightly above ground baseline */
+  left: 0;
+  width: 100%;
+  height: 35%; /* Adjust height */
+}
+.forest-layer-mid { z-index: 4; height: 25%; bottom: 15%; opacity: 0.7; filter: blur(0.5px); }
+.forest-layer-near { z-index: 8; height: 30%; bottom: 5%; } /* Near trees in front of ground */
+
+.pine-tree {
+  position: absolute;
+  bottom: 0;
+  width: 40px; /* Base width, scale modifies this */
+  /* height is set dynamically */
+}
+
+.tree-trunk {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px; /* Slimmer trunk */
+  height: 25%; /* Proportion of tree height */
+  background: #5a3a22; /* Darker brown */
+  border-radius: 2px 2px 0 0;
+}
+
+.tree-branch {
+  position: absolute;
+  left: 50%;
+  width: 100%;
+  background: linear-gradient(to bottom right, #1a4d2e, #10351e); /* Dark green gradient */
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%); /* Triangle */
+  transform-origin: bottom center;
+}
+
+.tree-branch.branch-1 { height: 40%; bottom: 20%; transform: translateX(-50%) scale(1); }
+.tree-branch.branch-2 { height: 35%; bottom: 40%; transform: translateX(-50%) scale(0.85); }
+.tree-branch.branch-3 { height: 30%; bottom: 60%; transform: translateX(-50%) scale(0.7); }
+.tree-near .tree-branch.branch-4 { height: 25%; bottom: 75%; transform: translateX(-50%) scale(0.55); } /* Extra branch for near */
+
+.snow-on-branch {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 40%; /* Covers top part of branch */
+  background: rgba(240, 248, 255, 0.8); /* Alice blue, slightly transparent */
+  clip-path: polygon(50% 0%, 10% 100%, 90% 100%); /* Similar shape but slightly offset */
+  filter: blur(0.5px);
+  border-radius: 3px 3px 0 0;
+}
+
+/* --- Mist/Fog --- */
+.mist-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 40%; /* Covers lower area */
+  z-index: 5; /* Between mid and near mountains/forest */
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.mist-layer {
+  position: absolute;
+  width: 150%; /* Wider for horizontal movement */
+  height: 60%;
+  left: -25%;
+  background: radial-gradient(ellipse at center, rgba(180, 190, 210, 0.25) 0%, rgba(150, 160, 180, 0.1) 50%, transparent 80%);
+  filter: blur(20px);
+  opacity: 0.8;
+  animation: mistDrift 40s ease-in-out infinite alternate;
+}
+
+.mist-1 { bottom: 0; height: 50%; animation-duration: 50s; animation-delay: 0s; opacity: 0.7;}
+.mist-2 { bottom: 10%; height: 70%; animation-duration: 35s; animation-delay: 10s; opacity: 0.6;}
+.mist-3 { bottom: 25%; height: 60%; animation-duration: 45s; animation-delay: 5s; opacity: 0.5;}
+
+@keyframes mistDrift {
+  0% { transform: translateX(-10%) scale(1); opacity: var(--start-opacity, 0.6); }
+  100% { transform: translateX(10%) scale(1.1); opacity: var(--end-opacity, 0.8); }
+}
+/* Set variables for keyframes */
+.mist-1 { --start-opacity: 0.7; --end-opacity: 0.5; }
+.mist-2 { --start-opacity: 0.6; --end-opacity: 0.8; }
+.mist-3 { --start-opacity: 0.5; --end-opacity: 0.7; }
+
+/* --- Snow Ground --- */
+.snow-ground {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 25%; /* Slightly higher ground */
+  z-index: 7; /* In front of near mountains, behind near trees */
+  overflow: hidden;
+}
+
+.snow-drift {
+  position: absolute;
+  bottom: 0;
+  background: linear-gradient(to top, #e8f0ff 0%, #ffffff 50%, #f8faff 100%); /* More nuanced white */
+  box-shadow: 0 -5px 15px rgba(106, 134, 184, 0.1); /* Subtle blue shadow */
+  /* Smoother, more organic shapes */
+}
+.drift-large-1 { left: -20%; width: 80%; height: 90%; border-radius: 60% 40% 0 0 / 100% 100% 0 0; }
+.drift-medium-1 { left: 30%; width: 50%; height: 70%; border-radius: 50% 50% 0 0 / 100% 100% 0 0; background-color: #f0f8ff; }
+.drift-small-1 { left: 65%; width: 30%; height: 50%; border-radius: 70% 30% 0 0 / 100% 100% 0 0; }
+.drift-medium-2 { left: 75%; width: 45%; height: 80%; border-radius: 40% 60% 0 0 / 100% 100% 0 0; background-color: #f4faff;}
+.drift-large-2 { left: 40%; width: 50%; height: 100%; border-radius: 50% 50% 0 0 / 80% 80% 0 0; z-index: -1;} /* Layer behind */
+
+
+/* --- Snowfall --- */
+.snowfall-layer-far, .snowfall-layer-mid, .snowfall-layer-near {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+/* z-index handled by getSnowflakeStyle */
+
+.snowflake {
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  width: 6px;
+  height: 6px;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+  /* box-shadow removed for layered blur effect */
+  animation-name: snowfall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes snowfall {
+  from { /* Use 'from' or '0%' */
+    transform: translateY(0) translateX(0) scale(var(--scale, 1)) rotate(0deg);
+    /* Explicitly use the passed opacity variable for the start */
+    opacity: var(--start-opacity, 0.8); /* Default to 0.8 if variable fails */
+  }
+  /* Optional: Add a mid-point keyframe to ensure visibility longer */
+  50% {
+     opacity: calc(var(--start-opacity, 0.8) * 0.7); /* Fade slightly mid-way */
+  }
+  to { /* Use 'to' or '100%' */
+    transform: translateY(115vh) translateX(var(--wind-drift, 0px)) scale(var(--scale, 1)) rotate(720deg);
+    opacity: 0; /* Fade out completely at the end */
+  }
+}
+
+/* Pingouin réaliste */
+.penguin-container {
+  position: absolute;
+  bottom: 5%;
+  left: 20%;
+  width: 200px;
+  height: 200px;
+  z-index: 8;
+  animation: penguinWaddle 40s linear infinite;
+}
+
+.penguin {
+  position: relative;
+  width: 100px;
+  height: 150px;
+  transform-style: preserve-3d;
+}
+
+.penguin-body {
+  position: absolute;
+  width: 80px;
+  height: 130px;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a1a2e;
+  border-radius: 40% 40% 30% 30%;
+  transform-origin: bottom center;
+  animation: penguinBodyWobble 3s ease-in-out infinite;
+}
+
+.penguin-head {
+  position: absolute;
+  width: 60px;
+  height: 55px;
+  top: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a1a2e;
+  border-radius: 50% 50% 40% 40%;
+  z-index: 2;
+}
+
+.penguin-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.penguin-eye {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  top: 18px;
+  background: white;
+  border-radius: 50%;
+  z-index: 3;
+}
+
+.penguin-eye-left {
+  left: 15px;
+  transform: rotate(-10deg);
+}
+
+.penguin-eye-right {
+  right: 15px;
+  transform: rotate(10deg);
+}
+
+.penguin-eye-pupil {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  top: 3px;
+  left: 3px;
+  background: #000;
+  border-radius: 50%;
+  animation: penguinBlink 5s ease-in-out infinite;
+}
+
+.penguin-beak {
+  position: absolute;
+  width: 15px;
+  height: 10px;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ff9e41;
+  border-radius: 30% 30% 60% 60%;
+  z-index: 2;
+}
+
+.penguin-belly {
+  position: absolute;
+  width: 60px;
+  height: 90px;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border-radius: 50% 50% 40% 40%;
+  z-index: 1;
+}
+
+.penguin-wing {
+  position: absolute;
+  width: 24px;
+  height: 70px;
+  top: 20px;
+  background: #1a1a2e;
+  border-radius: 30% 30% 50% 50%;
+  transform-origin: top center;
+  z-index: 0;
+}
+
+.penguin-wing-left {
+  left: -10px;
+  animation: penguinWingLeft 3s ease-in-out infinite;
+}
+
+.penguin-wing-right {
+  right: -10px;
+  animation: penguinWingRight 3s ease-in-out infinite;
+}
+
+.penguin-foot {
+  position: absolute;
+  width: 25px;
+  height: 10px;
+  bottom: -8px;
+  background: #ff9e41;
+  border-radius: 50% 50% 0 0;
+  z-index: 0;
+  transform-origin: center top;
+}
+
+.penguin-foot-left {
+  left: 10px;
+  transform: rotate(-10deg);
+  animation: penguinFootLeft 3s ease-in-out infinite;
+}
+
+.penguin-foot-right {
+  right: 10px;
+  transform: rotate(10deg);
+  animation: penguinFootRight 3s ease-in-out infinite;
+}
+
+.penguin-shadow {
+  position: absolute;
+  width: 80px;
+  height: 20px;
+  bottom: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 50%;
+  filter: blur(5px);
+  z-index: 0;
+  animation: penguinShadow 3s ease-in-out infinite;
+}
+
+/* Animations du pingouin */
+@keyframes penguinWaddle {
+  0% {
+    transform: translateX(-100px) rotate(0deg);
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  45% {
+    transform: translateX(20vw) rotate(0deg);
+  }
+  50% {
+    transform: translateX(25vw) rotate(0deg);
+  }
+  95% {
+    transform: translateX(0px) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-100px) rotate(0deg);
+    opacity: 0;
+  }
+}
+
+@keyframes penguinBodyWobble {
+  0%, 100% { transform: translateX(-50%) rotate(-3deg); }
+  50% { transform: translateX(-50%) rotate(3deg); }
+}
+
+@keyframes penguinBlink {
+  0%, 95%, 100% { transform: scale(1); }
+  97% { transform: scale(1, 0.1); }
+}
+
+@keyframes penguinWingLeft {
+  0%, 100% { transform: rotate(-10deg); }
+  50% { transform: rotate(-30deg); }
+}
+
+@keyframes penguinWingRight {
+  0%, 100% { transform: rotate(10deg); }
+  50% { transform: rotate(30deg); }
+}
+
+@keyframes penguinFootLeft {
+  0%, 100% { transform: rotate(-10deg) translateX(0); }
+  25% { transform: rotate(-20deg) translateX(-5px); }
+  50% { transform: rotate(-10deg) translateX(0); }
+  75% { transform: rotate(-5deg) translateX(5px); }
+}
+
+@keyframes penguinFootRight {
+  0%, 100% { transform: rotate(10deg) translateX(0); }
+  25% { transform: rotate(5deg) translateX(-5px); }
+  50% { transform: rotate(10deg) translateX(0); }
+  75% { transform: rotate(20deg) translateX(5px); }
+}
+
+@keyframes penguinShadow {
+  0%, 100% { transform: translateX(-50%) scaleX(1); opacity: 0.2; }
+  50% { transform: translateX(-50%) scaleX(0.8); opacity: 0.3; }
+}
+
+.penguin-shadow, .polar-bear-shadow {
+   background: rgba(58, 74, 122, 0.15); /* Softer blue shadow */
+   filter: blur(8px);
+}
+
+.polar-bear-container {
+  position: absolute;
+  bottom: 8%;
+  right: 15%;
+  width: 300px;
+  height: 220px;
+  z-index: 8;  /* Z-index élevé pour être sûr qu'il soit visible */
+  animation: polarBearMove 20s ease-in-out infinite alternate;
+}
+
+.polar-bear {
+  position: relative;
+  width: 220px;
+  height: 120px;
+  transform-style: preserve-3d;
+}
+
+.polar-bear-body {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transform-origin: center bottom;
+  animation: polarBearBodySway 4s ease-in-out infinite;
+}
+
+.polar-bear-head {
+  position: absolute;
+  width: 75px;
+  height: 60px;
+  top: -10px;
+  left: 10px;
+  background: #ffffff;  /* Blanc pur pour être plus visible */
+  border-radius: 50% 70% 60% 40% / 50% 60% 40% 50%;
+  box-shadow: 
+    -5px -5px 10px rgba(255, 255, 255, 0.8) inset,
+    5px 5px 15px rgba(200, 200, 180, 0.4) inset;
+  transform-origin: bottom center;
+  animation: polarBearHeadMove 4s ease-in-out infinite;
+  z-index: 3;
+}
+
+.polar-bear-ear {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background: #ffffff;
+  border-radius: 50%;
+  z-index: 1;
+}
+
+.polar-bear-ear-left {
+  top: -8px;
+  left: 15px;
+  transform: rotate(-5deg);
+}
+
+.polar-bear-ear-right {
+  top: -8px;
+  right: 15px;
+  transform: rotate(5deg);
+}
+
+.polar-bear-snout {
+  position: absolute;
+  width: 45px;
+  height: 35px;
+  background: #ffffff;
+  bottom: 0;
+  left: 15px;
+  border-radius: 60% 60% 70% 70% / 60% 60% 70% 70%;
+  transform: translateY(10px);
+  z-index: 2;
+}
+
+.polar-bear-nose {
+  position: absolute;
+  width: 22px;
+  height: 14px;
+  background: #222222;  /* Noir plus foncé pour être plus visible */
+  border-radius: 40% 40% 60% 60% / 40% 40% 60% 60%;
+  top: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.polar-bear-mouth {
+  position: absolute;
+  width: 12px;
+  height: 3px;
+  background: #333333;
+  border-radius: 50%;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.polar-bear-eye {
+  position: absolute;
+  width: 10px;
+  height: 8px;
+  background: #ffffff;
+  border-radius: 50%;
+  top: 20px;
+  z-index: 3;
+}
+
+.polar-bear-eye-left {
+  left: 22px;
+  transform: rotate(-10deg);
+}
+
+.polar-bear-eye-right {
+  right: 22px;
+  transform: rotate(10deg);
+}
+
+.polar-bear-eye-pupil {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  top: 1px;
+  left: 2px;
+  background: #000000;
+  border-radius: 50%;
+  animation: polarBearBlink 8s ease-in-out infinite;
+}
+
+.polar-bear-torso {
+  position: absolute;
+  width: 220px;  /* Agrandi pour être plus visible */
+  height: 95px;   /* Agrandi pour être plus visible */
+  bottom: 35px;
+  background: #ffffff;
+  border-radius: 60% 70% 55% 40% / 80% 80% 45% 40%;
+  box-shadow: 
+    -10px -5px 15px rgba(255, 255, 255, 0.6) inset,
+    10px 10px 20px rgba(200, 200, 180, 0.3) inset;
+  z-index: 2;
+  transform-origin: center bottom;
+  animation: polarBearTorsoMove 4s ease-in-out infinite;
+}
+
+.polar-bear-fur-detail {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+}
+
+.fur-detail-1 {
+  width: 50px;
+  height: 30px;
+  top: 10px;
+  left: 30px;
+  transform: rotate(-15deg);
+  box-shadow: 2px 5px 10px rgba(255, 255, 255, 0.6);
+}
+
+.fur-detail-2 {
+  width: 40px;
+  height: 35px;
+  top: 25px;
+  left: 60px;
+  transform: rotate(10deg);
+  box-shadow: -2px 3px 8px rgba(255, 255, 255, 0.6);
+}
+
+.fur-detail-3 {
+  width: 45px;
+  height: 25px;
+  top: 15px;
+  left: 90px;
+  transform: rotate(-5deg);
+  box-shadow: 1px 4px 8px rgba(255, 255, 255, 0.6);
+}
+
+.polar-bear-leg {
+  position: absolute;
+  width: 35px;  /* Agrandi pour être plus visible */
+  background: #ffffff;
+  z-index: 1;
+  box-shadow: 
+    -2px -2px 5px rgba(255, 255, 255, 0.6) inset,
+    2px 2px 8px rgba(200, 200, 180, 0.4) inset;
+}
+
+.polar-bear-leg-front-left {
+  height: 55px;
+  bottom: 0;
+  left: 25px;
+  border-radius: 40% 60% 20% 30% / 20% 30% 20% 40%;
+  transform-origin: top center;
+  animation: polarBearFrontLeftLeg 4s ease-in-out infinite;
+}
+
+.polar-bear-leg-front-right {
+  height: 55px;
+  bottom: 0;
+  left: 65px;  /* Ajusté pour la taille plus grande */
+  border-radius: 60% 40% 30% 20% / 30% 20% 40% 20%;
+  transform-origin: top center;
+  animation: polarBearFrontRightLeg 4s ease-in-out infinite;
+}
+
+.polar-bear-leg-back-left {
+  height: 50px;
+  bottom: 0;
+  right: 65px;  /* Ajusté pour la taille plus grande */
+  border-radius: 40% 60% 20% 30% / 20% 30% 20% 40%;
+  transform-origin: top center;
+  animation: polarBearBackLeftLeg 4s ease-in-out infinite;
+}
+
+.polar-bear-leg-back-right {
+  height: 50px;
+  bottom: 0;
+  right: 25px;
+  border-radius: 60% 40% 30% 20% / 30% 20% 40% 20%;
+  transform-origin: top center;
+  animation: polarBearBackRightLeg 4s ease-in-out infinite;
+}
+
+.polar-bear-paw {
+  position: absolute;
+  width: 38px;
+  height: 15px;
+  background: #ffffff;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 50% 50% 45% 45%;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+.polar-bear-paw-front-left::after,
+.polar-bear-paw-front-right::after,
+.polar-bear-paw-back-left::after,
+.polar-bear-paw-back-right::after {
+  content: '';
+  position: absolute;
+  width: 30px;
+  height: 2px;
+  background: rgba(0, 0, 0, 0.15);
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+}
+
+.polar-bear-shadow {
+  position: absolute;
+  width: 180px;
+  height: 30px;
+  bottom: -15px;
+  left: 30px;
+  background: rgba(0, 0, 0, 0.2);  /* Plus visible */
+  border-radius: 50%;
+  filter: blur(8px);
+  transform-origin: center;
+  animation: polarBearShadow 4s ease-in-out infinite;
+  z-index: 1;
+}
+
+/* Animations de l'ours polaire */
+@keyframes polarBearMove {
+  0% { transform: translateX(20px); }
+  50% { transform: translateX(-30px); }
+  100% { transform: translateX(20px); }
+}
+
+@keyframes polarBearBodySway {
+  0%, 100% { transform: rotate(-1deg); }
+  50% { transform: rotate(1deg); }
+}
+
+@keyframes polarBearHeadMove {
+  0%, 100% { transform: rotate(-3deg) translateY(0); }
+  25% { transform: rotate(-1deg) translateY(-2px); }
+  50% { transform: rotate(0deg) translateY(0); }
+  75% { transform: rotate(2deg) translateY(-2px); }
+}
+
+@keyframes polarBearBlink {
+  0%, 48%, 52%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(0.1); }
+}
+
+@keyframes polarBearTorsoMove {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-3px) rotate(0.5deg); }
+  75% { transform: translateY(-3px) rotate(-0.5deg); }
+}
+
+@keyframes polarBearFrontLeftLeg {
+  0%, 100% { transform: translateY(0) rotate(3deg); }
+  25% { transform: translateY(-4px) rotate(-5deg); }
+  50% { transform: translateY(0) rotate(3deg); }
+  75% { transform: translateY(0) rotate(5deg); }
+}
+
+@keyframes polarBearFrontRightLeg {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  25% { transform: translateY(0) rotate(-5deg); }
+  50% { transform: translateY(0) rotate(-3deg); }
+  75% { transform: translateY(-4px) rotate(5deg); }
+}
+
+@keyframes polarBearBackLeftLeg {
+  0%, 100% { transform: translateY(0) rotate(2deg); }
+  25% { transform: translateY(0) rotate(4deg); }
+  50% { transform: translateY(0) rotate(2deg); }
+  75% { transform: translateY(-3px) rotate(-4deg); }
+}
+
+@keyframes polarBearBackRightLeg {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  25% { transform: translateY(-3px) rotate(4deg); }
+  50% { transform: translateY(0) rotate(-2deg); }
+  75% { transform: translateY(0) rotate(-4deg); }
+}
+
+@keyframes polarBearShadow {
+  0%, 100% { transform: scaleX(1) translateX(0); opacity: 0.2; }
+  25% { transform: scaleX(0.95) translateX(5px); opacity: 0.25; }
+  75% { transform: scaleX(0.95) translateX(-5px); opacity: 0.25; }
+}
+
+.vignette-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(10, 15, 30, 0.4) 100%);
+  z-index: 20; /* Absolutely on top */
+  pointer-events: none; /* Doesn't interfere with interactions */
+}
+
 
 /* 
 * STYLES DU THÈME CYBERPUNK

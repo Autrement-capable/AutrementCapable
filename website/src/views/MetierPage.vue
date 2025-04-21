@@ -7,12 +7,8 @@
     <div class="guide-character">
       <img src="@/assets/avatars/guide.png" alt="Guide" class="guide-avatar" />
       <div class="speech-bubble">
-        <p v-if="!isExpanded">
-          Découvre ce métier et ses spécificités. N'hésite pas à en savoir plus
-          !
-        </p>
-        <p v-else>
-          Tu peux maintenant explorer toutes les informations sur ce métier.
+        <p>
+          Découvre ce métier et ses spécificités. Utilise les boutons ci-dessous pour donner ton avis !
         </p>
       </div>
     </div>
@@ -26,23 +22,17 @@
     </div>
 
     <div class="video-container">
-      <video controls :poster="posterSrc">
+      <video controls :poster="posterSrc" autoplay>
         <source :src="videoSrc" type="video/mp4" />
         Votre navigateur ne supporte pas la vidéo.
       </video>
-      <button @click="toggleExpand" class="action-button expand-button">
-        <span class="button-icon">{{ isExpanded ? '📁' : '📂' }}</span>
-        <span class="button-text">
-          {{ isExpanded ? 'Afficher moins' : 'En savoir plus' }}
-        </span>
-      </button>
     </div>
 
     <div class="description-card">
       <p class="description-text">{{ description }}</p>
     </div>
 
-    <div v-if="isExpanded" class="additional-info">
+    <div class="additional-info">
       <div class="info-section skills-section">
         <h2 class="section-title">Compétences requises</h2>
         <ul class="skills-list">
@@ -95,11 +85,9 @@
         <span v-if="highContrastMode">🌓</span>
         <span v-else>🌑</span>
       </button>
-      <button @click="increaseTextSize" class="accessibility-button">A+</button>
-      <button @click="decreaseTextSize" class="accessibility-button">A-</button>
     </div>
   </div>
-  <div v-if="isExpanded" class="extra-space"></div>
+  <div class="extra-space"></div>
 </template>
 
 <script>
@@ -117,10 +105,10 @@ export default {
   },
   data() {
     return {
-      isExpanded: false,
+      isExpanded: true, // Toujours à true pour montrer tous les détails
       highContrastMode: false,
-      textSizeLevel: 0, // 0 = normal, -1 = small, 1 = large
-      soundEnabled: true, // Son activé par défaut
+      textSizeLevel: 0,
+      soundEnabled: true,
       isReading: false,
       speechUtterance: null,
     }
@@ -131,8 +119,8 @@ export default {
       // Si le métier change, arrêter la lecture en cours
       this.stopReading()
 
-      // Si la page est développée et le son activé, lancer la lecture du nouveau métier
-      if (this.isExpanded && this.soundEnabled) {
+      // Si le son est activé, lancer la lecture du nouveau métier
+      if (this.soundEnabled) {
         // Petit délai pour s'assurer que les nouvelles données sont bien chargées
         setTimeout(() => {
           this.readDescriptionAloud()
@@ -153,34 +141,101 @@ export default {
       }
     }
 
-    // Si la page est déjà développée (par exemple, après navigation), lancer la lecture
-    if (this.isExpanded && this.soundEnabled) {
+    // Si le son est activé, lancer la lecture automatiquement
+    if (this.soundEnabled) {
       // Petit délai pour s'assurer que le composant est complètement monté
       setTimeout(() => {
         this.readDescriptionAloud()
       }, 300)
     }
+    
+    // Marquer ce métier comme vu dans le localStorage
+    this.markMetierAsSeen();
   },
   beforeUnmount() {
     // S'assurer que la lecture est arrêtée lors de la destruction du composant
     this.stopReading()
   },
   methods: {
-    toggleExpand() {
-      this.isExpanded = !this.isExpanded
-
-      if (this.isExpanded) {
-        // Commencer la lecture si le son est activé
-        if (this.soundEnabled) {
-          this.readDescriptionAloud()
+    // Marquer le métier comme vu
+    markMetierAsSeen() {
+      try {
+        // Récupérer les métiers déjà vus
+        const savedIds = localStorage.getItem('seen-metiers') || '[]';
+        const seenIds = JSON.parse(savedIds);
+        
+        // Extraire le slug à partir des props (via l'URL)
+        let slug = '';
+        if (this.$route && this.$route.params && this.$route.params.slug) {
+          slug = this.$route.params.slug;
+        } else {
+          // Fallback: obtenir le slug à partir du videoSrc ou d'une autre propriété
+          const videoPath = this.videoSrc || '';
+          if (videoPath.includes('Soudeur')) {
+            slug = 'soudeur';
+          } else if (videoPath.includes('Jardinier')) {
+            slug = 'jardinier-paysagiste';
+          } else if (videoPath.includes('Coiffeur')) {
+            slug = 'coiffeur';
+          }
         }
-      } else {
-        // Arrêter la lecture si on réduit la vue
-        this.stopReading()
-        // Faire défiler vers le haut
-        window.scrollTo({ top: 0, behavior: 'smooth' })
+        
+        // Table de correspondance slug -> id
+        const slugToId = {
+          'soudeur': 16,
+          'jardinier-paysagiste': 11,
+          'coiffeur': 10,
+          'infographiste': 1,
+          'administrateur-reseau': 2,
+          'technicien-telecoms-reseau': 3,
+          'webdesigner': 4,
+          'cuisinier': 5,
+          'boucher': 6,
+          'boulanger': 7,
+          'ingenieur-rd-agroequipement': 8,
+          'conducteur-machines-agricoles': 9,
+          'horticulteur': 10,
+          'tapissier-ameublement': 12,
+          'prothesiste-dentaire': 13,
+          'mecatronicien': 14,
+          'tailleur-couturier': 15
+        };
+        
+        // Si on a trouvé un ID correspondant au slug et qu'il n'est pas déjà dans les métiers vus
+        if (slug && slugToId[slug] && !seenIds.includes(slugToId[slug])) {
+          seenIds.push(slugToId[slug]);
+          localStorage.setItem('seen-metiers', JSON.stringify(seenIds));
+          
+          // Vérifier si l'utilisateur a vu au moins 3 métiers pour débloquer le badge
+          if (seenIds.length >= 3) {
+            this.checkBadgeUnlock(seenIds.length);
+          }
+        }
+      } catch (error) {
+        console.error('Erreur lors du marquage du métier comme vu:', error);
       }
     },
+    
+    // Vérifier si un badge peut être débloqué
+    checkBadgeUnlock(seenCount) {
+      // Importer les fonctions de badge si nécessaire
+      try {
+        const { unlockBadge, isBadgeUnlocked } = require('@/utils/badges');
+        
+        // Badge Apprenti des métiers (3 métiers vus)
+        if (seenCount >= 3 && !isBadgeUnlocked(7)) {
+          unlockBadge(7);
+        }
+        
+        // Badge Chercheur curieux (10 métiers vus)
+        if (seenCount >= 10 && !isBadgeUnlocked(3)) {
+          unlockBadge(3);
+        }
+      } catch (error) {
+        console.error('Erreur lors de la vérification des badges:', error);
+      }
+    },
+    
     navigateToNextMetier() {
       if (this.nextRoute) {
         this.stopReading()
@@ -189,6 +244,8 @@ export default {
     },
     onLike() {
       console.log('User likes this métier!')
+      // Sauvegarder le métier dans les favoris
+      this.saveLikedMetier();
       this.navigateToNextMetier()
     },
     onNeutral() {
@@ -199,6 +256,73 @@ export default {
       console.log('User dislikes this métier.')
       this.navigateToNextMetier()
     },
+    
+    // Sauvegarder le métier aimé
+    saveLikedMetier() {
+      try {
+        // Récupérer les métiers déjà aimés
+        const savedIds = localStorage.getItem('liked-metiers') || '[]';
+        const likedIds = JSON.parse(savedIds);
+        
+        // Extraire le slug à partir des props (via l'URL)
+        let slug = '';
+        if (this.$route && this.$route.params && this.$route.params.slug) {
+          slug = this.$route.params.slug;
+        } else {
+          // Fallback: obtenir le slug à partir du videoSrc ou d'une autre propriété
+          const videoPath = this.videoSrc || '';
+          if (videoPath.includes('Soudeur')) {
+            slug = 'soudeur';
+          } else if (videoPath.includes('Jardinier')) {
+            slug = 'jardinier-paysagiste';
+          } else if (videoPath.includes('Coiffeur')) {
+            slug = 'coiffeur';
+          }
+        }
+        
+        // Table de correspondance slug -> id
+        const slugToId = {
+          'soudeur': 16,
+          'jardinier-paysagiste': 11,
+          'coiffeur': 10,
+          'infographiste': 1,
+          'administrateur-reseau': 2,
+          'technicien-telecoms-reseau': 3,
+          'webdesigner': 4,
+          'cuisinier': 5,
+          'boucher': 6,
+          'boulanger': 7,
+          'ingenieur-rd-agroequipement': 8,
+          'conducteur-machines-agricoles': 9,
+          'horticulteur': 10,
+          'tapissier-ameublement': 12,
+          'prothesiste-dentaire': 13,
+          'mecatronicien': 14,
+          'tailleur-couturier': 15
+        };
+        
+        // Si on a trouvé un ID correspondant au slug et qu'il n'est pas déjà dans les métiers aimés
+        if (slug && slugToId[slug] && !likedIds.includes(slugToId[slug])) {
+          likedIds.push(slugToId[slug]);
+          localStorage.setItem('liked-metiers', JSON.stringify(likedIds));
+          
+          // Vérifier le badge Passionné des métiers (5 métiers aimés)
+          if (likedIds.length >= 5) {
+            try {
+              const { unlockBadge, isBadgeUnlocked } = require('@/utils/badges');
+              if (!isBadgeUnlocked(2)) {
+                unlockBadge(2);
+              }
+            } catch (error) {
+              console.error('Erreur lors du déblocage du badge:', error);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Erreur lors de la sauvegarde du métier aimé:', error);
+      }
+    },
+    
     // Fonctions d'accessibilité
     toggleHighContrast() {
       this.highContrastMode = !this.highContrastMode
@@ -263,8 +387,8 @@ export default {
 
       if (!this.soundEnabled) {
         this.stopReading()
-      } else if (this.isExpanded) {
-        // Si le son est activé et que la page est développée, commencer la lecture
+      } else {
+        // Si le son est activé, commencer la lecture
         this.readDescriptionAloud()
       }
     },
@@ -286,19 +410,17 @@ export default {
       // Description principale
       detailsTexts.push(this.description)
 
-      // Informations supplémentaires si la vue est développée
-      if (this.isExpanded) {
-        // Compétences requises
-        detailsTexts.push(`Compétences requises: ${this.skills.join(', ')}`)
+      // Informations supplémentaires
+      // Compétences requises
+      detailsTexts.push(`Compétences requises: ${this.skills.join(', ')}`)
 
-        // Environnement de travail
-        detailsTexts.push(`Environnement de travail: ${this.workEnvironment}`)
+      // Environnement de travail
+      detailsTexts.push(`Environnement de travail: ${this.workEnvironment}`)
 
-        // Détails du métier (nettoyer le HTML)
-        const tempDiv = document.createElement('div')
-        tempDiv.innerHTML = this.jobDetails
-        detailsTexts.push(`Détails du métier: ${tempDiv.textContent}`)
-      }
+      // Détails du métier (nettoyer le HTML)
+      const tempDiv = document.createElement('div')
+      tempDiv.innerHTML = this.jobDetails
+      detailsTexts.push(`Détails du métier: ${tempDiv.textContent}`)
 
       // Joindre tous les textes avec des pauses
       const textToRead = detailsTexts.join('. ')
