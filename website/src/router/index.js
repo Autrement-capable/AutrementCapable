@@ -18,6 +18,7 @@ import GameShape from '@/views/skillGames/GameShape.vue'
 import ShapeSequenceGame from '@/views/skillGames/ShapeSequenceGame.vue'
 
 // Tinder des metiers
+import TinderMetiers from '@/components/JobsComponent.vue'
 import MetierPage from '@/views/MetierPage.vue'
 import SoudeurCard from '@/components/jobsCards/SoudeurCard.vue'
 import JardinerCard from '@/components/jobsCards/JardinerCard.vue'
@@ -63,6 +64,11 @@ const routes = [
     path: '/shape-sequence-game',
     name: 'ShapeSequenceGame',
     component: ShapeSequenceGame,
+  },
+  {
+    path: '/metier',
+    name: 'TinderMetiers',
+    component: TinderMetiers,
   },
   {
     path: '/metier/:metierId',

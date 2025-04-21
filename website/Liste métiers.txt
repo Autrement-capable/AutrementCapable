@@ -63,3 +63,87 @@ Chaudronnier/Chaudronnière https://www.youtube.com/watch?v=NN5owm-WES8&list=PLR
 Poissonnier/Poissonnière https://www.youtube.com/watch?v=KBGDEM3RSZ0&list=PLRDA9dHD2F-4jEZs29HcTw3PshdyPj8nw
 Pâtissier/Patissière https://www.youtube.com/watch?v=QmSUSOATwV0&list=PLRDA9dHD2F-4jEZs29HcTw3PshdyPj8nw
 Employé de restaurant https://www.youtube.com/watch?v=PQEyZ7lAOhA&list=PLRDA9dHD2F-4jEZs29HcTw3PshdyPj8nw
+
+À partir de la liste de métiers fournie, je vais les organiser par catégories professionnelles. Voici le classement :
+
+### Technologies de l'information et numérique
+- Infographiste
+- Administrateur réseau/Administratrice réseau
+- Technicien/Technicienne télécoms et réseau
+- Webdesigner
+- Technicien en automatismes/Technicienne en automatismes
+
+### Métiers de bouche et restauration
+- Cuisinier/Cuisinière
+- Boucher/Bouchère
+- Boulanger/Boulangère
+- Pâtissier/Patissière
+- Sommelier/Sommelière
+- Poissonnier/Poissonnière
+- Employé de restaurant
+
+### Agriculture, horticulture et viticulture
+- Ingénieur/Ingénieure R&D en agroéquipement
+- Conducteur/Conductrice de machines agricoles
+- Horticulteur/Horticultrice
+- Jardinier/Jardinière-Paysagiste
+- Viticulteur/Viticultrice
+- Éleveur d'ovins/Éleveuse d'ovins
+- Conducteur/Conductrice de travaux en entreprises de travaux agricoles
+
+### Mécanique, maintenance et équipement
+- Mécatronicien/Mécatronicienne
+- Mécanicien-réparateur/Mécanicienne-réparatrice en matériel agricole
+- Technicien démonstrateur/Technicienne démonstratrice en matériel agricole
+- Technicien/Technicienne en maintenance industrielle
+- Technicien frigoriste/Technicienne frigoriste
+- Technicien/Technicienne prototypiste en agroéquipement
+- Technicien automobile/Technicienne automobile
+- Mécanicien de véhicule industriel/Mécanicienne de véhicule industriel
+- Mécanicien/Mécanicienne en cycle et motocycle
+- Formateur/Formatrice technique en agroéquipement
+- Mécanicien d'entretien d'avion/Mécanicienne d'entretien d'avion
+
+### Métiers d'art et artisanat
+- Tapissier/Tapissière d'ameublement
+- Tailleur-couturier/Tailleuse-couturière
+- Tonnelier/Tonnelière
+- Bijoutier-joaillier/Bijoutière-joaillère
+- Fleuriste
+- Ébéniste
+- Tailleur de pierre/Tailleuse de pierre
+- Chaudronnier/Chaudronnière
+
+### Santé et soins à la personne
+- Prothésiste dentaire
+- Esthéticien-cosméticien/Esthéticienne-cosméticienne
+- Coiffeur/Coiffeuse
+- Auxiliaire de vie sociale
+
+### Industrie et fabrication
+- Conducteur/Conductrice de machine à imprimer
+- Soudeur/Soudeuse
+- Opérateur/Opératrice sur machine à commande numérique
+- Dessinateur en construction mécanique/Dessinatrice en construction mécanique
+- Techniverrier/Techniverrière
+
+### Bâtiment et construction
+- Serrurier-Métallier/Serrurière-Métallière
+- Plombier-chauffagiste/Plombière-chauffagiste
+- Plâtrier/Plâtrière
+- Peintre en bâtiment
+- Menuisier/Menuisière
+- Maçon/Maçonne
+- Électricien installateur/Électricienne installatrice
+- Couvreur/Couvreuse
+- Constructeur de route et canalisateur
+- Constructeur/Constructrice en béton armé
+- Charpentier bois/Charpentière bois
+- Carreleur-mosaïste/Carreleuse-mosaïste
+- Solier-moquettiste/Solière-moquettiste
+
+### Automobile et carrosserie
+- Peintre en carrosserie
+- Carrossier-réparateur/Carrossière-réparatrice
+
+Ces catégories regroupent les métiers selon leurs domaines d'activité principaux et permettent d'avoir une vision claire des différents secteurs professionnels représentés dans la liste.
