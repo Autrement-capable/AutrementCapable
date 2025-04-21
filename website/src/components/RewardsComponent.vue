@@ -243,7 +243,6 @@
     :active-section-id="profileTourActive ? profileTourSections[profileTourStep].id : null"
     context="profile"
     :auto-show-delay="0"
-    :disable-animations="!profileTourActive"
     @option-selected="handleGuideOptionSelected"
     @position-updated="updateGuidePosition"
   />
@@ -386,13 +385,13 @@ export default {
         {
           id: 7,
           title: 'Apprenti des métiers',
-          description: 'Tu as découvert 3 métiers différents',
+          description: 'Tu as découvert 5 métiers différents',
           icon: '👷',
           iconColor: '#FF9800',
           unlocked: false,
-          hint: 'Explore au moins 3 fiches métier',
+          hint: 'Explore au moins 5 fiches métier',
           game: 'Découverte des métiers',
-          gameRoute: '/metier/soudeur',
+          gameRoute: '/metiers',
           shareable: false,
         },
         {
@@ -538,11 +537,6 @@ export default {
     eventBus.on('highlight-play-button', () => {
       this.highlightPlayButton();
     });
-    const rewardsContainer = document.querySelector('.rewards-container');
-    if (rewardsContainer) {
-      rewardsContainer.addEventListener('scroll', this.updateGuidePositionOnScroll);
-    }
-    
     this.$nextTick(() => {
       if (this.internalShowGuide && !this.profileTourActive && !this.forceShowGuide) {
         this.positionGuideByCloseButton();
@@ -554,22 +548,12 @@ export default {
     window.removeEventListener('resize', this.updateHighlights);
     eventBus.off('highlight-play-button');
     this.removeHighlights();
-    const rewardsContainer = document.querySelector('.rewards-container');
-    if (rewardsContainer) {
-      rewardsContainer.removeEventListener('scroll', this.updateGuidePositionOnScroll);
-    }
   },
   methods: {
-    // Nouvelle méthode pour mettre à jour la position du guide lors du défilement
-    updateGuidePositionOnScroll() {
-      if (!this.profileTourActive && !this.forceShowGuide && this.internalShowGuide) {
-        this.positionGuideByCloseButton();
-      }
-    },
     /**
      * Positionne le guide près du bouton de fermeture quand la bulle n'est pas ouverte
      */
-     positionGuideByCloseButton() {
+    positionGuideByCloseButton() {
       // Ne rien faire si le guide est déjà positionné ailleurs (comme pendant le tour)
       if (this.profileTourActive || this.forceShowGuide) {
         return;
@@ -581,12 +565,12 @@ export default {
         const rect = closeButton.getBoundingClientRect();
         
         // Positionner le guide à gauche du bouton fermer
+        // Nous devons prendre en compte la taille approximative du guide (environ 40px)
         const position = {
           position: 'fixed',
           top: `${rect.top}px`,
           left: `${rect.left - 75}px`,
-          zIndex: 2500,
-          transition: 'none'
+          zIndex: 2500
         };
         
         // Mettre à jour la position du guide
