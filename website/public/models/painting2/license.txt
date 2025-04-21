@@ -1,0 +1,8 @@
+Model Information:
+* title:	Japanese painting
+* source:	https://sketchfab.com/3d-models/japanese-painting-bc6f7407353e494a8db42d41684415cc
+* author:	Wbobr (https://sketchfab.com/wbobr)
+
+Model License:
+* license type:	SKETCHFAB Standard (https://sketchfab.com/licenses)
+* requirements:	Under basic restrictions, use worldwide, on all types of media, commercially or not, and in all types of derivative works

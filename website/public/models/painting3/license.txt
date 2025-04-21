@@ -1,0 +1,8 @@
+Model Information:
+* title:	Sun Painting
+* source:	https://sketchfab.com/3d-models/sun-painting-d594e9d5b5914d538b2457daa9c6d738
+* author:	Anom Purple Modelling (https://sketchfab.com/Anom404)
+
+Model License:
+* license type:	SKETCHFAB Standard (https://sketchfab.com/licenses)
+* requirements:	Under basic restrictions, use worldwide, on all types of media, commercially or not, and in all types of derivative works

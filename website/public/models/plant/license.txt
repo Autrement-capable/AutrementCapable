@@ -1,0 +1,8 @@
+Model Information:
+* title:	Tall house plant
+* source:	https://sketchfab.com/3d-models/tall-house-plant-4de451492c94452bb0e3eb07a1866f78
+* author:	assetfactory (https://sketchfab.com/assetfactory)
+
+Model License:
+* license type:	SKETCHFAB Standard (https://sketchfab.com/licenses)
+* requirements:	Under basic restrictions, use worldwide, on all types of media, commercially or not, and in all types of derivative works

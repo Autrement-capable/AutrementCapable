@@ -1,0 +1,8 @@
+Model Information:
+* title:	TV Stand
+* source:	https://sketchfab.com/3d-models/tv-stand-0e5503dbe6e44e2a85d17512f18ff69d
+* author:	Graham Rust (https://sketchfab.com/GRXR.ca)
+
+Model License:
+* license type:	SKETCHFAB Standard (https://sketchfab.com/licenses)
+* requirements:	Under basic restrictions, use worldwide, on all types of media, commercially or not, and in all types of derivative works
