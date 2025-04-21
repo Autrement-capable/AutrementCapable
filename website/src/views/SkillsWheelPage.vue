@@ -225,6 +225,7 @@
 import { getAllSkills } from '@/data/skills-list';
 import VueApexCharts from "vue3-apexcharts";
 import { unlockBadge, isBadgeUnlocked } from '@/utils/badges';
+import AuthService from '@/services/AuthService';
 
 export default {
   name: 'SkillsWheelGame',
@@ -579,6 +580,9 @@ export default {
       // Mark the skill as answered
       this.answeredSkills.push(this.currentSkill.nom);
       
+      // Envoyer la réponse au backend immédiatement
+      this.sendAnswerToBackend(this.currentSkill.nom, answerType);
+      
       // Réinitialiser les couleurs du graphique
       this.updateChartData();
       
@@ -608,6 +612,9 @@ export default {
       
       // Mark the skill as answered
       this.answeredSkills.push(this.currentSkill.nom);
+      
+      // Envoyer l'information de saut au backend
+      this.sendAnswerToBackend(this.currentSkill.nom, 'skipped');
       
       // Réinitialiser les couleurs du graphique
       this.updateChartData();
@@ -723,6 +730,56 @@ export default {
       ];
       
       return colors[index % colors.length];
+    },
+
+    sendAnswerToBackend(skillName, answerType) {
+      // Mapper les types de réponse de votre jeu vers le format attendu par le backend
+      const answerTypeMapping = {
+        'strengths': 'Strong',
+        'toImprove': 'WantsToLearn',  
+        'difficulties': 'Weak',
+        'unknown': 'Unknown',
+        'skipped': 'Skip'
+      };
+
+      // Obtenir la catégorie correcte pour le backend
+      const backendCategory = answerTypeMapping[answerType];
+      
+      // Créer l'objet à envoyer au backend dans le format exact demandé
+      const abilityData = {
+        category: backendCategory,
+        ability: skillName
+      };
+      
+      console.log('Données envoyées à /abilities/add:', {
+        url: '/abilities/add',
+        method: 'POST',
+        headers: 'Content-Type: application/json',
+        body: JSON.stringify(abilityData),
+        payload: abilityData
+      });
+      
+      // Utilisation de AuthService pour l'envoi authentifié
+      AuthService.request('post', '/abilities/add', abilityData)
+        .then(response => {
+          console.log('Réponse complète du backend:', response);
+          console.log('Données reçues du backend:', response.data);
+        })
+        .catch(error => {
+          console.error('Erreur détaillée lors de l\'envoi:', error);
+          
+          if (error.response) {
+            console.error('Réponse d\'erreur du serveur:', {
+              status: error.response.status,
+              statusText: error.response.statusText,
+              data: error.response.data
+            });
+          }
+          
+          if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+            console.warn('Problème d\'authentification. Vos réponses seront sauvegardées localement.');
+          }
+        });
     },
     
     // Get icon for a skill
