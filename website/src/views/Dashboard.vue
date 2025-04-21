@@ -283,6 +283,7 @@ export default {
         { value: 'ocean', label: 'Ocean' },
         { value: 'cyberpunk', label: 'Cyberpunk' },
         { value: 'forest', label: 'Forêt' },
+        { value: 'snow', label: 'Neige' },
       ],
       progress: 0,
       activeSection: null,
@@ -742,7 +743,6 @@ export default {
 
       // Optional: trigger achievement for first theme change
       if (!this.themeChangeAchieved && theme !== 'cosmic') {
-        this.triggerAchievement('Explorateur de Mondes')
         this.themeChangeAchieved = true
       }
     },
@@ -830,19 +830,11 @@ export default {
 
     handleGenerateCV() {
       // Déclenche un accomplissement et ferme le modal
-      this.triggerAchievement('CV professionnel');
       this.closeRewardsModal();
     },
 
     handleViewProfile() {
       this.closeRewardsModal();
-    },
-
-    // Personnalisation de l'avatar
-    customizeAvatar() {
-      this.showAvatarInteraction = false
-      this.activeModal = 'customize'
-      this.triggerAchievement('Esprit Créatif')
     },
 
     // Voir les réalisations
@@ -946,13 +938,6 @@ export default {
     this.themeChangeAchieved = false
 
     this.profileTourCompleted = localStorage.getItem('profile-tour-completed') === 'true';
-
-    // Simulate a reward after a certain time
-    setTimeout(() => {
-      const randomAchievement =
-        this.achievements[Math.floor(Math.random() * this.achievements.length)]
-      this.triggerAchievement(randomAchievement)
-    }, 5000)
 
     // Vérifier si c'est la première visite
     this.checkFirstVisit();
@@ -1151,6 +1136,11 @@ export default {
 .theme-icon.forest {
   background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
   box-shadow: 0 0 10px rgba(46, 125, 50, 0.5);
+}
+
+.theme-icon.snow {
+  background: linear-gradient(135deg, #6ebeff 0%, #eff5ff 100%);
+  box-shadow: 0 0 10px rgba(144, 202, 249, 0.5);
 }
 
 .theme-option span {
