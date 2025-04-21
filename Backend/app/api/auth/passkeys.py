@@ -97,7 +97,7 @@ async def start_passkey_registration(
     storing the provided avatar and passions, and generating WebAuthn registration options.
     """
     # Check if we need an avatar (required except in DEV mode)
-    is_dev_mode = getenv("MODE") == "DEV"
+    is_dev_mode = os.getenv("MODE") == "DEV"
     if not avatar and not is_dev_mode:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

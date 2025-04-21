@@ -1,6 +1,8 @@
 module.exports = {
+  parser: 'vue-eslint-parser',
   root: true,
   env: {
+    browser: true,
     node: true
   },
   'extends': [
@@ -8,7 +10,8 @@ module.exports = {
     'eslint:recommended'
   ],
   parserOptions: {
-    parser: '@babel/eslint-parser'
+    requireConfigFile: false,
+    parser: "@babel/eslint-parser"
   },
   rules: {
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
