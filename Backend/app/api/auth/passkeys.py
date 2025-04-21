@@ -230,7 +230,7 @@ async def complete_passkey_registration(
         )
 
     # Get the user
-    from database.postgress.actions.user import get_user_by_id
+    from ...db.postgress.repositories.user import get_user_by_id
     user = await get_user_by_id(session, data.user_id)
 
     if not user:
