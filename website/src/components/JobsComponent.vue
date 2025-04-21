@@ -277,7 +277,7 @@ export default {
     const allJobsSeen = ref(false);
     const highContrastMode = ref(false);
     const showBadgeUnlockAnimation = ref(false);
-    const badgeJobDiscoveryId = ref(2); // ID du badge pour ce jeu
+    const badgeJobDiscoveryId = ref(7);
     
     // Données pour le badge
     const badgeData = ref({
@@ -444,10 +444,10 @@ export default {
     }
     
     function showDetails() {
-      if (!currentMetier.value) return;
+      // if (!currentMetier.value) return;
       
-      // Rediriger vers la page de détails du métier
-      window.location.href = `/metier/${currentMetier.value.id}`;
+      // // Rediriger vers la page de détails du métier
+      // window.location.href = `/metier/${currentMetier.value.id}`;
     }
     
     function nextCard() {
@@ -483,8 +483,8 @@ export default {
       window.location.href = '/game-speed';
     }
     
-    function goToJobDetails(job) {
-      window.location.href = `/metier/${job.id}`;
+    function goToJobDetails() {
+      // window.location.href = `/metier/${job.id}`;
     }
     
     function checkBadges() {

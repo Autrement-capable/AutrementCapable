@@ -51,7 +51,7 @@ export const UserJourneyService = {
   GAMES: [
     { id: 'scenarios', name: 'Scénarios sociaux', route: '/scenarios' },
     { id: 'skills-wheel', name: 'Roue des compétences', route: '/roue-des-competences' },
-    { id: 'metiers', name: 'Découverte des métiers', route: '/metier' },
+    { id: 'metiers', name: 'Découverte des métiers', route: '/metiers' },
     { id: 'game-speed', name: 'Jeu de vitesse', route: '/game-speed' },
     { id: 'shape-game', name: 'Jeu des formes', route: '/shape-sequence-game' },
     { id: 'environment', name: 'Personnalisation', route: '/environment' }

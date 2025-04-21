@@ -361,7 +361,7 @@
   
       // Aller à la page des métiers
       const goToMetierPage = () => {
-        window.location.href = '/metier/soudeur';
+        window.location.href = '/metiers';
       };
   
       // Obtenir un message de résultat personnalisé
