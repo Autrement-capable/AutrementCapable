@@ -228,20 +228,42 @@ const AuthService = {
   // Start passkey registration for new user
   async registerWithPasskey(userData) {
     try {
-      // Step 1: Send user data to server and get registration options
-      const { data } = await axios.post(`${API_URL}/auth/passkey/registration/start`, userData);
+     // Create FormData object for multipart form submission
+    const formData = new FormData();
+    formData.append('first_name', userData.first_name);
+    
+    if (userData.last_name) formData.append('last_name', userData.last_name);
+    if (userData.age) formData.append('age', userData.age);
+    
+    // Handle passions as JSON string
+    if (userData.passions) {
+      formData.append('passions', JSON.stringify(userData.passions));
+    }
+    
+    // Add avatar if provided
+    if (userData.avatar) {
+      formData.append('avatar', userData.avatar);
+    }
+    
+    // Step 1: Send user data to server and get registration options
+    const { data } = await axios.post(
+      `${API_URL}/auth/passkey/registration/start`, 
+      formData,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      }
+    );
 
-      // Step 2: Use SimpleWebAuthn to create the passkey
-      const registrationResponse = await startRegistration(data.options);
+    // Rest of the function remains the same...
+    const registrationResponse = await startRegistration(data.options);
 
-      // Step 3: Send the response to server to complete registration
-      const completeResponse = await axios.post(`${API_URL}/auth/passkey/registration/complete`, {
-        user_id: data.user_id,
-        registration_data: registrationResponse,
-        challenge: data.options.challenge
-      }, {
-        withCredentials: true, // Important: This ensures cookies are saved
-      });
+    const completeResponse = await axios.post(`${API_URL}/auth/passkey/registration/complete`, {
+      user_id: data.user_id,
+      registration_data: registrationResponse,
+      challenge: data.options.challenge
+    }, {
+      withCredentials: true,
+    });
 
       // Store access token (refresh token is in HTTP-only cookie)
       this.setAccessToken(completeResponse.data.access_token);
