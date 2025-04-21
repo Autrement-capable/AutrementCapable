@@ -156,7 +156,7 @@ async def complete_profile_setup(
 ):
     """Complete the user profile setup (username, avatar, passions)"""
     user_id = jwt["payload"]["sub"]
-    is_dev_mode = getenv("MODE") == "DEV"
+    is_dev_mode = os.getenv("MODE") == "DEV"
 
     # Check if avatar is required
     if not avatar and not is_dev_mode:
