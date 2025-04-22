@@ -326,6 +326,165 @@
             <div v-for="i in 10" :key="`firefly-${i}`" class="static-firefly"></div>
           </div>
         </template>
+
+        <template v-else-if="theme === 'snow'">
+          <!-- Base Sky & Stars -->
+          <div class="static-snow-sky">
+            <div class="static-stars-layer stars-far"></div>
+            <div class="static-stars-layer stars-mid"></div>
+            <!-- Optional Moon -->
+            <div class="static-moon"></div>
+          </div>
+
+          <!-- Static Aurora Borealis -->
+          <div class="static-aurora-borealis-container">
+            <div class="static-aurora-ribbon ribbon-1"></div>
+            <div class="static-aurora-ribbon ribbon-2"></div>
+            <div class="static-aurora-ribbon ribbon-3"></div>
+            <div class="static-aurora-ribbon ribbon-4"></div>
+          </div>
+
+          <!-- Static Mountain Layers -->
+          <div class="static-mountains-distant">
+            <div class="static-mountain-peak peak-distant-1"></div>
+            <div class="static-mountain-peak peak-distant-2"></div>
+          </div>
+          <div class="static-mountains-mid">
+            <div class="static-mountain-peak peak-mid-1">
+              <div class="mountain-texture"></div>
+            </div>
+            <div class="static-mountain-peak peak-mid-2">
+              <div class="mountain-texture"></div>
+            </div>
+            <div class="static-mountain-peak peak-mid-3">
+              <div class="mountain-texture"></div>
+            </div>
+          </div>
+
+          <!-- Static Forest Layers -->
+          <div class="static-forest-layer-mid">
+            <div v-for="i in 5" :key="`tree-mid-${i}`" class="static-pine-tree tree-mid" :style="getStaticTreeStyle(i, 'mid')">
+              <div class="tree-trunk"></div>
+              <div class="tree-branch branch-1"><div class="snow-on-branch"></div></div>
+              <div class="tree-branch branch-2"><div class="snow-on-branch"></div></div>
+              <div class="tree-branch branch-3"><div class="snow-on-branch"></div></div>
+            </div>
+          </div>
+
+          <!-- Static Mist/Fog -->
+          <div class="static-mist-container">
+            <div class="static-mist-layer mist-1"></div>
+            <div class="static-mist-layer mist-2"></div>
+            <div class="static-mist-layer mist-3"></div>
+          </div>
+
+          <div class="static-mountains-near">
+            <div class="static-mountain-peak peak-near-1">
+              <div class="mountain-texture rock-texture"></div>
+              <div class="mountain-texture snow-texture"></div>
+            </div>
+            <div class="static-mountain-peak peak-near-2">
+              <div class="mountain-texture rock-texture"></div>
+              <div class="mountain-texture snow-texture"></div>
+            </div>
+          </div>
+
+          <!-- Static Animals -->
+          <div class="static-polar-bear-container">
+            <div class="static-polar-bear">
+              <div class="polar-bear-body">
+                <div class="polar-bear-head">
+                  <div class="polar-bear-ear polar-bear-ear-left"></div>
+                  <div class="polar-bear-ear polar-bear-ear-right"></div>
+                  <div class="polar-bear-snout">
+                    <div class="polar-bear-nose"></div>
+                    <div class="polar-bear-mouth"></div>
+                  </div>
+                  <div class="polar-bear-eye polar-bear-eye-left">
+                    <div class="polar-bear-eye-pupil"></div>
+                  </div>
+                  <div class="polar-bear-eye polar-bear-eye-right">
+                    <div class="polar-bear-eye-pupil"></div>
+                  </div>
+                </div>
+                <div class="polar-bear-torso">
+                  <div class="polar-bear-fur-detail fur-detail-1"></div>
+                  <div class="polar-bear-fur-detail fur-detail-2"></div>
+                  <div class="polar-bear-fur-detail fur-detail-3"></div>
+                </div>
+                <div class="polar-bear-leg polar-bear-leg-front-left">
+                  <div class="polar-bear-paw polar-bear-paw-front-left"></div>
+                </div>
+                <div class="polar-bear-leg polar-bear-leg-front-right">
+                  <div class="polar-bear-paw polar-bear-paw-front-right"></div>
+                </div>
+                <div class="polar-bear-leg polar-bear-leg-back-left">
+                  <div class="polar-bear-paw polar-bear-paw-back-left"></div>
+                </div>
+                <div class="polar-bear-leg polar-bear-leg-back-right">
+                  <div class="polar-bear-paw polar-bear-paw-back-right"></div>
+                </div>
+              </div>
+              <div class="polar-bear-shadow"></div>
+            </div>
+          </div>
+          <div class="static-penguin-container">
+            <div class="static-penguin">
+              <div class="penguin-body">
+                <div class="penguin-head">
+                  <div class="penguin-face">
+                    <div class="penguin-eye penguin-eye-left">
+                      <div class="penguin-eye-pupil"></div>
+                    </div>
+                    <div class="penguin-eye penguin-eye-right">
+                      <div class="penguin-eye-pupil"></div>
+                    </div>
+                    <div class="penguin-beak"></div>
+                  </div>
+                </div>
+                <div class="penguin-belly"></div>
+                <div class="penguin-wing penguin-wing-left"></div>
+                <div class="penguin-wing penguin-wing-right"></div>
+                <div class="penguin-foot penguin-foot-left"></div>
+                <div class="penguin-foot penguin-foot-right"></div>
+              </div>
+              <div class="penguin-shadow"></div>
+            </div>
+          </div>
+
+          <!-- Static Snow Ground/Terrain -->
+          <div class="static-snow-ground">
+            <div class="static-snow-drift drift-large-1"></div>
+            <div class="static-snow-drift drift-medium-1"></div>
+            <div class="static-snow-drift drift-small-1"></div>
+            <div class="static-snow-drift drift-medium-2"></div>
+            <div class="static-snow-drift drift-large-2"></div>
+          </div>
+
+          <div class="static-forest-layer-near">
+            <div v-for="i in 4" :key="`tree-near-${i}`" class="static-pine-tree tree-near" :style="getStaticTreeStyle(i, 'near')">
+              <div class="tree-trunk"></div>
+              <div class="tree-branch branch-1"><div class="snow-on-branch"></div></div>
+              <div class="tree-branch branch-2"><div class="snow-on-branch"></div></div>
+              <div class="tree-branch branch-3"><div class="snow-on-branch"></div></div>
+              <div class="tree-branch branch-4"><div class="snow-on-branch"></div></div>
+            </div>
+          </div>
+
+          <!-- Static Snowfall Layers -->
+          <div class="static-snowfall-layer-far">
+            <div v-for="i in 10" :key="`snow-far-${i}`" class="static-snowflake snow-far" :style="getStaticSnowflakeStyle(i, 'far')"></div>
+          </div>
+          <div class="static-snowfall-layer-mid">
+            <div v-for="i in 8" :key="`snow-mid-${i}`" class="static-snowflake snow-mid" :style="getStaticSnowflakeStyle(i, 'mid')"></div>
+          </div>
+          <div class="static-snowfall-layer-near">
+            <div v-for="i in 6" :key="`snow-near-${i}`" class="static-snowflake snow-near" :style="getStaticSnowflakeStyle(i, 'near')"></div>
+          </div>
+
+          <!-- Static Vignette Overlay -->
+          <div class="static-vignette-overlay"></div>
+        </template>
       </div>
     </div>
   </template>
@@ -338,11 +497,63 @@
       theme: {
         type: String,
         default: 'cosmic',
-        validator: (value) => ['cosmic', 'ocean', 'cyberpunk', 'forest'].includes(value)
+        validator: (value) => ['cosmic', 'ocean', 'cyberpunk', 'forest', 'snow'].includes(value)
       }
-    }
+    },
+    methods: {
+      // Ajouter ces méthodes dans votre composant
+      getStaticTreeStyle(index, layer) {
+        const baseLeft = (index * (layer === 'near' ? 22 : 18)) + (layer === 'near' ? 5 : 10);
+        const randomOffset = (index * 3) % 8 - 4; // Pseudo-aléatoire basé sur l'index
+        const left = baseLeft + randomOffset;
+        
+        const baseScale = layer === 'near' ? 1 + (index % 2) * 0.1 : 0.7 + (index % 3) * 0.1;
+        const heightVariation = layer === 'near' ? 80 + (index * 5) % 20 : 50 + (index * 3) % 15;
+        
+        return {
+          left: `${left}%`,
+          transform: `scale(${baseScale})`,
+          height: `${heightVariation}%`,
+          zIndex: layer === 'near' ? 8 : 4
+        };
+      },
+      
+      getStaticSnowflakeStyle(index, layer) {
+        const left = ((index * 10) + (index * 3)) % 100;
+        const top = ((index * 7) + 10) % 80;
+        
+        let scale, opacity, blur, zIndex;
+        
+        if (layer === 'near') {
+          scale = 1 + (index % 5) * 0.1;
+          opacity = 0.9;
+          blur = '0px';
+          zIndex = 18;
+        } else if (layer === 'mid') {
+          scale = 0.6 + (index % 4) * 0.1;
+          opacity = 0.7;
+          blur = '1px';
+          zIndex = 16;
+        } else { // far
+          scale = 0.3 + (index % 3) * 0.1;
+          opacity = 0.5;
+          blur = '2px';
+          zIndex = 14;
+        }
+        
+        return {
+          left: `${left}%`,
+          top: `${top}%`,
+          transform: `scale(${scale})`,
+          opacity: opacity,
+          filter: `blur(${blur})`,
+          zIndex: zIndex
+        };
+      }
+    },
   };
   </script>
+
     
   <style scoped>
   /* Styles de base pour tous les arrière-plans statiques */
@@ -2049,4 +2260,753 @@
   .static-firefly:nth-child(8) { top: 30%; left: 90%; }
   .static-firefly:nth-child(9) { top: 70%; left: 40%; }
   .static-firefly:nth-child(10) { top: 80%; left: 60%; }
+
+  /* ======== SNOW THEME STATIC STYLES ======== */
+  .snow {
+    /* Slightly darker, deeper blue gradient for the base sky */
+    background: linear-gradient(to bottom, #1c2a4f 0%, #3a4a7a 50%, #6a86b8 100%);
+    overflow: hidden;
+  }
+
+  /* --- Sky & Stars --- */
+  .static-snow-sky {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .static-stars-layer {
+    position: absolute;
+    inset: 0;
+    background-repeat: repeat;
+    opacity: 0.6;
+  }
+
+  .static-stars-layer.stars-far {
+    background-image: radial-gradient(1px 1px at 20% 30%, white, transparent),
+                      radial-gradient(1px 1px at 80% 50%, white, transparent),
+                      radial-gradient(1px 1px at 50% 80%, white, transparent);
+    background-size: 400px 400px;
+    opacity: 0.4;
+  }
+
+  .static-stars-layer.stars-mid {
+    background-image: radial-gradient(1.5px 1.5px at 10% 70%, white, transparent),
+                      radial-gradient(1px 1px at 60% 10%, white, transparent),
+                      radial-gradient(1.5px 1.5px at 90% 90%, white, transparent);
+    background-size: 300px 300px;
+    opacity: 0.7;
+  }
+
+  .static-moon {
+    position: absolute;
+    top: 10%;
+    left: 5%;
+    width: 80px;
+    height: 80px;
+    background: radial-gradient(
+      circle at center,
+      rgba(255, 255, 255, 0.8) 0%,
+      rgba(255, 255, 255, 0.6) 50%,
+      rgba(255, 255, 255, 0.4) 100%
+    );
+    border-radius: 50%;
+    box-shadow: inset -5px -5px rgba(200, 200, 200, 0.5);
+  }
+
+  /* --- Aurora Borealis --- */
+  .static-aurora-borealis-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 75%;
+    overflow: hidden;
+    z-index: 1;
+    mix-blend-mode: screen;
+    filter: blur(18px);
+    opacity: 0.9;
+  }
+
+  .static-aurora-ribbon {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 180%;
+    height: 100%;
+    transform-origin: bottom center;
+  }
+
+  .static-aurora-ribbon.ribbon-1 {
+    background: linear-gradient(to top, transparent 5%, rgba(100, 255, 150, 0.65) 40%, rgba(180, 255, 200, 0.5) 60%, transparent 95%);
+    left: -40%;
+    transform: translateX(-10%) scaleY(1) skewX(-12deg);
+    opacity: 0.65;
+  }
+
+  .static-aurora-ribbon.ribbon-2 {
+    background: linear-gradient(to top, transparent 10%, rgba(80, 180, 255, 0.6) 50%, rgba(160, 210, 255, 0.4) 70%, transparent 90%);
+    left: -25%;
+    transform: translateX(5%) scaleY(1.05) skewX(8deg);
+    opacity: 0.6;
+  }
+
+  .static-aurora-ribbon.ribbon-3 {
+    background: linear-gradient(to top, transparent 0%, rgba(190, 100, 255, 0.55) 40%, rgba(220, 170, 255, 0.4) 65%, transparent 85%);
+    left: -5%;
+    transform: translateX(-5%) scaleY(0.95) skewX(-6deg);
+    opacity: 0.55;
+  }
+
+  .static-aurora-ribbon.ribbon-4 {
+    background: linear-gradient(to top, transparent 5%, rgba(255, 120, 200, 0.65) 45%, rgba(255, 170, 220, 0.5) 65%, transparent 90%);
+    left: -15%;
+    transform: translateX(8%) scaleY(1.02) skewX(10deg);
+    opacity: 0.65;
+  }
+
+  /* --- Mountains --- */
+  .static-mountains-distant, .static-mountains-mid, .static-mountains-near {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 70%;
+  }
+
+  .static-mountains-distant { z-index: 2; height: 50%; opacity: 0.6; filter: blur(3px); }
+  .static-mountains-mid { z-index: 3; height: 65%; opacity: 0.8; filter: blur(1px); }
+  .static-mountains-near { z-index: 6; height: 75%; }
+
+  .static-mountain-peak {
+    position: absolute;
+    bottom: 0;
+    background-color: #8a9ec4;
+    overflow: hidden;
+    filter: drop-shadow(5px -5px 10px rgba(0, 0, 0, 0.2));
+  }
+
+  /* Jagged shapes using clip-path */
+  .static-mountain-peak.peak-distant-1 { left: 5%; width: 40%; height: 80%; clip-path: polygon(0 100%, 20% 40%, 50% 15%, 70% 50%, 100% 100%); background-color: #6a7c9f; }
+  .static-mountain-peak.peak-distant-2 { left: 55%; width: 45%; height: 70%; clip-path: polygon(0 100%, 30% 50%, 55% 25%, 80% 60%, 100% 100%); background-color: #788aac; }
+
+  .static-mountain-peak.peak-mid-1 { left: -5%; width: 55%; height: 85%; clip-path: polygon(0 100%, 15% 50%, 40% 20%, 65% 60%, 90% 55%, 100% 100%); }
+  .static-mountain-peak.peak-mid-2 { left: 40%; width: 50%; height: 95%; clip-path: polygon(0 100%, 25% 60%, 50% 10%, 75% 55%, 100% 100%); background-color: #93a4cb; }
+  .static-mountain-peak.peak-mid-3 { left: 75%; width: 30%; height: 75%; clip-path: polygon(0 100%, 40% 40%, 60% 30%, 100% 100%); }
+
+  .static-mountain-peak.peak-near-1 { left: -10%; width: 60%; height: 90%; clip-path: polygon(0 100%, 20% 45%, 50% 5%, 70% 50%, 100% 100%); background-color: #aab8d3; }
+  .static-mountain-peak.peak-near-2 { left: 50%; width: 70%; height: 100%; clip-path: polygon(0 100%, 15% 60%, 40% 15%, 65% 70%, 85% 65%, 100% 100%); background-color: #b5c3dd; }
+
+  /* Example texture for mid mountains */
+  .static-mountains-mid .mountain-texture {
+    position: absolute;
+    inset: 0;
+    opacity: 0.3;
+    background: linear-gradient(160deg, rgba(255,255,255,0.15) 20%, transparent 50%),
+                linear-gradient(20deg, rgba(255,255,255,0.1) 30%, transparent 60%);
+  }
+
+  /* Textures for near mountains */
+  .static-mountain-peak .rock-texture {
+    background: linear-gradient(135deg, rgba(0,0,0,0.1) 0%, transparent 10%),
+                linear-gradient(225deg, rgba(0,0,0,0.1) 0%, transparent 10%);
+    background-size: 40px 40px;
+    opacity: 0.15;
+  }
+
+  .static-mountain-peak .snow-texture {
+    background: linear-gradient(to bottom, rgba(255,255,255,0.5) 0%, transparent 30%),
+                radial-gradient(circle at 30% 20%, rgba(255,255,255,0.3) 5%, transparent 20%);
+    opacity: 0.6;
+    mix-blend-mode: overlay;
+  }
+
+  /* --- Forests --- */
+  .static-forest-layer-mid, .static-forest-layer-near {
+    position: absolute;
+    bottom: 10%;
+    left: 0;
+    width: 100%;
+    height: 35%;
+  }
+
+  .static-forest-layer-mid { z-index: 4; height: 25%; bottom: 15%; opacity: 0.7; filter: blur(0.5px); }
+  .static-forest-layer-near { z-index: 8; height: 30%; bottom: 5%; }
+
+  .static-pine-tree {
+    position: absolute;
+    bottom: 0;
+    width: 40px;
+  }
+
+  .static-pine-tree .tree-trunk {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 25%;
+    background: #5a3a22;
+    border-radius: 2px 2px 0 0;
+    z-index: 1;
+  }
+
+  .static-pine-tree .tree-branch {
+    position: absolute;
+    left: 50%;
+    width: 100%;
+    background: linear-gradient(to bottom right, #1a4d2e, #10351e);
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    transform-origin: bottom center;
+  }
+
+  .static-pine-tree .tree-branch.branch-1 { height: 40%; bottom: 20%; transform: translateX(-50%) scale(1); }
+  .static-pine-tree .tree-branch.branch-2 { height: 35%; bottom: 40%; transform: translateX(-50%) scale(0.85); }
+  .static-pine-tree .tree-branch.branch-3 { height: 30%; bottom: 60%; transform: translateX(-50%) scale(0.7); }
+  .static-pine-tree.tree-near .tree-branch.branch-4 { height: 25%; bottom: 75%; transform: translateX(-50%) scale(0.55); }
+
+  .static-pine-tree .snow-on-branch {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 40%;
+    background: rgba(240, 248, 255, 0.8);
+    clip-path: polygon(50% 0%, 10% 100%, 90% 100%);
+    filter: blur(0.5px);
+    border-radius: 3px 3px 0 0;
+  }
+
+  /* --- Mist/Fog --- */
+  .static-mist-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 40%;
+    z-index: 5;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .static-mist-layer {
+    position: absolute;
+    width: 150%;
+    height: 60%;
+    left: -25%;
+    background: radial-gradient(ellipse at center, rgba(180, 190, 210, 0.25) 0%, rgba(150, 160, 180, 0.1) 50%, transparent 80%);
+    filter: blur(20px);
+    opacity: 0.8;
+  }
+
+  .static-mist-layer.mist-1 { bottom: 0; height: 50%; opacity: 0.7; transform: translateX(-5%); }
+  .static-mist-layer.mist-2 { bottom: 10%; height: 70%; opacity: 0.6; transform: translateX(5%); }
+  .static-mist-layer.mist-3 { bottom: 25%; height: 60%; opacity: 0.5; transform: translateX(-2%); }
+
+  /* --- Animals --- */
+  .static-polar-bear-container {
+    position: absolute;
+    bottom: 8%;
+    right: 15%;
+    width: 300px;
+    height: 220px;
+    z-index: 8;
+  }
+
+  .static-polar-bear {
+    position: relative;
+    width: 220px;
+    height: 120px;
+    transform-style: preserve-3d;
+  }
+
+  .static-polar-bear .polar-bear-body {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    transform-origin: center bottom;
+    transform: rotate(-1deg);
+  }
+
+  .static-polar-bear .polar-bear-head {
+    position: absolute;
+    width: 75px;
+    height: 60px;
+    top: -10px;
+    left: 10px;
+    background: #ffffff;
+    border-radius: 50% 70% 60% 40% / 50% 60% 40% 50%;
+    box-shadow: 
+      -5px -5px 10px rgba(255, 255, 255, 0.8) inset,
+      5px 5px 15px rgba(200, 200, 180, 0.4) inset;
+    transform-origin: bottom center;
+    transform: rotate(-2deg);
+    z-index: 3;
+  }
+
+  .static-polar-bear .polar-bear-ear {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    background: #ffffff;
+    border-radius: 50%;
+    z-index: 1;
+  }
+
+  .static-polar-bear .polar-bear-ear-left {
+    top: -8px;
+    left: 15px;
+    transform: rotate(-5deg);
+  }
+
+  .static-polar-bear .polar-bear-ear-right {
+    top: -8px;
+    right: 15px;
+    transform: rotate(5deg);
+  }
+
+  .static-polar-bear .polar-bear-snout {
+    position: absolute;
+    width: 45px;
+    height: 35px;
+    background: #ffffff;
+    bottom: 0;
+    left: 15px;
+    border-radius: 60% 60% 70% 70% / 60% 60% 70% 70%;
+    transform: translateY(10px);
+    z-index: 2;
+  }
+
+  .static-polar-bear .polar-bear-nose {
+    position: absolute;
+    width: 22px;
+    height: 14px;
+    background: #222222;
+    border-radius: 40% 40% 60% 60% / 40% 40% 60% 60%;
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .static-polar-bear .polar-bear-mouth {
+    position: absolute;
+    width: 12px;
+    height: 3px;
+    background: #333333;
+    border-radius: 50%;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .static-polar-bear .polar-bear-eye {
+    position: absolute;
+    width: 10px;
+    height: 8px;
+    background: #ffffff;
+    border-radius: 50%;
+    top: 20px;
+    z-index: 3;
+  }
+
+  .static-polar-bear .polar-bear-eye-left {
+    left: 22px;
+    transform: rotate(-10deg);
+  }
+
+  .static-polar-bear .polar-bear-eye-right {
+    right: 22px;
+    transform: rotate(10deg);
+  }
+
+  .static-polar-bear .polar-bear-eye-pupil {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    top: 1px;
+    left: 2px;
+    background: #000000;
+    border-radius: 50%;
+  }
+
+  .static-polar-bear .polar-bear-torso {
+    position: absolute;
+    width: 220px;
+    height: 95px;
+    bottom: 35px;
+    background: #ffffff;
+    border-radius: 60% 70% 55% 40% / 80% 80% 45% 40%;
+    box-shadow: 
+      -10px -5px 15px rgba(255, 255, 255, 0.6) inset,
+      10px 10px 20px rgba(200, 200, 180, 0.3) inset;
+    z-index: 2;
+    transform-origin: center bottom;
+  }
+
+  .static-polar-bear .polar-bear-fur-detail {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+  }
+
+  .static-polar-bear .fur-detail-1 {
+    width: 50px;
+    height: 30px;
+    top: 10px;
+    left: 30px;
+    transform: rotate(-15deg);
+    box-shadow: 2px 5px 10px rgba(255, 255, 255, 0.6);
+  }
+
+  .static-polar-bear .fur-detail-2 {
+    width: 40px;
+    height: 35px;
+    top: 25px;
+    left: 60px;
+    transform: rotate(10deg);
+    box-shadow: -2px 3px 8px rgba(255, 255, 255, 0.6);
+  }
+
+  .static-polar-bear .fur-detail-3 {
+    width: 45px;
+    height: 25px;
+    top: 15px;
+    left: 90px;
+    transform: rotate(-5deg);
+    box-shadow: 1px 4px 8px rgba(255, 255, 255, 0.6);
+  }
+
+  .static-polar-bear .polar-bear-leg {
+    position: absolute;
+    width: 35px;
+    background: #ffffff;
+    z-index: 1;
+    box-shadow: 
+      -2px -2px 5px rgba(255, 255, 255, 0.6) inset,
+      2px 2px 8px rgba(200, 200, 180, 0.4) inset;
+  }
+
+  .static-polar-bear .polar-bear-leg-front-left {
+    height: 55px;
+    bottom: 0;
+    left: 25px;
+    border-radius: 40% 60% 20% 30% / 20% 30% 20% 40%;
+    transform: rotate(2deg);
+  }
+
+  .static-polar-bear .polar-bear-leg-front-right {
+    height: 55px;
+    bottom: 0;
+    left: 65px;
+    border-radius: 60% 40% 30% 20% / 30% 20% 40% 20%;
+    transform: rotate(-3deg);
+  }
+
+  .static-polar-bear .polar-bear-leg-back-left {
+    height: 50px;
+    bottom: 0;
+    right: 65px;
+    border-radius: 40% 60% 20% 30% / 20% 30% 20% 40%;
+    transform: rotate(1deg);
+  }
+
+  .static-polar-bear .polar-bear-leg-back-right {
+    height: 50px;
+    bottom: 0;
+    right: 25px;
+    border-radius: 60% 40% 30% 20% / 30% 20% 40% 20%;
+    transform: rotate(-2deg);
+  }
+
+  .static-polar-bear .polar-bear-paw {
+    position: absolute;
+    width: 38px;
+    height: 15px;
+    background: #ffffff;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 50% 50% 45% 45%;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .static-polar-bear .polar-bear-paw-front-left::after,
+  .static-polar-bear .polar-bear-paw-front-right::after,
+  .static-polar-bear .polar-bear-paw-back-left::after,
+  .static-polar-bear .polar-bear-paw-back-right::after {
+    content: '';
+    position: absolute;
+    width: 30px;
+    height: 2px;
+    background: rgba(0, 0, 0, 0.15);
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 50%;
+  }
+
+  .static-polar-bear .polar-bear-shadow {
+    position: absolute;
+    width: 180px;
+    height: 30px;
+    bottom: -15px;
+    left: 30px;
+    background: rgba(58, 74, 122, 0.15);
+    border-radius: 50%;
+    filter: blur(8px);
+    transform-origin: center;
+    transform: scaleX(1);
+    z-index: 1;
+    opacity: 0.2;
+  }
+
+  .static-penguin-container {
+    position: absolute;
+    bottom: 5%;
+    left: 20%;
+    width: 200px;
+    height: 200px;
+    z-index: 8;
+  }
+
+  .static-penguin {
+    position: relative;
+    width: 100px;
+    height: 150px;
+    transform-style: preserve-3d;
+  }
+
+  .static-penguin .penguin-body {
+    position: absolute;
+    width: 80px;
+    height: 130px;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a2e;
+    border-radius: 40% 40% 30% 30%;
+    transform-origin: bottom center;
+  }
+
+  .static-penguin .penguin-head {
+    position: absolute;
+    width: 60px;
+    height: 55px;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a1a2e;
+    border-radius: 50% 50% 40% 40%;
+    z-index: 2;
+  }
+
+  .static-penguin .penguin-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+  }
+
+  .static-penguin .penguin-eye {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    top: 18px;
+    background: white;
+    border-radius: 50%;
+    z-index: 3;
+  }
+
+  .static-penguin .penguin-eye-left {
+    left: 15px;
+    transform: rotate(-10deg);
+  }
+
+  .static-penguin .penguin-eye-right {
+    right: 15px;
+    transform: rotate(10deg);
+  }
+
+  .static-penguin .penguin-eye-pupil {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    top: 3px;
+    left: 3px;
+    background: #000;
+    border-radius: 50%;
+  }
+
+  .static-penguin .penguin-beak {
+    position: absolute;
+    width: 15px;
+    height: 10px;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ff9e41;
+    border-radius: 30% 30% 60% 60%;
+    z-index: 2;
+  }
+
+  .static-penguin .penguin-belly {
+    position: absolute;
+    width: 60px;
+    height: 90px;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    border-radius: 50% 50% 40% 40%;
+    z-index: 1;
+  }
+
+  .static-penguin .penguin-wing {
+    position: absolute;
+    width: 24px;
+    height: 70px;
+    top: 20px;
+    background: #1a1a2e;
+    border-radius: 30% 30% 50% 50%;
+    transform-origin: top center;
+    z-index: 0;
+  }
+
+  .static-penguin .penguin-wing-left {
+    left: -10px;
+    transform: rotate(-15deg);
+  }
+
+  .static-penguin .penguin-wing-right {
+    right: -10px;
+    transform: rotate(15deg);
+  }
+
+  .static-penguin .penguin-foot {
+    position: absolute;
+    width: 25px;
+    height: 10px;
+    bottom: -8px;
+    background: #ff9e41;
+    border-radius: 50% 50% 0 0;
+    z-index: 0;
+    transform-origin: center top;
+  }
+
+  .static-penguin .penguin-foot-left {
+    left: 10px;
+    transform: rotate(-10deg);
+  }
+
+  .static-penguin .penguin-foot-right {
+    right: 10px;
+    transform: rotate(10deg);
+  }
+
+  .static-penguin .penguin-shadow {
+    position: absolute;
+    width: 80px;
+    height: 20px;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(58, 74, 122, 0.15);
+    border-radius: 50%;
+    filter: blur(5px);
+    z-index: 0;
+  }
+
+  /* --- Snow Ground --- */
+  .static-snow-ground {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 25%;
+    z-index: 7;
+    overflow: hidden;
+  }
+
+  .static-snow-drift {
+    position: absolute;
+    bottom: 0;
+    background: linear-gradient(to top, #e8f0ff 0%, #ffffff 50%, #f8faff 100%);
+    box-shadow: 0 -5px 15px rgba(106, 134, 184, 0.1);
+  }
+
+  .static-snow-drift.drift-large-1 { 
+    left: -20%; 
+    width: 80%; 
+    height: 90%; 
+    border-radius: 60% 40% 0 0 / 100% 100% 0 0; 
+  }
+
+  .static-snow-drift.drift-medium-1 { 
+    left: 30%; 
+    width: 50%; 
+    height: 70%; 
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0; 
+    background-color: #f0f8ff; 
+  }
+
+  .static-snow-drift.drift-small-1 { 
+    left: 65%; 
+    width: 30%; 
+    height: 50%; 
+    border-radius: 70% 30% 0 0 / 100% 100% 0 0; 
+  }
+
+  .static-snow-drift.drift-medium-2 { 
+    left: 75%; 
+    width: 45%; 
+    height: 80%; 
+    border-radius: 40% 60% 0 0 / 100% 100% 0 0; 
+    background-color: #f4faff;
+  }
+
+  .static-snow-drift.drift-large-2 { 
+    left: 40%; 
+    width: 50%; 
+    height: 100%; 
+    border-radius: 50% 50% 0 0 / 80% 80% 0 0; 
+    z-index: -1;
+  }
+
+  /* --- Snowfall --- */
+  .static-snowfall-layer-far, 
+  .static-snowfall-layer-mid, 
+  .static-snowfall-layer-near {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .static-snowflake {
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+    width: 6px;
+    height: 6px;
+    opacity: 0.8;
+  }
+
+  .snow-far {
+    filter: blur(2px);
+  }
+
+  .snow-mid {
+    filter: blur(1px);
+  }
+
+  .snow-near {
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+  }
+
+  .static-vignette-overlay {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 50%, rgba(10, 15, 30, 0.4) 100%);
+    z-index: 20;
+    pointer-events: none;
+  }
 </style>
