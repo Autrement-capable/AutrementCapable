@@ -1156,6 +1156,15 @@ export default {
 
     showBadgeDetails(badge) {
       this.selectedBadge = badge
+
+      // Faire remonter le scroll du conteneur tout en haut
+      const container = document.querySelector('.rewards-container')
+      if (container) {
+        container.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        })
+      }
     },
 
     closeModal() {
@@ -2234,12 +2243,12 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.9);
+  background-color: rgba(0, 0, 0, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1100;
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(8px);
 }
 
 .badge-modal {
