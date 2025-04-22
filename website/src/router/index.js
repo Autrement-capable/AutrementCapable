@@ -1,27 +1,25 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import LoginPage from '@/views/LoginPage.vue'
 import Onboarding from '@/views/Onboarding.vue'
-import Environment from '@/views/Environment.vue'
 import FormationPage from '@/views/FormationPage.vue'
-import SkillsWheelPage from '@/views/SkillsWheelPage.vue'
 import Dashboard from '@/views/Dashboard.vue'
 import UserProfile from '@/views/UserProfile.vue'
 
 // Scenarios
-import ScenarioList from '@/views/ScenarioList.vue'
-import ScenarioPage from '@/views/ScenarioPage.vue'
+import ScenarioList from '@/views/skillGames/ScenarioMenuGame.vue'
+import ScenarioPage from '@/views/skillGames/ScenarioGame.vue'
 import ResultsPage from '@/views/ResultsPage.vue'
 
 // Hard skills mini games
 import GameSpeed from '@/views/skillGames/GameSpeed.vue'
 import GameShape from '@/views/skillGames/GameShape.vue'
 import ShapeSequenceGame from '@/views/skillGames/ShapeSequenceGame.vue'
-
-// Tinder des metiers
-import TinderMetiers from '@/components/JobsComponent.vue'
+import TinderMetiers from '@/views/skillGames/JobsGame.vue'
 import SoudeurCard from '@/components/jobsCards/SoudeurCard.vue'
 import JardinerCard from '@/components/jobsCards/JardinerCard.vue'
 import CoiffeurCard from '@/components/jobsCards/CoiffeurCard.vue'
+import SkillsWheelPage from '@/views/skillGames/SkillsWheelGame.vue'
+import Environment from '@/views/skillGames/EnvironmentGame.vue'
 
 const routes = [
   {

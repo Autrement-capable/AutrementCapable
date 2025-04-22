@@ -733,52 +733,32 @@ export default {
     },
 
     sendAnswerToBackend(skillName, answerType) {
-      // Mapper les types de réponse de votre jeu vers le format attendu par le backend
+      // Mapper les types de réponse comme avant
       const answerTypeMapping = {
         'strengths': 'Strong',
-        'toImprove': 'WantsToLearn',  
+        'toImprove': 'WantToLearn',
         'difficulties': 'Weak',
         'unknown': 'Unknown',
-        'skipped': 'Skip'
+        'skipped': 'Skipped'
       };
 
-      // Obtenir la catégorie correcte pour le backend
       const backendCategory = answerTypeMapping[answerType];
       
-      // Créer l'objet à envoyer au backend dans le format exact demandé
       const abilityData = {
         category: backendCategory,
-        ability: skillName
+        ability: skillName,
       };
+
+      console.log('Données envoyées au backend:', abilityData);
       
-      console.log('Données envoyées à /abilities/add:', {
-        url: '/abilities/add',
-        method: 'POST',
-        headers: 'Content-Type: application/json',
-        body: JSON.stringify(abilityData),
-        payload: abilityData
-      });
-      
-      // Utilisation de AuthService pour l'envoi authentifié
+      // N'ajoutez plus func=add dans l'URL
       AuthService.request('post', '/abilities/add', abilityData)
         .then(response => {
           console.log('Réponse complète du backend:', response);
-          console.log('Données reçues du backend:', response.data);
         })
         .catch(error => {
           console.error('Erreur détaillée lors de l\'envoi:', error);
-          
-          if (error.response) {
-            console.error('Réponse d\'erreur du serveur:', {
-              status: error.response.status,
-              statusText: error.response.statusText,
-              data: error.response.data
-            });
-          }
-          
-          if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-            console.warn('Problème d\'authentification. Vos réponses seront sauvegardées localement.');
-          }
+          // Reste du code
         });
     },
     
