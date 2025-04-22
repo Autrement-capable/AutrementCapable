@@ -243,7 +243,7 @@
     :active-section-id="profileTourActive ? profileTourSections[profileTourStep].id : null"
     context="profile"
     :auto-show-delay="0"
-    class="guide-top-left"
+    :class="{ 'guide-top-left': !profileTourActive && !forceShowGuide }"
     @option-selected="handleGuideOptionSelected"
     @position-updated="updateGuidePosition"
   />
@@ -263,7 +263,6 @@ export default {
     GuideAvatar,
   },
   props: {
-    // Passer les props nécessaires depuis le Dashboard
     currentTheme: {
       type: String,
       default: 'cosmic',
@@ -491,7 +490,6 @@ export default {
     internalShowGuide: {
       handler(newValue) {
         if (newValue && !this.profileTourActive && !this.forceShowGuide) {
-          // Quand le guide est affiché mais pas forcé ou dans un tour actif
           this.$nextTick(() => {
             this.positionGuideByCloseButton();
           });
@@ -547,6 +545,7 @@ export default {
       if (this.internalShowGuide && !this.profileTourActive && !this.forceShowGuide) {
         this.positionGuideByCloseButton();
       }
+      this.bubbleObserver = this.maintainBubbleIconDistance();
     });
   },
   beforeUnmount() {
@@ -554,24 +553,112 @@ export default {
     window.removeEventListener('resize', this.updateHighlights);
     eventBus.off('highlight-play-button');
     this.removeHighlights();
+    if (this.bubbleObserver) {
+      this.bubbleObserver.disconnect();
+    }
   },
   methods: {
+    adjustGuideBubblePosition(position) {
+      // Attendre que le DOM soit à jour
+      setTimeout(() => {
+        // Essayer différents sélecteurs possibles pour la bulle du guide
+        const selectors = [
+          '.guide-bubble', 
+          '.guide-message', 
+          '.message-container',
+          '.guide-tour-active > div:not(:first-child)',
+          '.guide-avatar > div:not(:first-child)'
+        ];
+        
+        let guideBubble = null;
+        for (const selector of selectors) {
+          guideBubble = document.querySelector(selector);
+          if (guideBubble) break;
+        }
+        
+        if (guideBubble) {
+          if (position === 'tour') {
+            // La bulle est positionnée sous l'icône avec un décalage constant
+            guideBubble.style.position = 'absolute';
+            guideBubble.style.top = '60px';
+            guideBubble.style.left = '0';
+            guideBubble.style.marginTop = '0';
+            guideBubble.style.marginLeft = '-50%';
+            guideBubble.style.transform = 'translateX(0)';
+          } else if (position === 'top-left') {
+            // En haut à gauche, la bulle est à droite de l'icône
+            guideBubble.style.position = 'absolute';
+            guideBubble.style.top = '0';
+            guideBubble.style.left = '60px';
+            guideBubble.style.marginTop = '0';
+            guideBubble.style.marginLeft = '0';
+            guideBubble.style.transform = 'translateX(0)';
+          }
+        }
+      }, 50);
+    },
+
+    // Méthode pour positionner le guide à droite pendant le tour
+    positionGuideDuringTour() {
+      const rewardsContainer = document.querySelector('.rewards-container');
+      if (rewardsContainer) {
+        const rect = rewardsContainer.getBoundingClientRect();
+        
+        this.guideCustomPosition = {
+          position: 'fixed',
+          top: '80px',
+          left: `${rect.right + 20}px`,
+          zIndex: 2500
+        };
+
+        this.$nextTick(() => {
+          const guideElement = document.querySelector('.guide-avatar');
+          if (guideElement) {
+            Object.assign(guideElement.style, {
+              position: 'fixed',
+              top: '80px',
+              left: `${rect.right + 20}px`,
+              zIndex: '2500'
+            });
+            
+            guideElement.classList.remove('guide-top-left');
+            guideElement.classList.add('guide-tour-active');
+            
+            this.adjustGuideBubblePosition('tour');
+          }
+        });
+      }
+    },
     /**
      * Positionne le guide en haut à gauche quand la bulle n'est pas ouverte
      */
      positionGuideTopLeft() {
-      // Ne rien faire si le guide est déjà positionné ailleurs (comme pendant le tour)
-      if (this.profileTourActive || this.forceShowGuide) {
-        return;
-      }
-
-      // Positionner le guide en haut à gauche de la fenêtre
+      // Position en haut à gauche
       this.guideCustomPosition = {
         position: 'fixed',
         top: '20px',
         left: '20px',
         zIndex: 2500
       };
+      
+      // Appliquer directement au DOM
+      this.$nextTick(() => {
+        const guideElement = document.querySelector('.guide-avatar');
+        if (guideElement) {
+          Object.assign(guideElement.style, {
+            position: 'fixed',
+            top: '20px',
+            left: '20px',
+            zIndex: '2500'
+          });
+          
+          guideElement.classList.add('guide-top-left');
+          guideElement.classList.remove('guide-tour-active');
+          
+          // Ajuster la position de la bulle pour qu'elle soit à droite de l'icône
+          this.adjustGuideBubblePosition('top-left');
+        }
+      });
     },
     /**
      * Positionne le guide près du bouton de fermeture quand la bulle n'est pas ouverte
@@ -588,7 +675,6 @@ export default {
         const rect = closeButton.getBoundingClientRect();
         
         // Positionner le guide à gauche du bouton fermer
-        // Nous devons prendre en compte la taille approximative du guide (environ 40px)
         const position = {
           position: 'fixed',
           top: `${rect.top}px`,
@@ -604,11 +690,11 @@ export default {
      * Met à jour la position du guide lorsqu'elle est modifiée par le composant guide
      */
      updateGuidePosition(position) {
-      if (this.profileTourActive || this.forceShowGuide) {
-        // En mode tour ou forcé, accepter la position fournie
+      if (this.profileTourActive) {
+        this.positionGuideDuringTour();
+      } else if (this.forceShowGuide) {
         this.guideCustomPosition = position;
       } else {
-        // Sinon, toujours positionner en haut à gauche
         this.positionGuideTopLeft();
       }
     },
@@ -617,10 +703,7 @@ export default {
      */
     updateHighlights() {
       if (this.profileTourActive && this.profileTourStep < this.profileTourSections.length) {
-        // Récupérer la section actuelle
         const section = this.profileTourSections[this.profileTourStep];
-        
-        // Mettre à jour la mise en évidence
         this.highlightProfileSection(section.selector);
       }
     },
@@ -654,30 +737,25 @@ export default {
         return;
       }
       
-      // Vérifier si nous avons dépassé les étapes disponibles
       if (this.profileTourStep >= this.profileTourSections.length) {
         this.endProfileTour();
         return;
       }
       
-      // Récupérer la section actuelle
       const currentSection = this.profileTourSections[this.profileTourStep];
       
-      // Mettre à jour le message et les options du guide
       this.profileGuideMessage = currentSection.description;
       this.profileGuideOptions = [
         { text: this.profileTourStep === this.profileTourSections.length - 1 ? "Terminer" : "Suivant", action: "nextProfileTourStep" },
-        // { text: "Arrêter la visite", action: "endProfileTour" }
       ];
       
-      // Forcer l'affichage du guide
       this.internalShowGuide = true;
       this.forceShowGuide = true;
       
-      // Mettre en évidence la section actuelle
       this.highlightProfileSection(currentSection.selector);
       
-      // Marquer la section comme visitée dans le service
+      this.positionGuideDuringTour();
+      
       if (typeof UserJourneyService !== 'undefined') {
         UserJourneyService.markProfileSectionVisited(currentSection.id);
       }
@@ -687,13 +765,10 @@ export default {
      * Passe à l'étape suivante du tour du profil
      */
     nextProfileTourStep() {
-      // Supprimer la mise en évidence actuelle
       this.removeHighlights();
       
-      // Passer à l'étape suivante
       this.profileTourStep++;
       
-      // Afficher la nouvelle étape
       this.showProfileTourStep();
     },
 
@@ -701,57 +776,77 @@ export default {
      * Termine le tour du profil
      */
      endProfileTour() {
-      // Supprimer les mises en évidence
       this.removeHighlights();
       
-      // Mettre à jour l'état
       this.profileTourActive = false;
       
-      // Marquer le tour comme terminé dans le service
       if (typeof UserJourneyService !== 'undefined') {
         UserJourneyService.completeProfileTour();
       }
       
       localStorage.setItem('profile-tour-completed', 'true');
 
-      // Vérifier si le badge "Explorateur du Profil" doit être débloqué
       this.checkProfileBadge();
 
-      // Afficher le message de fin du tour SANS activer l'animation du bouton
       this.profileGuideMessage = "Tu connais maintenant toutes les sections de ton profil ! Tu peux explorer tes badges et commencer à jouer pour en débloquer de nouveaux.";
       this.profileGuideOptions = [
         { text: "Commencer à jouer", action: "highlightPlayButton" },
       ];
       this.internalShowGuide = true;
+      this.forceShowGuide = true;
+      
+      const rewardsContainer = document.querySelector('.rewards-container');
+      if (rewardsContainer) {
+        const rect = rewardsContainer.getBoundingClientRect();
+        this.guideCustomPosition = {
+          position: 'fixed',
+          top: '80px',
+          left: `${rect.right + 20}px`,
+          zIndex: 2500
+        };
+        
+        this.$nextTick(() => {
+          const guideElement = document.querySelector('.guide-avatar');
+          if (guideElement) {
+            Object.assign(guideElement.style, {
+              position: 'fixed',
+              top: '80px',
+              left: `${rect.right + 20}px`,
+              zIndex: '2500'
+            });
+            
+            guideElement.classList.remove('guide-top-left');
+            guideElement.classList.add('guide-tour-active');
+            
+            this.adjustGuideBubblePosition('tour');
+          }
+        });
+      }
     },
 
     /**
      * Met en évidence une section du profil
      */
      highlightProfileSection(selector) {
-      // D'abord supprimer les mises en évidence existantes
       this.removeHighlights();
       
-      // Ajouter une nouvelle mise en évidence
       const element = document.querySelector(selector);
       if (element) {
-        // Créer un élément de surbrillance
         const highlight = document.createElement('div');
         highlight.className = 'section-highlight';
         
-        // Obtenir les coordonnées de l'élément par rapport au conteneur
         const rect = element.getBoundingClientRect();
         
-        // Obtenir la référence du conteneur rewards-container
+        //
         const container = document.querySelector('.rewards-container');
         const containerRect = container.getBoundingClientRect();
         
-        // Calculer les coordonnées relatives au conteneur
-        // et prendre en compte le scroll du conteneur
+        
+        
         const top = rect.top - containerRect.top + container.scrollTop;
         const left = rect.left - containerRect.left + container.scrollLeft;
         
-        // Positionner la surbrillance avec les coordonnées relatives
+        
         highlight.style.position = 'absolute';
         highlight.style.top = `${top}px`;
         highlight.style.left = `${left}px`;
@@ -764,36 +859,28 @@ export default {
         highlight.style.zIndex = '1050';
         highlight.style.animation = 'highlight-pulse 2s ease-out infinite';
         
-        // Ajouter la surbrillance au conteneur (non au body)
+        
         container.appendChild(highlight);
         
         
-        // Calculer où l'élément devrait être visible dans le conteneur
+        
         const elementTopRelativeToContainer = top;
         const elementBottomRelativeToContainer = top + rect.height;
         const containerVisibleTop = container.scrollTop;
         const containerVisibleBottom = container.scrollTop + container.clientHeight;
         
-        // Vérifier si l'élément est déjà visible dans la zone visible du conteneur
+        
         if (elementTopRelativeToContainer < containerVisibleTop || elementBottomRelativeToContainer > containerVisibleBottom) {
-          // Element n'est pas entièrement visible, faire défiler seulement le conteneur
+          
           container.scrollTo({
             top: elementTopRelativeToContainer - container.clientHeight / 2 + rect.height / 2,
             behavior: 'smooth'
           });
         }
         
-        // Position fixe pour le guide - toujours visible à côté du composant
-        const rewardsRight = containerRect.right;
-        const position = {
-          position: 'fixed',
-          top: '150px', // Position fixe plus bas pour éviter tout conflit
-          left: `${rewardsRight + 10}px`, // 10px à droite du conteneur Rewards
-          zIndex: 2500
-        };
         
-        // Mettre à jour la position du guide
-        this.guideCustomPosition = position;
+        
+        this.positionGuideDuringTour();
       } else {
         console.error("Élément non trouvé avec le sélecteur :", selector);
       }
@@ -825,21 +912,22 @@ export default {
       const hasVisitedProfile = localStorage.getItem('hasVisitedProfile');
       
       if (!hasVisitedProfile) {
-        // Si c'est la première visite, on le stocke dans localStorage
+        //
         localStorage.setItem('hasVisitedProfile', 'true');
         
-        // Mettre à jour l'étape dans le service de parcours utilisateur si disponible
+        
         if (typeof UserJourneyService !== 'undefined') {
           UserJourneyService.updateStep(UserJourneyService.STEPS.PROFILE_INTRO);
         }
       }
     },
-    // Fermer le guide du profil
+    
     dismissProfileGuide() {
       this.internalShowGuide = false;
       this.highlightPlayButtonBool = false;
+      this.forceShowGuide = false; 
       
-      // Réinitialiser les styles de mise en évidence
+      
       if (this.$refs.nextActivitySection) {
         this.$refs.nextActivitySection.style.border = '';
         this.$refs.nextActivitySection.style.boxShadow = '';
@@ -850,9 +938,55 @@ export default {
       }
       
       localStorage.setItem('profile-tour-completed', 'true');
+      
+      
+      this.$nextTick(() => {
+        const guideElement = document.querySelector('.guide-avatar');
+        if (guideElement) {
+          guideElement.classList.remove('guide-tour-active');
+        }
+      });
+    },
+
+    maintainBubbleIconDistance() {
+      const guideElement = document.querySelector('.guide-avatar');
+      
+      if (guideElement) {
+        
+        const observer = new MutationObserver(() => {
+          // Quand des changements se produisent, réajuster si nécessaire
+          if (this.profileTourActive || this.forceShowGuide) {
+            // Pendant le tour ou quand forcé, utiliser la position tour
+            this.adjustGuideBubblePosition('tour');
+            
+            // Forcer l'application directe des styles
+            const guideBubble = document.querySelector('.guide-avatar > div:not(:first-child)');
+            if (guideBubble) {
+              guideBubble.style.position = 'absolute';
+              guideBubble.style.top = '60px';
+              guideBubble.style.marginTop = '0';
+            }
+          } else {
+            // Sinon, utiliser la position top-left
+            this.adjustGuideBubblePosition('top-left');
+          }
+        });
+        
+        // Observer les modifications d'attributs et de sous-éléments avec une configuration plus sensible
+        observer.observe(guideElement, { 
+          attributes: true, 
+          childList: true,
+          subtree: true,
+          attributeFilter: ['style', 'class'],
+          characterData: true
+        });
+        
+        return observer;
+      }
+      
+      return null;
     },
     
-    // Mettre en évidence le bouton "Jouer maintenant"
     highlightPlayButton() {
       // Désactiver l'ancien highlight
       this.highlightNextActivity = false;
@@ -880,12 +1014,41 @@ export default {
         });
       }
       
-      // Mettre à jour le message du guide pour indiquer explicitement de cliquer sur le bouton
+      // Mettre à jour le message du guide
       this.profileGuideMessage = "Maintenant, clique sur le bouton \"Jouer maintenant →\" dans la section \"Ma prochaine activité\" pour commencer ton premier jeu !";
       this.profileGuideOptions = [
         { text: "J'ai compris !", action: "dismissProfileGuide" }
       ];
       this.forceShowGuide = true;
+      
+      // Conserver la position du guide à droite pour cette dernière étape aussi
+      const rewardsContainer = document.querySelector('.rewards-container');
+      if (rewardsContainer) {
+        const rect = rewardsContainer.getBoundingClientRect();
+        this.guideCustomPosition = {
+          position: 'fixed',
+          top: '80px',
+          left: `${rect.right + 20}px`,
+          zIndex: 2500
+        };
+        
+        this.$nextTick(() => {
+          const guideElement = document.querySelector('.guide-avatar');
+          if (guideElement) {
+            Object.assign(guideElement.style, {
+              position: 'fixed',
+              top: '80px',
+              left: `${rect.right + 20}px`,
+              zIndex: '2500'
+            });
+            
+            guideElement.classList.remove('guide-top-left');
+            guideElement.classList.add('guide-tour-active');
+            
+            this.adjustGuideBubblePosition('tour');
+          }
+        });
+      }
     },
     
     // Méthode pour gérer le clic sur le bouton "Jouer maintenant"
@@ -898,7 +1061,7 @@ export default {
       }
       
       // Émettre un événement pour indiquer que l'utilisateur a commencé à jouer
-      eventBus.emit('start-game', { route }); // Utiliser eventBus.emit au lieu de $root.$emit
+      eventBus.emit('start-game', { route });
       
       this.$router.push(route);
     },
@@ -944,8 +1107,6 @@ export default {
     },
     
     loadBadges() {
-      // Dans un cas réel, on chargerait les badges depuis localStorage
-      // ou depuis une API selon que l'utilisateur est connecté ou non
       const savedBadges = localStorage.getItem('userBadges')
       if (savedBadges) {
         try {
@@ -963,7 +1124,6 @@ export default {
         }
       }
 
-      // Vérification si le badge "collectionneur" devrait être débloqué
       this.checkBadgeCollector()
     },
 
@@ -1003,8 +1163,6 @@ export default {
     },
 
     shareBadge(badge) {
-      // Dans un cas réel, cela pourrait ouvrir une boîte de dialogue de partage
-      // ou générer un lien à partager
       alert(
         `Partage du badge "${badge.title}" sur les réseaux sociaux`
       )
@@ -1882,6 +2040,10 @@ export default {
   top: 20px !important;
   left: 20px !important;
   z-index: 2500 !important;
+}
+
+.guide-tour-active {
+  position: fixed !important;
 }
 
 /* Animation pour le déplacement du guide entre les sections */
