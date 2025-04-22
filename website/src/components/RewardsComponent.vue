@@ -1155,8 +1155,9 @@ export default {
     },
 
     showBadgeDetails(badge) {
+      // Définir le badge sélectionné
       this.selectedBadge = badge
-
+      
       // Faire remonter le scroll du conteneur tout en haut
       const container = document.querySelector('.rewards-container')
       if (container) {
@@ -1164,11 +1165,20 @@ export default {
           top: 0,
           behavior: 'smooth'
         })
+        
+        // Désactiver le défilement en ajoutant une classe
+        container.classList.add('no-scroll')
       }
     },
 
     closeModal() {
       this.selectedBadge = null
+      
+      // Réactiver le défilement
+      const container = document.querySelector('.rewards-container')
+      if (container) {
+        container.classList.remove('no-scroll')
+      }
     },
 
     shareBadge(badge) {
@@ -2237,6 +2247,11 @@ export default {
 }
 
 /* Modal de détails de badge */
+.no-scroll {
+  overflow: hidden !important;
+}
+
+/* Style de l'overlay modal avec flou */
 .badge-modal-overlay {
   position: fixed;
   top: 0;
