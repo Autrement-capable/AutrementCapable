@@ -758,7 +758,17 @@ export default {
         })
         .catch(error => {
           console.error('Erreur détaillée lors de l\'envoi:', error);
-          // Reste du code
+          if (error.response) {
+            console.error('Réponse d\'erreur du serveur:', {
+              status: error.response.status,
+              statusText: error.response.statusText,
+              data: error.response.data
+            });
+          }
+          
+          if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+            console.warn('Problème d\'authentification. Vos réponses seront sauvegardées localement.');
+          }
         });
     },
     
