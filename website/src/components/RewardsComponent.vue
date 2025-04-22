@@ -8,7 +8,11 @@
       <button @click="closeBadgeAnimation" class="close-animation-btn">Continuer</button>
     </div>
   </div>
-  <div class="rewards-container" :class="{ 'high-contrast': highContrastMode }">
+  <div 
+    class="rewards-container" 
+    :class="[{ 'high-contrast': highContrastMode }, themeClass]"
+    :style="getScrollbarStyle()"
+  >
     <button class="close-modal-btn" @click="$emit('close')"></button>
 
     <!-- Header - Profil simplifié -->
@@ -468,6 +472,12 @@ export default {
     }
   },
   computed: {
+    themeClass() {
+      console.log('currentTheme', this.currentTheme);
+      const theme = this.currentTheme || localStorage.getItem('dashboard-theme') || 'cosmic';
+      console.log('theme', theme);
+      return this.currentTheme || localStorage.getItem('dashboard-theme') || 'cosmic';
+    },
     unlockedBadgesCount() {
       return this.badges.filter((badge) => badge.unlocked).length
     },
@@ -558,6 +568,61 @@ export default {
     }
   },
   methods: {
+    getScrollbarStyle() {
+      // Définir les couleurs par thème
+      const themeColors = {
+        cosmic: {
+          thumbColor: '#7986cb',
+          thumbHoverColor: '#3f51b5',
+          trackColor: 'rgba(13, 13, 35, 0.5)'
+        },
+        light: {
+          thumbColor: '#f0f0f0',
+          thumbHoverColor: '#e0e0e0',
+          trackColor: 'rgba(240, 240, 240, 0.5)'
+        },
+        ocean: {
+          thumbColor: '#4fc3f7',
+          thumbHoverColor: '#29b6f6',
+          trackColor: 'rgba(13, 71, 161, 0.2)'
+        },
+        cyberpunk: {
+          thumbColor: '#ff4081',
+          thumbHoverColor: '#f50057',
+          trackColor: 'rgba(171, 71, 188, 0.2)'
+        },
+        forest: {
+          thumbColor: '#66bb6a',
+          thumbHoverColor: '#4caf50',
+          trackColor: 'rgba(56, 142, 60, 0.2)'
+        },
+        snow: {
+          thumbColor: '#90caf9',
+          thumbHoverColor: '#64b5f6',
+          trackColor: 'rgba(144, 202, 249, 0.2)'
+        }
+      };
+      
+      // Utiliser le thème actuel ou le thème par défaut (cosmic)
+      const currentTheme = this.themeClass;
+      const colors = themeColors[currentTheme] || themeColors.cosmic;
+      
+      // Si on est en mode contraste élevé, remplacer les couleurs
+      if (this.highContrastMode) {
+        return {
+          '--scrollbar-thumb': '#ffffff',
+          '--scrollbar-thumb-hover': '#e0e0e0',
+          '--scrollbar-track': '#333333'
+        };
+      }
+      
+      // Retourner les variables CSS
+      return {
+        '--scrollbar-thumb': colors.thumbColor,
+        '--scrollbar-thumb-hover': colors.thumbHoverColor,
+        '--scrollbar-track': colors.trackColor
+      };
+    },
     adjustGuideBubblePosition(position) {
       // Attendre que le DOM soit à jour
       setTimeout(() => {
@@ -2044,9 +2109,44 @@ export default {
   transition: all 0.3s ease;
 }
 
+/* Sélecteur de base pour la scrollbar */
 .rewards-container {
   position: absolute;
   z-index: 1090;
+  max-height: 90vh;
+  overflow-y: auto !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track) !important;
+}
+
+/* Styles pour WebKit (Chrome, Safari, Edge) */
+.rewards-container::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+  display: block !important;
+}
+
+.rewards-container::-webkit-scrollbar-track {
+  background: var(--scrollbar-track) !important;
+  border-radius: 10px !important;
+}
+
+.rewards-container::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb) !important;
+  border-radius: 10px !important;
+}
+
+.rewards-container::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover) !important;
+}
+
+/* Pour le mode contraste élevé */
+.high-contrast .rewards-container::-webkit-scrollbar-track {
+  border: 1px solid #555 !important;
+}
+
+.high-contrast .rewards-container::-webkit-scrollbar-thumb {
+  border: 1px solid #fff !important;
 }
 
 .guide-container {
