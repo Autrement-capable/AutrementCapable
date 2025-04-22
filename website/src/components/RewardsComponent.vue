@@ -473,9 +473,6 @@ export default {
   },
   computed: {
     themeClass() {
-      console.log('currentTheme', this.currentTheme);
-      const theme = this.currentTheme || localStorage.getItem('dashboard-theme') || 'cosmic';
-      console.log('theme', theme);
       return this.currentTheme || localStorage.getItem('dashboard-theme') || 'cosmic';
     },
     unlockedBadgesCount() {
