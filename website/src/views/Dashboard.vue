@@ -17,6 +17,9 @@
       :custom-position="guidePosition"
       class="guide-top-left"
       @option-selected="handleGuideOptionSelected"
+      @guide-opened="prepareGuideForRediscovery"
+      @guide-dismissed="resetGuideState"
+      @restart-dashboard-tour="restartDashboardTour"
     />
 
     <space-background v-if="animationsEnabled" :theme="currentTheme" />
@@ -463,9 +466,64 @@ export default {
     // Méthode pour fermer le guide
     dismissGuide() {
       this.guideForceShow = false;
-      // this.highlightAvatar = false;
-      // this.removeAllHighlights();
+      
+      // Réinitialiser l'étape du tutoriel à 0
+      this.guideTourStep = 0;
+      
+      // Préparer le guide avec un message pour redécouvrir le dashboard
+      this.guideMessage = "Salut ! Je suis Léo, ton guide. Clique sur moi si tu veux redécouvrir le dashboard !";
+      this.guideOptions = [
+        { text: "Comment utiliser le dashboard ?", action: "explainDashboard" },
+      ];
+      
+      // Gérer les surbrillances comme avant
+      const profileTourCompleted = localStorage.getItem('profile-tour-completed') === 'true';
+      const isInProfileStep = this.guideTourStep === 6;
+      
+      if (!isInProfileStep || profileTourCompleted) {
+        this.highlightAvatar = false;
+        this.removeAllHighlights();
+      }
     },
+
+    prepareGuideForRediscovery() {
+      const profileTourCompleted = localStorage.getItem('profile-tour-completed') === 'true';
+      
+      if (profileTourCompleted) {
+        // Message adapté pour proposer de redécouvrir le dashboard
+        this.guideMessage = "Salut ! Souhaites-tu redécouvrir les fonctionnalités du dashboard ?";
+        this.guideOptions = [
+          { text: "Oui, montre-moi tout !", action: "restartDashboardTour", keepOpen: true },
+          { text: "Non merci", action: "dismissGuide" }
+        ];
+        this.guideForceShow = true;
+      }
+    },
+
+    resetGuideState() {
+      this.guideTourStep = 0;
+      this.guideMessage = "Salut ! Je suis Léo, ton guide. Clique sur moi si tu veux redécouvrir le dashboard !";
+      this.guideOptions = [
+        { text: "Comment utiliser le dashboard ?", action: "explainDashboard" },
+      ];
+      this.guideForceShow = false;
+      this.removeAllHighlights();
+    },
+
+    restartDashboardTour() {
+      // Réinitialiser l'étape du tutoriel
+      this.guideTourStep = 0;
+      
+      // Réactiver le guide et commencer le tutoriel
+      this.guideForceShow = true;
+      this.explainDashboard();
+      
+      // Mettre à jour la position du guide si nécessaire
+      this.$nextTick(() => {
+        this.updateGuidePosition();
+      });
+    },
+
     advanceTutorial() {
       // Incrémenter l'étape du tutoriel
       this.guideTourStep++;
@@ -656,7 +714,7 @@ export default {
       // Conserver la mise en évidence de l'avatar
       this.highlightAvatar = true;
       this.showGuideArrow = true;
-      // this.highlightElement('.avatar-container', true);
+      this.highlightElement('.avatar-container', true);
 
       // Scroll automatique vers l'avatar si nécessaire
       this.$nextTick(() => {
@@ -664,6 +722,21 @@ export default {
         if (avatarElement) {
           avatarElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
+      });
+    },
+
+    finalizeHelp() {
+      // Fermer la bulle du guide
+      this.guideForceShow = false;
+      
+      // Conserver la mise en évidence et la flèche pour guider l'utilisateur
+      // vers l'avatar (ne pas les supprimer)
+      this.highlightAvatar = true;
+      this.showGuideArrow = true;
+      
+      // Réappliquer la mise en évidence pour s'assurer qu'elle est visible
+      this.$nextTick(() => {
+        this.highlightElement('.avatar-container', true);
       });
     },
 
@@ -747,10 +820,20 @@ export default {
 
     // Méthode pour gérer les options sélectionnées dans le guide
     handleGuideOptionSelected(option) {
+      if (option.action === "finalizeHelp") {
+        // Action spéciale pour finaliser l'aide et garder les effets visuels
+        this.finalizeHelp();
+        return;
+      }
+
+      // Pour toutes les autres actions
       if (option.action && typeof this[option.action] === 'function') {
         this[option.action]();
+      } else {
+        console.warn(`L'action "${option.action}" n'est pas définie.`);
       }
     },
+
     toggleThemeMenu() {
       this.themeMenuVisible = !this.themeMenuVisible
 
@@ -966,8 +1049,7 @@ export default {
       this.animationsEnabled = savedAnimationPref === 'true'
     }
 
-    this.themeChangeAchieved = false
-
+    this.themeChangeAchieved = false;
     this.profileTourCompleted = localStorage.getItem('profile-tour-completed') === 'true';
 
     // Vérifier si c'est la première visite

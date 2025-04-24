@@ -285,19 +285,22 @@ export default {
       
       this.$emit('position-updated', newPosition);
     },
+
     // Basculer l'affichage du message
     toggleMessage() {
       // Vérifier si l'utilisateur a terminé les tours guidés
       const profileTourCompleted = localStorage.getItem('profile-tour-completed') === 'true';
       const dashboardVisited = localStorage.getItem('hasVisitedDashboard') === 'true';
       
-      // Si les tours sont terminés, on doit permettre de réafficher le guide même avec forcedMessage
+      // Si les tours sont terminés, toujours permettre de réafficher le guide
       if (profileTourCompleted && dashboardVisited) {
+        // Forcer l'affichage du message "redécouvrir le dashboard"
         this.showMessage = !this.showMessage;
         
+        // Si on ouvre le message, émettre un événement pour mettre à jour le contenu
         if (this.showMessage) {
-          // Marquer comme lu
           this.hasNewMessage = false;
+          this.$emit('guide-opened');
         }
         return;
       }
@@ -336,14 +339,35 @@ export default {
       // Émettre un événement avec l'option sélectionnée
       this.$emit('option-selected', option);
       
-      // Si l'option n'a pas d'action qui maintient la bulle ouverte, fermer le message
-      if (!option.keepOpen) {
+      // Cas spécial pour l'action "dismissGuide" - toujours fermer la bulle 
+      // quelle que soit la valeur de keepOpen
+      if (option.action === "dismissGuide") {
+        this.showMessage = false;
+        // Informer que le guide a été fermé pour une réinitialisation
+        this.$emit('guide-dismissed');
+        return;
+      }
+      
+      // Même chose pour "explainDashboard" - tracer ce cas spécifique
+      if (option.action === "explainDashboard") {
+        // Émettre un événement spécifique pour le redémarrage du tutoriel
+        this.$emit('restart-dashboard-tour');
+      }
+      
+      // Si l'option a une indication keepOpen explicite, la respecter
+      if (typeof option.keepOpen !== 'undefined') {
+        if (!option.keepOpen) {
+          this.showMessage = false;
+        }
+      } else {
+        // Comportement par défaut : fermer le message si non spécifié
         this.showMessage = false;
       }
       
-      // Marquer comme lu
+      // Marquer comme lu dans tous les cas
       this.hasNewMessage = false;
-    }
+    },
+
   }
 };
 </script>
