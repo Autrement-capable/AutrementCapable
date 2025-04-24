@@ -62,6 +62,34 @@
       </div>
     </div>
 
+    <!-- Tous les badges -->
+    <div class="all-badges">
+      <h2 class="section-title">Mes badges</h2>
+      <div class="badges-grid">
+        <div 
+          v-for="badge in badges" 
+          :key="badge.id" 
+          class="badge-card"
+          :class="{ 'unlocked': badge.unlocked, 'locked': !badge.unlocked }"
+          @click="showBadgeDetails(badge)"
+        >
+          <div 
+            class="badge-icon" 
+            :style="{ backgroundColor: badge.unlocked ? badge.iconColor : '#e0e0e0' }"
+          >
+            <div v-if="!badge.unlocked" class="lock-overlay">🔒</div>
+            <span class="badge-emoji">{{ badge.icon }}</span>
+          </div>
+          <h3 class="badge-title">{{ badge.title }}</h3>
+          <div class="badge-status">
+            <span :class="badge.unlocked ? 'status-unlocked' : 'status-locked'">
+              {{ badge.unlocked ? 'Obtenu ✅' : 'À débloquer' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Nouvelle organisation de la carte de progression -->
     <div class="neural-progress-map">
       <!-- Chemin des jeux à gauche -->
@@ -248,34 +276,6 @@
           <div class="progress-fill" :style="{ width: `${progressPercentage}%` }"></div>
         </div>
         <div class="progress-label">Avancement du parcours</div>
-      </div>
-    </div>
-
-    <!-- Tous les badges -->
-    <div class="all-badges">
-      <h2 class="section-title">Mes badges</h2>
-      <div class="badges-grid">
-        <div 
-          v-for="badge in badges" 
-          :key="badge.id" 
-          class="badge-card"
-          :class="{ 'unlocked': badge.unlocked, 'locked': !badge.unlocked }"
-          @click="showBadgeDetails(badge)"
-        >
-          <div 
-            class="badge-icon" 
-            :style="{ backgroundColor: badge.unlocked ? badge.iconColor : '#e0e0e0' }"
-          >
-            <div v-if="!badge.unlocked" class="lock-overlay">🔒</div>
-            <span class="badge-emoji">{{ badge.icon }}</span>
-          </div>
-          <h3 class="badge-title">{{ badge.title }}</h3>
-          <div class="badge-status">
-            <span :class="badge.unlocked ? 'status-unlocked' : 'status-locked'">
-              {{ badge.unlocked ? 'Obtenu ✅' : 'À débloquer' }}
-            </span>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -1697,7 +1697,7 @@ export default {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Boutons de contrôle */
+/* Bouton de fermeture */
 .close-modal-btn {
   position: absolute;
   width: 24px;
@@ -1713,9 +1713,6 @@ export default {
   transition: all 0.3s ease;
   z-index: 10;
   font-size: 14px;
-}
-
-.close-modal-btn {
   top: 16px;
   right: 16px;
 }
@@ -1779,12 +1776,153 @@ export default {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
-.profile-node {
-  z-index: 10;
-  position: relative;
+.user-info {
+  flex: 1;
 }
 
-/* Configuration du grid pour assurer un bon alignement */
+.welcome-title {
+  font-size: 28px;
+  color: #fff;
+  margin: 0 0 4px 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.welcome-subtitle {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 16px 0;
+}
+
+.user-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.user-detail-item {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 6px 12px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.detail-label {
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.detail-value {
+  color: white;
+}
+
+/* Prochaine activité */
+.next-activity {
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 22px;
+  color: white;
+  margin-bottom: 12px;
+  font-weight: bold;
+}
+
+.next-activity-card {
+  display: flex;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 16px;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.next-activity-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.next-activity-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.activity-emoji {
+  font-size: 40px;
+}
+
+.next-activity-info {
+  flex: 1;
+}
+
+.next-activity-info h3 {
+  font-size: 20px;
+  color: white;
+  margin: 0 0 8px 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.next-activity-info p {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 16px 0;
+}
+
+.play-button {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.play-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  background-color: #43a047;
+}
+
+.play-button-highlight {
+  position: relative;
+  z-index: 1055;
+  background-color: #5ecc02;
+  animation: button-pulse 1.5s infinite;
+  transform: scale(1.1);
+}
+
+@keyframes button-pulse {
+  0% {
+    box-shadow: 0 0 10px rgba(94, 204, 2, 0.7);
+    transform: scale(1.1);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(94, 204, 2, 1);
+    transform: scale(1.15);
+  }
+  100% {
+    box-shadow: 0 0 10px rgba(94, 204, 2, 0.7);
+    transform: scale(1.1);
+  }
+}
+
+/* Carte de progression neurale */
 .neural-progress-map {
   display: grid;
   grid-template-columns: 3fr 2fr;
@@ -1801,35 +1939,217 @@ export default {
   border: 1px dashed rgba(255, 255, 255, 0.3);
 }
 
+/* Nœuds de jeu à gauche */
+.games-path {
+  justify-content: space-around;
+  align-items: center;
+}
 
+.game-node {
+  justify-content: center;
+  margin-bottom: 15px;
+}
+
+.game-node-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  border: 3px solid transparent;
+  transition: all 0.3s ease;
+  z-index: 3;
+  margin-right: 15px;
+  flex-shrink: 0;
+}
+
+.game-node.game-unlocked .game-node-icon {
+  border-color: #4caf50;
+  box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
+}
+
+.game-node.game-active .game-node-icon {
+  border-color: #ff9800;
+  box-shadow: 0 0 20px rgba(255, 152, 0, 0.7);
+}
+
+.game-node-lock {
+  position: absolute;
+  font-size: 16px;
+  background-color: rgba(0, 0, 0, 0.5);
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.game-node-emoji {
+  font-size: 24px;
+}
+
+.game-node-icon:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+}
+
+/* Connexions des jeux vers le profil */
 .game-to-profile-connection {
   position: absolute;
-  height: 2px; /* Hauteur fine pour la ligne */
-  background: rgba(255, 255, 255, 0.2); /* Couleur de base pour les lignes inactives */
-  z-index: 5; /* S'assurer que les lignes passent au-dessus des autres éléments */
-  transform-origin: right center; /* Le point d'origine est à droite */
+  height: 2px;
+  background: rgba(255, 255, 255, 0.05);
+  z-index: 5;
+  transform-origin: left center;
+  transition: all 0.4s ease;
+  border-radius: 6px;
+}
+
+/* Trait en tirets pour les connexions inactives */
+.game-to-profile-connection {
+  position: absolute;
+  height: 3px; /* Plus épais pour meilleure visibilité */
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.15));
+  z-index: 5;
+  transform-origin: left center;
   transition: all 0.5s ease;
+  border-radius: 3px; /* Bords arrondis */
+  overflow: hidden; /* Pour l'effet d'animation */
+}
+
+.game-to-profile-connection::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: shimmer 4s infinite;
 }
 
 .game-to-profile-connection.connection-active {
-  background: linear-gradient(90deg, rgba(76, 175, 80, 0.3), #4caf50); /* Dégradé pour les lignes actives */
-  box-shadow: 0 0 8px rgba(76, 175, 80, 0.7); /* Lueur pour les lignes actives */
-  height: 3px; /* Légèrement plus épais quand actif */
-  animation: connection-pulse 2s infinite; /* Animation de pulsation */
+  background: linear-gradient(90deg, #66bb6a, #4caf50);
+  box-shadow: 0 0 12px rgba(76, 175, 80, 0.6);
+  height: 3px;
+  position: relative;
+  overflow: hidden;
 }
 
+.game-to-profile-connection.connection-active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.7), transparent);
+  animation: flow 2.5s infinite linear;
+}
+
+/* Points de départ et d'arrivée des connexions */
+.game-to-profile-connection::after,
+.main-connection.horizontal::after {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 0;
+  opacity: 0.7;
+}
+
+.game-to-profile-connection::before,
+.main-connection.horizontal::before {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0;
+  opacity: 0.7;
+}
+
+.game-to-profile-connection.connection-active::after,
+.main-connection.horizontal.connection-active::after,
+.game-to-profile-connection.connection-active::before,
+.main-connection.horizontal.connection-active::before {
+  background-color: #4caf50;
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.8);
+  opacity: 1;
+}
+
+/* Animations pour les effets de flux */
+@keyframes flow {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Amélioration pour l'affichage des connexions lors du survol */
+.main-node:hover .main-connection.horizontal,
+.game-node:hover .game-to-profile-connection {
+  filter: brightness(1.5);
+  transform: scale(1.05);
+}
+
+/* Animation de pulse pour les connexions actives */
 @keyframes connection-pulse {
   0% {
-    opacity: 0.7;
+    opacity: 0.8;
     box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
   }
   50% {
     opacity: 1;
-    box-shadow: 0 0 10px rgba(76, 175, 80, 0.8);
+    box-shadow: 0 0 12px rgba(76, 175, 80, 0.8);
   }
   100% {
-    opacity: 0.7;
+    opacity: 0.8;
     box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+  }
+}
+
+/* Version plus subtile pour les thèmes clairs */
+.light .game-to-profile-connection,
+.light .main-connection.horizontal {
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.2));
+}
+
+.light .game-to-profile-connection.connection-active,
+.light .main-connection.horizontal.connection-active {
+  background: linear-gradient(90deg, #66bb6a, #4caf50);
+}
+
+/* Responsive pour les petits écrans */
+@media (max-width: 768px) {
+  .main-connection.horizontal {
+    width: 40px;
+  }
+  
+  .game-to-profile-connection,
+  .main-connection.horizontal {
+    height: 3px;
   }
 }
 
@@ -1844,7 +2164,6 @@ export default {
   position: relative;
 }
 
-/* Conteneur pour aligner horizontalement les nœuds principaux */
 .main-path-container {
   display: flex;
   flex-direction: row;
@@ -1853,7 +2172,6 @@ export default {
   width: 100%;
 }
 
-/* Ajustement des nœuds principaux pour l'alignement horizontal */
 .main-node {
   display: flex;
   flex-direction: column;
@@ -1862,6 +2180,10 @@ export default {
   margin: 0 10px;
 }
 
+.profile-node {
+  z-index: 10;
+  position: relative;
+}
 
 .main-node-icon {
   width: 80px;
@@ -1923,182 +2245,84 @@ export default {
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.main-connection {
-  width: 3px;
-  height: 60px;
-  background: rgba(255, 255, 255, 0.2);
-  margin: 10px 0;
-  transition: all 0.5s ease;
-}
-
+/* Connexions horizontales entre les nœuds principaux */
 .main-connection.horizontal {
   width: 60px;
-  height: 3px;
-  background: rgba(255, 255, 255, 0.2);
+  height: 4px; /* Légèrement plus épais pour plus de visibilité */
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05));
   margin: 0 5px;
   transition: all 0.5s ease;
-}
-
-.main-connection.horizontal.connection-active {
-  background: linear-gradient(to right, #4caf50, rgba(76, 175, 80, 0.3));
-  box-shadow: 0 0 10px rgba(76, 175, 80, 0.7);
-  height: 4px;
-}
-
-.main-connection.connection-active {
-  background: linear-gradient(to bottom, #4caf50, rgba(76, 175, 80, 0.3));
-  box-shadow: 0 0 10px rgba(76, 175, 80, 0.7);
-  width: 4px;
-}
-
-/* Jeux alignés verticalement */
-.games-path {
-  justify-content: space-around;
-  align-items: center;
-}
-
-.game-node {
-  justify-content: center;
-  margin-bottom: 15px; /* Espace vertical entre les icônes */
-}
-
-
-/* .game-node.game-active {
-  background-color: rgba(255, 152, 0, 0.1);
-  box-shadow: 0 0 15px rgba(255, 152, 0, 0.3);
-  animation: highlight-pulse 2s ease-out infinite;
-} */
-
-@keyframes highlight-pulse {
-  0% {
-    box-shadow: 0 0 5px rgba(255, 152, 0, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(255, 152, 0, 0.7);
-  }
-  100% {
-    box-shadow: 0 0 5px rgba(255, 152, 0, 0.3);
-  }
-}
-
-.game-node-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border-radius: 4px; /* Bords arrondis */
   position: relative;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-  border: 3px solid transparent;
-  transition: all 0.3s ease;
-  z-index: 3;
-  margin-right: 15px;
-  flex-shrink: 0;
+  overflow: hidden; /* Pour l'effet d'animation */
 }
 
-.game-node.game-unlocked .game-node-icon {
-  border-color: #4caf50;
-  box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
-}
-
-.game-node.game-active .game-node-icon {
-  border-color: #ff9800;
-  box-shadow: 0 0 20px rgba(255, 152, 0, 0.7);
-}
-
-.game-node-lock {
-  position: absolute;
-  font-size: 16px;
-  background-color: rgba(0, 0, 0, 0.5);
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.game-node-emoji {
-  font-size: 24px;
-}
-
-.game-info {
-  flex: 1;
-}
-
-.game-node-icon:hover {
-  transform: scale(1.15);
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
-}
-
-.game-title {
-  font-size: 14px;
-  font-weight: bold;
-  color: white;
-  transition: color 0.3s ease;
-  position: relative; /* Ajouté pour faciliter le positionnement */
-  z-index: 3; /* Au-dessus des connexions */
-}
-
-.game-node.game-unlocked .game-title {
-  color: #4caf50;
-}
-
-.game-node.game-active .game-title {
-  color: #ff9800;
-}
-
-.game-to-profile-connection {
-  position: absolute;
-  height: 2px; /* Hauteur fine pour la ligne */
-  background: rgba(255, 255, 255, 0.2); /* Couleur de base pour les lignes inactives */
-  z-index: 5; /* S'assurer que les lignes passent au-dessus des autres éléments */
-  transform-origin: left center; /* Le point d'origine est maintenant à gauche (côté titre) */
-  transition: all 0.5s ease;
-}
-
-.game-to-profile-connection.connection-active {
-  background: linear-gradient(90deg, rgba(76, 175, 80, 0.3), #4caf50); /* Dégradé pour les lignes actives */
-  box-shadow: 0 0 8px rgba(76, 175, 80, 0.7); /* Lueur pour les lignes actives */
-  height: 3px; /* Légèrement plus épais quand actif */
-  animation: connection-pulse 2s infinite; /* Animation de pulsation */
-}
-
-/* .game-next-indicator {
+/* Animation subtile pour les connexions non-actives */
+.main-connection.horizontal::before {
+  content: '';
   position: absolute;
   top: 0;
-  left: 0;
+  left: -100%;
   width: 100%;
   height: 100%;
-  z-index: 1;
-} */
-
-.game-pulse-circle {
-  position: absolute;
-  top: 50%;
-  left: 25px;
-  transform: translate(-50%, -50%);
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  border: 3px solid #ff9800;
-  animation: pulse-glow 2s infinite;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: shimmer 3s infinite;
 }
 
-@keyframes connection-pulse {
-  0% {
-    opacity: 0.7;
-    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
-  }
-  50% {
-    opacity: 1;
-    box-shadow: 0 0 10px rgba(76, 175, 80, 0.8);
-  }
-  100% {
-    opacity: 0.7;
-    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
-  }
+/* Connexion horizontale active avec effet de flux */
+.main-connection.horizontal.connection-active {
+  background: linear-gradient(to right, #43a047, #66bb6a, #81c784);
+  box-shadow: 0 0 10px rgba(76, 175, 80, 0.7);
+  height: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Effet de flux pour les connexions actives */
+.main-connection.horizontal.connection-active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.7), transparent);
+  animation: flow 2s infinite linear;
+}
+
+.main-connection.horizontal::after,
+.main-connection.horizontal::before {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background-color: #4fc3f7;
+  border-radius: 50%;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.8;
+  box-shadow: 0 0 4px rgba(79, 195, 247, 0.5);
+}
+
+.main-connection.horizontal::after {
+  right: -1px;
+}
+
+.main-connection.horizontal::before {
+  left: -1px;
+}
+
+.main-connection.horizontal.connection-active::after,
+.main-connection.horizontal.connection-active::before {
+  background-color: #81c784;
+  box-shadow: 0 0 6px rgba(76, 175, 80, 0.8);
+  opacity: 1;
+}
+
+/* Effet de survol sur les nœuds */
+.main-node:hover .main-connection.horizontal,
+.game-node:hover .game-to-profile-connection {
+  filter: brightness(1.3);
 }
 
 /* Indicateur de progression global */
@@ -2124,6 +2348,8 @@ export default {
   border-radius: 4px;
   overflow: hidden;
   margin-bottom: 5px;
+  width: 75%;
+  margin: 0 auto;
 }
 
 .progress-fill {
@@ -2138,414 +2364,7 @@ export default {
   color: rgba(255, 255, 255, 0.7);
 }
 
-.user-info {
-  flex: 1;
-}
-
-.welcome-title {
-  font-size: 28px;
-  color: #fff;
-  margin: 0 0 4px 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.welcome-subtitle {
-  font-size: 18px;
-  color: rgba(255, 255, 255, 0.8);
-  margin: 0 0 16px 0;
-}
-
-.user-details {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.user-detail-item {
-  background-color: rgba(255, 255, 255, 0.1);
-  padding: 6px 12px;
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.detail-label {
-  font-weight: bold;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.detail-value {
-  color: white;
-}
-
-/* Nouvelle section carte de progression */
-.progress-map-container {
-  background-color: rgba(255, 255, 255, 0.05);
-  padding: 20px;
-  border-radius: 16px;
-  margin-bottom: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  position: relative;
-}
-
-.progress-stats {
-  display: flex;
-  justify-content: space-around;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-.progress-stat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.stat-number {
-  font-size: 32px;
-  font-weight: bold;
-  color: #4fc3f7;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.stat-label {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.7);
-  margin-top: 4px;
-}
-
-.progress-map {
-  position: relative;
-  height: 300px;
-  background-color: rgba(0, 0, 0, 0.2);
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 15px;
-  overflow: hidden;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  flex-wrap: wrap;
-  border: 1px dashed rgba(255, 255, 255, 0.3);
-}
-
-.journey-path {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  width: 100%;
-  height: 8px;
-  background: linear-gradient(90deg, rgba(76, 175, 80, 0.8), rgba(76, 175, 80, 0.3));
-  transform: translateY(-50%);
-  z-index: 1;
-  border-radius: 4px;
-}
-
-.map-badge-node {
-  position: relative;
-  z-index: 2;
-  cursor: pointer;
-  transition: transform 0.3s ease;
-  margin: 10px;
-}
-
-.map-badge-node:hover {
-  transform: scale(1.1);
-}
-
-.map-badge-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto;
-  position: relative;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-  border: 3px solid transparent;
-  transition: all 0.3s ease;
-  z-index: 3;
-}
-
-.map-badge-node.unlocked .map-badge-icon {
-  border-color: #4caf50;
-  box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
-}
-
-.map-badge-node.active .map-badge-icon {
-  border-color: #ff9800;
-  box-shadow: 0 0 20px rgba(255, 152, 0, 0.7);
-}
-
-.map-badge-lock {
-  position: absolute;
-  font-size: 18px;
-  background-color: rgba(0, 0, 0, 0.5);
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.map-badge-emoji {
-  font-size: 30px;
-}
-
-.map-badge-tooltip {
-  position: absolute;
-  width: 140px;
-  background-color: rgba(30, 30, 45, 0.95);
-  padding: 8px;
-  border-radius: 8px;
-  left: 50%;
-  transform: translateX(-50%) translateY(10px);
-  opacity: 0;
-  pointer-events: none;
-  transition: all 0.3s ease;
-  z-index: 10;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  text-align: center;
-}
-
-.map-badge-node:hover .map-badge-tooltip {
-  opacity: 1;
-  transform: translateX(-50%) translateY(5px);
-}
-
-.tooltip-title {
-  font-weight: bold;
-  font-size: 14px;
-  margin-bottom: 4px;
-  color: white;
-}
-
-.tooltip-game {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.7);
-  margin-bottom: 4px;
-}
-
-.tooltip-status {
-  font-size: 12px;
-  color: #9e9e9e;
-}
-
-.tooltip-status.status-unlocked {
-  color: #4caf50;
-  font-weight: bold;
-}
-
-.map-badge-next {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 2;
-}
-
-.next-badge-text {
-  position: absolute;
-  top: -30px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #ff9800;
-  color: white;
-  font-size: 12px;
-  padding: 3px 8px;
-  border-radius: 10px;
-  display: inline-block;
-  white-space: nowrap;
-  font-weight: bold;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  z-index: 4;
-}
-
-.pulse-circle {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 66px;
-  height: 66px;
-  border-radius: 50%;
-  border: 3px solid #ff9800;
-  animation: pulse-glow 2s infinite;
-  z-index: 2;
-}
-
-@keyframes pulse-glow {
-  0% {
-    transform: translate(-50%, -50%) scale(0.9);
-    opacity: 0.7;
-  }
-  50% {
-    transform: translate(-50%, -50%) scale(1.2);
-    opacity: 0.4;
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(0.9);
-    opacity: 0.7;
-  }
-}
-
-.map-badge-node.active {
-  position: relative;
-  z-index: 3;
-}
-
-.map-legend {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  margin-top: 10px;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  font-size: 12px;
-}
-
-.legend-icon {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  margin-right: 6px;
-}
-
-.legend-icon.unlocked {
-  background-color: #4caf50;
-  border: 2px solid rgba(255, 255, 255, 0.5);
-}
-
-.legend-icon.locked {
-  background-color: #555;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-}
-
-.legend-icon.active {
-  background-color: #ff9800;
-  border: 2px solid rgba(255, 255, 255, 0.5);
-}
-
-.legend-text {
-  color: rgba(255, 255, 255, 0.8);
-}
-
-/* Section de progression (ancienne version masquée) */
-.progress-container {
-  display: none;
-}
-
-/* État vide - pas de badges */
-.empty-state {
-  text-align: center;
-  padding: 25px;
-  background-color: rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  margin-bottom: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.empty-badge-icon {
-  font-size: 70px;
-  margin-bottom: 15px;
-  opacity: 0.7;
-}
-
-.empty-state h2 {
-  font-size: 24px;
-  margin-bottom: 8px;
-  color: white;
-}
-
-.empty-state p {
-  font-size: 18px;
-  margin-bottom: 20px;
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.start-button {
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 25px;
-  padding: 12px 24px;
-  font-size: 18px;
-  cursor: pointer;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s ease;
-  font-weight: bold;
-}
-
-.start-button:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
-}
-
-/* Prochaine activité */
-.next-activity {
-  margin-bottom: 24px;
-}
-
-.next-activity-card {
-  display: flex;
-  align-items: center;
-  background-color: rgba(255, 255, 255, 0.05);
-  padding: 16px;
-  border-radius: 16px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  cursor: pointer;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.next-activity-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3);
-  background-color: rgba(255, 255, 255, 0.08);
-}
-
-.next-activity-icon {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 16px;
-  flex-shrink: 0;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-.activity-emoji {
-  font-size: 40px;
-}
-
-.next-activity-info {
-  flex: 1;
-}
-
-.next-activity-info h3 {
-  font-size: 20px;
-  color: white;
-  margin: 0 0 8px 0;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-.next-activity-info p {
-  font-size: 16px;
-  color: rgba(255, 255, 255, 0.8);
-  margin: 0 0 16px 0;
-}
-
-/* Tous les badges */
+/* Section Badges */
 .all-badges {
   margin-bottom: 24px;
 }
@@ -2631,6 +2450,15 @@ export default {
   font-weight: bold;
 }
 
+.status-unlocked {
+  color: #4caf50;
+}
+
+.status-locked {
+  color: #9e9e9e;
+}
+
+/* Animation badge débloqué */
 .badge-unlock-overlay {
   position: fixed;
   top: 0;
@@ -2703,288 +2531,6 @@ export default {
   transform: scale(1.05);
 }
 
-/* Boutons et actions */
-.play-button {
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 20px;
-  padding: 8px 16px;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s ease;
-}
-
-.play-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-  background-color: #43a047;
-}
-
-/* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes scaleIn {
-  from { transform: scale(0.8); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
-}
-
-.next-activity-highlight {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1010;
-  pointer-events: none;
-}
-
-.highlight-pulse {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border: 3px solid #76ff03;
-  border-radius: 16px;
-  box-shadow: 0 0 15px rgba(118, 255, 3, 0.7);
-  animation: highlight-pulse 2s ease-out infinite;
-}
-
-.highlight-arrow {
-  position: absolute;
-  bottom: -10px;
-  right: 25%;
-  transform: translateX(50%);
-  animation: highlight-bounce 2s ease infinite;
-}
-
-.highlight-text {
-  display: block;
-  color: white;
-  font-weight: bold;
-  font-size: 16px;
-  padding: 5px 10px;
-  background-color: #58cc02;
-  border-radius: 20px;
-  white-space: nowrap;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
-}
-
-@keyframes highlight-pulse {
-  0% {
-    opacity: 0.7;
-    box-shadow: 0 0 15px rgba(118, 255, 3, 0.5);
-    transform: scale(0.99);
-  }
-  50% {
-    opacity: 0.9;
-    box-shadow: 0 0 20px rgba(118, 255, 3, 0.8);
-    transform: scale(1);
-  }
-  100% {
-    opacity: 0.7;
-    box-shadow: 0 0 15px rgba(118, 255, 3, 0.5);
-    transform: scale(0.99);
-  }
-}
-
-.section-highlight {
-  position: absolute;
-  pointer-events: none;
-  z-index: 1050;
-  animation: highlight-pulse 2s ease-out infinite;
-  border: 3px solid #76ff03;
-  border-radius: 16px;
-}
-
-@keyframes highlight-bounce {
-  0%, 20%, 50%, 80%, 100% {
-    transform: translateX(50%) translateY(0);
-  }
-  40% {
-    transform: translateX(50%) translateY(-15px);
-  }
-  60% {
-    transform: translateX(50%) translateY(-7px);
-  }
-}
-
-.guide-avatar-container {
-  position: absolute;
-  z-index: 2000;
-  transition: all 0.3s ease;
-}
-
-/* Sélecteur de base pour la scrollbar */
-.rewards-container {
-  position: absolute;
-  z-index: 1090;
-  max-height: 90vh;
-  overflow-y: auto !important;
-  scrollbar-width: thin !important;
-  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track) !important;
-}
-
-/* Styles pour WebKit (Chrome, Safari, Edge) */
-.rewards-container::-webkit-scrollbar {
-  width: 8px !important;
-  height: 8px !important;
-  display: block !important;
-}
-
-.rewards-container::-webkit-scrollbar-track {
-  background: var(--scrollbar-track) !important;
-  border-radius: 10px !important;
-}
-
-.rewards-container::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb) !important;
-  border-radius: 10px !important;
-}
-
-.rewards-container::-webkit-scrollbar-thumb:hover {
-  background: var(--scrollbar-thumb-hover) !important;
-}
-
-/* Pour le mode contraste élevé */
-.high-contrast .rewards-container::-webkit-scrollbar-track {
-  border: 1px solid #555 !important;
-}
-
-.high-contrast .rewards-container::-webkit-scrollbar-thumb {
-  border: 1px solid #fff !important;
-}
-
-.guide-container {
-  position: fixed;
-  z-index: 1100;
-}
-
-.guide-top-left:not(.force-show-message) {
-  position: fixed !important;
-  top: 20px !important;
-  left: 20px !important;
-  z-index: 2500 !important;
-}
-
-.guide-tour-active {
-  position: fixed !important;
-}
-
-/* Animation pour le déplacement du guide entre les sections */
-@keyframes guide-move {
-  0% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-  100% {
-    transform: translateY(0);
-  }
-}
-
-/* Style pour la flèche de guidage */
-.guide-arrow {
-  position: absolute;
-  width: 30px;
-  height: 30px;
-  background-color: #76ff03;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: bold;
-  box-shadow: 0 0 10px rgba(118, 255, 3, 0.7);
-  animation: guide-move 1.5s ease-in-out infinite;
-  z-index: 1060;
-}
-
-.guide-arrow::before {
-  content: '→';
-  font-size: 18px;
-}
-
-/* Style pour la bulle d'info accompagnant la flèche */
-.guide-info-bubble {
-  position: absolute;
-  background-color: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 5px 10px;
-  border-radius: 20px;
-  font-size: 14px;
-  white-space: nowrap;
-  z-index: 1060;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-}
-
-.tour-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.3);
-  z-index: 1040;
-  pointer-events: none;
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Appliquer l'animation aux éléments du guide */
-.guide-element {
-  animation: fade-in 0.5s ease-out forwards;
-}
-
-.play-button-highlight {
-  position: relative;
-  z-index: 1055;
-  background-color: #5ecc02;
-  animation: button-pulse 1.5s infinite;
-  transform: scale(1.1);
-}
-
-@keyframes button-pulse {
-  0% {
-    box-shadow: 0 0 10px rgba(94, 204, 2, 0.7);
-    transform: scale(1.1);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(94, 204, 2, 1);
-    transform: scale(1.15);
-  }
-  100% {
-    box-shadow: 0 0 10px rgba(94, 204, 2, 0.7);
-    transform: scale(1.1);
-  }
-}
-
-.attention {
-  animation: attention-pulse 1s ease-in-out infinite;
-}
-
 /* Boutons d'action */
 .action-buttons {
   display: flex;
@@ -3037,7 +2583,6 @@ export default {
   font-size: 24px;
 }
 
-/* Styles pour le bouton verrouillé */
 .locked-button {
   position: relative;
   opacity: 0.7;
@@ -3051,25 +2596,20 @@ export default {
   transform: translateY(-50%);
   font-size: 1.2em;
   margin-left: 8px;
+  animation: lock-pulse 2s infinite ease-in-out;
 }
 
-/* Optionnel: animation subtile pour attirer l'attention */
 @keyframes lock-pulse {
   0% { transform: translateY(-50%) scale(1); }
   50% { transform: translateY(-50%) scale(1.1); }
   100% { transform: translateY(-50%) scale(1); }
 }
 
-.lock-icon {
-  animation: lock-pulse 2s infinite ease-in-out;
-}
-
-/* Modal de détails de badge */
+/* Modal détails badge */
 .no-scroll {
   overflow: hidden !important;
 }
 
-/* Style de l'overlay modal avec flou */
 .badge-modal-overlay {
   position: fixed;
   top: 0;
@@ -3231,18 +2771,6 @@ export default {
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
 }
 
-/* Animations supplementaires */
-@keyframes scaleUp {
-  from {
-    transform: scale(0.8);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
 /* Mode contraste élevé */
 .high-contrast {
   color: white;
@@ -3256,17 +2784,16 @@ export default {
 
 .high-contrast .badge-card,
 .high-contrast .next-activity-card,
-.high-contrast .progress-map-container,
 .high-contrast .empty-state,
 .high-contrast .badge-achievement,
 .high-contrast .badge-locked-info,
 .high-contrast .badge-modal,
-.high-contrast .progress-map {
+.high-contrast .neural-progress-map {
   background-color: #222;
   border: 2px solid #fff;
 }
 
-.high-contrast .map-badge-node.unlocked .map-badge-icon {
+.high-contrast .game-node.game-unlocked .game-node-icon {
   border-color: #fff;
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
 }
@@ -3276,22 +2803,145 @@ export default {
   border: 1px solid #fff;
 }
 
-.high-contrast .progress-bar-container {
-  background-color: #333;
-  border: 1px solid #fff;
-}
-
 .high-contrast .section-title,
 .high-contrast .welcome-title,
 .high-contrast .badge-title,
 .high-contrast .badge-detail-title,
 .high-contrast .next-activity-info h3,
-.high-contrast .stat-number {
+.high-contrast .progress-percentage {
   color: #fff;
   text-shadow: none;
 }
 
-/* Media queries pour la responsivité */
+/* Version pour le mode accessibilité contraste élevé */
+.high-contrast .game-to-profile-connection,
+.high-contrast .main-connection.horizontal {
+  background: rgba(255, 255, 255, 0.8);
+  height: 3px;
+}
+
+.high-contrast .game-to-profile-connection::before,
+.high-contrast .main-connection.horizontal::before {
+  background-image: repeating-linear-gradient(
+    to right,
+    #000 0px,
+    #000 4px,
+    #fff 4px,
+    #fff 10px
+  );
+}
+
+.high-contrast .game-to-profile-connection.connection-active,
+.high-contrast .main-connection.horizontal.connection-active {
+  background: #fff;
+  border: 1px solid #000;
+}
+
+/* Scrollbar */
+.rewards-container {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+.rewards-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  display: block;
+}
+
+.rewards-container::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border-radius: 10px;
+}
+
+.rewards-container::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 10px;
+}
+
+.rewards-container::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* Tour guidé */
+.section-highlight {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1050;
+  animation: highlight-pulse 2s ease-out infinite;
+  border: 3px solid #76ff03;
+  border-radius: 16px;
+}
+
+.tour-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 1040;
+  pointer-events: none;
+}
+
+.guide-top-left:not(.force-show-message) {
+  position: fixed !important;
+  top: 20px !important;
+  left: 20px !important;
+  z-index: 2500 !important;
+}
+
+.guide-tour-active {
+  position: fixed !important;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes scaleUp {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes highlight-pulse {
+  0% {
+    opacity: 0.7;
+    box-shadow: 0 0 15px rgba(118, 255, 3, 0.5);
+    transform: scale(0.99);
+  }
+  50% {
+    opacity: 0.9;
+    box-shadow: 0 0 20px rgba(118, 255, 3, 0.8);
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0.7;
+    box-shadow: 0 0 15px rgba(118, 255, 3, 0.5);
+    transform: scale(0.99);
+  }
+}
+
+/* Responsive */
 @media (max-width: 768px) {
   .profile-header {
     flex-direction: column;
@@ -3326,26 +2976,38 @@ export default {
     margin-bottom: 12px;
   }
   
-  .progress-stats {
-    flex-wrap: wrap;
-    gap: 15px;
-  }
-  
-  .progress-map {
+  .neural-progress-map {
     height: auto;
     min-height: 350px;
-    padding: 30px 10px;
+    padding: 20px 15px;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
   }
   
-  .map-badge-node {
-    margin: 8px;
+  .main-path {
+    grid-column: 1;
+    grid-row: 2;
+    margin-top: 20px;
   }
   
-  .map-legend {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-    margin-left: 20px;
+  .main-connection.horizontal {
+    width: 40px;
+  }
+  
+  .game-to-profile-connection,
+  .main-connection.horizontal {
+    height: 2px;
+  }
+  
+  .main-connection.horizontal::before,
+  .game-to-profile-connection::before {
+    background-image: repeating-linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0.4) 0px,
+      rgba(255, 255, 255, 0.4) 3px,
+      transparent 3px,
+      transparent 8px
+    );
   }
 }
 
@@ -3353,6 +3015,8 @@ export default {
   .rewards-container {
     padding: 16px 12px;
     border-radius: 16px;
+    width: 95%;
+    max-height: 95vh;
   }
   
   .badges-grid {
@@ -3371,21 +3035,45 @@ export default {
     font-size: 16px;
   }
   
-  .map-badge-icon {
+  .game-node-icon {
     width: 50px;
     height: 50px;
   }
   
-  .map-badge-emoji {
-    font-size: 24px;
+  .game-node-emoji {
+    font-size: 20px;
   }
   
-  .stat-number {
-    font-size: 24px;
+  .main-node-icon {
+    width: 60px;
+    height: 60px;
   }
   
-  .progress-map {
+  .node-emoji {
+    font-size: 28px;
+  }
+  
+  .progress-percentage {
+    font-size: 20px;
+  }
+  
+  .neural-progress-map {
     min-height: 300px;
+    padding: 15px 10px;
+  }
+  
+  .badge-modal {
+    width: 95%;
+    padding: 16px;
+  }
+  
+  .badge-detail-icon {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .badge-detail-emoji {
+    font-size: 40px;
   }
 }
 </style>
