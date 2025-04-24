@@ -460,23 +460,6 @@ export default {
       }
     },
 
-    resetGuideState() {
-      // Vérifier si les tours sont terminés
-      const profileTourCompleted = localStorage.getItem('profile-tour-completed') === 'true';
-      const dashboardVisited = localStorage.getItem('hasVisitedDashboard') === 'true';
-      
-      // Si les tours sont terminés, on offre un contenu par défaut
-      if (profileTourCompleted && dashboardVisited) {
-        this.guideMessage = "Salut ! Comment puis-je t'aider aujourd'hui ?";
-        this.guideOptions = [
-          { text: "M'expliquer le dashboard", action: "explainDashboard" },
-          { text: "Voir les badges disponibles", action: "interactWithAvatar" },
-          { text: "Commencer à jouer", action: "startPlaying" }
-        ];
-        this.guideForceShow = false; // Important! Désactiver le mode forcé
-      }
-    },
-
     // Méthode pour fermer le guide
     dismissGuide() {
       this.guideForceShow = false;
@@ -494,37 +477,37 @@ export default {
       switch (this.guideTourStep) {
         case 1: // Explications sur l'anneau de progression autour de l'avatar
           this.guideMessage = "L'avatar au centre représente ton personnage. L'anneau autour montre ta progression globale, et le niveau affiché augmente au fur et à mesure que tu gagnes des badges !";
-          this.guideOptions = [{ text: "Suivant", action: "advanceTutorial" }];
+          this.guideOptions = [{ text: "Suivant", action: "advanceTutorial", keepOpen: true }];
           this.highlightElement('.progress-ring-container', true);
           break;
 
         case 2: // Explications sur le bouton des thèmes
           this.guideMessage = "Ce bouton te permet de changer le thème visuel de ton tableau de bord. Tu peux choisir parmi plusieurs ambiances selon tes préférences mais aussi désactiver les animations.";
-          this.guideOptions = [{ text: "Suivant", action: "advanceTutorial" }];
+          this.guideOptions = [{ text: "Suivant", action: "advanceTutorial", keepOpen: true }];
           this.highlightElement('.theme-tab');
           break;
 
         case 3: // Explications sur le bouton d'accessibilité
           this.guideMessage = "Le bouton d'accessibilité te permet d'adapter l'interface à tes besoins spécifiques, comme modifier la taille du texte ou les contrastes de couleurs.";
-          this.guideOptions = [{ text: "Suivant", action: "advanceTutorial" }];
+          this.guideOptions = [{ text: "Suivant", action: "advanceTutorial", keepOpen: true }];
           this.highlightElement('.accessibility-widget');
           break;
 
         case 4: // Explications sur le bouton plein écran
           this.guideMessage = "Ce bouton te permet de passer en mode plein écran pour une expérience plus immersive, sans distractions.";
-          this.guideOptions = [{ text: "Suivant", action: "advanceTutorial" }];
+          this.guideOptions = [{ text: "Suivant", action: "advanceTutorial", keepOpen: true }];
           this.highlightElement('.fullscreen-button');
           break;
 
         case 5: // Explications sur le bouton "Commencer à jouer"
           this.guideMessage = "Le bouton \"Commencer à jouer\" sera ton point de départ pour accéder aux différentes activités et jeux disponibles.";
-          this.guideOptions = [{ text: "Suivant", action: "advanceTutorial" }];
+          this.guideOptions = [{ text: "Suivant", action: "advanceTutorial", keepOpen: true }];
           this.highlightElement('.play-button');
           break;
 
         case 6: // Invitation à débloquer le premier badge
           this.guideMessage = "Maintenant que tu connais les bases, découvre ton profil pour débloquer ton premier badge !";
-          this.guideOptions = [{ text: "Comment accéder à mon profil ?", action: "showProfileHelp" }];
+          this.guideOptions = [{ text: "Comment accéder à mon profil ?", action: "showProfileHelp", keepOpen: true }];
           break;
 
         default:
@@ -651,7 +634,7 @@ export default {
     explainPlayButton() {
       this.guideMessage = "Pour commencer à jouer et gagner des badges, clique sur le bouton 'Commencer à jouer' en bas de l'écran.";
       this.guideOptions = [
-        { text: "Je comprends !", action: "dismissGuide" }
+        { text: "Je comprends !", action: "dismissGuide", keepOpen: true }
       ];
       // Désactiver la mise en évidence de l'avatar
       this.highlightAvatar = false;
@@ -664,10 +647,11 @@ export default {
         }
       });
     },
+
     showProfileHelp() {
       this.guideMessage = "Pour accéder à ton profil et voir tes badges, clique sur ton avatar au centre de l'écran. C'est là que tu pourras découvrir tes réalisations !";
       this.guideOptions = [
-        { text: "D'accord, je vais essayer !", action: "dismissGuide" }
+        { text: "D'accord, je vais essayer !", action: "dismissGuide", keepOpen: true }
       ];
       // Conserver la mise en évidence de l'avatar
       this.highlightAvatar = true;
@@ -682,6 +666,7 @@ export default {
         }
       });
     },
+
     forceGuideDisplay() {
       if (this.isFirstVisit && !this.showRewardsModal) {
         this.guideForceShow = true;
@@ -721,9 +706,27 @@ export default {
     },
     // Nouvelle méthode pour expliquer le dashboard
     explainDashboard() {
-      this.guideTourStep = 0; // Réinitialiser le compteur
-      this.advanceTutorial(); // Commencer le tutoriel
+      // Réinitialiser le compteur d'étapes si l'utilisateur a terminé le tour
+      const profileTourCompleted = localStorage.getItem('profile-tour-completed') === 'true';
+      
+      if (profileTourCompleted) {
+        // Réinitialiser les options pour qu'elles soient disponibles après
+        this.guideTourStep = 0;
+        
+        // Définir un message d'introduction plus court pour les utilisateurs expérimentés
+        this.guideMessage = "Le dashboard est ton espace personnel. Tu peux y voir ton avatar, ta progression, changer le thème et accéder aux jeux.";
+        this.guideOptions = [
+          { text: "Montrer les fonctionnalités", action: "advanceTutorial", keepOpen: true },
+          { text: "Commencer à jouer", action: "startPlaying", keepOpen: true },
+          { text: "Merci, j'ai compris !", action: "dismissGuide", keepOpen: true }
+        ];
+      } else {
+        // Comportement standard pour les nouveaux utilisateurs
+        this.guideTourStep = 0;
+        this.advanceTutorial();
+      }
     },
+
     // Vérifier si c'est la première visite de l'utilisateur
     checkFirstVisit() {
       const hasVisitedBefore = localStorage.getItem('hasVisitedDashboard');
@@ -969,8 +972,6 @@ export default {
 
     // Vérifier si c'est la première visite
     this.checkFirstVisit();
-
-    this.resetGuideState();
 
     // Mettre à jour la position du guide
     this.updateGuidePosition();
