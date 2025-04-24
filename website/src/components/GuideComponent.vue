@@ -287,6 +287,21 @@ export default {
     },
     // Basculer l'affichage du message
     toggleMessage() {
+      // Vérifier si l'utilisateur a terminé les tours guidés
+      const profileTourCompleted = localStorage.getItem('profile-tour-completed') === 'true';
+      const dashboardVisited = localStorage.getItem('hasVisitedDashboard') === 'true';
+      
+      // Si les tours sont terminés, on doit permettre de réafficher le guide même avec forcedMessage
+      if (profileTourCompleted && dashboardVisited) {
+        this.showMessage = !this.showMessage;
+        
+        if (this.showMessage) {
+          // Marquer comme lu
+          this.hasNewMessage = false;
+        }
+        return;
+      }
+      
       // Si on a un message forcé et forceShowMessage est true, ne rien faire
       if (this.forcedMessage && this.forceShowMessage) {
         return;
@@ -299,7 +314,7 @@ export default {
         this.hasNewMessage = false;
       }
     },
-    
+
     // Fermer le message
     closeMessage() {
       // Si on a un message forcé et forceShowMessage est true, ne rien faire

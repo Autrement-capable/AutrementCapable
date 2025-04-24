@@ -460,6 +460,23 @@ export default {
       }
     },
 
+    resetGuideState() {
+      // Vérifier si les tours sont terminés
+      const profileTourCompleted = localStorage.getItem('profile-tour-completed') === 'true';
+      const dashboardVisited = localStorage.getItem('hasVisitedDashboard') === 'true';
+      
+      // Si les tours sont terminés, on offre un contenu par défaut
+      if (profileTourCompleted && dashboardVisited) {
+        this.guideMessage = "Salut ! Comment puis-je t'aider aujourd'hui ?";
+        this.guideOptions = [
+          { text: "M'expliquer le dashboard", action: "explainDashboard" },
+          { text: "Voir les badges disponibles", action: "interactWithAvatar" },
+          { text: "Commencer à jouer", action: "startPlaying" }
+        ];
+        this.guideForceShow = false; // Important! Désactiver le mode forcé
+      }
+    },
+
     // Méthode pour fermer le guide
     dismissGuide() {
       this.guideForceShow = false;
@@ -952,6 +969,8 @@ export default {
 
     // Vérifier si c'est la première visite
     this.checkFirstVisit();
+
+    this.resetGuideState();
 
     // Mettre à jour la position du guide
     this.updateGuidePosition();
