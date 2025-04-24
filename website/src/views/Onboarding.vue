@@ -1,582 +1,678 @@
 <template>
-  <div
-    class="questionnaire"
-    aria-label="Questionnaire page"
-    :style="{ backgroundColor: currentBackgroundColor }"
-  >
-    <h1 class="title">Bonjour !</h1>
+  <div class="onboarding-container">
+    <!-- Space Background Component -->
+    <SpaceBackground
+      v-if="currentStep >= 1"
+      :theme="selectedTheme"
+      :animationsEnabled="true"
+      class="background-container"
+    />
 
-    <div
-      v-if="currentQuestionIndex < questions.length"
-      class="content-container"
-    >
-      <!-- Section gauche avec avatar et question -->
-      <div class="left-section">
-        <img
-          :src="selectedAvatarUrl || require('../assets/jeunefemme.png')"
-          alt="Avatar"
-          :class="imageClass"
-        />
-        <div class="question-container">
-          <p class="sub-title">{{ questions[currentQuestionIndex].text }}</p>
-          <button
-            class="action-button listen-button"
-            @click="repeatQuestion"
-            aria-label="Écouter la question"
-          >
-            <span class="icon">🔊</span>
-            <span class="button-text">Écouter</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Section droite avec les réponses -->
-      <div class="right-section">
-        <!-- Affichage des réponses préconfigurées pour l'âge -->
-        <div
-          v-if="questions[currentQuestionIndex].key === 'age'"
-          class="options-grid"
-        >
-          <button
-            v-for="ageOption in ageOptions.slice(0, 8)"
-            :key="ageOption"
-            class="option-button"
-            @click="selectOption('age', ageOption)"
-            :class="{ selected: responses.age === ageOption }"
-          >
-            {{ ageOption }}
-          </button>
-          <button
-            class="option-button custom"
-            @click="showCustomInput = true"
-            v-if="!showCustomInput"
-          >
-            Autre
-          </button>
-          <div v-if="showCustomInput" class="custom-input-container">
-            <input
-              type="number"
-              v-model="responses.age"
-              placeholder="Votre âge"
-              class="small-input"
-              ref="customAgeInput"
-            />
-            <button
-              class="action-button"
-              @click=";(showCustomInput = false), validateResponse('age')"
-            >
-              OK
-            </button>
-          </div>
-        </div>
-
-        <!-- Choix prédéfinis pour le nom -->
-        <div
-          v-if="questions[currentQuestionIndex].key === 'name'"
-          class="name-options"
-        >
-          <!-- Option saisie vocale -->
-          <div class="voice-input-container" v-if="!showNameInput">
-            <button
-              class="action-button speak-button"
-              @click="startRecognition"
-              :class="{ active: isRecognizing }"
-            >
-              <span class="icon">🎙️</span>
-              <span class="button-text">
-                {{ isRecognizing ? "J'écoute..." : 'Dites votre nom' }}
-              </span>
-            </button>
-            <div
-              v-if="responses.name && !showNameInput && voiceInputActive"
-              class="speech-result"
-            >
-              <p>
-                Vous avez dit:
-                <strong>{{ responses.name }}</strong>
-              </p>
-              <div class="confirm-buttons">
-                <button
-                  class="action-button confirm"
-                  @click="validateResponse('name')"
-                >
-                  C'est correct
-                </button>
-                <button
-                  class="action-button retry"
-                  @click=";(responses.name = ''), startRecognition()"
-                >
-                  Réessayer
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Option saisie texte -->
-          <div class="text-input-option">
-            <button
-              class="option-button text-option"
-              @click="startTextInput"
-              v-if="!showNameInput"
-            >
-              Taper mon nom
-            </button>
-            <div v-if="showNameInput" class="custom-input-container">
-              <input
-                type="text"
-                v-model="responses.name"
-                placeholder="Votre nom"
-                class="small-input"
-                ref="customNameInput"
-              />
-              <div class="button-group">
-                <button class="action-button" @click="confirmTextInput">
-                  Confirmer
-                </button>
-                <button
-                  class="action-button cancel-button"
-                  @click="cancelTextInput"
-                >
-                  Annuler
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Options pour le genre de l'avatar -->
-        <div
-          v-if="questions[currentQuestionIndex].key === 'avatarGender'"
-          class="avatar-options-container"
-        >
-          <div class="options-grid avatar-gender-grid">
-            <button
-              v-for="option in avatarGenderOptions"
-              :key="option.value"
-              class="option-button avatar-option"
-              @click="selectOption('avatarGender', option.value)"
-              :class="{ selected: responses.avatarGender === option.value }"
-            >
-              <span class="avatar-option-icon">{{ option.icon }}</span>
-              <span class="avatar-option-text">{{ option.label }}</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Options pour les accessoires de l'avatar -->
-        <div
-          v-if="questions[currentQuestionIndex].key === 'avatarAccessories'"
-          class="avatar-options-container"
-        >
-          <div class="options-grid avatar-accessories-grid">
-            <button
-              v-for="option in avatarAccessoriesOptions"
-              :key="option.value"
-              class="option-button avatar-option"
-              @click="toggleAvatarAccessory(option.value)"
-              :class="{ selected: selectedAccessories.includes(option.value) }"
-            >
-              <span class="avatar-option-icon">{{ option.icon }}</span>
-              <span class="avatar-option-text">{{ option.label }}</span>
-            </button>
-          </div>
-          <div v-if="selectedAccessories.length > 0" class="selected-items">
-            <button
-              class="action-button confirm-selection"
-              @click="
-                ;(responses.avatarAccessories = selectedAccessories.join(',')),
-                  validateResponse('avatarAccessories')
-              "
-            >
-              Confirmer mes accessoires
-            </button>
-          </div>
-        </div>
-
-        <!-- Options pour la couleur de l'avatar -->
-        <div
-          v-if="questions[currentQuestionIndex].key === 'avatarColor'"
-          class="avatar-options-container"
-        >
-          <div class="options-grid avatar-color-grid">
-            <button
-              v-for="option in avatarColorOptions"
-              :key="option.value"
-              class="option-button avatar-color-option"
-              @click="selectOption('avatarColor', option.value)"
-              :class="{ selected: responses.avatarColor === option.value }"
-              :style="{ backgroundColor: option.hex }"
-            >
-              <span class="avatar-option-icon">{{ option.icon }}</span>
-              <span class="avatar-option-text">{{ option.label }}</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Options pour les passions de l'avatar -->
-        <div
-          v-if="questions[currentQuestionIndex].key === 'avatarPassion'"
-          class="avatar-options-container"
-        >
-          <div class="options-grid avatar-passion-grid">
-            <button
-              v-for="option in avatarPassionOptions"
-              :key="option.value"
-              class="option-button avatar-option"
-              @click="selectOption('avatarPassion', option.value)"
-              :class="{ selected: responses.avatarPassion === option.value }"
-            >
-              <span class="avatar-option-icon">{{ option.icon }}</span>
-              <span class="avatar-option-text">{{ option.label }}</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Options pour l'expression de l'avatar -->
-        <div
-          v-if="questions[currentQuestionIndex].key === 'avatarExpression'"
-          class="avatar-options-container"
-        >
-          <div class="options-grid avatar-expression-grid">
-            <button
-              v-for="option in avatarExpressionOptions"
-              :key="option.value"
-              class="option-button avatar-option"
-              @click="selectOption('avatarExpression', option.value)"
-              :class="{ selected: responses.avatarExpression === option.value }"
-            >
-              <span class="avatar-option-icon">{{ option.icon }}</span>
-              <span class="avatar-option-text">{{ option.label }}</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Passions avec options prédéfinies et vocales -->
-        <div
-          v-if="questions[currentQuestionIndex].key === 'passions'"
-          class="passions-container"
-        >
-          <div class="options-grid">
-            <button
-              v-for="passion in passionOptions"
-              :key="passion"
-              class="option-button passion-button"
-              @click="selectPassion(passion)"
-              :class="{ selected: selectedPassions.includes(passion) }"
-            >
-              {{ passion }}
-            </button>
-          </div>
-
-          <div class="voice-input-container" style="margin: 0.5rem 0">
-            <button
-              class="action-button speak-button"
-              @click="startRecognitionForPassions"
-              :class="{ active: isRecognizing }"
-            >
-              <span class="icon">🎙️</span>
-              <span class="button-text">
-                {{ isRecognizing ? "J'écoute..." : 'Dire' }}
-              </span>
-            </button>
-          </div>
-
-          <div v-if="selectedPassions.length > 0" class="selected-passions">
-            <div class="passions-tags">
-              <div
-                v-for="(passion, index) in selectedPassions.slice(0, 3)"
-                :key="index"
-                class="passion-tag"
-              >
-                {{ passion }}
-                <button
-                  class="remove-button"
-                  @click="removePassion(index)"
-                  aria-label="Supprimer cette passion"
-                >
-                  ×
-                </button>
-              </div>
-            </div>
-            <button
-              class="action-button confirm-passions"
-              @click="
-                ;(responses.passions = selectedPassions.join(', ')),
-                  validateResponse('passions')
-              "
-            >
-              Confirmer
-            </button>
-          </div>
-        </div>
-
-        <div class="navigation-buttons" v-if="!showAvatarSelection">
-          <button
-            v-if="currentQuestionIndex > 0"
-            class="action-button prev-button"
-            @click="previousQuestion"
-          >
-            Précédent
-          </button>
-          <button
-            class="action-button next-button"
-            @click="nextQuestion"
-            :disabled="!canProceed()"
-          >
-            Suivant
-          </button>
-          <button
-            v-if="shouldShowSkipButton()"
-            class="action-button skip-button"
-            @click="skipQuestion"
-          >
-            Passer cette question
-          </button>
-        </div>
-      </div>
+    <!-- Progress indicator -->
+    <div v-if="currentStep > 1" class="progress-bar">
+      <div
+        class="progress-indicator"
+        :style="{ width: progressPercentage + '%' }"
+      ></div>
     </div>
 
-    <!-- Sélection d'avatar -->
-    <div v-if="showAvatarSelection" class="avatar-selection-container">
-      <div v-if="isLoadingImages" class="loading">
-        <div class="loading-spinner"></div>
-        <p>Création de vos avatars personnalisés...</p>
-      </div>
-      <div v-else-if="generatedImages.length > 0" class="avatar-selection">
-        <h2>Choisissez votre avatar :</h2>
-        <div class="avatars-grid">
+    <!-- Main Content Container -->
+    <div class="content-container">
+      <!-- Step 1: Theme Selection -->
+      <div v-if="currentStep === 1" class="step-container theme-selection">
+        <h1 class="step-title">Choisis ton thème préféré</h1>
+        <div class="themes-grid">
           <div
-            v-for="(img, index) in generatedImages"
-            :key="index"
-            class="avatar-option-container"
-            :class="{ selected: selectedAvatarUrl === img }"
+            v-for="theme in availableThemes"
+            :key="theme.id"
+            class="theme-card"
+            :class="{ selected: selectedTheme === theme.id }"
+            @click="selectTheme(theme.id)"
           >
-            <img
-              :src="img"
-              alt="Option d'avatar"
-              class="avatar-option"
-              @click="selectAvatar(img)"
-            />
-            <button class="select-avatar-button" @click="selectAvatar(img)">
-              Choisir cet avatar
-            </button>
+            <div class="theme-emoji">{{ theme.emoji }}</div>
+            <p class="theme-name">{{ theme.name }}</p>
           </div>
         </div>
-        <button
-          v-if="selectedAvatarUrl"
-          class="action-button next-button"
-          @click="finalizeAvatarSelection"
-        >
-          Continuer avec cet avatar
-        </button>
+        <div class="navigation-buttons">
+          <button
+            class="next-button"
+            @click="nextStep"
+            :disabled="!selectedTheme"
+          >
+            Continuer
+          </button>
+        </div>
       </div>
-    </div>
 
-    <div
-      v-if="currentQuestionIndex >= questions.length && !showAvatarSelection"
-      class="completion-message"
-    >
-      <div v-if="isRegistering" class="loading-spinner">
-        <div class="spinner"></div>
-        <p>Création de votre compte...</p>
+      <!-- Step 2: Age Input -->
+      <div v-if="currentStep === 2" class="step-container">
+        <h1 class="step-title">Quel âge as-tu ?</h1>
+        <div class="input-container age-input-container">
+          <button @click="decrementAge" class="age-button decrease-button">
+            -
+          </button>
+          <input
+            type="number"
+            v-model="responses.age"
+            class="age-input"
+            placeholder="Ton âge"
+            min="1"
+            max="99"
+          />
+          <button @click="incrementAge" class="age-button increase-button">
+            +
+          </button>
+        </div>
+        <div class="navigation-buttons">
+          <button class="back-button" @click="previousStep">Retour</button>
+          <button
+            class="next-button"
+            @click="nextStep"
+            :disabled="!responses.age || responses.age < 1"
+          >
+            Continuer
+          </button>
+        </div>
       </div>
-      <button
-        v-else
-        @click="createAccountAndStartGame"
-        :disabled="isRegistering"
-        class="start-game-button"
-      >
-        Commencer le premier jeu
-      </button>
+
+      <!-- Step 3: Nickname Input -->
+      <div v-if="currentStep === 3" class="step-container">
+        <h1 class="step-title">Quel est ton surnom ?</h1>
+        <div class="input-container">
+          <input
+            type="text"
+            v-model="responses.nickname"
+            class="nickname-input"
+            placeholder="Ton surnom"
+            maxlength="20"
+          />
+        </div>
+        <div class="navigation-buttons">
+          <button class="back-button" @click="previousStep">Retour</button>
+          <button
+            class="next-button"
+            @click="nextStep"
+            :disabled="!responses.nickname"
+          >
+            Continuer
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 4: Gender Selection -->
+      <div v-if="currentStep === 4" class="step-container">
+        <h1 class="step-title">Ton personnage est...</h1>
+        <div class="gender-container">
+          <div
+            class="gender-option"
+            :class="{ selected: responses.avatarGender === 'boy' }"
+            @click="responses.avatarGender = 'boy'"
+          >
+            <div class="gender-image boy-image">👦</div>
+            <p>Garçon</p>
+          </div>
+          <div
+            class="gender-option"
+            :class="{ selected: responses.avatarGender === 'girl' }"
+            @click="responses.avatarGender = 'girl'"
+          >
+            <div class="gender-image girl-image">👧</div>
+            <p>Fille</p>
+          </div>
+          <div
+            class="gender-option"
+            :class="{ selected: responses.avatarGender === 'neutral' }"
+            @click="responses.avatarGender = 'neutral'"
+          >
+            <div class="gender-image neutral-image">🤖</div>
+            <p>Je ne veux pas choisir</p>
+          </div>
+        </div>
+        <div class="help-text">
+          <p>Tu peux choisir ce que tu préfères. Tu peux aussi passer.</p>
+        </div>
+        <div class="navigation-buttons">
+          <button class="back-button" @click="previousStep">Retour</button>
+          <button class="next-button" @click="nextStep">Continuer</button>
+        </div>
+      </div>
+
+      <!-- Step 5: Accessories Selection -->
+      <div v-if="currentStep === 5" class="step-container">
+        <h1 class="step-title">Choisis ce que ton personnage porte</h1>
+        <p class="subtitle">
+          Tu peux choisir ce que ton personnage porte. C'est toi qui choisis.
+        </p>
+        <div class="accessories-container">
+          <div
+            class="accessory-option"
+            :class="{ selected: accessories.includes('casque') }"
+            @click="toggleAccessory('casque')"
+          >
+            <div class="accessory-image">🎧</div>
+            <p>Casque</p>
+          </div>
+          <div
+            class="accessory-option"
+            :class="{ selected: accessories.includes('casquette') }"
+            @click="toggleAccessory('casquette')"
+          >
+            <div class="accessory-image">🧢</div>
+            <p>Casquette</p>
+          </div>
+          <div
+            class="accessory-option"
+            :class="{ selected: accessories.includes('lunettes') }"
+            @click="toggleAccessory('lunettes')"
+          >
+            <div class="accessory-image">👓</div>
+            <p>Lunettes</p>
+          </div>
+          <div
+            class="accessory-option"
+            :class="{ selected: accessories.includes('sac à dos') }"
+            @click="toggleAccessory('sac à dos')"
+          >
+            <div class="accessory-image">🎒</div>
+            <p>Sac à dos</p>
+          </div>
+          <div
+            class="accessory-option"
+            :class="{ selected: accessories.length === 0 }"
+            @click="accessories = []"
+          >
+            <div class="accessory-image">❌</div>
+            <p>Rien</p>
+          </div>
+        </div>
+        <div class="navigation-buttons">
+          <button class="back-button" @click="previousStep">Retour</button>
+          <button class="skip-button" @click="skipStep">
+            Je ne sais pas / Je veux passer
+          </button>
+          <button class="next-button" @click="nextStep">Continuer</button>
+        </div>
+      </div>
+
+      <!-- Step 6: Color Selection -->
+      <div v-if="currentStep === 6" class="step-container">
+        <h1 class="step-title">Quelle est ta couleur préférée ?</h1>
+        <p class="subtitle">
+          Choisis la couleur que tu aimes le plus. Elle servira à décorer ton
+          personnage.
+        </p>
+        <div class="colors-container">
+          <div
+            v-for="color in availableColors"
+            :key="color.id"
+            class="color-option"
+            :class="{ selected: responses.avatarColor === color.name }"
+            :style="{ backgroundColor: color.hex }"
+            @click="responses.avatarColor = color.name"
+          ></div>
+        </div>
+        <div class="navigation-buttons">
+          <button class="back-button" @click="previousStep">Retour</button>
+          <button class="skip-button" @click="skipColorStep">
+            Je ne sais pas
+          </button>
+          <button class="next-button" @click="nextStep">Continuer</button>
+        </div>
+      </div>
+
+      <!-- Step 7: Passion Selection -->
+      <div v-if="currentStep === 7" class="step-container">
+        <h1 class="step-title">Qu'est-ce que tu aimes faire ?</h1>
+        <p class="subtitle">
+          Choisis ce que tu aimes le plus. Il n'y a pas de mauvaise réponse.
+        </p>
+        <div class="passions-container">
+          <div
+            v-for="passion in availablePassions"
+            :key="passion.id"
+            class="passion-option"
+            :class="{ selected: responses.avatarPassion === passion.name }"
+            @click="responses.avatarPassion = passion.name"
+          >
+            <div class="passion-image">{{ passion.emoji }}</div>
+            <p>{{ passion.name }}</p>
+          </div>
+        </div>
+        <div class="navigation-buttons">
+          <button class="back-button" @click="previousStep">Retour</button>
+          <button class="skip-button" @click="skipPassionStep">
+            Je ne sais pas
+          </button>
+          <button class="next-button" @click="nextStep">Continuer</button>
+        </div>
+      </div>
+
+      <!-- Step 8: Expression Selection -->
+      <div v-if="currentStep === 8" class="step-container">
+        <h1 class="step-title">Ton personnage a quelle expression ?</h1>
+        <p class="subtitle">
+          Choisis le visage qui te ressemble ou que tu préfères.
+        </p>
+        <div class="expressions-container">
+          <div
+            v-for="expression in availableExpressions"
+            :key="expression.id"
+            class="expression-option"
+            :class="{
+              selected: responses.avatarExpression === expression.name,
+            }"
+            @click="responses.avatarExpression = expression.name"
+          >
+            <div class="expression-emoji">{{ expression.emoji }}</div>
+            <p>{{ expression.name }}</p>
+          </div>
+        </div>
+        <div class="navigation-buttons">
+          <button class="back-button" @click="previousStep">Retour</button>
+          <button class="skip-button" @click="skipExpressionStep">
+            Je ne sais pas
+          </button>
+          <button class="next-button" @click="nextStep">Continuer</button>
+        </div>
+      </div>
+
+      <!-- Step 9: Generating Avatars -->
+      <div v-if="currentStep === 9" class="step-container">
+        <h1 class="step-title">Génération de tes avatars</h1>
+        <p class="subtitle">Patiente un peu, nous créons tes personnages...</p>
+        <div class="loading-container">
+          <div class="loading-spinner"></div>
+          <p class="loading-text">{{ loadingText }}</p>
+        </div>
+      </div>
+
+      <!-- Step 10: Avatar Selection -->
+      <div v-if="currentStep === 10" class="step-container">
+        <h1 class="step-title">Choisis ton avatar préféré</h1>
+        <p class="subtitle">Clique sur celui que tu préfères.</p>
+        <div class="avatars-container">
+          <div
+            v-for="(avatar, index) in generatedAvatars"
+            :key="index"
+            class="avatar-option"
+            :class="{ selected: selectedAvatarIndex === index }"
+            @click="selectedAvatarIndex = index"
+          >
+            <img :src="avatar" alt="Avatar option" class="avatar-image" />
+          </div>
+        </div>
+        <div class="navigation-buttons">
+          <button class="back-button" @click="previousStep">Retour</button>
+          <button
+            class="next-button"
+            @click="nextStep"
+            :disabled="selectedAvatarIndex === null"
+          >
+            Continuer
+          </button>
+        </div>
+      </div>
+      <!-- Step 11: Récapitulatif et création du compte -->
+      <div v-if="currentStep === 11" class="step-container summary-container">
+        <h1 class="step-title">Récapitulatif</h1>
+        <p class="subtitle">
+          Vérifie si tout est correct avant de créer ton compte
+        </p>
+
+        <div class="summary-content">
+          <div class="summary-avatar">
+            <img
+              :src="selectedAvatarUrl"
+              alt="Avatar sélectionné"
+              class="selected-avatar-image"
+            />
+          </div>
+
+          <div class="summary-details">
+            <div class="summary-item">
+              <span class="summary-label">Surnom:</span>
+              <span class="summary-value">{{ responses.nickname }}</span>
+            </div>
+
+            <div class="summary-item">
+              <span class="summary-label">Âge:</span>
+              <span class="summary-value">{{ responses.age }} ans</span>
+            </div>
+
+            <div class="summary-item">
+              <span class="summary-label">Thème préféré:</span>
+              <span class="summary-value">
+                {{ getThemeName(selectedTheme) }}
+              </span>
+            </div>
+
+            <div class="summary-item">
+              <span class="summary-label">Genre:</span>
+              <span class="summary-value">
+                {{ getGenderLabel(responses.avatarGender) }}
+              </span>
+            </div>
+
+            <div
+              class="summary-item"
+              v-if="
+                responses.avatarAccessories &&
+                responses.avatarAccessories !== 'none'
+              "
+            >
+              <span class="summary-label">Accessoires:</span>
+              <span class="summary-value">
+                {{ responses.avatarAccessories.replace(/,/g, ', ') }}
+              </span>
+            </div>
+
+            <div class="summary-item" v-if="responses.avatarColor">
+              <span class="summary-label">Couleur préférée:</span>
+              <span class="summary-value">{{ responses.avatarColor }}</span>
+            </div>
+
+            <div
+              class="summary-item"
+              v-if="
+                responses.avatarPassion && responses.avatarPassion !== 'none'
+              "
+            >
+              <span class="summary-label">Passion:</span>
+              <span class="summary-value">{{ responses.avatarPassion }}</span>
+            </div>
+
+            <div class="summary-item" v-if="responses.avatarExpression">
+              <span class="summary-label">Expression:</span>
+              <span class="summary-value">
+                {{ responses.avatarExpression }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="navigation-buttons">
+          <button class="back-button" @click="previousStep">Modifier</button>
+          <button
+            class="create-account-button"
+            @click="createAccountAndStartGame"
+            :disabled="isRegistering"
+          >
+            {{ isRegistering ? 'Création en cours...' : 'Créer mon compte' }}
+          </button>
+        </div>
+
+        <div v-if="registrationError" class="error-message">
+          {{ registrationError }}
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import SpaceBackground from '@/components/SpaceBackground.vue'
 import axios from 'axios'
 import AuthService from '@/services/AuthService'
 
-/* global webkitSpeechRecognition */
 export default {
   name: 'UserOnboarding',
+  components: {
+    SpaceBackground,
+  },
   data() {
     return {
-      currentQuestionIndex: 0,
-      generatedImages: [],
-      selectedAvatarUrl: '',
-      isLoadingImages: false,
-      showAvatarSelection: false,
-      showCustomInput: false,
-      showNameInput: false,
-      voiceInputActive: false,
-      backgroundColors: [
-        '#e0f7fa',
-        '#e8f5e9',
-        '#fce4ec',
-        '#fff3e0',
-        '#ede7f6',
-        '#f9fbe7',
+      currentStep: 1,
+      selectedTheme: 'cosmic',
+      accessories: [],
+      loadingText: 'Création de ton avatar...',
+      loadingProgress: 0,
+      selectedAvatarIndex: null,
+      generatedAvatars: [],
+      availableThemes: [
+        { id: 'cosmic', name: 'Espace', emoji: '🌌' },
+        { id: 'ocean', name: 'Océan', emoji: '🌊' },
+        { id: 'cyberpunk', name: 'Cyberpunk', emoji: '🤖' },
+        { id: 'forest', name: 'Forêt', emoji: '🌳' },
+        { id: 'snow', name: 'Neige', emoji: '❄️' },
       ],
-      currentBackgroundColor: '#e0f7fa',
+      availableColors: [
+        { id: 'blue', name: 'bleu', hex: '#1a73e8' },
+        { id: 'green', name: 'vert', hex: '#34a853' },
+        { id: 'red', name: 'rouge', hex: '#ea4335' },
+        { id: 'purple', name: 'violet', hex: '#9c27b0' },
+        { id: 'orange', name: 'orange', hex: '#ff9800' },
+        { id: 'white', name: 'blanc', hex: '#ffffff' },
+        { id: 'black', name: 'noir', hex: '#202124' },
+      ],
+      availablePassions: [
+        { id: 'games', name: 'jeux vidéo', emoji: '🎮' },
+        { id: 'art', name: 'dessin ou peinture', emoji: '🎨' },
+        { id: 'music', name: 'musique', emoji: '🎵' },
+        { id: 'space', name: 'espace', emoji: '🚀' },
+        { id: 'animals', name: 'animaux', emoji: '🐶' },
+      ],
+      availableExpressions: [
+        { id: 'happy', name: 'souriant', emoji: '😀' },
+        { id: 'calm', name: 'calme', emoji: '😐' },
+        { id: 'excited', name: 'très content', emoji: '🤩' },
+        { id: 'tired', name: 'fatigué', emoji: '😴' },
+      ],
+      responses: {
+        age: 18,
+        nickname: '',
+        avatarGender: null,
+        avatarAccessories: null,
+        avatarColor: null,
+        avatarPassion: null,
+        avatarExpression: null,
+      },
+      totalSteps: 11,
       isRegistering: false,
       registrationError: null,
-      questions: [
-        { text: '🎂 Quel âge as-tu ?', key: 'age', type: 'number' },
-        {
-          text: "👤 Comment voudrais-tu qu'on t'appelle ?",
-          key: 'name',
-          type: 'text',
-        },
-        {
-          text: '👦 Veux-tu que ton avatar soit...',
-          key: 'avatarGender',
-          type: 'choice',
-        },
-        {
-          text: '🧢 Quels accessoires aimes-tu porter ou utiliser ?',
-          key: 'avatarAccessories',
-          type: 'multichoice',
-        },
-        {
-          text: '🎨 Choisis une couleur principale pour ton avatar',
-          key: 'avatarColor',
-          type: 'choice',
-        },
-        {
-          text: "🌟 Qu'est-ce que tu préfères parmi ces passions ?",
-          key: 'avatarPassion',
-          type: 'choice',
-        },
-        {
-          text: '😊 Ton avatar est plutôt...',
-          key: 'avatarExpression',
-          type: 'choice',
-        },
-        {
-          text: '🎨 Quelles sont tes passions ?',
-          key: 'passions',
-          type: 'text',
-          icon: 'passion-icon.png',
-        },
-      ],
-      ageOptions: [12, 14, 16, 18, 20, 22, 24, 26],
-      passionOptions: [
-        'Musique',
-        'Sport',
-        'Lecture',
-        'Jeux vidéo',
-        'Dessin',
-        'Cuisine',
-        'Animaux',
-        'Nature',
-      ],
-      avatarGenderOptions: [
-        { label: 'Un garçon', value: 'boy', icon: '👦' },
-        { label: 'Une fille', value: 'girl', icon: '👧' },
-        { label: 'Neutre / Je ne sais pas', value: 'neutral', icon: '🤖' },
-      ],
-      avatarAccessoriesOptions: [
-        { label: 'Casque audio', value: 'headphones', icon: '🎧' },
-        { label: 'Casquette', value: 'cap', icon: '🧢' },
-        { label: 'Sac à dos', value: 'backpack', icon: '🎒' },
-        { label: 'Lunettes', value: 'glasses', icon: '👓' },
-        { label: 'Rien de spécial', value: 'none', icon: '🚫' },
-      ],
-      avatarColorOptions: [
-        { label: 'Bleu', value: 'blue', icon: '🔵', hex: '#1e88e5' },
-        { label: 'Vert', value: 'green', icon: '🟢', hex: '#43a047' },
-        { label: 'Rouge', value: 'red', icon: '🔴', hex: '#e53935' },
-        { label: 'Violet', value: 'purple', icon: '🟣', hex: '#8e24aa' },
-        { label: 'Orange', value: 'orange', icon: '🟠', hex: '#fb8c00' },
-        { label: 'Blanc', value: 'white', icon: '⚪', hex: '#f5f5f5' },
-        { label: 'Noir', value: 'black', icon: '⚫', hex: '#424242' },
-      ],
-      avatarPassionOptions: [
-        { label: 'Jeux vidéo', value: 'videogames', icon: '🎮' },
-        { label: 'Dessin / Peinture', value: 'art', icon: '🎨' },
-        { label: 'Musique', value: 'music', icon: '🎵' },
-        { label: 'Espace / Science', value: 'science', icon: '🚀' },
-        { label: 'Nature / Animaux', value: 'nature', icon: '🏞️' },
-      ],
-      avatarExpressionOptions: [
-        { label: 'Souriant', value: 'smiling', icon: '😄' },
-        { label: 'Sérieux', value: 'serious', icon: '😐' },
-        { label: 'Calme', value: 'calm', icon: '🧘‍♂️' },
-        { label: 'Très joyeux', value: 'very_happy', icon: '🤩' },
-      ],
-      selectedPassions: [],
-      selectedAccessories: [],
-      responses: {
-        age: '',
-        name: '',
-        avatarGender: '',
-        avatarAccessories: '',
-        avatarColor: '',
-        avatarPassion: '',
-        avatarExpression: '',
-        passions: '',
-      },
-      recognition: null,
-      isRecognizing: false,
     }
   },
-  mounted() {
-    this.updateBackgroundColor()
-    this.setupSpeechRecognition()
-  },
   computed: {
-    imageClass() {
-      return this.selectedAvatarUrl ? 'image-selected' : 'image-default'
+    progressPercentage() {
+      return ((this.currentStep - 1) / (this.totalSteps - 1)) * 100
+    },
+    selectedAvatarUrl() {
+      if (
+        this.selectedAvatarIndex !== null &&
+        this.generatedAvatars.length > this.selectedAvatarIndex
+      ) {
+        return this.generatedAvatars[this.selectedAvatarIndex]
+      }
+      return null
     },
   },
   methods: {
-    setupSpeechRecognition() {
-      if ('webkitSpeechRecognition' in window) {
-        this.recognition = new webkitSpeechRecognition()
-        this.recognition.lang = 'fr-FR'
-        this.recognition.continuous = false
-        this.recognition.interimResults = false
-
-        this.recognition.onstart = () => {
-          console.log('Recognition started')
-          this.isRecognizing = true
-        }
-
-        this.recognition.onresult = (event) => {
-          const transcript =
-            event.results[event.resultIndex][0].transcript.trim()
-          console.log('Recognition result:', transcript)
-
-          const currentKey = this.questions[this.currentQuestionIndex].key
-          if (currentKey === 'passions') {
-            // Pour les passions, on ajoute à la liste des passions sélectionnées
-            const passionsArray = transcript.split(',').map((p) => p.trim())
-            passionsArray.forEach((passion) => {
-              if (passion && !this.selectedPassions.includes(passion)) {
-                this.selectedPassions.push(passion)
-              }
-            })
-          } else {
-            // Pour les autres questions, on assigne directement la valeur
-            this.responses[currentKey] = transcript
-          }
-
-          this.isRecognizing = false
-          this.recognition.stop()
-        }
-
-        this.recognition.onerror = (event) => {
-          console.error('Recognition error:', event.error)
-          this.isRecognizing = false
-        }
-
-        this.recognition.onend = () => {
-          console.log('Recognition ended')
-          this.isRecognizing = false
-        }
-      } else {
-        console.error('webkitSpeechRecognition not supported in this browser.')
+    selectTheme(themeId) {
+      this.selectedTheme = themeId
+    },
+    incrementAge() {
+      if (this.responses.age < 99) {
+        this.responses.age++
       }
+    },
+    decrementAge() {
+      if (this.responses.age > 1) {
+        this.responses.age--
+      }
+    },
+    toggleAccessory(accessory) {
+      const index = this.accessories.indexOf(accessory)
+      if (index === -1) {
+        this.accessories.push(accessory)
+      } else {
+        this.accessories.splice(index, 1)
+      }
+      this.responses.avatarAccessories = this.accessories.join(',')
+    },
+    nextStep() {
+      // Set accessory response before moving to next step
+      if (this.currentStep === 5) {
+        this.responses.avatarAccessories =
+          this.accessories.length > 0 ? this.accessories.join(',') : 'none'
+      }
+
+      // Move to next step
+      this.currentStep++
+
+      // If on the avatar generation step, trigger avatar generation
+      if (this.currentStep === 9) {
+        this.generateAvatars()
+      }
+    },
+    previousStep() {
+      if (this.currentStep > 1) {
+        this.currentStep--
+      }
+    },
+    skipStep() {
+      if (this.currentStep === 5) {
+        this.accessories = []
+        this.responses.avatarAccessories = 'none'
+      }
+      this.nextStep()
+    },
+    skipColorStep() {
+      this.responses.avatarColor = null
+      this.nextStep()
+    },
+    skipPassionStep() {
+      this.responses.avatarPassion = 'none'
+      this.nextStep()
+    },
+    skipExpressionStep() {
+      this.responses.avatarExpression = null
+      this.nextStep()
+    },
+    async generateAvatars() {
+      this.generatedAvatars = []
+      this.loadingProgress = 0
+      this.loadingText = 'Création de ton avatar...'
+
+      const url = process.env.VUE_APP_AZURE_OPENAI_ENDPOINT
+      const apiKey = process.env.VUE_APP_AZURE_OPENAI_API_KEY
+
+      try {
+        // Générer 3 avatars différents
+        for (let i = 0; i < 3; i++) {
+          this.loadingText = `Création de l'avatar ${i + 1}/3...`
+
+          // Construction du prompt basé sur les choix de l'avatar
+          const gender =
+            this.responses.avatarGender === 'boy'
+              ? 'masculin'
+              : this.responses.avatarGender === 'girl'
+                ? 'féminin'
+                : 'neutre'
+
+          const accessoriesText =
+            this.responses.avatarAccessories !== 'none'
+              ? `portant les accessoires suivants : ${this.responses.avatarAccessories.replace(/,/g, ', ')}`
+              : 'sans accessoires particuliers'
+
+          const colorText = this.responses.avatarColor
+            ? `avec des tons dominants de ${this.responses.avatarColor}`
+            : ''
+
+          const passionText =
+            this.responses.avatarPassion !== 'none'
+              ? `reflétant la passion pour : ${this.responses.avatarPassion}`
+              : ''
+
+          const expressionText = this.responses.avatarExpression
+            ? `avec une expression ${this.responses.avatarExpression}`
+            : ''
+
+          const prompt = `Créer une illustration numérique en style cartoon réaliste, avec des traits doux, une palette de couleurs naturelle et harmonieuse.
+          Le fond est gris clair, épuré et minimaliste.
+          Le personnage est de genre ${gender}, ${accessoriesText}, ${colorText}, ${passionText}, ${expressionText}.
+          Le style visuel est moderne, avec des proportions naturelles (pas de déformation type Funko Pop), un rendu propre et professionnel, comme une illustration d'avatar haut de gamme.
+          Le personnage est vu de face, en position debout, bien éclairé, avec des détails soignés sur les vêtements et les accessoires.
+          L'objectif est de produire un visuel prêt pour une utilisation professionnelle ou commerciale.`
+
+          console.log(`Envoi de la requête ${i + 1} à l'API Azure OpenAI...`)
+          console.log('Prompt:', prompt)
+
+          try {
+            const response = await axios.post(
+              url,
+              { prompt, n: 1 },
+              {
+                headers: {
+                  'Content-Type': 'application/json',
+                  'api-key': apiKey,
+                },
+              },
+            )
+
+            const imageUrl = response.data.data[0].url
+            this.generatedAvatars.push(imageUrl)
+            console.log(`Image ${i + 1} générée:`, imageUrl)
+
+            // Mettre à jour la progression
+            this.loadingProgress = ((i + 1) / 3) * 100
+          } catch (error) {
+            console.error(
+              `Erreur lors de la génération de l'image ${i + 1}:`,
+              error,
+            )
+            // Ajouter une image de remplacement en cas d'erreur
+            this.generatedAvatars.push(
+              `/images/avatars/fallback-avatar-${i + 1}.jpg`,
+            )
+          }
+        }
+
+        // Après la génération de tous les avatars, passer à l'étape de sélection
+        setTimeout(() => {
+          this.currentStep = 10
+        }, 1000)
+      } catch (error) {
+        console.error(
+          'Erreur générale lors de la génération des avatars:',
+          error,
+        )
+        this.loadingText = 'Une erreur est survenue. Réessayons...'
+
+        // Fallback à des avatars prédéfinis en cas d'erreur globale
+        setTimeout(() => {
+          this.generatedAvatars = [
+            '/images/avatars/fallback-avatar-1.jpg',
+            '/images/avatars/fallback-avatar-2.jpg',
+            '/images/avatars/fallback-avatar-3.jpg',
+          ]
+          this.currentStep = 10
+        }, 2000)
+      }
+    },
+    // Cette méthode n'est plus utilisée, remplacée par l'appel API réel
+    // simulateAvatarGeneration(index) {
+    //   // In a real implementation, this would be a call to OpenAI's API
+    //   return new Promise((resolve) => {
+    //     setTimeout(() => {
+    //       // For this simulation, we're using placeholder images
+    //       // In a real implementation, you would use the response from OpenAI
+    //       this.generatedAvatars.push(`/images/avatars/generated-avatar-${index + 1}.jpg`);
+    //
+    //       this.loadingProgress = ((index + 1) / 3) * 100;
+    //       this.loadingText = `Création de l'avatar ${index + 1}/3...`;
+    //
+    //       resolve();
+    //     }, 2000); // Simulate API delay
+    //   });
+    // },
+    getThemeName(themeId) {
+      const theme = this.availableThemes.find((t) => t.id === themeId)
+      return theme ? theme.name : ''
+    },
+
+    getGenderLabel(gender) {
+      if (gender === 'boy') return 'Garçon'
+      if (gender === 'girl') return 'Fille'
+      return 'Neutre'
     },
 
     async createAccountAndStartGame() {
@@ -588,7 +684,7 @@ export default {
       try {
         // Prepare user data for registration
         const userData = {
-          first_name: this.responses.name,
+          first_name: this.responses.nickname,
           last_name: '', // Optional
           age: parseInt(this.responses.age),
         }
@@ -597,25 +693,26 @@ export default {
         localStorage.setItem(
           'user_profile',
           JSON.stringify({
-            name: this.responses.name,
+            name: this.responses.nickname,
             age: this.responses.age,
-            passions: this.responses.passions,
+            theme: this.selectedTheme,
             avatar: this.selectedAvatarUrl,
             avatarGender: this.responses.avatarGender,
             avatarAccessories: this.responses.avatarAccessories,
             avatarColor: this.responses.avatarColor,
             avatarPassion: this.responses.avatarPassion,
             avatarExpression: this.responses.avatarExpression,
-          })
+          }),
         )
+
+        console.log('User data for registration:', userData)
 
         // Register with passkey
         const result = await AuthService.registerWithPasskey(userData)
 
         console.log('Passkey registration successful:', result)
 
-        // Navigate to the first game
-        this.$router.push('/game-speed')
+        this.$router.push('/dashboard')
       } catch (error) {
         console.error('Registration error:', error)
         this.registrationError =
@@ -628,870 +725,527 @@ export default {
       }
     },
 
-    toggleAvatarAccessory(accessory) {
-      const index = this.selectedAccessories.indexOf(accessory)
-
-      // Si l'accessoire est "none", on vide les autres accessoires
-      if (accessory === 'none') {
-        this.selectedAccessories = ['none']
-        return
-      }
-
-      // Si on ajoute un accessoire et que "none" est sélectionné, on retire "none"
-      if (index === -1 && this.selectedAccessories.includes('none')) {
-        this.selectedAccessories = [accessory]
-        return
-      }
-
-      // Sinon, on ajoute ou retire l'accessoire normalement
-      if (index === -1) {
-        this.selectedAccessories.push(accessory)
-      } else {
-        this.selectedAccessories.splice(index, 1)
-      }
-    },
-
-    selectOption(key, value) {
-      this.responses[key] = value
-      if (key === 'age') {
-        this.showCustomInput = false
-      }
-    },
-
-    validateResponse(key) {
-      if (this.responses[key]) {
-        if (key === 'passions') {
-          this.generatePicture()
-        }
-      }
-    },
-
-    selectPassion(passion) {
-      if (!this.selectedPassions.includes(passion)) {
-        this.selectedPassions.push(passion)
-      } else {
-        this.removePassion(this.selectedPassions.indexOf(passion))
-      }
-    },
-
-    removePassion(index) {
-      this.selectedPassions.splice(index, 1)
-    },
-
-    startRecognition() {
-      if (this.recognition && !this.isRecognizing) {
-        this.voiceInputActive = true
-        this.showNameInput = false
-        this.recognition.start()
-      }
-    },
-
-    startTextInput() {
-      this.showNameInput = true
-      this.voiceInputActive = false
-      this.responses.name = ''
-      // Focus sur le champ de saisie
-      this.$nextTick(() => {
-        if (this.$refs.customNameInput) {
-          this.$refs.customNameInput.focus()
-        }
-      })
-    },
-
-    confirmTextInput() {
-      if (this.responses.name && this.responses.name.trim() !== '') {
-        this.showNameInput = false
-        this.validateResponse('name')
-      }
-    },
-
-    cancelTextInput() {
-      this.showNameInput = false
-      this.responses.name = ''
-    },
-
-    startRecognitionForPassions() {
-      if (this.recognition && !this.isRecognizing) {
-        this.recognition.start()
-      }
-    },
-
-    previousQuestion() {
-      if (this.currentQuestionIndex > 0) {
-        this.currentQuestionIndex--
-        this.updateBackgroundColor()
-      }
-    },
-
-    canProceed() {
-      const currentKey = this.questions[this.currentQuestionIndex].key
-
-      // Pour les accessoires, on vérifie si au moins un accessoire est sélectionné
-      if (currentKey === 'avatarAccessories') {
-        return this.selectedAccessories.length > 0
-      }
-
-      // Pour les autres questions, on vérifie si une réponse existe
-      return this.responses[currentKey] !== ''
-    },
-
-    nextQuestion() {
-      const currentKey = this.questions[this.currentQuestionIndex].key
-
-      if (!this.canProceed()) {
-        this.repeatQuestion()
-        return
-      }
-
-      // Si on est sur la question des accessoires, on sauvegarde les accessoires sélectionnés
-      if (currentKey === 'avatarAccessories') {
-        this.responses.avatarAccessories = this.selectedAccessories.join(',')
-      }
-
-      if (currentKey === 'passions' && !this.showAvatarSelection) {
-        this.generatePicture()
-        return
-      }
-
-      this.currentQuestionIndex++
-      this.updateBackgroundColor()
-      this.showCustomInput = false
-      this.showNameInput = false
-      this.showAvatarSelection = false
-    },
-
-    shouldShowSkipButton() {
-      const currentKey = this.questions[this.currentQuestionIndex].key
-      // On peut sauter les questions des accessoires, de la passion et des passions générales
-      return ['avatarAccessories', 'avatarPassion', 'passions'].includes(
-        currentKey
-      )
-    },
-
-    skipQuestion() {
-      const currentKey = this.questions[this.currentQuestionIndex].key
-
-      if (this.shouldShowSkipButton()) {
-        if (currentKey === 'avatarAccessories') {
-          this.responses.avatarAccessories = 'none'
-          this.selectedAccessories = ['none']
-        } else if (currentKey === 'avatarPassion') {
-          this.responses.avatarPassion = 'none'
-        } else if (currentKey === 'passions') {
-          this.responses.passions = ''
-        }
-
-        this.currentQuestionIndex++
-        this.updateBackgroundColor()
-        this.showCustomInput = false
-        this.showNameInput = false
-      } else {
-        // Pour les autres questions, on rappelle qu'elles sont obligatoires
-        this.repeatQuestion()
-      }
-    },
-
-    repeatQuestion() {
-      const text = this.questions[this.currentQuestionIndex].text
-      const speech = new SpeechSynthesisUtterance()
-      speech.lang = 'fr-FR'
-      speech.text = text.replace(
-        /🎂|👤|🎨|👦|🧢|🌟|😊|🎮|🎧|🎒|👓|🚫|🔵|🟢|🔴|🟣|🟠|⚪|⚫||🚀|🏞️/gu,
-        ''
-      ) // Enlever les emojis pour la lecture
-      window.speechSynthesis.speak(speech)
-    },
-
-    async generatePicture() {
-      this.showAvatarSelection = true
-      const url = process.env.VUE_APP_AZURE_OPENAI_ENDPOINT
-      const apiKey = process.env.VUE_APP_AZURE_OPENAI_API_KEY
-
-      // Construction du prompt basé sur les choix de l'avatar
-      const gender =
-        this.responses.avatarGender === 'boy'
-          ? 'masculin'
-          : this.responses.avatarGender === 'girl'
-          ? 'féminin'
-          : 'neutre'
-
-      const accessoriesText =
-        this.responses.avatarAccessories !== 'none'
-          ? `portant les accessoires suivants : ${this.responses.avatarAccessories.replace(
-              /,/g,
-              ', '
-            )}`
-          : 'sans accessoires particuliers'
-
-      const colorText = this.responses.avatarColor
-        ? `avec des tons dominants de ${this.responses.avatarColor}`
-        : ''
-
-      const passionText =
-        this.responses.avatarPassion !== 'none'
-          ? `reflétant la passion pour : ${this.responses.avatarPassion}`
-          : ''
-
-      const expressionText = this.responses.avatarExpression
-        ? `avec une expression ${this.responses.avatarExpression}`
-        : ''
-
-      const prompt = `Créer une illustration numérique en style cartoon réaliste, avec des traits doux, une palette de couleurs naturelle et harmonieuse.
-      Le fond est gris clair, épuré et minimaliste.
-      Le personnage est de genre ${gender}, ${accessoriesText}, ${colorText}, ${passionText}, ${expressionText}.
-      Le style visuel est moderne, avec des proportions naturelles (pas de déformation type Funko Pop), un rendu propre et professionnel, comme une illustration d'avatar haut de gamme.
-      Le personnage est vu de face, en position debout, bien éclairé, avec des détails soignés sur les vêtements et les accessoires.
-      L'objectif est de produire un visuel prêt pour une utilisation professionnelle ou commerciale.`
-
-      console.log("Envoi de la requête à l'API Azure OpenAI...")
-      console.log('Prompt:', prompt)
-
-      this.generatedImages = []
-      this.isLoadingImages = true
-
-      for (let i = 0; i < 3; i++) {
-        try {
-          const response = await axios.post(
-            url,
-            { prompt, n: 1 },
-            {
-              headers: {
-                'Content-Type': 'application/json',
-                'api-key': apiKey,
-              },
-            }
-          )
-          const imageUrl = response.data.data[0].url
-          this.generatedImages.push(imageUrl)
-          console.log(`Image ${i + 1} générée:`, imageUrl)
-        } catch (error) {
-          console.error("Erreur lors de la génération de l'image :", error)
-        }
-      }
-      this.isLoadingImages = false
-    },
-
-    selectAvatar(imgUrl) {
-      this.selectedAvatarUrl = imgUrl
-      console.log('Avatar sélectionné :', imgUrl)
-    },
-
-    finalizeAvatarSelection() {
-      this.showAvatarSelection = false
-      this.nextQuestion()
-    },
-
-    updateBackgroundColor() {
-      const colorIndex =
-        this.currentQuestionIndex % this.backgroundColors.length
-      this.currentBackgroundColor = this.backgroundColors[colorIndex]
+    finishOnboarding() {
+      this.nextStep()
     },
   },
 }
 </script>
 
 <style scoped>
-@import url('@/assets/styles.css');
-
-.questionnaire {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  text-align: center;
-  padding: 15px;
-  height: 100vh;
-  max-height: 100vh;
-  overflow: hidden;
-  transition: background-color 0.5s ease;
+.onboarding-container {
   width: 100%;
-  max-width: 100%;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Roboto', 'Arial', sans-serif;
+  color: #ffffff;
 }
 
-.title {
-  font-family: 'Glacial Indifference', sans-serif;
-  font-weight: bold;
-  font-size: 2.2rem;
-  margin-top: 0.8rem;
-  margin-bottom: 1.5rem;
-  color: #333;
+.background-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
+.progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 8px;
+  background-color: rgba(255, 255, 255, 0.2);
+  z-index: 10;
+}
+
+.progress-indicator {
+  height: 100%;
+  background-color: #4285f4;
+  transition: width 0.3s ease-in-out;
 }
 
 .content-container {
   display: flex;
-  justify-content: space-between;
-  width: 95%;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.left-section {
-  display: flex;
   flex-direction: column;
   align-items: center;
-  width: 40%;
-  background-color: rgba(255, 255, 255, 0.9);
-  border-radius: 15px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.right-section {
-  display: flex;
-  flex-direction: column;
-  width: 58%;
-  background-color: rgba(255, 255, 255, 0.9);
-  border-radius: 15px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.image-default {
-  width: 180px;
-  height: 180px;
-  object-fit: contain;
-  margin: 0.5rem 0 1.5rem;
-  border-radius: 10px;
-}
-
-.image-selected {
-  width: 200px;
-  height: 200px;
-  object-fit: contain;
-  margin: 0.5rem 0 1.5rem;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.question-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-}
-
-.sub-title {
-  font-family: 'Glacial Indifference', sans-serif;
-  font-weight: bold;
-  font-size: 1.6rem;
-  margin-bottom: 1rem;
-  color: #333;
-  text-align: center;
-}
-
-.action-button {
-  display: flex;
-  align-items: center;
   justify-content: center;
-  padding: 0.7rem 1.3rem;
-  font-size: 1rem;
-  font-weight: 600;
-  border: none;
-  border-radius: 50px;
-  background-color: #4a90e2;
-  color: white;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
-  margin: 0.5rem;
-}
-
-.action-button:hover {
-  background-color: #357abd;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.action-button:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.action-button:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.listen-button {
-  background-color: #6d4c41;
-}
-
-.listen-button:hover {
-  background-color: #5d4037;
-}
-
-.speak-button {
-  background-color: #009688;
-  min-width: 200px;
-}
-
-.speak-button:hover {
-  background-color: #00796b;
-}
-
-.speak-button.active {
-  background-color: #f44336;
-  animation: pulse 1.5s infinite;
-}
-
-.icon {
-  margin-right: 8px;
-  font-size: 1.2rem;
-}
-
-.next-button {
-  background-color: #66bb6a;
-}
-
-.next-button:hover {
-  background-color: #4caf50;
-}
-
-.prev-button {
-  background-color: #78909c;
-}
-
-.prev-button:hover {
-  background-color: #607d8b;
-}
-
-.skip-button {
-  background-color: #ffb74d;
-  color: #333;
-}
-
-.skip-button:hover {
-  background-color: #ffa726;
-}
-
-.options-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
   width: 100%;
-  margin: 0.8rem 0;
+  height: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+  z-index: 1;
 }
 
-.avatar-gender-grid,
-.avatar-expression-grid {
-  grid-template-columns: repeat(3, 1fr);
-}
-
-.avatar-color-grid {
-  grid-template-columns: repeat(4, 1fr);
-}
-
-.avatar-option-container {
-  position: relative;
-  padding: 5px;
-}
-
-.avatar-option-icon {
-  font-size: 2rem;
-  display: block;
-  margin-bottom: 5px;
-}
-
-.avatar-option-text {
-  display: block;
-  font-size: 0.9rem;
-}
-
-.avatar-options-container {
-  width: 100%;
-  margin-top: 1rem;
-}
-
-.avatar-color-option {
-  color: white;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-  border: 3px solid transparent;
-}
-
-.avatar-color-option.selected {
-  border-color: #2196f3;
-  box-shadow: 0 0 10px rgba(33, 150, 243, 0.5);
-}
-
-.selected-items {
-  margin-top: 1rem;
-  display: flex;
-  justify-content: center;
-}
-
-.confirm-selection {
-  margin-top: 0.5rem;
-}
-
-.option-button {
-  padding: 12px 8px;
-  font-size: 1.1rem;
-  background-color: #e0e0e0;
-  border: 2px solid #e0e0e0;
-  color: #333;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.option-button:hover {
-  background-color: #d4d4d4;
-  transform: translateY(-2px);
-}
-
-.option-button.selected {
-  background-color: #bbdefb;
-  border-color: #2196f3;
-  color: #0d47a1;
-  font-weight: bold;
-}
-
-.option-button.custom {
-  background-color: #ffd54f;
-  border-color: #ffd54f;
-}
-
-.option-button.custom:hover {
-  background-color: #ffca28;
-}
-
-.option-button.text-option {
-  width: 100%;
-  max-width: 300px;
-  margin: 0 auto;
-}
-
-.passion-button {
-  background-color: #e3f2fd;
-  border-color: #e3f2fd;
-}
-
-.passion-button:hover {
-  background-color: #bbdefb;
-}
-
-.custom-input-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  max-width: 300px;
-  margin: 1rem auto;
-}
-
-.button-group {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  gap: 10px;
-  width: 100%;
-}
-
-.cancel-button {
-  background-color: #f44336;
-}
-
-.small-input {
-  padding: 15px;
-  width: 100%;
-  font-size: 1.1rem;
-  margin-bottom: 10px;
-  border: 2px solid #bdbdbd;
-  border-radius: 10px;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.small-input:focus {
-  border-color: #2196f3;
-  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.3);
-  outline: none;
-}
-
-.voice-input-container {
-  margin: 1.5rem 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-}
-
-.speech-result {
-  margin-top: 1rem;
-  padding: 1rem;
-  background-color: #f5f5f5;
-  border-radius: 10px;
-  width: 100%;
-  max-width: 500px;
-}
-
-.confirm-buttons {
-  display: flex;
-  justify-content: center;
-  margin-top: 1rem;
-  gap: 1rem;
-}
-
-.action-button.confirm {
-  background-color: #4caf50;
-}
-
-.action-button.retry {
-  background-color: #ff9800;
-}
-
-.selected-passions {
-  margin-top: 1.5rem;
-  width: 100%;
-}
-
-.passions-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
-  margin: 1rem 0;
-}
-
-.passion-tag {
-  display: flex;
-  align-items: center;
-  padding: 8px 12px;
-  background-color: #bbdefb;
+.step-container {
+  background-color: rgba(0, 0, 0, 0.7);
   border-radius: 20px;
-  font-size: 0.9rem;
-  color: #0d47a1;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  max-width: 800px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.5s ease-in-out;
 }
 
-.remove-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  background-color: #0d47a1;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  margin-left: 8px;
-  cursor: pointer;
-  font-size: 0.8rem;
-  line-height: 1;
+.step-title {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: #ffffff;
 }
 
-.confirm-passions {
-  margin-top: 1rem;
+.subtitle {
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+  color: #e0e0e0;
 }
 
 .navigation-buttons {
   display: flex;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-top: 30px;
+}
+
+.back-button,
+.next-button,
+.skip-button {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.back-button {
+  background-color: transparent;
+  color: #ffffff;
+  border: 2px solid #ffffff;
+}
+
+.next-button {
+  background-color: #4285f4;
+  color: white;
+}
+
+.next-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.skip-button {
+  background-color: transparent;
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+.back-button:hover,
+.skip-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.next-button:hover:not(:disabled) {
+  background-color: #2a75e5;
+}
+
+/* Theme Selection Styles */
+.themes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.theme-card {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.theme-card.selected {
+  border-color: #4285f4;
+  background-color: rgba(66, 133, 244, 0.2);
+}
+
+.theme-card:hover:not(.selected) {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.theme-emoji {
+  font-size: 5rem;
+  margin-bottom: 15px;
+}
+
+.theme-name {
+  font-size: 1.2rem;
+  color: #ffffff;
+}
+
+/* Age and Nickname Input Styles */
+.input-container {
+  display: flex;
   justify-content: center;
-  margin-top: 2rem;
-  gap: 10px;
+  margin: 30px 0;
 }
 
-.avatar-selection-container {
-  width: 90%;
-  max-width: 1000px;
-  margin: 1rem auto;
-  background-color: rgba(255, 255, 255, 0.9);
-  border-radius: 15px;
-  padding: 1.5rem;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+.age-input-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.avatar-selection {
-  width: 100%;
+.age-button {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: rgba(66, 133, 244, 0.8);
+  color: white;
+  font-size: 1.5rem;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  margin: 0 15px;
 }
 
-.avatars-grid {
+.age-button:hover {
+  background-color: rgba(66, 133, 244, 1);
+  transform: scale(1.1);
+}
+
+.age-button:active {
+  transform: scale(0.95);
+}
+
+.age-input {
+  width: 120px;
+  padding: 15px;
+  font-size: 1.5rem;
+  text-align: center;
+  border-radius: 8px;
+  border: none;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.age-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #4285f4;
+}
+
+.nickname-input {
+  width: 300px;
+  padding: 15px;
+  font-size: 1.5rem;
+  text-align: center;
+  border-radius: 8px;
+  border: none;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.nickname-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #4285f4;
+}
+
+/* Gender Selection Styles */
+.gender-container {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin: 30px 0;
+}
+
+.gender-option {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  width: 150px;
+}
+
+.gender-option.selected {
+  border-color: #4285f4;
+  background-color: rgba(66, 133, 244, 0.2);
+}
+
+.gender-option:hover:not(.selected) {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.gender-image {
+  font-size: 4rem;
+  margin-bottom: 10px;
+}
+
+.help-text {
+  margin-top: 20px;
+  color: #e0e0e0;
+  font-style: italic;
+}
+
+/* Accessories Selection Styles */
+.accessories-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
   justify-content: center;
-  margin-top: 1rem;
+  gap: 20px;
+  margin: 30px 0;
 }
 
-.avatar-option-container {
+.accessory-option {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  width: 120px;
+}
+
+.accessory-option.selected {
+  border-color: #4285f4;
+  background-color: rgba(66, 133, 244, 0.2);
+}
+
+.accessory-option:hover:not(.selected) {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.accessory-image {
+  font-size: 3rem;
+  margin-bottom: 10px;
+}
+
+/* Color Selection Styles */
+.colors-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  margin: 30px 0;
+}
+
+.color-option {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 4px solid transparent;
+}
+
+.color-option.selected {
+  border-color: #ffffff;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+}
+
+.color-option:hover:not(.selected) {
+  transform: scale(1.1);
+}
+
+/* Passion Selection Styles */
+.passions-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  margin: 30px 0;
+}
+
+.passion-option {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  width: 140px;
+}
+
+.passion-option.selected {
+  border-color: #4285f4;
+  background-color: rgba(66, 133, 244, 0.2);
+}
+
+.passion-option:hover:not(.selected) {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.passion-image {
+  font-size: 3.5rem;
+  margin-bottom: 10px;
+}
+
+/* Expression Selection Styles */
+.expressions-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  margin: 30px 0;
+}
+
+.expression-option {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  width: 120px;
+}
+
+.expression-option.selected {
+  border-color: #4285f4;
+  background-color: rgba(66, 133, 244, 0.2);
+}
+
+.expression-option:hover:not(.selected) {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.expression-emoji {
+  font-size: 3.5rem;
+  margin-bottom: 10px;
+}
+
+/* Loading Styles */
+.loading-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: white;
-  border-radius: 12px;
-  padding: 1rem;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
-  transition: all 0.3s ease;
-  max-width: 220px;
+  margin: 40px 0;
 }
 
-.avatar-option-container.selected {
-  box-shadow: 0 0 0 3px #2196f3, 0 5px 10px rgba(0, 0, 0, 0.25);
-  transform: translateY(-3px);
+.loading-spinner {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 6px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #4285f4;
+  animation: spin 1.5s linear infinite;
+}
+
+.loading-text {
+  margin-top: 20px;
+  font-size: 1.2rem;
+  color: #e0e0e0;
+}
+
+/* Avatar Selection Styles */
+.avatars-container {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin: 30px 0;
 }
 
 .avatar-option {
-  width: 200px;
-  height: 200px;
-  object-fit: cover;
-  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 10px;
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: all 0.2s ease;
+  border: 3px solid transparent;
+  width: 180px;
 }
 
-.avatar-option:hover {
-  transform: scale(1.02);
+.avatar-option.selected {
+  border-color: #4285f4;
+  background-color: rgba(66, 133, 244, 0.2);
 }
 
-.select-avatar-button {
-  margin-top: 0.8rem;
-  padding: 0.6rem 1.2rem;
-  background-color: #9c27b0;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+.avatar-option:hover:not(.selected) {
+  transform: scale(1.05);
 }
 
-.select-avatar-button:hover {
-  background-color: #7b1fa2;
+.summary-container {
+  max-width: 700px;
 }
 
-.loading {
+.summary-content {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 2rem 0;
-}
-
-.loading-spinner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.completion-message {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 3rem;
-  background-color: rgba(255, 255, 255, 0.9);
-  padding: 2rem;
+  margin: 30px 0;
+  background-color: rgba(255, 255, 255, 0.1);
   border-radius: 15px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  width: 60%;
-  max-width: 600px;
+  padding: 20px;
 }
 
-.start-game-button {
-  background-color: #673ab7;
-  padding: 1rem 2rem;
-  font-size: 1.2rem;
-  margin-top: 1.5rem;
+.summary-avatar {
+  flex: 0 0 200px;
+  margin-right: 25px;
 }
 
-.start-game-button:hover {
-  background-color: #5e35b1;
+.selected-avatar-image {
+  width: 100%;
+  height: auto;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
+.summary-details {
+  flex: 1;
+  text-align: left;
 }
 
-@keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.4);
-  }
-
-  70% {
-    box-shadow: 0 0 0 10px rgba(244, 67, 54, 0);
-  }
-
-  100% {
-    box-shadow: 0 0 0 0 rgba(244, 67, 54, 0);
-  }
-}
-
-/* Responsive adjustments */
-@media (max-width: 900px) {
-  .content-container {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .left-section,
-  .right-section {
-    width: 95%;
-    margin-bottom: 1rem;
-  }
-
-  .image-default,
-  .image-selected {
-    width: 150px;
-    height: 150px;
-  }
-}
-
-@media (max-width: 768px) {
-  .options-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 480px) {
-  .title {
-    font-size: 1.5rem;
-  }
-
-  .sub-title {
-    font-size: 1.2rem;
-  }
-
-  .options-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .image-default,
-  .image-selected {
-    width: 120px;
-    height: 120px;
-  }
-}
-
-/* Loading spinner styles */
-.loading-spinner {
+.summary-item {
+  margin-bottom: 15px;
+  font-size: 1.1rem;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  margin: 20px 0;
 }
 
-.spinner {
-  border: 4px solid rgba(0, 123, 255, 0.1);
-  border-radius: 50%;
-  border-top: 4px solid #007bff;
-  width: 40px;
-  height: 40px;
-  animation: spin 1s linear infinite;
-  margin-bottom: 1em;
+.summary-label {
+  font-weight: bold;
+  min-width: 150px;
+  color: #a0c4ff;
 }
 
-button:disabled {
+.summary-value {
+  color: white;
+}
+
+.create-account-button {
+  background-color: #4caf50;
+  color: white;
+  padding: 14px 28px;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.create-account-button:hover:not(:disabled) {
+  background-color: #388e3c;
+}
+
+.create-account-button:disabled {
   background-color: #cccccc;
   cursor: not-allowed;
-  transform: none;
+}
+
+.error-message {
+  margin-top: 15px;
+  color: #ff6b6b;
+  font-weight: bold;
+  background-color: rgba(255, 0, 0, 0.1);
+  padding: 10px;
+  border-radius: 8px;
 }
 </style>
