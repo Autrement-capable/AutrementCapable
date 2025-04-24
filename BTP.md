@@ -25,15 +25,9 @@ Only one role is involved in the MVP testing phase.
 
 ### 2.2 Test Scenarios
 
-#### Scenario 1: Creating Avatar & chose visual personalization
-
-- **Objective:** Validate avatar creation based on answers and choosing prefered background customization.
-- **Preconditions:** A device supporting passkeys is available.
-- **Test Steps:**
-  1. Creating avatar & visual personalization.
-
 #### Scenario 1: Onboarding Flow
 
+- **Role Involved:** User
 - **Objective:** Creating Avatar & choose visual personalization.
 - **Preconditions:** Have a computer.
 - **Test Steps:**
@@ -45,6 +39,7 @@ Only one role is involved in the MVP testing phase.
 
 #### Scenario 2: Register using Passkey
 
+- **Role Involved:** User
 - **Objective:** Create an account easily.
 - **Preconditions:** Creating Avatar & choose visual personalization.
 - **Test Steps:**
@@ -54,6 +49,7 @@ Only one role is involved in the MVP testing phase.
 
 #### Scenario 3: Dashboard & Badge Progression Explanation
 
+- **Role Involved:** User
 - **Objective:** Understanding of the dashboard and badges progression.
 - **Preconditions:** Finished the onboarding.
 - **Test Steps:**
@@ -64,7 +60,8 @@ Only one role is involved in the MVP testing phase.
 
 #### Scenario 4: Game Modules (Self-Discovery Path)
 
-Each game contributes to enriching the user's profile. They are:
+- **Role Involved:** User
+  Each game contributes to enriching the user's profile. They are:
 
 | **Game**               | **Objective**                                                                               |
 | ---------------------- | ------------------------------------------------------------------------------------------- |
