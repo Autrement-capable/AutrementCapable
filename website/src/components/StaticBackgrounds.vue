@@ -5,13 +5,58 @@
       <div class="static-elements">
         <!-- Dynamic space elements based on the selected theme -->
         <template v-if="theme === 'cosmic'">
+          <!-- Static Crowd of Stars -->
+          <div class="static-crowd-container">
+            <div v-for="i in 150" :key="`crowd-${i}`" class="static-crowd-dot" :style="getStaticCrowdDotStyle(i)"></div>
+          </div>
+          
           <!-- Static Comets -->
           <div class="static-comet comet-1"></div>
           <div class="static-comet comet-2"></div>
           <div class="static-comet comet-3"></div>
+          <div class="static-comet comet-4"></div>
+          <div class="static-cometInverse comet-5"></div>
           
           <!-- Static Galaxy -->
           <div class="static-galaxy galaxy-1"></div>
+          
+          <!-- Static Rocket -->
+          <div class="static-rocket-container">
+            <div class="static-rocket">
+              <div class="rocket-body">
+                <div class="rocket-window"></div>
+              </div>
+              <div class="rocket-nose"></div>
+              <div class="rocket-fin rocket-fin-left"></div>
+              <div class="rocket-fin rocket-fin-right"></div>
+              <div class="rocket-flame-container">
+                <div class="rocket-flame flame-core"></div>
+                <div class="rocket-flame flame-outer-1"></div>
+                <div class="rocket-flame flame-outer-2"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Static Satellite -->
+          <div class="static-satellite-container">
+            <div class="static-satellite">
+              <div class="satellite-body">
+                <!-- Small details -->
+              </div>
+              <div class="solar-panels">
+                <div class="solar-panel panel-left">
+                  <div class="panel-cells"></div>
+                </div>
+                <div class="solar-panel panel-right">
+                  <div class="panel-cells"></div>
+                </div>
+              </div>
+              <div class="satellite-dish">
+                <div class="dish-inner"></div>
+              </div>
+              <div class="satellite-antenna-small"></div>
+            </div>
+          </div>
           
           <!-- Static Planets -->
           <div class="static-planet planet-1">
@@ -30,11 +75,39 @@
               <div class="planet-moon moon-2"></div>
             </div>
           </div>
-  
+
+          <!-- Planet 4: Gas Giant with Bands and Spot -->
+          <div class="static-planet planet-4">
+            <div class="planet-bands">
+              <div class="band band-1"></div>
+              <div class="band band-2"></div>
+              <div class="band band-3"></div>
+              <div class="band band-4"></div>
+            </div>
+            <div class="planet-great-spot"></div>
+          </div>
+
+          <!-- Planet 5: Rocky, Cratered Planet with Small Moon -->
+          <div class="static-planet planet-5">
+            <div class="planet-surface-texture"></div>
+            <!-- Add multiple crater divs for detail -->
+            <div class="crater crater-1"></div>
+            <div class="crater crater-2"></div>
+            <div class="crater crater-3"></div>
+            <div class="planet-moons moons-p5">
+              <div class="planet-moon moon-3"></div>
+            </div>
+          </div>
+
+          <!-- Planet 6: Distant Icy Body -->
+          <div class="static-planet planet-6">
+            <div class="planet-haze"></div>
+          </div>
+
           <!-- Static Stars Background -->
           <div class="static-stars"></div>
         </template>
-  
+
         <!-- Ocean theme static elements -->
         <template v-else-if="theme === 'ocean'">
           <!-- Static Light Rays -->
@@ -517,7 +590,22 @@
           zIndex: layer === 'near' ? 8 : 4
         };
       },
-      
+
+      getStaticCrowdDotStyle(index) {
+        const leftPosition = ((index * 7) % 100); // Deterministic positioning based on index
+        const topPosition = ((index * 13) % 100); // Different multiplier for more variation
+        const size = 1 + ((index % 3) * 0.5); // Sizes between 1px and 2.5px
+        const opacity = 0.2 + ((index % 5) * 0.1); // Opacity between 0.2 and 0.6
+        
+        return {
+          left: `${leftPosition}%`,
+          top: `${topPosition}%`,
+          width: `${size}px`,
+          height: `${size}px`,
+          opacity: opacity
+        };
+      },
+
       getStaticSnowflakeStyle(index, layer) {
         const left = ((index * 10) + (index * 3)) % 100;
         const top = ((index * 7) + 10) % 80;
@@ -578,6 +666,435 @@
     z-index: 1;
   }
   
+  .static-crowd-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  mask-image: radial-gradient(ellipse at center, black 60%, transparent 95%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 60%, transparent 95%);
+}
+
+.static-crowd-dot {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 0 3px rgba(255, 255, 255, 0.5);
+}
+
+/* Static CometInverse */
+.static-cometInverse {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  box-shadow: 0 0 20px 2px rgba(255, 255, 255, 0.6), 0 0 40px 6px rgba(115, 215, 255, 0.4);
+  z-index: 2;
+  transform: rotate(185deg);
+}
+
+.static-cometInverse::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 120px;
+  height: 2px;
+  background: linear-gradient(to left, rgba(255, 255, 255, 0.8), rgba(160, 220, 255, 0.4), transparent);
+  transform: translateX(2px);
+  border-radius: 100%;
+}
+
+/* Additional comets */
+.static-comet.comet-4 { top: 62%; left: 40%; transform: rotate(-10deg); }
+.static-cometInverse.comet-5 { top: 70%; left: 55%; }
+
+/* Static Rocket */
+.static-rocket-container {
+  position: absolute;
+  bottom: 20%;
+  left: 15%;
+  width: 80px;
+  height: 150px;
+  z-index: 10;
+  transform: rotate(45deg);
+  transform-origin: center bottom;
+}
+
+.static-rocket {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 15px rgba(255, 165, 0, 0.6));
+}
+
+.static-rocket .rocket-body {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 80px;
+  background: linear-gradient(to right, #f0f0f0, #c0c0c0, #a0a0a0);
+  border-radius: 5px 5px 0 0;
+  box-shadow: inset 2px 0 5px rgba(0, 0, 0, 0.3);
+}
+
+.static-rocket .rocket-window {
+  position: absolute;
+  top: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 18px;
+  height: 18px;
+  background: radial-gradient(circle at 30% 30%, #a1d1ff, #3a7fbf);
+  border-radius: 50%;
+  border: 2px solid #707070;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+.static-rocket .rocket-nose {
+  position: absolute;
+  bottom: 105px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 20px solid transparent;
+  border-right: 20px solid transparent;
+  border-bottom: 35px solid #e04040;
+  filter: drop-shadow(0 -2px 3px rgba(0, 0, 0, 0.3));
+}
+
+.static-rocket .rocket-fin {
+  position: absolute;
+  bottom: 30px;
+  width: 0;
+  height: 0;
+  border-bottom: 30px solid #b03030;
+}
+
+.static-rocket .rocket-fin-left {
+  left: -5px;
+  border-left: 25px solid transparent;
+  transform: skewY(15deg);
+}
+
+.static-rocket .rocket-fin-right {
+  right: -5px;
+  border-right: 25px solid transparent;
+  transform: skewY(-15deg);
+}
+
+.static-rocket .rocket-flame-container {
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 60px;
+  z-index: -1;
+}
+
+.static-rocket .rocket-flame {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 0 0 50% 50%;
+  top: 0;
+  bottom: auto;
+}
+
+.static-rocket .flame-core {
+  bottom: 0;
+  width: 15px;
+  height: 45px;
+  background: linear-gradient(to top, #ffffff, #fff8b0, #ffea00);
+  opacity: 0.95;
+  filter: blur(2px);
+}
+
+.static-rocket .flame-outer-1 {
+  bottom: 0;
+  width: 25px;
+  height: 55px;
+  background: linear-gradient(to top, #ffcc00, #ffa500, rgba(255, 165, 0, 0.5));
+  opacity: 0.8;
+  filter: blur(4px);
+}
+
+.static-rocket .flame-outer-2 {
+  bottom: 0;
+  width: 35px;
+  height: 65px;
+  background: linear-gradient(to top, #ff8c00, #ff4500, rgba(255, 69, 0, 0.3));
+  opacity: 0.6;
+  filter: blur(8px);
+}
+
+/* Static Satellite */
+.static-satellite-container {
+  position: absolute;
+  top: 25%;
+  left: 70%;
+  width: 120px;
+  height: 80px;
+  z-index: 5;
+  transform: scale(1) rotateZ(0deg);
+}
+
+.static-satellite {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transform: rotateZ(0deg) rotateY(0deg);
+}
+
+.static-satellite .satellite-body {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #c0c0c0, #a0a0a0, #808080);
+  border-radius: 4px;
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.4);
+  background-image: linear-gradient(45deg, rgba(255,255,255,0.05) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.05) 75%, transparent 75%, transparent);
+  background-size: 10px 10px;
+}
+
+.static-satellite .solar-panels {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 10px;
+}
+
+.static-satellite .solar-panel {
+  position: absolute;
+  top: 50%;
+  width: 50px;
+  height: 70px;
+  background: linear-gradient(to bottom, #1a237e, #0d113b);
+  border: 1px solid #707080;
+  border-radius: 2px;
+  box-shadow: 0 0 5px rgba(0, 100, 200, 0.2);
+}
+
+.static-satellite .panel-left {
+  left: -25px;
+  transform: translateY(-50%) rotateY(20deg) rotateZ(-5deg);
+  transform-origin: right center;
+}
+
+.static-satellite .panel-right {
+  right: -25px;
+  transform: translateY(-50%) rotateY(-20deg) rotateZ(5deg);
+  transform-origin: left center;
+}
+
+.static-satellite .panel-cells {
+  position: absolute;
+  inset: 2px;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(150, 180, 255, 0.15), rgba(150, 180, 255, 0.15) 1px, transparent 1px, transparent 8px),
+    repeating-linear-gradient(90deg, rgba(150, 180, 255, 0.15), rgba(150, 180, 255, 0.15) 1px, transparent 1px, transparent 8px);
+  opacity: 0.8;
+}
+
+.static-satellite .satellite-dish {
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 25px;
+  height: 25px;
+  background: radial-gradient(circle at 70% 70%, #f0f0f0, #b0b0b0);
+  border-radius: 50%;
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+.static-satellite .dish-inner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 6px;
+  background: #333;
+  border-radius: 50%;
+  border: 1px solid #555;
+}
+
+.static-satellite .satellite-antenna-small {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%) rotate(10deg);
+  width: 2px;
+  height: 15px;
+  background: #a0a0a0;
+  border-radius: 2px 2px 0 0;
+}
+
+/* Planet 4: Gas Giant with Bands and Spot */
+.static-planet.planet-4 {
+  width: 120px;
+  height: 120px;
+  top: 60%;
+  left: 8%;
+  background: radial-gradient(
+    circle at 40% 60%,
+    #f8d7a8 0%,
+    #e0ac69 30%,
+    #c68642 60%,
+    #a0522d 100%
+  );
+  box-shadow: 0 0 35px rgba(224, 172, 105, 0.3), inset -20px -10px 50px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  z-index: 2;
+  transform: translate(0, 0);
+}
+
+.static-planet.planet-4 .planet-bands {
+  position: absolute;
+  width: 150%;
+  height: 100%;
+  top: 0;
+  left: -25%;
+  transform-origin: center center;
+}
+
+.static-planet.planet-4 .band {
+  position: absolute;
+  width: 100%;
+  left: 0;
+  height: 20%;
+  opacity: 0.6;
+}
+
+.static-planet.planet-4 .band-1 { top: 10%; background: rgba(255, 248, 220, 0.5); height: 15%; }
+.static-planet.planet-4 .band-2 { top: 30%; background: rgba(210, 180, 140, 0.6); }
+.static-planet.planet-4 .band-3 { top: 55%; background: rgba(160, 82, 45, 0.7); }
+.static-planet.planet-4 .band-4 { top: 80%; background: rgba(245, 222, 179, 0.5); height: 15%; }
+
+.static-planet.planet-4 .planet-great-spot {
+  position: absolute;
+  width: 35%;
+  height: 25%;
+  top: 55%;
+  left: 15%;
+  border-radius: 50%;
+  filter: blur(3px);
+  opacity: 0.8;
+  z-index: 4;
+  background: rgba(240, 210, 180, 0.6);
+}
+
+/* Planet 5: Rocky, Cratered Planet */
+.static-planet.planet-5 {
+  width: 60px;
+  height: 60px;
+  top: 20%;
+  left: 80%;
+  background: radial-gradient(
+    circle at 70% 30%,
+    #a9a9a9 0%,
+    #808080 40%,
+    #696969 70%,
+    #404040 100%
+  );
+  box-shadow: 0 0 15px rgba(128, 128, 128, 0.3), inset -10px -5px 25px rgba(0, 0, 0, 0.7);
+  z-index: 4;
+  overflow: hidden;
+  transform: translate(0, 0);
+}
+
+.static-planet.planet-5 .planet-surface-texture {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+  background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+  background-size: 5px 5px;
+  opacity: 0.3;
+  z-index: 1;
+}
+
+.static-planet.planet-5 .crater {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.3);
+  box-shadow: inset 1px 1px 2px rgba(0,0,0,0.6), 0 0 1px 1px rgba(255, 255, 255, 0.05);
+  z-index: 2;
+}
+
+.static-planet.planet-5 .crater-1 { width: 25%; height: 25%; top: 20%; left: 30%; }
+.static-planet.planet-5 .crater-2 { width: 15%; height: 15%; top: 55%; left: 60%; }
+.static-planet.planet-5 .crater-3 { width: 20%; height: 20%; top: 40%; left: 10%; }
+
+.static-planet.planet-5 .moons-p5 {
+  position: absolute;
+  width: 150%;
+  height: 150%;
+  top: -25%;
+  left: -25%;
+  z-index: 1;
+}
+
+.static-planet.planet-5 .moon-3 {
+  width: 8px;
+  height: 8px;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(circle at 30% 30%, #666, #444, #222);
+}
+
+/* Planet 6: Distant Icy Body */
+.static-planet.planet-6 {
+  width: 40px;
+  height: 40px;
+  top: 70%;
+  left: 60%;
+  background: radial-gradient(
+    circle at 50% 50%,
+    #e0ffff 0%,
+    #afeeee 50%,
+    #90dcdc 100%
+  );
+  box-shadow: 0 0 15px rgba(175, 238, 238, 0.6), inset -5px -5px 15px rgba(0, 0, 0, 0.3);
+  z-index: 1;
+  filter: blur(0.5px);
+  transform: translate(0, 0) scale(1);
+}
+
+.static-planet.planet-6 .planet-haze {
+  position: absolute;
+  width: 130%;
+  height: 130%;
+  top: -15%;
+  left: -15%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at center,
+    rgba(224, 255, 255, 0.2) 0%,
+    rgba(175, 238, 238, 0.1) 70%,
+    transparent 100%
+  );
+  filter: blur(5px);
+  opacity: 0.7;
+}
+
   /* ======== COSMIC THEME STATIC STYLES ======== */
   .cosmic {
     background: radial-gradient(ellipse at center, #0f2027 0%, #090a0f 100%);
