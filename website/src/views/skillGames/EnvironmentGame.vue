@@ -475,7 +475,7 @@
 
 <script>
 // Import our isolated RoomRenderer class
-import RoomRenderer from '../roomRenderer/RoomRenderer.js'
+import RoomRenderer from '../../roomRenderer/RoomRenderer.js'
 
 export default {
   name: 'SensoryEnvironments',

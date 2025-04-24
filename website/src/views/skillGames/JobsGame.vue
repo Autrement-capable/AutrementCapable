@@ -94,7 +94,7 @@
         
         <div class="progress-bar">
           <div class="progress-fill" :style="{ width: progressPercentage + '%' }"></div>
-          <div class="progress-text">{{ currentIndex + 1 }} / {{ batchSize }}</div>
+          <div class="progress-text">{{ currentIndex}} / {{ batchSize }}</div>
         </div>
       </div>
 
@@ -454,7 +454,7 @@ export default {
       currentIndex.value++;
       
       // Vérifier si tous les métiers du lot ont été vus
-      if (currentIndex.value >= currentBatch.value.length - 1) {
+      if (currentIndex.value >= currentBatch.value.length) {
         batchCompleted.value = true;
       }
     }

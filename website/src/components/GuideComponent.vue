@@ -7,7 +7,6 @@
     <!-- Avatar du guide -->
     <div class="guide-avatar" @click="toggleMessage">
       <img :src="guideImage" alt="Guide avatar" class="guide-img" />
-      <div v-if="hasNewMessage" class="new-message-indicator"></div>
     </div>
     
     <!-- Message du guide (bulle de dialogue) -->
