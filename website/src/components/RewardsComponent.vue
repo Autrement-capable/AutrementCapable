@@ -1,4 +1,5 @@
 <template>
+  <!-- Début du template - tout le contenu avant neural-progress-map reste inchangé -->
   <div v-if="showBadgeUnlockAnimation" class="badge-unlock-overlay">
     <div class="badge-unlock-animation">
       <div class="badge-icon" v-if="newlyUnlockedBadge">{{ newlyUnlockedBadge.icon }}</div>
@@ -37,80 +38,6 @@
       </div>
     </div>
 
-    <!-- Nouvelle carte de progression -->
-    <div class="progress-map-container">
-      <h2 class="section-title">Ma carte de progression</h2>
-      <div class="progress-stats">
-        <div class="progress-stat">
-          <span class="stat-number">{{ unlockedBadgesCount }}</span>
-          <span class="stat-label">Badges débloqués</span>
-        </div>
-        <div class="progress-stat">
-          <span class="stat-number">{{ totalBadgesCount - unlockedBadgesCount }}</span>
-          <span class="stat-label">À débloquer</span>
-        </div>
-        <div class="progress-stat">
-          <span class="stat-number">{{ calculateLevel() }}</span>
-          <span class="stat-label">Niveau actuel</span>
-        </div>
-      </div>
-      
-      <div class="progress-map">
-        <div class="journey-path"></div>
-        
-        <div
-          v-for="badge in badges"
-          :key="badge.id"
-          class="map-badge-node"
-          :class="{ 'unlocked': badge.unlocked, 'active': badge.id === nextBadge.id && !badge.unlocked }"
-          @click="showBadgeDetails(badge)"
-        >
-          <div 
-            class="map-badge-icon" 
-            :style="{ backgroundColor: badge.unlocked ? badge.iconColor : '#555' }"
-          >
-            <div v-if="!badge.unlocked" class="map-badge-lock">🔒</div>
-            <span class="map-badge-emoji">{{ badge.icon }}</span>
-          </div>
-          <div class="map-badge-tooltip">
-            <div class="tooltip-title">{{ badge.title }}</div>
-            <!-- <div class="tooltip-game">{{ badge.game }}</div> -->
-            <div class="tooltip-status" :class="badge.unlocked ? 'status-unlocked' : ''">
-              {{ badge.unlocked ? 'Obtenu ✅' : 'À débloquer' }}
-            </div>
-          </div>
-          
-          <div v-if="badge.id === nextBadge.id && !badge.unlocked" class="map-badge-next">
-            <div class="pulse-circle"></div>
-            <div class="next-badge-text">Prochaine activité</div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="map-legend">
-        <div class="legend-item">
-          <div class="legend-icon unlocked"></div>
-          <div class="legend-text">Badges débloqués</div>
-        </div>
-        <div class="legend-item">
-          <div class="legend-icon locked"></div>
-          <div class="legend-text">Badges à débloquer</div>
-        </div>
-        <div class="legend-item">
-          <div class="legend-icon active"></div>
-          <div class="legend-text">Prochaine activité suggérée</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Message si aucun badge
-    <div class="empty-state" v-if="!hasUnlockedBadges">
-      <div class="empty-badge-icon">🏅</div>
-      <h2>Pas encore de badges !</h2>
-      <p>Participe aux jeux et activités pour gagner tes premiers badges.</p>
-    </div> -->
-
-    <!-- Prochaine activité -->
     <div class="next-activity" v-if="hasUnlockedBadges || nextBadge" ref="nextActivitySection">
       <h2 class="section-title">Ma prochaine activité</h2>
       <div class="next-activity-card">
@@ -132,6 +59,195 @@
             Jouer maintenant →
           </button>
         </div>
+      </div>
+    </div>
+
+    <!-- Nouvelle organisation de la carte de progression -->
+    <div class="neural-progress-map">
+      <!-- Chemin des jeux à gauche -->
+      <div class="games-path">
+        <!-- Jeu de Vitesse -->
+        <div class="games-path">
+          <!-- Jeu de Vitesse -->
+          <div class="game-node" 
+            :class="{'game-unlocked': badges[1].unlocked, 'game-active': badges[1].id === nextBadge.id && !badges[1].unlocked}"
+            @click="showBadgeDetails(badges[1])"
+          >
+            <div class="game-node-icon" :style="{ backgroundColor: badges[1].unlocked ? badges[1].iconColor : '#555' }">
+              <div v-if="!badges[1].unlocked" class="game-node-lock">🔒</div>
+              <span class="game-node-emoji">{{ badges[1].icon }}</span>
+            </div>
+            
+            <!-- Connexion vers le profil -->
+            <div class="game-to-profile-connection" :class="{'connection-active': badges[1].unlocked}"></div>
+            
+            <!-- Indicateur si c'est le prochain jeu -->
+            <!-- <div v-if="badges[1].id === nextBadge.id && !badges[1].unlocked" class="game-next-indicator">
+              <div class="game-pulse-circle"></div>
+            </div> -->
+          </div>
+          
+          <!-- Jeu 2 -->
+          <div class="game-node" 
+            :class="{'game-unlocked': badges[2].unlocked, 'game-active': badges[2].id === nextBadge.id && !badges[2].unlocked}"
+            @click="showBadgeDetails(badges[2])"
+          >
+            <div class="game-node-icon" :style="{ backgroundColor: badges[2].unlocked ? badges[2].iconColor : '#555' }">
+              <div v-if="!badges[2].unlocked" class="game-node-lock">🔒</div>
+              <span class="game-node-emoji">{{ badges[2].icon }}</span>
+            </div>
+            <div class="game-to-profile-connection" :class="{'connection-active': badges[2].unlocked}"></div>
+            <!-- <div v-if="badges[2].id === nextBadge.id && !badges[2].unlocked" class="game-next-indicator">
+              <div class="game-pulse-circle"></div>
+            </div> -->
+          </div>
+          
+          <!-- Jeu 3 -->
+          <div class="game-node" 
+            :class="{'game-unlocked': badges[3].unlocked, 'game-active': badges[3].id === nextBadge.id && !badges[3].unlocked}"
+            @click="showBadgeDetails(badges[3])"
+          >
+            <div class="game-node-icon" :style="{ backgroundColor: badges[3].unlocked ? badges[3].iconColor : '#555' }">
+              <div v-if="!badges[3].unlocked" class="game-node-lock">🔒</div>
+              <span class="game-node-emoji">{{ badges[3].icon }}</span>
+            </div>
+            <div class="game-to-profile-connection" :class="{'connection-active': badges[3].unlocked}"></div>
+            <!-- <div v-if="badges[3].id === nextBadge.id && !badges[3].unlocked" class="game-next-indicator">
+              <div class="game-pulse-circle"></div>
+            </div> -->
+          </div>
+          
+          <!-- Jeu 4 -->
+          <div class="game-node" 
+            :class="{'game-unlocked': badges[4].unlocked, 'game-active': badges[4].id === nextBadge.id && !badges[4].unlocked}"
+            @click="showBadgeDetails(badges[4])"
+          >
+            <div class="game-node-icon" :style="{ backgroundColor: badges[4].unlocked ? badges[4].iconColor : '#555' }">
+              <div v-if="!badges[4].unlocked" class="game-node-lock">🔒</div>
+              <span class="game-node-emoji">{{ badges[4].icon }}</span>
+            </div>
+            <div class="game-to-profile-connection" :class="{'connection-active': badges[4].unlocked}"></div>
+            <!-- <div v-if="badges[4].id === nextBadge.id && !badges[4].unlocked" class="game-next-indicator">
+              <div class="game-pulse-circle"></div>
+            </div> -->
+          </div>
+          
+          <!-- Jeu 5 -->
+          <div class="game-node" 
+            :class="{'game-unlocked': badges[5].unlocked, 'game-active': badges[5].id === nextBadge.id && !badges[5].unlocked}"
+            @click="showBadgeDetails(badges[5])"
+          >
+            <div class="game-node-icon" :style="{ backgroundColor: badges[5].unlocked ? badges[5].iconColor : '#555' }">
+              <div v-if="!badges[5].unlocked" class="game-node-lock">🔒</div>
+              <span class="game-node-emoji">{{ badges[5].icon }}</span>
+            </div>
+            <div class="game-to-profile-connection" :class="{'connection-active': badges[5].unlocked}"></div>
+            <!-- <div v-if="badges[5].id === nextBadge.id && !badges[5].unlocked" class="game-next-indicator">
+              <div class="game-pulse-circle"></div>
+            </div> -->
+          </div>
+          
+          <!-- Jeu 6 -->
+          <div class="game-node" 
+            :class="{'game-unlocked': badges[7].unlocked, 'game-active': badges[7].id === nextBadge.id && !badges[7].unlocked}"
+            @click="showBadgeDetails(badges[7])"
+          >
+            <div class="game-node-icon" :style="{ backgroundColor: badges[7].unlocked ? badges[7].iconColor : '#555' }">
+              <div v-if="!badges[7].unlocked" class="game-node-lock">🔒</div>
+              <span class="game-node-emoji">{{ badges[7].icon }}</span>
+            </div>
+            <div class="game-to-profile-connection" :class="{'connection-active': badges[7].unlocked}"></div>
+            <!-- <div v-if="badges[7].id === nextBadge.id && !badges[7].unlocked" class="game-next-indicator">
+              <div class="game-pulse-circle"></div>
+            </div> -->
+          </div>
+        </div>
+      </div>
+        
+      <!-- Reste inchangé -->
+      <div class="main-path">
+        <div class="main-path-container">
+          <!-- Profil -->
+          <div class="main-node profile-node">
+            <div class="main-node-icon" :class="{'node-complete': getNodeCompletion(0)}">
+              <span class="node-emoji">👤</span>
+              <div class="node-completion-circle">
+                <svg viewBox="0 0 36 36">
+                  <path class="node-progress-bg"
+                    d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <path class="node-progress-fill"
+                    d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                    :stroke-dasharray="`${getNodeCompletion(0) ? 100 : 0}, 100`"
+                  />
+                </svg>
+              </div>
+              <span class="node-label">Profil</span>
+            </div>
+          </div>
+          
+          <!-- Reste inchangé -->
+          <div class="main-connection horizontal" :class="{'connection-active': getNodeCompletion(0)}"></div>
+          
+          <div class="main-node cv-node">
+            <div class="main-node-icon" :class="{'node-complete': getNodeCompletion(6)}">
+              <span class="node-emoji">📄</span>
+              <div class="node-completion-circle">
+                <svg viewBox="0 0 36 36">
+                  <path class="node-progress-bg"
+                    d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <path class="node-progress-fill"
+                    d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                    :stroke-dasharray="`${getNodeCompletion(6) ? 100 : 0}, 100`"
+                  />
+                </svg>
+              </div>
+              <span class="node-label">CV</span>
+            </div>
+          </div>
+          
+          <div class="main-connection horizontal" :class="{'connection-active': getNodeCompletion(6)}"></div>
+          
+          <div class="main-node formation-node">
+            <div class="main-node-icon" :class="{'node-complete': getNodeCompletion(8)}">
+              <span class="node-emoji">🎓</span>
+              <div class="node-completion-circle">
+                <svg viewBox="0 0 36 36">
+                  <path class="node-progress-bg"
+                    d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <path class="node-progress-fill"
+                    d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                    :stroke-dasharray="`${getNodeCompletion(8) ? 100 : 0}, 100`"
+                  />
+                </svg>
+              </div>
+              <span class="node-label">Formation</span>
+            </div>
+          </div>
+        </div>
+      </div>
+        
+      <!-- Indicateur de progression global reste inchangé -->
+      <div class="progress-indicator">
+        <div class="progress-percentage">{{ Math.round(progressPercentage) }}%</div>
+        <div class="progress-bar">
+          <div class="progress-fill" :style="{ width: `${progressPercentage}%` }"></div>
+        </div>
+        <div class="progress-label">Avancement du parcours</div>
       </div>
     </div>
 
@@ -472,6 +588,9 @@ export default {
     }
   },
   computed: {
+    progressPercentage() {
+      return (this.unlockedBadgesCount / this.totalBadgesCount) * 100;
+    },
     themeClass() {
       return this.currentTheme || localStorage.getItem('dashboard-theme') || 'cosmic';
     },
@@ -480,9 +599,6 @@ export default {
     },
     totalBadgesCount() {
       return this.badges.length
-    },
-    progressPercentage() {
-      return (this.unlockedBadgesCount / this.totalBadgesCount) * 100
     },
     hasUnlockedBadges() {
       return this.unlockedBadgesCount > 0
@@ -543,6 +659,8 @@ export default {
     
     // Écouter les évènements pour le redimensionnement de la fenêtre
     window.addEventListener('resize', this.updateHighlights);
+    window.addEventListener('resize', this.calculateNodeConnections);
+    window.addEventListener('resize', this.calculateGameToProfileConnections);
     
     // Écouter l'événement pour mettre en évidence le bouton "Jouer maintenant"
     eventBus.on('highlight-play-button', () => {
@@ -553,11 +671,18 @@ export default {
         this.positionGuideByCloseButton();
       }
       this.bubbleObserver = this.maintainBubbleIconDistance();
+      
+      // Calculer les connexions
+      this.calculateNodeConnections();
+      this.calculateGameToProfileConnections(); // Calcul initial des nouvelles connexions
     });
   },
   beforeUnmount() {
     // Nettoyer les évènements
     window.removeEventListener('resize', this.updateHighlights);
+    window.removeEventListener('resize', this.calculateNodeConnections);
+    window.removeEventListener('resize', this.calculateGameToProfileConnections); // Nettoyage du nouvel écouteur
+    
     eventBus.off('highlight-play-button');
     this.removeHighlights();
     if (this.bubbleObserver) {
@@ -565,6 +690,238 @@ export default {
     }
   },
   methods: {
+    calculateGameToProfileConnections() {
+      // Attendre que le DOM soit chargé
+      this.$nextTick(() => {
+        // Récupérer l'élément du profil et tous les jeux
+        const profileNode = document.querySelector('.profile-node .main-node-icon');
+        const gameNodes = document.querySelectorAll('.game-node');
+        
+        if (!profileNode) {
+          console.error("Élément profil introuvable");
+          return;
+        }
+        
+        // Récupérer les coordonnées du nœud de profil
+        const profileRect = profileNode.getBoundingClientRect();
+        const containerRect = document.querySelector('.neural-progress-map').getBoundingClientRect();
+        
+        // Position du centre du profil relative au conteneur
+        const profileCenterX = profileRect.left + profileRect.width / 2 - containerRect.left;
+        const profileCenterY = profileRect.top + profileRect.height / 2 - containerRect.top;
+        
+        // Pour chaque jeu, calculer et ajuster sa connexion vers le profil
+        gameNodes.forEach((gameNode) => {
+          const connectionToProfile = gameNode.querySelector('.game-to-profile-connection');
+          
+          if (connectionToProfile) {
+            // Cibler spécifiquement l'icône du jeu au lieu du nœud entier
+            const gameIconNode = gameNode.querySelector('.game-node-icon');
+            // const gameNodeRect = gameNode.getBoundingClientRect();
+            const gameIconRect = gameIconNode.getBoundingClientRect();
+            
+            // Obtenir les coordonnées du centre de l'icône du jeu
+            const gameIconCenterX = gameIconRect.left + gameIconRect.width / 2 - containerRect.left;
+            const gameIconCenterY = gameIconRect.top + gameIconRect.height / 2 - containerRect.top;
+            
+            // Calculer la distance et l'angle entre le centre de l'icône et le profil
+            const dx = profileCenterX - gameIconCenterX;
+            const dy = profileCenterY - gameIconCenterY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+            
+            // Appliquer la transformation
+            connectionToProfile.style.width = `${distance - 25}px`; // Ajuster la longueur
+            connectionToProfile.style.transform = `rotate(${angle}deg)`;
+            
+            // Position absolue pour chaque ligne
+            connectionToProfile.style.position = 'absolute';
+            connectionToProfile.style.top = `${gameIconCenterY}px`;
+            connectionToProfile.style.left = `${gameIconCenterX}px`;
+            connectionToProfile.style.transformOrigin = 'left center'; // Point de pivot à gauche
+            connectionToProfile.style.zIndex = '5';
+          }
+        });
+      });
+    },
+    /**
+     * Vérifie si un nœud principal est complété 
+     * @param {number} nodeId - ID du badge correspondant au nœud
+     * @returns {boolean} - true si le nœud est complété
+     */
+    getNodeCompletion(nodeId) {
+      // Trouver le badge correspondant
+      const badge = this.badges.find(badge => badge.id === nodeId);
+      return badge ? badge.unlocked : false;
+    },
+
+    /**
+     * Génère la couleur de fond des connexions en fonction de leur état
+     * @param {boolean} isActive - Si la connexion est active
+     * @returns {object} - Styles CSS pour la connexion
+     */
+    getConnectionStyle(isActive) {
+      return {
+        background: isActive 
+          ? 'linear-gradient(90deg, #4caf50, rgba(76, 175, 80, 0.3))' 
+          : 'rgba(255, 255, 255, 0.2)',
+        boxShadow: isActive ? '0 0 8px rgba(76, 175, 80, 0.7)' : 'none'
+      };
+    },
+
+    /**
+     * Vérifie si tous les jeux sont débloqués pour activer le CV
+     * @returns {boolean} - true si tous les jeux sont débloqués
+     */
+    canUnlockCV() {
+      // IDs des badges de jeux (excluant le profil, CV et formation)
+      const gameIds = [1, 2, 3, 4, 5, 7];
+      
+      // Vérifie si tous les badges de jeux sont débloqués
+      return gameIds.every(id => {
+        const badge = this.badges.find(badge => badge.id === id);
+        return badge && badge.unlocked;
+      });
+    },
+
+    /**
+     * Vérifie si le CV est débloqué pour activer la formation
+     * @returns {boolean} - true si le CV est débloqué
+     */
+    canUnlockFormation() {
+      // Trouver le badge du CV (ID 6)
+      const cvBadge = this.badges.find(badge => badge.id === 6);
+      return cvBadge && cvBadge.unlocked;
+    },
+
+    /**
+     * Met à jour les états des badges et connexions après un changement
+     * À appeler après avoir débloqué un badge
+     */
+    updateProgressPath() {
+      // Vérifier si tous les jeux sont terminés pour débloquer le CV
+      if (this.canUnlockCV()) {
+        // Trouver le badge du CV
+        const cvBadge = this.badges.find(badge => badge.id === 6);
+        if (cvBadge && !cvBadge.unlocked) {
+          // Marquer le CV comme débloqué
+          cvBadge.unlocked = true;
+          cvBadge.dateUnlocked = new Date().toISOString().split('T')[0];
+          
+          // Activer la fonctionnalité de CV
+          this.cvUnlocked = true;
+          
+          // Sauvegarder l'état des badges
+          this.saveBadges();
+          
+          // Animation de déblocage de badge
+          this.newlyUnlockedBadge = cvBadge;
+          setTimeout(() => {
+            this.showBadgeUnlockAnimation = true;
+          }, 1000);
+        }
+      }
+      
+      // Vérifier si le CV est terminé pour débloquer la formation
+      if (this.canUnlockFormation()) {
+        // Trouver le badge de formation
+        const formationBadge = this.badges.find(badge => badge.id === 8);
+        if (formationBadge && !formationBadge.unlocked) {
+          // Ne débloque pas automatiquement la formation,
+          // mais active visuellement la connexion entre CV et Formation
+          // pour indiquer que l'utilisateur peut s'inscrire à une formation
+        }
+      }
+    },
+    // Méthode pour calculer les positions des connexions entre nœuds
+    calculateNodeConnections() {
+      // Cette méthode est appelée après le rendu du composant
+      this.$nextTick(() => {
+        const nodes = document.querySelectorAll('.neural-node');
+        
+        // Pour chaque nœud (sauf le dernier qui n'a pas de connexion sortante)
+        for (let i = 0; i < nodes.length - 1; i++) {
+          const currentNode = nodes[i];
+          const nextNode = nodes[i + 1];
+          
+          if (currentNode && nextNode) {
+            const connection = currentNode.querySelector('.neural-connection');
+            
+            if (connection) {
+              // Récupérer les positions des nœuds
+              const currentRect = currentNode.getBoundingClientRect();
+              const nextRect = nextNode.getBoundingClientRect();
+              
+              // Calculer l'angle et la distance entre les nœuds
+              const dx = nextRect.left - currentRect.left;
+              const dy = nextRect.top - currentRect.top;
+              const distance = Math.sqrt(dx * dx + dy * dy);
+              const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+              
+              // Appliquer la transformation
+              connection.style.width = `${distance - 60}px`; // Soustraire la taille des icônes
+              connection.style.transform = `rotate(${angle}deg)`;
+              connection.style.top = '30px'; // Centre de l'icône
+              connection.style.left = '30px'; // Centre de l'icône
+            }
+          }
+        }
+        
+        // Mettre à jour les connexions vers le profil
+        this.updateProfileConnections();
+      });
+    },
+
+    // Mettre à jour les connexions vers le profil
+    updateProfileConnections() {
+      const profileIcon = document.querySelector('.profile-icon');
+      const nodes = document.querySelectorAll('.neural-node');
+      
+      if (profileIcon && nodes.length > 0) {
+        const profileRect = profileIcon.getBoundingClientRect();
+        const connectionLines = document.querySelectorAll('.profile-connection-line');
+        
+        // Sélectionner trois nœuds stratégiques pour les connexions (début, milieu, fin)
+        const connectToNodes = [
+          nodes[0], // Premier nœud
+          nodes[Math.floor(nodes.length / 2)], // Nœud du milieu
+          nodes[nodes.length - 1] // Dernier nœud
+        ];
+        
+        // Mettre à jour chaque ligne de connexion
+        connectionLines.forEach((line, index) => {
+          if (connectToNodes[index]) {
+            const nodeRect = connectToNodes[index].getBoundingClientRect();
+            
+            // Calculer l'angle et la distance
+            const dx = nodeRect.left - profileRect.left;
+            const dy = nodeRect.top - profileRect.top;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+            
+            // Appliquer la transformation
+            line.style.width = `${distance - 40}px`;
+            line.style.transform = `rotate(${angle + 180}deg)`;
+          }
+        });
+      }
+    },
+    getConnectionActive(connectionIndex) {
+      // Calculer le nombre minimal de badges débloqués pour activer cette connexion
+      const totalConnections = 3; // Nombre de connexions vers le profil
+      const badgesPerConnection = Math.ceil(this.totalBadgesCount / totalConnections);
+      
+      // Déterminer combien de badges doivent être débloqués pour cette connexion
+      const requiredBadges = badgesPerConnection * connectionIndex;
+      
+      // La connexion est active si le nombre de badges débloqués est >= au nombre requis
+      return this.unlockedBadgesCount >= requiredBadges;
+    },
+
+    // Méthode mise à jour pour calculer le pourcentage de progression
+    calculateProgressPercentage() {
+      return (this.unlockedBadgesCount / this.totalBadgesCount) * 100;
+    },
     getScrollbarStyle() {
       // Définir les couleurs par thème
       const themeColors = {
@@ -1187,6 +1544,11 @@ export default {
       }
 
       this.checkBadgeCollector()
+
+      // Recalculer les connexions après le chargement des badges
+      this.$nextTick(() => {
+        this.calculateNodeConnections();
+      });
     },
 
     checkBadgeCollector() {
@@ -1415,6 +1777,365 @@ export default {
   font-size: 16px;
   font-weight: bold;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.profile-node {
+  z-index: 10;
+  position: relative;
+}
+
+/* Configuration du grid pour assurer un bon alignement */
+.neural-progress-map {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  grid-template-rows: 1fr;
+  gap: 20px;
+  position: relative;
+  width: 100%;
+  height: 480px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 25px;
+  margin-bottom: 15px;
+  overflow: hidden;
+  border: 1px dashed rgba(255, 255, 255, 0.3);
+}
+
+
+.game-to-profile-connection {
+  position: absolute;
+  height: 2px; /* Hauteur fine pour la ligne */
+  background: rgba(255, 255, 255, 0.2); /* Couleur de base pour les lignes inactives */
+  z-index: 5; /* S'assurer que les lignes passent au-dessus des autres éléments */
+  transform-origin: right center; /* Le point d'origine est à droite */
+  transition: all 0.5s ease;
+}
+
+.game-to-profile-connection.connection-active {
+  background: linear-gradient(90deg, rgba(76, 175, 80, 0.3), #4caf50); /* Dégradé pour les lignes actives */
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.7); /* Lueur pour les lignes actives */
+  height: 3px; /* Légèrement plus épais quand actif */
+  animation: connection-pulse 2s infinite; /* Animation de pulsation */
+}
+
+@keyframes connection-pulse {
+  0% {
+    opacity: 0.7;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 10px rgba(76, 175, 80, 0.8);
+  }
+  100% {
+    opacity: 0.7;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+  }
+}
+
+/* Chemin principal (Profil -> CV -> Formation) */
+.main-path {
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  position: relative;
+}
+
+/* Conteneur pour aligner horizontalement les nœuds principaux */
+.main-path-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+/* Ajustement des nœuds principaux pour l'alignement horizontal */
+.main-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 2;
+  margin: 0 10px;
+}
+
+
+.main-node-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #333;
+  position: relative;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  border: 3px solid #555;
+  transition: all 0.5s ease;
+}
+
+.main-node-icon.node-complete {
+  border-color: #4caf50;
+  box-shadow: 0 0 20px rgba(76, 175, 80, 0.7);
+  background-color: rgba(76, 175, 80, 0.2);
+}
+
+.node-emoji {
+  font-size: 36px;
+  z-index: 3;
+}
+
+.node-completion-circle {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.node-completion-circle svg {
+  width: 100%;
+  height: 100%;
+}
+
+.node-progress-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 2.5;
+}
+
+.node-progress-fill {
+  fill: none;
+  stroke: #4fc3f7;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: center;
+  transition: stroke-dasharray 1s ease;
+}
+
+.node-label {
+  margin-top: 10px;
+  font-weight: bold;
+  color: #fff;
+  font-size: 16px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.main-connection {
+  width: 3px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 10px 0;
+  transition: all 0.5s ease;
+}
+
+.main-connection.horizontal {
+  width: 60px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 0 5px;
+  transition: all 0.5s ease;
+}
+
+.main-connection.horizontal.connection-active {
+  background: linear-gradient(to right, #4caf50, rgba(76, 175, 80, 0.3));
+  box-shadow: 0 0 10px rgba(76, 175, 80, 0.7);
+  height: 4px;
+}
+
+.main-connection.connection-active {
+  background: linear-gradient(to bottom, #4caf50, rgba(76, 175, 80, 0.3));
+  box-shadow: 0 0 10px rgba(76, 175, 80, 0.7);
+  width: 4px;
+}
+
+/* Jeux alignés verticalement */
+.games-path {
+  justify-content: space-around;
+  align-items: center;
+}
+
+.game-node {
+  justify-content: center;
+  margin-bottom: 15px; /* Espace vertical entre les icônes */
+}
+
+
+/* .game-node.game-active {
+  background-color: rgba(255, 152, 0, 0.1);
+  box-shadow: 0 0 15px rgba(255, 152, 0, 0.3);
+  animation: highlight-pulse 2s ease-out infinite;
+} */
+
+@keyframes highlight-pulse {
+  0% {
+    box-shadow: 0 0 5px rgba(255, 152, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 152, 0, 0.7);
+  }
+  100% {
+    box-shadow: 0 0 5px rgba(255, 152, 0, 0.3);
+  }
+}
+
+.game-node-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  border: 3px solid transparent;
+  transition: all 0.3s ease;
+  z-index: 3;
+  margin-right: 15px;
+  flex-shrink: 0;
+}
+
+.game-node.game-unlocked .game-node-icon {
+  border-color: #4caf50;
+  box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
+}
+
+.game-node.game-active .game-node-icon {
+  border-color: #ff9800;
+  box-shadow: 0 0 20px rgba(255, 152, 0, 0.7);
+}
+
+.game-node-lock {
+  position: absolute;
+  font-size: 16px;
+  background-color: rgba(0, 0, 0, 0.5);
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.game-node-emoji {
+  font-size: 24px;
+}
+
+.game-info {
+  flex: 1;
+}
+
+.game-node-icon:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+}
+
+.game-title {
+  font-size: 14px;
+  font-weight: bold;
+  color: white;
+  transition: color 0.3s ease;
+  position: relative; /* Ajouté pour faciliter le positionnement */
+  z-index: 3; /* Au-dessus des connexions */
+}
+
+.game-node.game-unlocked .game-title {
+  color: #4caf50;
+}
+
+.game-node.game-active .game-title {
+  color: #ff9800;
+}
+
+.game-to-profile-connection {
+  position: absolute;
+  height: 2px; /* Hauteur fine pour la ligne */
+  background: rgba(255, 255, 255, 0.2); /* Couleur de base pour les lignes inactives */
+  z-index: 5; /* S'assurer que les lignes passent au-dessus des autres éléments */
+  transform-origin: left center; /* Le point d'origine est maintenant à gauche (côté titre) */
+  transition: all 0.5s ease;
+}
+
+.game-to-profile-connection.connection-active {
+  background: linear-gradient(90deg, rgba(76, 175, 80, 0.3), #4caf50); /* Dégradé pour les lignes actives */
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.7); /* Lueur pour les lignes actives */
+  height: 3px; /* Légèrement plus épais quand actif */
+  animation: connection-pulse 2s infinite; /* Animation de pulsation */
+}
+
+/* .game-next-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+} */
+
+.game-pulse-circle {
+  position: absolute;
+  top: 50%;
+  left: 25px;
+  transform: translate(-50%, -50%);
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 3px solid #ff9800;
+  animation: pulse-glow 2s infinite;
+}
+
+@keyframes connection-pulse {
+  0% {
+    opacity: 0.7;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 10px rgba(76, 175, 80, 0.8);
+  }
+  100% {
+    opacity: 0.7;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+  }
+}
+
+/* Indicateur de progression global */
+.progress-indicator {
+  position: absolute;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  text-align: center;
+}
+
+.progress-percentage {
+  font-size: 24px;
+  font-weight: bold;
+  color: #4fc3f7;
+  margin-bottom: 5px;
+}
+
+.progress-bar {
+  height: 8px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 5px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4caf50, #81c784);
+  border-radius: 4px;
+  transition: width 1s ease;
+}
+
+.progress-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .user-info {
