@@ -24,7 +24,7 @@ async def is_token_revoked(session: AsyncSession, jti: str) -> bool:
 
     Returns:
     bool: True if the token is revoked, False otherwise"""
-    from database.postgress.actions.revoked_jwt_tokens import get_revoked_token_by_jti
+    from ...db.postgress.repositories.revoked_jwt_tokens import get_revoked_token_by_jti
 
     result = await get_revoked_token_by_jti(session, jti)
     return result is not None

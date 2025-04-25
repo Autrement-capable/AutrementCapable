@@ -163,6 +163,8 @@ class Server:
                                 operation["security"] = [{"RefreshCookie": []}]
                             elif security_type == SecurityRequirement.BOTH_TOKENS:
                                 operation["security"] = [{"Authorization": [], "RefreshCookie": []}]
+                            else:
+                                operation["security"] = [{"Authorization": []}]
 
                             # Add custom description if provided
                             custom_desc = getattr(endpoint, "security_description", None)

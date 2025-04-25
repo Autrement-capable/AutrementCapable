@@ -168,7 +168,6 @@ async def update_my_abilities(
     }
 
 @abilities_router.put("/category", response_model=Dict[str, Any])
-@secured_endpoint
 async def update_category(
     category_update: AbilityCategoryUpdate,
     session: AsyncSession = Depends(getSession), 
@@ -193,7 +192,6 @@ async def update_category(
     }
 
 @abilities_router.post("/add", response_model=Dict[str, Any])
-@secured_endpoint
 async def add_ability(
     ability_update: AbilityUpdate,
     session: AsyncSession = Depends(getSession), 
