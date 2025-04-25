@@ -9,6 +9,7 @@
     "start": "vue-cli-service serve"
   },
   "dependencies": {
+    "@azure/identity": "^4.9.1",
     "@mdi/font": "^7.4.47",
     "@simplewebauthn/browser": "^13.1.0",
     "@tresjs/cientos": "^4.1.0",
@@ -19,7 +20,7 @@
     "core-js": "^3.8.3",
     "dotenv": "^16.4.7",
     "mitt": "^3.0.1",
-    "openai": "^4.77.0",
+    "openai": "^4.96.0",
     "pixi-isometric-tilemaps": "github:holywyvern/pixi-isometric-tilemaps",
     "pixi.js": "^8.8.1",
     "three": "^0.173.0",
