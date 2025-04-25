@@ -6,7 +6,7 @@ This Beta Test Plan focuses on the MVP features available to young neurodivergen
 
 | **Feature Name**                | **Description**                                                                                                                      | **Priority** | **Changes Since Tech3**                         |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------ | ----------------------------------------------- |
-| Personalized Profile Generation | A dynamic profile is generated from game inputs and evolves in real-time, helping the user discover their strengths and preferences. | Medium       | New addition based on gameplay data integration |
+| Personalized Profile Generation | A dynamic profile is generated from game inputs and evolves in real-time, helping the user discover their strengths and preferences. | High         | New addition based on gameplay data integration |
 | Passwordless Onboarding         | Secure and inclusive onboarding using Passkey authentication (no passwords).                                                         | High         | Integrated with accessibility-first design      |
 | AI Avatar Generation            | Custom AI-based avatar creation to help users identify with their digital persona.                                                   | Medium       | Added emotional expression options              |
 | Guided Dashboard & Badge System | Minimalist dashboard showing progress through visual badges and a central evolving badge.                                            | High         | Co-designed with autism specialists             |
@@ -29,7 +29,7 @@ Only one role is involved in the MVP testing phase.
 
 - **Role Involved:** User
 - **Objective:** Creating Avatar & choose visual personalization.
-- **Preconditions:** Have a computer.
+- **Preconditions:** None.
 - **Test Steps:**
   1. Start onboarding process.
   2. Choose prefered theme background.
@@ -86,8 +86,8 @@ Only one role is involved in the MVP testing phase.
 | **Metric**              | **Description**                                                   | **Target Threshold**                     |
 | ----------------------- | ----------------------------------------------------------------- | ---------------------------------------- |
 | Onboarding Completion   | Successful Passkey registration and personalization.              | 95%                                      |
-| Game Completion Rate    | Users who finish 4 out of 6 mini-games.                           | ≥ 80%                                    |
-| Badge Unlock Rate       | Users who unlock at least 3 individual badges.                    | ≥ 85%                                    |
+| Game Completion Rate    | Users who finish 3 out of 6 mini-games.                           | ≥ 80%                                    |
+| Badge Unlock Rate       | Users who unlock at least 3 individual badges.                    | ≥ 90%                                    |
 | Interface Understanding | Users report dashboard and progression are easy to understand.    | ≥ 90% satisfaction (from post-test form) |
 | Comfort & Engagement    | Users feel safe, curious, and comfortable engaging with the tool. | ≥ 85% positive feedback                  |
 
@@ -95,8 +95,8 @@ Only one role is involved in the MVP testing phase.
 
 | **Issue**                     | **Description**                                                     | **Impact** | **Planned Fix?** |
 | ----------------------------- | ------------------------------------------------------------------- | ---------- | ---------------- |
-| 3D Room Lag                   | Environment builder may lag on old phones/tablets.                  | Low        | No               |
-| Passkey Browser Compatibility | Limited support on Android and not supported on most Linux devices. | Low        | No               |
+| 3D Room Lag                   | Environment builder may lag on old phones/tablets.                  | Medium     | No               |
+| Passkey Browser Compatibility | Limited support on Android and not supported on most Linux devices. | Medium     | No               |
 | Overlapping UI Elements       | Accessibility widget may overlap with some animated elements.       | High       | Yes              |
 | Dashboard Background Lag      | Slight performance issues with background effects on older devices. | Medium     | Yes              |
 

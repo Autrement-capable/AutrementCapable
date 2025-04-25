@@ -352,6 +352,10 @@
 <script>
 // Import our isolated RoomRenderer class
 import RoomRenderer from '../../roomRenderer/RoomRenderer.js'
+import whiteNoiseAudio from '@/assets/sounds/white_noise.mp3'
+import NatureAudio from '@/assets/sounds/nature.mp3'
+import CafeAudio from '@/assets/sounds/cafe.mp3'
+import CrowdAudio from '@/assets/sounds/crowd.mp3'
 
 export default {
   name: 'SensoryEnvironments',
@@ -372,17 +376,17 @@ export default {
         { 
           type: 'light', 
           title: 'Intensité de lumière?', 
-          description: 'Choisis ce qui te convient le mieux.' 
+          description: "Choisis l'intensité qui te convient le mieux." 
         },
         { 
           type: 'lightColor', 
           title: 'Couleur de lumière?', 
-          description: 'Quelle teinte préfères-tu?' 
+          description: 'Quelle teinte de lumière préfères-tu?' 
         },
         { 
           type: 'colors', 
           title: 'Couleurs de la pièce?', 
-          description: 'Choisis une palette qui te plaît.' 
+          description: 'Choisis une palette de couleur qui te plaît.' 
         },
         { 
           type: 'sounds', 
@@ -392,7 +396,7 @@ export default {
         { 
           type: 'people', 
           title: 'Personnes présentes?', 
-          description: 'Combien de personnes autour de toi?' 
+          description: "Combien de personnes autour de toi peux-tu suporter?"
         },
         { 
           type: 'mood', 
@@ -407,7 +411,7 @@ export default {
         { value: 'whitenoise', icon: '📻', label: 'Bruit blanc' },
         { value: 'nature', icon: '🌳', label: 'Nature' },
         { value: 'cafe', icon: '☕', label: 'Café' },
-        { value: 'crowd', icon: '👥', label: 'Foule' }
+        { value: 'crowd', icon: '👥', label: 'Bureau' }
       ],
   peopleOptions: [0, 1, 3, 5, 10],
 
@@ -537,9 +541,9 @@ export default {
       ],
 
       // Paramètres actuels de la pièce
-      roomWidth: 10,
-      roomDepth: 10,
-      roomHeight: 3,
+      roomWidth: 9,
+      roomDepth: 9,
+      roomHeight: 3.2,
       wallColor: '#e0e0e0',
       floorColor: '#ad8a64',
       ceilingColor: '#f5f5f5',
@@ -845,20 +849,16 @@ export default {
           this.$refs.ambientAudio.pause()
           return
         case 'whitenoise':
-          audioSrc =
-            'https://cdn.pixabay.com/download/audio/2022/03/10/audio_6629de9d6b.mp3'
+          audioSrc = whiteNoiseAudio
           break
         case 'nature':
-          audioSrc =
-            'https://cdn.pixabay.com/download/audio/2021/08/09/audio_c80427e13b.mp3'
+          audioSrc = NatureAudio
           break
         case 'cafe':
-          audioSrc =
-            'https://cdn.pixabay.com/download/audio/2022/01/26/audio_31e2b19a63.mp3'
+          audioSrc = CafeAudio
           break
         case 'crowd':
-          audioSrc =
-            'https://cdn.pixabay.com/download/audio/2021/08/09/audio_8eb4af9c81.mp3'
+          audioSrc = CrowdAudio
           break
       }
 
@@ -944,20 +944,16 @@ export default {
           this.$refs.ambientAudio.pause()
           return
         case 'whitenoise':
-          audioSrc =
-            'https://cdn.pixabay.com/download/audio/2022/03/10/audio_6629de9d6b.mp3'
+          audioSrc = whiteNoiseAudio
           break
         case 'nature':
-          audioSrc =
-            'https://cdn.pixabay.com/download/audio/2021/08/09/audio_c80427e13b.mp3'
+          audioSrc = NatureAudio
           break
         case 'cafe':
-          audioSrc =
-            'https://cdn.pixabay.com/download/audio/2022/01/26/audio_31e2b19a63.mp3'
+          audioSrc = CafeAudio
           break
         case 'crowd':
-          audioSrc =
-            'https://cdn.pixabay.com/download/audio/2021/08/09/audio_8eb4af9c81.mp3'
+          audioSrc = CrowdAudio
           break
       }
 
