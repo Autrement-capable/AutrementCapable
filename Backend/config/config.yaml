@@ -2,7 +2,7 @@
 auth:
   nonce_size: 12
   access_token_duration:
-    minutes: 15
+    minutes: 360
   refresh_token_duration:
     months: 1
   token_purge_interval:

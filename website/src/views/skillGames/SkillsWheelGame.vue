@@ -10,21 +10,28 @@
         <button @click="closeBadgeAnimation" class="close-animation-btn">Continuer</button>
       </div>
     </div>
+    <GameGuide
+      v-if="!gameStarted"
+      gameId="skills-wheel"
+      :forceShow="false"
+      @start-game="onGuideComplete"
+      @skip-intro="onGuideComplete"
+    />
     <!-- Header avec personnage guide -->
-    <div class="guide-character" v-if="!gameStarted">
+    <!-- <div class="guide-character" v-if="!gameStarted">
       <img src="@/assets/avatars/guide.png" alt="Guide" class="guide-avatar" />
       <div class="speech-bubble">
         <p>Bienvenue dans le jeu de la Roulette des Compétences ! Découvre tes forces et tes domaines d'amélioration en t'amusant.</p>
       </div>
-    </div>
+    </div> -->
 
-    <div class="game-header">
+    <!-- <div class="game-header">
       <h1 class="main-title">Roulette des Compétences</h1>
       <p class="subtitle" v-if="!gameStarted">Tourne la roue, découvre des compétences et indique ton niveau de maîtrise</p>
-    </div>
+    </div> -->
     
     <!-- Écran d'accueil -->
-    <div class="welcome-screen" v-if="!gameStarted">
+    <!-- <div class="welcome-screen" v-if="!gameStarted">
       <div class="welcome-card">
         <div class="card-icon">🎯</div>
         <h2>Comment jouer ?</h2>
@@ -38,7 +45,7 @@
           <span class="btn-text">Commencer à jouer</span>
         </button>
       </div>
-    </div>
+    </div> -->
     
     <!-- Zone de jeu principale -->
     <div class="game-playground" v-if="gameStarted">
@@ -226,11 +233,13 @@ import { getAllSkills } from '@/data/skills-list';
 import VueApexCharts from "vue3-apexcharts";
 import { unlockBadge, isBadgeUnlocked } from '@/utils/badges';
 import AuthService from '@/services/AuthService';
+import GameGuide from '@/components/GameGuideComponent.vue';
 
 export default {
   name: 'SkillsWheelGame',
   components: {
     apexchart: VueApexCharts,
+    GameGuide
   },
   data() {
     return {
@@ -244,6 +253,7 @@ export default {
       showResults: false,
       badgeSkillWheelId: 4,
       showBadgeUnlockAnimation: false,
+      showGuide: true,
       badgeData: {
         name: "Explorateur de Compétences",
         description: "Bravo ! Tu as complété la Roue des Compétences et découvert tes forces et faiblesses !"
@@ -361,6 +371,21 @@ export default {
     }
   },
   methods: {
+    // Nouvelle méthode pour le démarrage du jeu depuis le guide central
+    onGuideComplete() {
+      this.gameStarted = true;
+      this.loadSkills();
+      this.totalSkills = this.segments.length;
+      
+      // Limiter le nombre total de compétences pour ne pas rendre le jeu trop long
+      if (this.segments.length > 10) {
+        this.segments = this.getRandomSegments(10);
+        this.totalSkills = 10;
+      }
+      
+      // Initialiser le graphique
+      this.updateChartData();
+    },
     // Initialize game data and state
     startGame() {
       this.gameStarted = true;

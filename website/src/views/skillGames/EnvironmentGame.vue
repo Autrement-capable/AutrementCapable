@@ -90,136 +90,65 @@
         </div>
       </div>
 
-      <!-- Visualisation 3D de l'environnement -->
-      <div class="environment-view">
-        <!-- Contrôles de l'environnement actuel - DÉPLACÉS À GAUCHE -->
-        <div class="environment-controls">
-          <div class="environment-header">
-            <h2>{{ currentEnvironment.name }}</h2>
-            <button @click="toggleEnvironmentSelector" class="guide-button">
-              Changer
-            </button>
-          </div>
+      <!-- Visualisation plein écran du RoomRenderer -->
+      <div class="fullscreen-renderer">
+        <!-- Visualisation de la pièce en plein écran -->
+        <div class="room-visualization" ref="container"></div>
 
-          <p class="env-description">{{ currentEnvironment.description }}</p>
-
-          <!-- Indicateur de progression des étapes -->
-          <div class="step-progress">
-            <div class="step-dots">
-              <div 
-                v-for="(step, index) in controlTabs" 
-                :key="index"
-                :class="[
-                  'step-dot', 
-                  { 
-                    'active': activeControlTab === step.id,
-                    'completed': completedTabs.includes(step.id)
-                  }
-                ]"
-              ></div>
-            </div>
-            <div class="step-label">
-              Étape {{ currentStep }} sur {{ controlTabs.length }}: 
-              <span>{{ getCurrentStepLabel() }}</span>
-            </div>
-          </div>
-
-          <!-- Contenu des étapes -->
-          <div class="step-content">
-            <!-- Étape 1: Lumière -->
-            <div v-if="activeControlTab === 'light'" class="control-panel accessibility-enhanced">
-              <div class="control-group">
-                <h3>
-                  <span class="icon-light">💡</span> 
-                  Choisis la lumière
-                </h3>
-
-                <!-- Luminosité simplifiée avec images -->
-                <div class="simple-control">
-                  <p class="simple-label">Comment veux-tu la lumière?</p>
+        <!-- Questions séquentielles en bas de l'écran -->
+        <div v-if="showQuestion" class="question-overlay">
+          <div class="question-container">
+            <h3>{{ currentQuestion.title }}</h3>
+            <p>{{ currentQuestion.description }}</p>
+            
+            <!-- Conteneur de contrôles dynamiques en fonction du type de question -->
+            <div class="question-controls">
+              <!-- Lumière -->
+              <div v-if="currentQuestion.type === 'light'" class="control-group">
+                <div class="big-button-group">
+                  <button 
+                    @click="lightIntensity = 0.8; updateLighting()" 
+                    :class="['big-button', { active: lightIntensity <= 1.2 }]"
+                  >
+                    <div class="big-button-icon">🌙</div>
+                    <div class="big-button-label">Douce</div>
+                  </button>
                   
-                  <div class="big-button-group">
-                    <button 
-                      @click="lightIntensity = 0.8; updateLighting(true)" 
-                      :class="['big-button', { active: lightIntensity <= 1.2 }]"
-                    >
-                      <div class="big-button-icon">🌙</div>
-                      <div class="big-button-label">Douce</div>
-                    </button>
-                    
-                    <button 
-                      @click="lightIntensity = 2; updateLighting(true)" 
-                      :class="['big-button', { active: lightIntensity > 1.2 && lightIntensity < 3 }]"
-                    >
-                      <div class="big-button-icon">☀️</div>
-                      <div class="big-button-label">Normale</div>
-                    </button>
-                    
-                    <button 
-                      @click="lightIntensity = 4; updateLighting(true)" 
-                      :class="['big-button', { active: lightIntensity >= 3 }]"
-                    >
-                      <div class="big-button-icon">🔆</div>
-                      <div class="big-button-label">Forte</div>
-                    </button>
-                  </div>
+                  <button 
+                    @click="lightIntensity = 2; updateLighting()" 
+                    :class="['big-button', { active: lightIntensity > 1.2 && lightIntensity < 3 }]"
+                  >
+                    <div class="big-button-icon">☀️</div>
+                    <div class="big-button-label">Normale</div>
+                  </button>
                   
-                  <!-- Aperçu visuel -->
-                  <div class="visual-feedback-light">
-                    <div class="light-preview" :style="{ opacity: (lightIntensity/8) + 0.2 }">
-                      <span v-if="lightIntensity <= 1.2">🌙 Lumière douce</span>
-                      <span v-else-if="lightIntensity >= 3">🔆 Lumière forte</span>
-                      <span v-else>☀️ Lumière normale</span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Couleur de la lumière simplifiée -->
-                <div class="simple-control">
-                  <p class="simple-label">Quelle couleur de lumière?</p>
-                  
-                  <div class="color-buttons">
-                    <button
-                      v-for="(preset, idx) in lightPresets"
-                      :key="idx"
-                      @click="selectLightPreset(preset)"
-                      :class="['color-button', { active: lightColor === preset.color }]"
-                      :style="{ backgroundColor: preset.color }"
-                    >
-                      <span class="color-button-label">{{ preset.name }}</span>
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Option simplifiée pour la lumière ambiante -->
-                <div class="simple-control">
-                  <p class="simple-label">Veux-tu une lumière douce partout?</p>
-                  
-                  <div class="yes-no-buttons">
-                    <button
-                      @click="ambientLight = true; updateLighting(true)"
-                      :class="['yes-no-button', { active: ambientLight }]"
-                    >
-                      <span class="big-emoji">👍</span>
-                      <span>Oui</span>
-                    </button>
-                    
-                    <button
-                      @click="ambientLight = false; updateLighting(true)"
-                      :class="['yes-no-button', { active: !ambientLight }]"
-                    >
-                      <span class="big-emoji">👎</span>
-                      <span>Non</span>
-                    </button>
-                  </div>
+                  <button 
+                    @click="lightIntensity = 4; updateLighting()" 
+                    :class="['big-button', { active: lightIntensity >= 3 }]"
+                  >
+                    <div class="big-button-icon">🔆</div>
+                    <div class="big-button-label">Forte</div>
+                  </button>
                 </div>
               </div>
-            </div>
 
-            <!-- Onglet Couleurs -->
-            <div v-if="activeControlTab === 'colors'" class="control-panel">
-              <div class="control-group">
-                <h3>Palette de couleurs</h3>
+              <!-- Couleur de lumière -->
+              <div v-if="currentQuestion.type === 'lightColor'" class="control-group">
+                <div class="color-buttons">
+                  <button
+                    v-for="(preset, idx) in lightPresets"
+                    :key="idx"
+                    @click="selectLightPreset(preset)"
+                    :class="['color-button', { active: lightColor === preset.color }]"
+                    :style="{ backgroundColor: preset.color }"
+                  >
+                    <span class="color-button-label">{{ preset.name }}</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Couleurs de la pièce -->
+              <div v-if="currentQuestion.type === 'colors'" class="control-group">
                 <div class="color-palettes">
                   <div
                     v-for="(palette, index) in colorPalettes"
@@ -247,67 +176,22 @@
                     <span>{{ palette.name }}</span>
                   </div>
                 </div>
+              </div>
 
-                <div class="control-item">
-                  <label>Niveau de contraste:</label>
-                  <div class="radio-group">
-                    <label>
-                      <input
-                        type="radio"
-                        v-model="contrastLevel"
-                        value="low"
-                        @change="updateContrastLevel"
-                      />
-                      Doux
-                    </label>
-                    <label>
-                      <input
-                        type="radio"
-                        v-model="contrastLevel"
-                        value="medium"
-                        @change="updateContrastLevel"
-                      />
-                      Moyen
-                    </label>
-                    <label>
-                      <input
-                        type="radio"
-                        v-model="contrastLevel"
-                        value="high"
-                        @change="updateContrastLevel"
-                      />
-                      Fort
-                    </label>
+              <!-- Sons -->
+              <div v-if="currentQuestion.type === 'sounds'" class="control-group">
+                <div class="sound-options">
+                  <div
+                    v-for="(sound, index) in soundOptions"
+                    :key="index"
+                    @click="selectSound(sound.value)"
+                    :class="['sound-option', { active: selectedAmbience === sound.value }]"
+                  >
+                    <div class="sound-icon">{{ sound.icon }}</div>
+                    <div class="sound-label">{{ sound.label }}</div>
                   </div>
                 </div>
-
-                <div class="tab-navigation">
-                  <button @click="completeCurrentTab()" class="next-button">
-                    Suivant
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Étape 3: Sons -->
-            <div v-if="activeControlTab === 'sounds'" class="control-panel">
-              <div class="control-group">
-                <h3>Ambiance sonore</h3>
-                <div class="control-item">
-                  <label>Type d'ambiance:</label>
-                  <select
-                    v-model="selectedAmbience"
-                    @change="updateAmbientSound"
-                  >
-                    <option value="none">Silence</option>
-                    <option value="whitenoise">Bruit blanc</option>
-                    <option value="nature">Sons de la nature</option>
-                    <option value="cafe">Café tranquille</option>
-                    <option value="crowd">Environnement animé</option>
-                  </select>
-                </div>
-
-                <div class="slider-control">
+                <div v-if="selectedAmbience !== 'none'" class="slider-control">
                   <label>Volume: {{ Math.round(soundVolume * 100) }}%</label>
                   <input
                     type="range"
@@ -316,30 +200,29 @@
                     max="1"
                     step="0.05"
                     @change="updateSoundVolume"
-                    :disabled="selectedAmbience === 'none'"
-                  />
-                </div>
-
-                <div class="slider-control">
-                  <label>Personnes présentes: {{ peopleCount }}</label>
-                  <input
-                    type="range"
-                    v-model.number="peopleCount"
-                    min="0"
-                    max="15"
-                    step="1"
-                    @change="updatePeopleCount"
                   />
                 </div>
               </div>
-            </div>
 
-            <!-- Étape 4: Feedback -->
-            <div v-if="activeControlTab === 'feedback'" class="control-panel">
-              <div class="control-group">
-                <h3>Votre ressenti</h3>
-                <p>Comment vous sentiriez-vous dans cet environnement?</p>
+              <!-- Personnes -->
+              <div v-if="currentQuestion.type === 'people'" class="control-group">
+                <div class="people-count-control">
+                  <label>Nombre de personnes: {{ peopleCount }}</label>
+                  <div class="people-selection">
+                    <button 
+                      v-for="count in peopleOptions" 
+                      :key="count"
+                      @click="peopleCount = count; updatePeopleCount()"
+                      :class="['people-button', { active: peopleCount === count }]"
+                    >
+                      {{ count }}
+                    </button>
+                  </div>
+                </div>
+              </div>
 
+              <!-- Ressenti -->
+              <div v-if="currentQuestion.type === 'mood'" class="control-group">
                 <div class="mood-selection">
                   <div
                     v-for="mood in moods"
@@ -356,57 +239,53 @@
                 </div>
 
                 <div class="control-item">
-                  <label>Commentaires sur cet environnement:</label>
+                  <label>Commentaires courts:</label>
                   <textarea
                     v-model="getCurrentFeedback().comments"
-                    rows="3"
-                    placeholder="Décrivez ce que vous aimez ou n'aimez pas..."
+                    placeholder="Ce que j'aime ou n'aime pas..."
                   ></textarea>
                 </div>
               </div>
             </div>
 
-            <!-- Navigation entre étapes -->
-            <div class="step-navigation">
+            <div class="question-navigation">
               <button 
-                v-if="currentStep > 1" 
-                @click="goToPreviousStep()" 
-                class="primary-button2"
+                v-if="currentQuestionIndex > 0" 
+                @click="previousQuestion()" 
+                class="nav-button prev-button"
               >
                 Précédent
               </button>
               <button 
-                v-if="currentStep < controlTabs.length && activeControlTab !== 'feedback'" 
-                @click="goToNextStep()" 
-                class="primary-button2"
+                v-if="currentQuestionIndex < questions.length - 1" 
+                @click="nextQuestion()" 
+                class="nav-button next-button"
               >
                 Suivant
               </button>
               <button 
-                v-if="activeControlTab === 'feedback' && getCurrentFeedback().mood" 
-                @click="finishAndShowPreferences()" 
-                class="primary-button2"
+                v-if="currentQuestionIndex === questions.length - 1" 
+                @click="finishExploration()" 
+                class="nav-button finish-button"
               >
                 Terminer
               </button>
             </div>
           </div>
         </div>
-        
-        <!-- Visualisation de la pièce - DÉPLACÉE À DROITE -->
-        <div class="room-visualization" ref="container"></div>
+      </div>
 
-        <!-- Instructions du guide -->
-        <div v-if="showGuide" class="guide-overlay">
-          <div class="guide-content">
-            <h3>{{ currentGuide.title }}</h3>
-            <p>{{ currentGuide.description }}</p>
-            <button @click="dismissGuide" class="guide-button">
-              Continuer
-            </button>
-          </div>
+      <!-- Messages d'aide et guides contextuels -->
+      <div v-if="showGuide" class="guide-overlay">
+        <div class="guide-content">
+          <h3>{{ currentGuide.title }}</h3>
+          <p>{{ currentGuide.description }}</p>
+          <button @click="dismissGuide" class="guide-button">
+            Continuer
+          </button>
         </div>
       </div>
+
       <!-- Loading overlay for 3D models -->
       <div v-if="modelsLoading" class="models-loading-overlay">
         <div class="loading-container">
@@ -435,8 +314,8 @@
         <div class="preference-summary">
           <h4>Résumé de vos préférences:</h4>
           <p>
-            <strong>Environnement préféré:</strong>
-            {{ getFavoriteEnvironment() }}
+            <strong>Environnement:</strong>
+            {{ currentEnvironment.name }}
           </p>
           <p>
             <strong>Ambiance lumineuse préférée:</strong>
@@ -459,9 +338,6 @@
             <li>{{ getPersonalizedRecommendation(3) }}</li>
           </ul>
         </div>
-        <button @click="showFeedbackMessage = false" class="secondary-button">
-          Retour à l'exploration
-        </button>
         <button @click="restartExploration" class="primary-button">
           Recommencer l'exploration
         </button>
@@ -476,6 +352,10 @@
 <script>
 // Import our isolated RoomRenderer class
 import RoomRenderer from '../../roomRenderer/RoomRenderer.js'
+import whiteNoiseAudio from '@/assets/sounds/white_noise.mp3'
+import NatureAudio from '@/assets/sounds/nature.mp3'
+import CafeAudio from '@/assets/sounds/cafe.mp3'
+import CrowdAudio from '@/assets/sounds/crowd.mp3'
 
 export default {
   name: 'SensoryEnvironments',
@@ -484,16 +364,56 @@ export default {
       // Interface state
       activityStarted: false,
       currentEnvironmentIndex: 0,
-      activeControlTab: 'light',
       showFeedbackMessage: false,
       rendererInitialized: false,
       showEnvironmentSelector: false,
       currentLoadingItem: '',
+      showQuestion: false,
+      currentQuestionIndex: 0,
 
-      // Progression du parcours
-      currentStep: 1,
-      completedTabs: [],
-      completedEnvironments: [],
+      // Questions séquentielles
+      questions: [
+        { 
+          type: 'light', 
+          title: 'Intensité de lumière?', 
+          description: "Choisis l'intensité qui te convient le mieux." 
+        },
+        { 
+          type: 'lightColor', 
+          title: 'Couleur de lumière?', 
+          description: 'Quelle teinte de lumière préfères-tu?' 
+        },
+        { 
+          type: 'colors', 
+          title: 'Couleurs de la pièce?', 
+          description: 'Choisis une palette de couleur qui te plaît.' 
+        },
+        { 
+          type: 'sounds', 
+          title: 'Ambiance sonore?', 
+          description: 'Quel type de son te met à l\'aise?' 
+        },
+        { 
+          type: 'people', 
+          title: 'Personnes présentes?', 
+          description: "Combien de personnes autour de toi peux-tu suporter?"
+        },
+        { 
+          type: 'mood', 
+          title: 'Comment te sens-tu?', 
+          description: 'Ton ressenti dans cet environnement.' 
+        }
+      ],
+
+      // Options de son
+      soundOptions: [
+        { value: 'none', icon: '🔇', label: 'Silence' },
+        { value: 'whitenoise', icon: '📻', label: 'Bruit blanc' },
+        { value: 'nature', icon: '🌳', label: 'Nature' },
+        { value: 'cafe', icon: '☕', label: 'Café' },
+        { value: 'crowd', icon: '👥', label: 'Bureau' }
+      ],
+  peopleOptions: [0, 1, 3, 5, 10],
 
       // Guide
       showGuide: false,
@@ -501,26 +421,10 @@ export default {
         title: '',
         description: '',
       },
-      objectCategories: [
-        { id: 'minimal', label: 'Minimal' },
-        { id: 'moderate', label: 'Modéré' },
-        { id: 'detailed', label: 'Détaillé' },
-        { id: 'bedroom', label: 'Chambre' },
-        { id: 'livingroom', label: 'Salon' },
-        { id: 'office', label: 'Bureau' },
-      ],
 
-      selectedObjectCategory: 'minimal',
+      // Loading
       modelsLoading: false,
       loadingProgress: 0,
-
-      // Étapes de contrôle (remplace les onglets)
-      controlTabs: [
-        { id: 'light', label: 'Lumière', order: 1 },
-        { id: 'colors', label: 'Couleurs', order: 2 },
-        { id: 'sounds', label: 'Sons', order: 3 },
-        { id: 'feedback', label: 'Ressenti', order: 4 },
-      ],
 
       // Données utilisateur
       userData: {
@@ -624,68 +528,6 @@ export default {
             clutter: 'moderate',
           },
         },
-        {
-          name: 'Environnement sensoriel riche',
-          shortDescription: 'Stimulation sensorielle contrôlée',
-          description:
-            'Un environnement avec des stimuli sensoriels variés mais régulables, idéal pour explorer vos préférences sensorielles de façon sécurisée.',
-          previewColor: '#AB47BC',
-          imageSrc: '/images/sensory_space.png',
-          objectsCategory: 'sensoriel',
-          icon: '✨',
-          defaultSettings: {
-            room: {
-              width: 9,
-              depth: 9,
-              height: 3.2,
-              wallColor: '#f0e6f5',
-              floorColor: '#9c7fad',
-              ceilingColor: '#f7f0fa',
-            },
-            lighting: {
-              color: '#e0b2ff',
-              intensity: 1.8,
-              ambient: true,
-            },
-            sound: {
-              type: 'none',
-              volume: 0,
-              peopleCount: 0,
-            },
-            clutter: 'detailed',
-          },
-        },
-        {
-          name: 'Espace de transition',
-          shortDescription: "Simulation d'espace public modéré",
-          description:
-            'Cet environnement simule un espace de transition comme un couloir ou un petit espace public avec un niveau de stimulation ajustable.',
-          previewColor: '#26C6DA',
-          imageSrc: '/images/transition_space.png',
-          icon: '🚶',
-          objectsCategory: 'transition',
-          defaultSettings: {
-            room: {
-              width: 12,
-              depth: 6,
-              height: 3,
-              wallColor: '#e8f4f5',
-              floorColor: '#90a4ae',
-              ceilingColor: '#f5f7f8',
-            },
-            lighting: {
-              color: '#b3e5fc',
-              intensity: 1.7,
-              ambient: true,
-            },
-            sound: {
-              type: 'crowd',
-              volume: 0.5,
-              peopleCount: 0,
-            },
-            clutter: 'moderate',
-          },
-        },
       ],
 
       // Moods pour le feedback
@@ -699,16 +541,12 @@ export default {
       ],
 
       // Paramètres actuels de la pièce
-      roomWidth: 10,
-      roomDepth: 10,
-      roomHeight: 3,
+      roomWidth: 9,
+      roomDepth: 9,
+      roomHeight: 3.2,
       wallColor: '#e0e0e0',
       floorColor: '#ad8a64',
       ceilingColor: '#f5f5f5',
-
-      // Préréglages de taille
-      roomSizePreset: 'medium',
-      ceilingHeightPreset: 'medium',
 
       // Paramètres d'éclairage
       lightColor: '#ffffff',
@@ -764,20 +602,11 @@ export default {
         },
       ],
 
-      // Niveau de contraste
-      contrastLevel: 'medium',
-
       // Paramètres audio
       soundEnabled: false,
       soundVolume: 0.5,
       selectedAmbience: 'none',
       peopleCount: 0,
-
-      // Niveau de détail/encombrement
-      clutterLevel: 'moderate',
-
-      // Meubles
-      furniture: [],
 
       // Renderer
       renderer: null,
@@ -789,27 +618,11 @@ export default {
         this.environments[this.currentEnvironmentIndex] || this.environments[0]
       )
     },
-    progressPercentage() {
-      // Calcule le pourcentage de progression basé sur les environnements complétés
-      const totalEnvironments = this.environments.length
-      const completedCount = this.completedEnvironments.length
-
-      // Si l'environnement actuel a des étapes complétées, ajouter une progression partielle
-      let partialProgress = 0
-      if (!this.completedEnvironments.includes(this.currentEnvironmentIndex)) {
-        const totalTabs = this.controlTabs.length
-        const completedTabs = this.completedTabs.length
-        partialProgress = completedTabs / totalTabs / totalEnvironments
-      }
-
-      return (completedCount / totalEnvironments) * 100 + partialProgress * 100
-    },
-    isLastEnvironment() {
-      return this.currentEnvironmentIndex === this.environments.length - 1
-    },
+    currentQuestion() {
+      return this.questions[this.currentQuestionIndex] || this.questions[0]
+    }
   },
   mounted() {
-    // Initialiser le renderer pour éviter les problèmes de timing
     this.initRenderer()
   },
   beforeUnmount() {
@@ -825,76 +638,6 @@ export default {
     }
   },
   methods: {
-    // Nouvelle méthode pour obtenir le libellé de l'étape actuelle
-    getCurrentStepLabel() {
-      const currentTab = this.controlTabs.find(tab => tab.id === this.activeControlTab);
-      return currentTab ? currentTab.label : '';
-    },
-
-    getCurrentPaletteName() {
-      // Parcourir toutes les palettes
-      for (const palette of this.colorPalettes) {
-        // Vérifier si c'est la palette actuelle en utilisant la méthode existante
-        if (this.isCurrentPalette(palette)) {
-          return palette.name;
-        }
-      }
-      // Retourner un nom par défaut si aucune palette ne correspond
-      return 'Palette personnalisée';
-    },
-
-
-    // Nouvelle méthode pour terminer et afficher les préférences
-    finishAndShowPreferences() {
-      // Sauvegarder le feedback d'abord
-      this.saveFeedback();
-      
-      // Puis afficher le message de préférences
-      this.showFeedbackMessage = true;
-    },
-
-    // Méthodes de navigation entre étapes
-    goToNextStep() {
-      // Sauvegarder les personnalisations avant de changer d'étape
-      this.saveCurrentCustomization(this.activeControlTab);
-      
-      // Ajouter l'onglet actuel aux onglets complétés s'il ne l'est pas déjà
-      if (!this.completedTabs.includes(this.activeControlTab)) {
-        this.completedTabs.push(this.activeControlTab);
-      }
-      
-      // Trouver l'étape suivante
-      const currentTabOrder = this.controlTabs.find(
-        (tab) => tab.id === this.activeControlTab
-      ).order;
-      const nextTab = this.controlTabs.find(
-        (tab) => tab.order === currentTabOrder + 1
-      );
-      
-      if (nextTab) {
-        this.activeControlTab = nextTab.id;
-        this.currentStep++;
-        
-        // Afficher le guide approprié pour la nouvelle étape
-        this.showTabGuide(nextTab.id);
-      }
-    },
-    
-    goToPreviousStep() {
-      // Trouver l'étape précédente
-      const currentTabOrder = this.controlTabs.find(
-        (tab) => tab.id === this.activeControlTab
-      ).order;
-      const prevTab = this.controlTabs.find(
-        (tab) => tab.order === currentTabOrder - 1
-      );
-      
-      if (prevTab) {
-        this.activeControlTab = prevTab.id;
-        this.currentStep--;
-      }
-    },
-
     // Initialiser le renderer
     initRenderer() {
       if (this.$refs.container) {
@@ -968,6 +711,34 @@ export default {
       }, 300)
     },
 
+    // Navigation des questions
+    nextQuestion() {
+      // Sauvegarder les personnalisations actuelles
+      this.saveCurrentCustomization(this.currentQuestion.type)
+      
+      // Passer à la question suivante
+      if (this.currentQuestionIndex < this.questions.length - 1) {
+        this.currentQuestionIndex++
+      }
+    },
+
+    previousQuestion() {
+      // Revenir à la question précédente
+      if (this.currentQuestionIndex > 0) {
+        this.currentQuestionIndex--
+      }
+    },
+
+    // Finaliser l'exploration
+    finishExploration() {
+      // Sauvegarder le feedback final
+      this.saveFeedback()
+      
+      // Afficher le récapitulatif
+      this.showFeedbackMessage = true
+      this.showQuestion = false
+    },
+
     toggleEnvironmentSelector() {
       this.showEnvironmentSelector = !this.showEnvironmentSelector
     },
@@ -986,11 +757,9 @@ export default {
       this.modelsLoading = true
       this.loadingProgress = 0
       this.currentLoadingItem = 'Initialisation...'
-
-      // Réinitialiser les onglets complétés pour le nouvel environnement
-      this.completedTabs = []
-      this.activeControlTab = 'light'
-      this.currentStep = 1
+      
+      // Réinitialiser l'index de question
+      this.currentQuestionIndex = 0
 
       // Appliquer les paramètres par défaut de l'environnement
       const settings = env.defaultSettings
@@ -1016,14 +785,6 @@ export default {
       const newPeopleCount = settings.sound.peopleCount || 0
       this.peopleCount = newPeopleCount
       
-      // Forcer la mise à jour des personnes si le renderer est déjà initialisé
-      if (this.renderer && this.rendererInitialized) {
-        this.renderer.updatePeople(newPeopleCount)
-      }
-
-      // Déterminer les préréglages de taille
-      this.determineSizePresets()
-
       // Vérifier que le renderer est prêt
       if (!this.rendererInitialized) {
         console.warn("Le renderer n'est pas encore initialisé")
@@ -1040,30 +801,13 @@ export default {
       // Afficher le guide pour le nouvel environnement
       this.showGuideMessage({
         title: 'Bienvenue dans ' + this.currentEnvironment.name,
-        description:
-          'Personnalisez cet environnement selon vos préférences en suivant les étapes.',
+        description: 'Explorer cet environnement et réponds aux questions qui apparaîtront en bas de l\'écran.',
       })
-    },
-
-    // Naviguer vers un environnement spécifique
-    goToEnvironment(index) {
-      // Ne permettre que la navigation vers les environnements déjà complétés ou l'environnement actuel
-      if (
-        this.completedEnvironments.includes(index) ||
-        index === this.currentEnvironmentIndex
-      ) {
-        this.selectEnvironment(index)
-
-        // Si c'est l'environnement actuel qui n'est pas complété, réinitialiser à l'étape Lumière
-        if (
-          index === this.currentEnvironmentIndex &&
-          !this.completedEnvironments.includes(index)
-        ) {
-          this.activeControlTab = 'light'
-          this.currentStep = 1
-          this.completedTabs = []
-        }
-      }
+      
+      // Afficher la première question après un délai
+      setTimeout(() => {
+        this.showQuestion = true
+      }, 2000)
     },
 
     // Afficher un message du guide
@@ -1077,110 +821,11 @@ export default {
       this.showGuide = false
     },
 
-    // Vérifier si un onglet est accessible
-    isTabAccessible(tabId) {
-      const tabOrder = this.controlTabs.find((tab) => tab.id === tabId).order
-
-      // Si c'est le premier onglet, il est toujours accessible
-      if (tabOrder === 1) return true
-
-      // Sinon, vérifier si l'onglet précédent est complété
-      const previousTab = this.controlTabs.find(
-        (tab) => tab.order === tabOrder - 1
-      )
-      return this.completedTabs.includes(previousTab.id)
-    },
-
-    // Sélectionner un onglet
-    selectTab(tabId) {
-      this.activeControlTab = tabId
-      this.currentStep = this.controlTabs.find((tab) => tab.id === tabId).order
-    },
-
-    // Compléter l'onglet actuel et passer au suivant
-    completeCurrentTab() {
-      if (!this.completedTabs.includes(this.activeControlTab)) {
-        // Sauvegarder les personnalisations avant de changer d'onglet
-        this.saveCurrentCustomization(this.activeControlTab)
-        this.completedTabs.push(this.activeControlTab)
-      }
-
-      // Trouver l'onglet suivant
-      const currentTabOrder = this.controlTabs.find(
-        (tab) => tab.id === this.activeControlTab
-      ).order
-      const nextTab = this.controlTabs.find(
-        (tab) => tab.order === currentTabOrder + 1
-      )
-
-      if (nextTab) {
-        this.activeControlTab = nextTab.id
-        this.currentStep++
-
-        // Afficher le guide approprié pour le nouvel onglet
-        this.showTabGuide(nextTab.id)
-      }
-    },
-
-    // Afficher le guide approprié pour chaque onglet
-    showTabGuide(tabId) {
-      let guideMessage = {
-        title: '',
-        description: '',
-      }
-
-      switch (tabId) {
-        case 'colors':
-          guideMessage.title = 'Personnalisons les couleurs'
-          guideMessage.description =
-            'Choisissez une palette de couleurs et un niveau de contraste qui vous semblent agréables pour cet environnement.'
-          break
-        case 'sounds':
-          guideMessage.title = "Ajustons l'ambiance sonore"
-          guideMessage.description =
-            'Sélectionnez le type de son et le volume qui vous conviennent. Vous pouvez aussi ajuster le nombre de personnes présentes.'
-          break
-        case 'feedback':
-          guideMessage.title = 'Comment vous sentez-vous?'
-          guideMessage.description =
-            'Maintenant que vous avez personnalisé cet environnement, indiquez votre ressenti et partagez vos impressions.'
-          break
-      }
-
-      this.showGuideMessage(guideMessage)
-    },
-
-    // Compléter l'environnement actuel et passer au suivant
-    completeEnvironment() {
-      // Vérifier que l'environnement n'est pas déjà marqué comme complété
-      if (!this.completedEnvironments.includes(this.currentEnvironmentIndex)) {
-        this.completedEnvironments.push(this.currentEnvironmentIndex)
-      }
-
-      // Si c'est le dernier environnement, afficher le résumé
-      if (this.isLastEnvironment) {
-        this.showFeedbackMessage = true
-      } else {
-        // Passer à l'environnement suivant
-        this.selectEnvironment(this.currentEnvironmentIndex + 1)
-
-        // Afficher le guide d'introduction pour le nouvel environnement
-        this.showGuideMessage({
-          title: 'Découvrons ' + this.currentEnvironment.name,
-          description:
-            "C'est un nouveau type d'environnement. Commençons par ajuster l'éclairage selon vos préférences.",
-        })
-      }
-    },
-
     // Appliquer les changements d'environnement de manière sécurisée
     applyEnvironmentChanges() {
       try {
-        this.completedTabs = []
-
         this.updateRoom()
-        this.updateLighting(false)
-        // Mettre à jour l'ambiance sonore sans marquer l'étape comme complétée
+        this.updateLighting()
         this.updateAmbientSoundWithoutCompletion()
         this.updateClutterLevel()
       } catch (error) {
@@ -1204,20 +849,16 @@ export default {
           this.$refs.ambientAudio.pause()
           return
         case 'whitenoise':
-          audioSrc =
-            'https://cdn.pixabay.com/download/audio/2022/03/10/audio_6629de9d6b.mp3'
+          audioSrc = whiteNoiseAudio
           break
         case 'nature':
-          audioSrc =
-            'https://cdn.pixabay.com/download/audio/2021/08/09/audio_c80427e13b.mp3'
+          audioSrc = NatureAudio
           break
         case 'cafe':
-          audioSrc =
-            'https://cdn.pixabay.com/download/audio/2022/01/26/audio_31e2b19a63.mp3'
+          audioSrc = CafeAudio
           break
         case 'crowd':
-          audioSrc =
-            'https://cdn.pixabay.com/download/audio/2021/08/09/audio_8eb4af9c81.mp3'
+          audioSrc = CrowdAudio
           break
       }
 
@@ -1236,7 +877,7 @@ export default {
           .catch((e) => console.log('Audio play failed:', e))
       }
       
-      // Mettre à jour également le nombre de personnes sans marquer comme complété
+      // Mettre à jour également le nombre de personnes
       if (this.renderer && this.rendererInitialized) {
         try {
           this.renderer.updatePeople(this.peopleCount)
@@ -1244,8 +885,12 @@ export default {
           console.error('Erreur lors de la mise à jour des personnes:', error)
         }
       }
-      
-      // Ne pas sauvegarder la personnalisation ici
+    },
+
+    // Sélection d'ambiance sonore
+    selectSound(value) {
+      this.selectedAmbience = value
+      this.updateAmbientSound()
     },
 
     // Obtenir les données de feedback actuelles de manière sécurisée
@@ -1262,31 +907,10 @@ export default {
       return this.userData.environmentFeedback[this.currentEnvironmentIndex]
     },
 
-    // Déterminer les préréglages de taille basés sur les dimensions actuelles
-    determineSizePresets() {
-      // Taille de la pièce
-      if (this.roomWidth <= 7) {
-        this.roomSizePreset = 'small'
-      } else if (this.roomWidth <= 10) {
-        this.roomSizePreset = 'medium'
-      } else {
-        this.roomSizePreset = 'large'
-      }
-
-      // Hauteur du plafond
-      if (this.roomHeight <= 2.6) {
-        this.ceilingHeightPreset = 'low'
-      } else if (this.roomHeight <= 3.2) {
-        this.ceilingHeightPreset = 'medium'
-      } else {
-        this.ceilingHeightPreset = 'high'
-      }
-    },
-
     // Sélectionner un préréglage de lumière
     selectLightPreset(preset) {
       this.lightColor = preset.color
-      this.updateLighting(true)
+      this.updateLighting()
     },
 
     // Vérifier si c'est la palette actuelle
@@ -1307,126 +931,6 @@ export default {
       this.saveCurrentCustomization('colors')
     },
 
-    // Mettre à jour le niveau de contraste
-    updateContrastLevel() {
-      // Trouver la palette de base actuelle
-      let basePalette = null
-      for (const palette of this.colorPalettes) {
-        if (this.isCurrentPalette(palette)) {
-          basePalette = palette
-          break
-        }
-      }
-
-      // Si aucune palette exacte n'est trouvée, utiliser la première
-      if (!basePalette) {
-        basePalette = this.colorPalettes[0]
-      }
-
-      // Appliquer le niveau de contraste
-      switch (this.contrastLevel) {
-        case 'low':
-          this.wallColor = this.adjustColorSaturation(basePalette.wall, 0.7)
-          this.floorColor = this.adjustColorSaturation(basePalette.floor, 0.7)
-          this.ceilingColor = this.adjustColorSaturation(
-            basePalette.ceiling,
-            0.7
-          )
-          break
-        case 'medium':
-          this.wallColor = basePalette.wall
-          this.floorColor = basePalette.floor
-          this.ceilingColor = basePalette.ceiling
-          break
-        case 'high':
-          this.wallColor = this.adjustColorSaturation(basePalette.wall, 1.3)
-          this.floorColor = this.adjustColorSaturation(basePalette.floor, 1.3)
-          this.ceilingColor = this.adjustColorSaturation(
-            basePalette.ceiling,
-            1.3
-          )
-          break
-      }
-
-      this.updateColors()
-      this.saveCurrentCustomization('colors')
-    },
-
-    // Ajuster la saturation d'une couleur
-    adjustColorSaturation(hexColor, factor) {
-      // Convertir hex en RGB
-      let r = parseInt(hexColor.slice(1, 3), 16)
-      let g = parseInt(hexColor.slice(3, 5), 16)
-      let b = parseInt(hexColor.slice(5, 7), 16)
-
-      // Convertir RGB en HSL
-      const max = Math.max(r, g, b) / 255
-      const min = Math.min(r, g, b) / 255
-      r = r / 255
-      g = g / 255
-      b = b / 255
-
-      let h,
-        s,
-        l = (max + min) / 2
-
-      if (max === min) {
-        h = s = 0 // achromatique
-      } else {
-        const d = max - min
-        s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
-
-        switch (max) {
-          case r:
-            h = (g - b) / d + (g < b ? 6 : 0)
-            break
-          case g:
-            h = (b - r) / d + 2
-            break
-          case b:
-            h = (r - g) / d + 4
-            break
-        }
-
-        h /= 6
-      }
-
-      // Ajuster la saturation
-      s = Math.min(1, Math.max(0, s * factor))
-
-      // Convertir HSL en RGB
-      let r1, g1, b1
-
-      if (s === 0) {
-        r1 = g1 = b1 = l // achromatique
-      } else {
-        const hue2rgb = (p, q, t) => {
-          if (t < 0) t += 1
-          if (t > 1) t -= 1
-          if (t < 1 / 6) return p + (q - p) * 6 * t
-          if (t < 1 / 2) return q
-          if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6
-          return p
-        }
-
-        const q = l < 0.5 ? l * (1 + s) : l + s - l * s
-        const p = 2 * l - q
-
-        r1 = hue2rgb(p, q, h + 1 / 3)
-        g1 = hue2rgb(p, q, h)
-        b1 = hue2rgb(p, q, h - 1 / 3)
-      }
-
-      // Convertir de nouveau en hex
-      r = Math.round(r1 * 255)
-      g = Math.round(g1 * 255)
-      b = Math.round(b1 * 255)
-
-      return `#${r.toString(16).padStart(2, '0')}${g
-        .toString(16)
-        .padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
-    },
-
     // Mettre à jour l'ambiance sonore
     updateAmbientSound() {
       if (!this.$refs.ambientAudio) return
@@ -1440,20 +944,16 @@ export default {
           this.$refs.ambientAudio.pause()
           return
         case 'whitenoise':
-          audioSrc =
-            'https://cdn.pixabay.com/download/audio/2022/03/10/audio_6629de9d6b.mp3'
+          audioSrc = whiteNoiseAudio
           break
         case 'nature':
-          audioSrc =
-            'https://cdn.pixabay.com/download/audio/2021/08/09/audio_c80427e13b.mp3'
+          audioSrc = NatureAudio
           break
         case 'cafe':
-          audioSrc =
-            'https://cdn.pixabay.com/download/audio/2022/01/26/audio_31e2b19a63.mp3'
+          audioSrc = CafeAudio
           break
         case 'crowd':
-          audioSrc =
-            'https://cdn.pixabay.com/download/audio/2021/08/09/audio_8eb4af9c81.mp3'
+          audioSrc = CrowdAudio
           break
       }
 
@@ -1488,7 +988,7 @@ export default {
       if (this.renderer && this.rendererInitialized) {
         try {
           this.renderer.updatePeople(this.peopleCount)
-          this.saveCurrentCustomization('sounds')
+          this.saveCurrentCustomization('people')
         } catch (error) {
           console.error('Erreur lors de la mise à jour des personnes:', error)
         }
@@ -1505,8 +1005,6 @@ export default {
         this.loadingProgress = 0
         this.currentLoadingItem = ''
 
-        // Effacer tous les objets existants
-
         // Charger les nouveaux objets selon la catégorie sélectionnée
         this.renderer
           .loadObjectsByCategory(this.selectedObjectCategory)
@@ -1516,7 +1014,6 @@ export default {
             }, 500)
             // Synchroniser les données
             this.syncFurnitureData()
-            this.saveCurrentCustomization('space')
           })
           .catch((error) => {
             console.error('Erreur lors du chargement des objets 3D:', error)
@@ -1534,28 +1031,18 @@ export default {
     // Enregistrer le feedback et marquer l'environnement comme complété
     saveFeedback() {
       const feedback = this.getCurrentFeedback()
-
       console.log('Feedback enregistré:', feedback)
-
-      if (!this.completedEnvironments.includes(this.currentEnvironmentIndex)) {
-        this.completedEnvironments.push(this.currentEnvironmentIndex)
-      }
 
       // Afficher un message de confirmation
       this.showGuideMessage({
         title: 'Ressenti enregistré',
-        description:
-          "Votre feedback sur cet environnement a été sauvegardé. Vous pouvez explorer d'autres environnements ou terminer l'activité.",
+        description: "Votre feedback sur cet environnement a été sauvegardé. Vous pouvez voir un récapitulatif de vos préférences.",
       })
     },
 
     // Enregistrer les personnalisations actuelles
     saveCurrentCustomization(category) {
       const feedback = this.getCurrentFeedback()
-
-      if (!this.completedTabs.includes(category)) {
-        this.completedTabs.push(category)
-      }
 
       if (!feedback.customizations) {
         feedback.customizations = {}
@@ -1564,9 +1051,13 @@ export default {
       switch (category) {
         case 'light':
           feedback.customizations.light = {
-            color: this.lightColor,
             intensity: this.lightIntensity,
             ambient: this.ambientLight,
+          }
+          break
+        case 'lightColor':
+          feedback.customizations.lightColor = {
+            color: this.lightColor,
           }
           break
         case 'colors':
@@ -1574,24 +1065,17 @@ export default {
             wall: this.wallColor,
             floor: this.floorColor,
             ceiling: this.ceilingColor,
-            contrastLevel: this.contrastLevel,
           }
           break
         case 'sounds':
           feedback.customizations.sounds = {
             ambience: this.selectedAmbience,
             volume: this.soundVolume,
-            peopleCount: this.peopleCount,
           }
           break
-        case 'space':
-          feedback.customizations.space = {
-            sizePreset: this.roomSizePreset,
-            ceilingPreset: this.ceilingHeightPreset,
-            clutterLevel: this.clutterLevel,
-            width: this.roomWidth,
-            depth: this.roomDepth,
-            height: this.roomHeight,
+        case 'people':
+          feedback.customizations.people = {
+            peopleCount: this.peopleCount,
           }
           break
       }
@@ -1603,77 +1087,32 @@ export default {
       feedback.mood = moodValue
     },
 
-    // Obtenir l'environnement préféré pour l'affichage
-    getFavoriteEnvironment() {
-      // Déterminer l'environnement préféré basé sur les feedbacks
-      let favoriteEnvironment = null
-      let bestMoodScore = -1
-
-      const positiveMoods = ['veryCalm', 'focused', 'comfortable']
-
-      for (const [index, feedback] of Object.entries(
-        this.userData.environmentFeedback
-      )) {
-        if (positiveMoods.includes(feedback.mood)) {
-          const score = positiveMoods.indexOf(feedback.mood)
-          if (score > bestMoodScore) {
-            bestMoodScore = score
-            favoriteEnvironment = parseInt(index)
-          }
-        }
-      }
-
-      this.userData.overallFavorite = favoriteEnvironment
-
-      if (favoriteEnvironment !== null) {
-        return this.environments[favoriteEnvironment].name
-      }
-      return 'Non déterminé'
-    },
-
     // Obtenir la préférence d'éclairage pour l'affichage
     getLightPreference() {
-      const allFeedbacks = this.userData.environmentFeedback
-      const lightPreferences = Object.values(allFeedbacks)
-        .filter((fb) => fb.customizations && fb.customizations.light)
-        .map((fb) => fb.customizations.light)
+      const feedback = this.getCurrentFeedback()
+      
+      if (!feedback.customizations || !feedback.customizations.light) {
+        return 'Non déterminé'
+      }
 
-      if (lightPreferences.length === 0) return 'Non déterminé'
+      const intensity = feedback.customizations.light.intensity
 
-      // Calculer l'intensité moyenne préférée
-      const avgIntensity =
-        lightPreferences.reduce((sum, pref) => sum + pref.intensity, 0) /
-        lightPreferences.length
-
-      if (avgIntensity < 1.3) return 'Éclairage tamisé'
-      if (avgIntensity > 1.8) return 'Éclairage lumineux'
+      if (intensity < 1.3) return 'Éclairage tamisé'
+      if (intensity > 1.8) return 'Éclairage lumineux'
       return 'Éclairage modéré'
     },
 
     // Obtenir la préférence sonore pour l'affichage
     getSoundPreference() {
-      const allFeedbacks = this.userData.environmentFeedback
-      const soundPreferences = Object.values(allFeedbacks)
-        .filter((fb) => fb.customizations && fb.customizations.sounds)
-        .map((fb) => fb.customizations.sounds)
+      const feedback = this.getCurrentFeedback()
+      
+      if (!feedback.customizations || !feedback.customizations.sounds) {
+        return 'Non déterminé'
+      }
 
-      if (soundPreferences.length === 0) return 'Non déterminé'
+      const ambience = feedback.customizations.sounds.ambience
 
-      // Trouver le type d'ambiance le plus fréquent
-      const ambienceTypes = soundPreferences.map((pref) => pref.ambience)
-      const ambienceCounts = {}
-      let maxCount = 0
-      let preferredAmbience = 'none'
-
-      ambienceTypes.forEach((type) => {
-        ambienceCounts[type] = (ambienceCounts[type] || 0) + 1
-        if (ambienceCounts[type] > maxCount) {
-          maxCount = ambienceCounts[type]
-          preferredAmbience = type
-        }
-      })
-
-      switch (preferredAmbience) {
+      switch (ambience) {
         case 'none':
           return 'Préfère le silence'
         case 'whitenoise':
@@ -1685,7 +1124,7 @@ export default {
         case 'crowd':
           return "Tolère bien l'environnement animé"
         default:
-          return 'Préférence variée'
+          return 'Préférence non déterminée'
       }
     },
 
@@ -1718,8 +1157,19 @@ export default {
           }
         },
 
-        // Recommandation générale
+        // Recommandation sur la présence de personnes
         () => {
+          const feedback = this.getCurrentFeedback()
+          if (feedback.customizations && feedback.customizations.people) {
+            const count = feedback.customizations.people.peopleCount
+            if (count === 0) {
+              return "Vous semblez préférer les environnements calmes et peu peuplés. Privilégiez des espaces de travail et de repos isolés."
+            } else if (count <= 3) {
+              return "Vous semblez à l'aise dans des petits groupes. Favorisez des rencontres en comité restreint plutôt que de grandes assemblées."
+            } else {
+              return "Vous semblez à l'aise dans des environnements animés. N'hésitez pas à aménager des espaces de calme pour vous ressourcer quand nécessaire."
+            }
+          }
           return "Prenez des pauses sensorielles régulières pour prévenir la fatigue et l'épuisement, particulièrement dans des environnements stimulants."
         },
       ]
@@ -1730,18 +1180,16 @@ export default {
       }
 
       // Recommandation par défaut
-      return recommendations[recommendations.length - 1]()
+      return "Prenez des pauses sensorielles régulières pour prévenir la fatigue et l'épuisement, particulièrement dans des environnements stimulants."
     },
 
     // Recommencer l'exploration
     restartExploration() {
       // Réinitialiser les données
       this.showFeedbackMessage = false
-      this.completedEnvironments = []
-      this.completedTabs = []
       this.currentEnvironmentIndex = 0
-      this.currentStep = 1
-      this.activeControlTab = 'light'
+      this.currentQuestionIndex = 0
+      this.showQuestion = false
       
       // Réinitialiser les personnes à zéro
       this.peopleCount = 0
@@ -1803,7 +1251,7 @@ export default {
       }
     },
 
-    updateLighting(saveCustomization = false) {
+    updateLighting() {
       if (!this.renderer || !this.rendererInitialized) return
 
       try {
@@ -1813,9 +1261,7 @@ export default {
           this.ambientLight
         )
 
-        if (saveCustomization) {
-          this.saveCurrentCustomization('light')
-        }
+        this.saveCurrentCustomization('light')
       } catch (error) {
         console.error("Erreur lors de la mise à jour de l'éclairage:", error)
       }
@@ -1829,10 +1275,7 @@ export default {
         // Obtenir l'état du renderer
         const state = this.renderer.getState()
 
-        // Mettre à jour l'état réactif de Vue
-        this.furniture = state.furniture
-
-        // Synchroniser également les données de la salle
+        // Synchroniser les données de la salle
         this.roomWidth = state.room.width
         this.roomDepth = state.room.depth
         this.roomHeight = state.room.height
@@ -1888,10 +1331,6 @@ export default {
   text-align: center;
 }
 
-.welcome-image {
-  margin: 5px auto 15px;
-}
-
 .intro-text {
   font-size: 1.2rem;
   color: #444;
@@ -1899,309 +1338,6 @@ export default {
   margin-bottom: 15px;
   text-align: center;
   font-weight: 500;
-}
-
-.welcome-content p {
-  margin-bottom: 30px;
-  color: #555;
-  line-height: 1.5;
-}
-
-/* Styles pour rendre les contrôles plus accessibles */
-.accessibility-enhanced h3 {
-  font-size: 1.4rem;
-  color: #333;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-
-.icon-light {
-  font-size: 1.8rem;
-  margin-right: 10px;
-}
-
-.simple-control {
-  margin-bottom: 30px;
-  padding: 15px;
-  background: #f8f9fa;
-  border-radius: 15px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.simple-label {
-  font-size: 1.1rem;
-  font-weight: 500;
-  color: #444;
-  margin-bottom: 10px;
-  text-align: center;
-}
-
-/* Grands boutons image+texte */
-.big-button-group {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 15px;
-}
-
-.big-button {
-  flex: 1;
-  background: white;
-  border: 2px solid #ddd;
-  border-radius: 10px;
-  padding: 8px 5px;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  max-width: 70px;
-}
-
-.big-button.active {
-  border-color: #4caf50;
-  background: #e8f5e9;
-  transform: scale(1.05);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-.big-button-icon {
-  font-size: 1.5rem;
-  margin-bottom: 5px;
-}
-
-.big-button-label {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: #444;
-}
-
-/* Aperçu visuel de la lumière */
-.visual-feedback-light {
-  display: flex;
-  justify-content: center;
-  margin: 15px 0;
-}
-
-.light-preview {
-  width: 85%;
-  height: 45px;
-  background: #f9f9f9;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem;
-  font-weight: 500;
-  color: #333;
-  box-shadow: inset 0 0 15px rgba(255, 215, 0, 0.6);
-  border: 1px solid #ddd;
-  transition: all 0.3s ease;
-}
-
-/* Boutons de couleur */
-.color-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 15px;
-  margin-top: 10px;
-}
-
-.color-button {
-  width: 60px;
-  height: 60px;
-  border: 3px solid transparent;
-  border-radius: 10px;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.2s;
-}
-
-.color-button.active {
-  border-color: #4caf50;
-  transform: scale(1.1);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-}
-
-.color-button-label {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
-  font-size: 0.9rem;
-  padding: 5px 0;
-  font-weight: 500;
-  text-align: center;
-}
-
-/* Boutons Oui/Non */
-.yes-no-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  margin-top: 10px;
-}
-
-.yes-no-button {
-  width: 70px;
-  background: white;
-  border-radius: 10px;
-  padding: 8px 5px;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.yes-no-button.active {
-  border-color: #4caf50;
-  background: #e8f5e9;
-  transform: scale(1.05);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-}
-
-.yes-no-button span:not(.big-emoji) {
-  font-weight: bold;
-  font-size: 1rem;
-  color: #333;
-  background-color: rgba(255, 255, 255, 0.8);
-  padding: 2px 8px;
-  border-radius: 4px;
-  margin-top: 2px;
-}
-
-.big-emoji {
-  font-size: 1.8rem;
-  margin-bottom: 5px;
-}
-
-.object-categories {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.category-option {
-  width: calc(33% - 7px);
-  background: #f8f8f8;
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  padding: 10px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-align: center;
-}
-
-.category-option:hover {
-  background: #f0f0f0;
-  transform: translateY(-2px);
-}
-
-.category-option.selected {
-  border-color: #2b6bff;
-  background: #e6f0ff;
-}
-
-.category-icon {
-  font-size: 24px;
-  background: white;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  flex-shrink: 0;
-}
-
-.category-description {
-  flex-grow: 1;
-}
-
-.category-description p {
-  margin: 0;
-  color: #555;
-  font-size: 0.9rem;
-  line-height: 1.4;
-}
-
-.category-label {
-  font-size: 0.9rem;
-  color: #555;
-}
-
-.models-loading-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  backdrop-filter: blur(5px);
-}
-
-.loading-container {
-  background: white;
-  padding: 25px;
-  border-radius: 12px;
-  max-width: 400px;
-  width: 90%;
-  text-align: center;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
-}
-
-.loading-container h3 {
-  margin-top: 0;
-  color: #2b6bff;
-  margin-bottom: 15px;
-}
-
-.loading-indicator {
-  margin-top: 15px;
-  padding: 10px;
-  background: #f8f8f8;
-  border-radius: 8px;
-}
-
-.loading-bar {
-  height: 10px;
-  background: #eee;
-  border-radius: 5px;
-  overflow: hidden;
-  margin-bottom: 10px;
-}
-
-.loading-progress {
-  height: 100%;
-  background: #2b6bff;
-  border-radius: 5px;
-  transition: width 0.3s ease;
-}
-
-.loading-text {
-  font-size: 0.9rem;
-  color: #555;
-  margin-bottom: 10px;
-}
-
-.loading-item {
-  font-size: 0.8rem;
-  color: #888;
-  font-style: italic;
 }
 
 .activity-explanation {
@@ -2274,12 +1410,6 @@ export default {
   width: 50%;
 }
 
-.step-content p {
-  margin: 0;
-  color: #666;
-  font-size: 0.9rem;
-}
-
 .important-note {
   background: #fff5e6;
   border: 3px solid #ffcc80;
@@ -2296,17 +1426,6 @@ export default {
   text-align: center;
 }
 
-.important-note p {
-  margin: 5px 0;
-  color: #555;
-  font-size: 1rem;
-  line-height: 1.3;
-}
-
-.important-note p:last-child {
-  margin-bottom: 0;
-}
-
 .important-points {
   display: flex;
   flex-wrap: wrap;
@@ -2314,35 +1433,418 @@ export default {
   gap: 10px;
 }
 
-.important-point {
-  background: rgba(255, 255, 255, 0.7);
-  padding: 5px 10px;
-  border-radius: 8px;
-  flex: 1;
-  min-width: 150px;
-  max-width: 200px;
+.important-note p {
+  margin: 5px 0;
+  color: #555;
+  font-size: 1rem;
+  line-height: 1.3;
 }
 
 /* Interface principale */
 .main-interface {
   height: 100vh;
   overflow: hidden;
+  position: relative;
+}
+
+/* Fullscreen RoomRenderer */
+.fullscreen-renderer {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
-/* Vue de l'environnement */
-.environment-view {
-  height: calc(
-    100vh
-  ); /* Hauteur totale de la fenêtre moins une marge de sécurité */
-  overflow: hidden;
-  display: flex;
+.room-visualization {
+  width: 100%;
+  height: 100%;
+  position: relative;
 }
 
-.room-visualization {
-  flex-grow: 1;
+/* Questions overlay */
+.question-overlay {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  width: 460px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(5px);
+  border: 2px solid #4caf50;
+  border-radius: 18px;
+  padding: 20px 22px;
+  animation: fadeIn 0.3s ease-out;
+  z-index: 50;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.question-container {
+  width: 100%;
+}
+
+.question-container h3 {
+  color: #2b6bff;
+  margin: 0 0 8px 0;
+  font-size: 1.3rem;
+  text-align: center;
+  font-weight: bold;
+}
+
+.question-container p {
+  color: #555;
+  margin: 0 0 15px 0;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.question-controls {
+  margin-bottom: 15px;
+}
+
+.question-navigation {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.nav-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+
+.prev-button {
+  background: #e0e0e0;
+  color: #555;
+}
+
+.next-button, .finish-button {
+  background: #4caf50;
+  color: white;
+}
+
+.finish-button {
+  background: #2b6bff;
+}
+
+.nav-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Contrôle de lumière */
+.big-button-group {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.big-button {
+  flex: 1;
+  background: white;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  padding: 15px 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.big-button.active {
+  border-color: #4caf50;
+  background: #e8f5e9;
+  transform: scale(1.03);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.big-button-icon {
+  font-size: 1.8rem;
+  margin-bottom: 8px;
+}
+
+.big-button-label {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #444;
+}
+
+/* Boutons de couleur */
+.color-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.color-button {
+  aspect-ratio: 1/1;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
   position: relative;
+  overflow: hidden;
+  transition: all 0.2s;
+}
+
+.color-button.active {
+  border-color: #4caf50;
+  transform: scale(1.05);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.color-button-label {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  font-size: 0.9rem;
+  padding: 4px 0;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* Palettes de couleurs */
+.color-palettes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.color-palette {
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  padding: 8px;
+  transition: all 0.2s;
+  background: white;
+}
+
+.color-palette.selected {
+  border-color: #4caf50;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.3);
+  transform: scale(1.03);
+}
+
+.palette-preview {
+  display: flex;
+  height: 30px;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.color-preview {
+  flex: 1;
+  height: 100%;
+}
+
+.color-palette span {
+  display: block;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #555;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Options de son */
+.sound-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.sound-option {
+  background: white;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  padding: 12px 5px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.sound-option.active {
+  border-color: #4caf50;
+  background: #e8f5e9;
+  transform: scale(1.03);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.sound-icon {
+  font-size: 1.8rem;
+  margin-bottom: 6px;
+}
+
+.sound-label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #444;
+  text-align: center;
+}
+
+.slider-control {
+  margin: 15px auto;
+  max-width: 340px;
+  text-align: center;
+}
+
+.slider-control label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 1rem;
+  color: #555;
+  font-weight: 500;
+}
+
+.slider-control input {
+  width: 100%;
+  height: 14px;
+}
+
+/* Contrôle de personnes */
+.people-count-control {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.people-count-control label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 1rem;
+  color: #444;
+  font-weight: 500;
+}
+
+.people-selection {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.people-button {
+  width: 100%;
+  aspect-ratio: 1/1;
+  background: white;
+  border: 2px solid #ddd;
+  border-radius: 50%;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  max-width: 45px;
+  margin: 0 auto;
+}
+
+.people-button.active {
+  border-color: #4caf50;
+  background: #e8f5e9;
+  color: #4caf50;
+  transform: scale(1.05);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.people-button.active {
+  border-color: #4caf50;
+  background: #e8f5e9;
+  color: #4caf50;
+  transform: scale(1.05);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Mood selection */
+.mood-selection {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 10px;
+  margin-bottom: 15px;
+}
+
+.mood-option {
+  background: white;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  padding: 12px 5px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mood-option.selected {
+  border-color: #4caf50;
+  background: #e8f5e9;
+  transform: scale(1.03);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.mood-emoji {
+  font-size: 1.8rem;
+  margin-bottom: 6px;
+}
+
+.mood-label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #444;
+}
+
+.control-item {
+  margin: 0 auto;
+  max-width: 100%;
+}
+
+.control-item label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 1rem;
+  color: #555;
+}
+
+.control-item textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  resize: none;
+  font-family: inherit;
+  font-size: 0.9rem;
+  height: 50px;
 }
 
 /* Guide overlay */
@@ -2356,7 +1858,7 @@ export default {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  z-index: 10;
+  z-index: 100;
   padding-top: 10%; /* Espace en haut */
   backdrop-filter: blur(3px); /* Effet de flou léger */
   animation: fadeIn 0.3s ease-out;
@@ -2441,374 +1943,65 @@ export default {
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Contrôles de l'environnement - MODIFIÉ POUR ÊTRE À GAUCHE */
-.environment-controls {
-  width: 320px;
-  background: white;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05); /* Ombre vers la droite */
-  padding: 15px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  z-index: 2; /* Pour s'assurer que les contrôles sont au-dessus */
-}
-
-.environment-header {
+/* Loading overlay */
+.models-loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.loading-container {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+}
+
+.loading-container h3 {
+  margin-top: 0;
+  color: #2b6bff;
+  margin-bottom: 15px;
+}
+
+.loading-bar {
+  height: 10px;
+  background: #eee;
+  border-radius: 5px;
+  overflow: hidden;
   margin-bottom: 10px;
 }
 
-.environment-header h2 {
-  margin: 0;
-  color: #333;
-  font-size: 1.4rem;
-}
-
-.env-description {
-  margin-bottom: 15px;
-  color: #666;
-  font-size: 0.9rem;
-  line-height: 1.5;
-}
-
-/* Indicateur de progression des étapes */
-.step-progress {
-  margin-bottom: 20px;
-  padding: 10px;
-  background: #f8f9fa;
-  border-radius: 10px;
-}
-
-.step-dots {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-
-.step-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #e0e0e0;
-  margin-right: 5px;
-  transition: all 0.3s ease;
-}
-
-.step-dot.active {
-  background: #3a57e8;
-  transform: scale(1.2);
-  box-shadow: 0 0 0 3px rgba(58, 87, 232, 0.2);
-}
-
-.step-dot.completed {
-  background: #4caf50;
-}
-
-.step-label {
-  text-align: center;
-  font-size: 0.9rem;
-  color: #555;
-}
-
-.step-label span {
-  font-weight: bold;
-  color: #3a57e8;
-}
-
-/* Contenu des étapes */
-.control-panel {
-  padding: 15px 0;
-  animation: fadeIn 0.3s ease;
-}
-
-.control-group {
-  margin-bottom: 20px;
-}
-
-.control-group h3 {
-  margin: 0 0 15px;
-  font-size: 1.1rem;
-  color: #444;
-}
-
-.control-item {
-  margin-bottom: 15px;
-}
-
-.control-item label {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 0.9rem;
-  color: #555;
-}
-
-/* Contrôles pour la lumière */
-.light-presets {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 5px;
-}
-
-.preset-btn {
-  width: calc(33% - 7px);
-  height: 40px;
-  border: 2px solid transparent;
-  border-radius: 6px;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.2s;
-}
-
-.preset-btn.selected {
-  border-color: #3a57e8;
-  box-shadow: 0 0 0 2px rgba(58, 87, 232, 0.3);
-}
-
-.preset-btn span {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: rgba(0, 0, 0, 0.5);
-  color: white;
-  font-size: 0.7rem;
-  padding: 2px 0;
-  text-align: center;
-}
-
-/* Contrôles pour les couleurs */
-.color-palettes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 15px;
-}
-
-.color-palette {
-  width: calc(33% - 7px);
-  cursor: pointer;
-  border: 2px solid transparent;
-  border-radius: 6px;
-  padding: 5px;
-  transition: all 0.2s;
-}
-
-.color-palette.selected {
-  border-color: #3a57e8;
-  box-shadow: 0 0 0 2px rgba(58, 87, 232, 0.3);
-}
-
-.palette-preview {
-  display: flex;
-  height: 30px;
-  border-radius: 3px;
-  overflow: hidden;
-  margin-bottom: 5px;
-}
-
-.color-preview {
-  flex: 1;
+.loading-progress {
   height: 100%;
+  background: #2b6bff;
+  border-radius: 5px;
+  transition: width 0.3s ease;
 }
 
-.color-palette span {
-  display: block;
-  text-align: center;
+.loading-text {
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+.loading-item {
   font-size: 0.8rem;
-  color: #555;
+  color: #888;
+  font-style: italic;
 }
 
-/* Contrôles génériques */
-select,
-textarea,
-input[type='text'] {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 0.9rem;
-}
-
-.radio-group {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.radio-group label {
-  display: flex;
-  align-items: center;
-  margin: 0;
-}
-
-.radio-group input {
-  margin-right: 8px;
-}
-
-.slider-control {
-  margin-bottom: 15px;
-}
-
-.slider-control label {
-  display: block;
-  margin-bottom: 5px;
-  font-size: 0.9rem;
-  color: #555;
-}
-
-.slider-labels {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.7rem;
-  color: #999;
-  margin-top: 5px;
-}
-
-.toggle-control {
-  display: flex;
-  align-items: center;
-}
-
-.toggle-control input {
-  margin-right: 10px;
-}
-
-/* Navigation entre étapes */
-.step-navigation {
-  display: flex;
-  justify-content: space-between;
-  border-top: 1px solid #eee;
-}
-
-.prev-button,
-.next-button {
-  padding: 10px 15px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  border-radius: 6px;
-  transition: all 0.2s;
-}
-
-.prev-button {
-  background: #f0f0f0;
-  border: 1px solid #ddd;
-  color: #555;
-}
-
-.prev-button:hover {
-  background: #e0e0e0;
-}
-
-.next-button {
-  padding: 10px 20px;
-  background: #3a57e8;
-  color: white;
-  border: none;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: bold;
-  transition: background 0.2s;
-}
-
-.next-button:hover {
-  background: #304dc9;
-}
-
-.finish-feedback {
-  text-align: center;
-  margin-top: 10px;
-}
-
-/* Mood selection */
-.mood-selection {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 10px;
-  margin-bottom: 20px;
-}
-
-.mood-option {
-  width: calc(33% - 7px);
-  background: #f8f8f8;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 10px 5px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.mood-option.selected {
-  background: #e6f3ff;
-  border-color: #3a57e8;
-}
-
-.mood-emoji {
-  font-size: 1.8em;
-  margin-bottom: 5px;
-  justify-content: center;
-  display: flex;
-  align-items: center;
-}
-
-.mood-label {
-  font-size: 0.8em;
-  justify-content: center;
-  display: flex;
-  align-items: center;
-}
-
-/* Boutons */
-.primary-button {
-  width: auto;
-  min-width: 200px;
-  max-width: 300px;
-  padding: 12px 20px;
-  background: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 50px;
-  cursor: pointer;
-  font-size: 1.2rem;
-  font-weight: bold;
-  transition: transform 0.2s, background 0.2s;
-  margin: 15px auto 0;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.primary-button2 {
-  width: auto;
-  padding: 12px 20px;
-  background: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 50px;
-  cursor: pointer;
-  font-size: 1.2rem;
-  font-weight: bold;
-  transition: transform 0.2s, background 0.2s;
-  margin: 5px 5px 0;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.primary-button:hover,
-.primary-button2:hover {
-  background: #3d8b40;
-  transform: scale(1);
-}
-
-.primary-button:disabled,
-.primary-button2:disabled {
-  background: #a4b0e5;
-  cursor: not-allowed;
-}
-
-/* Message de feedback */
+/* Feedback overlay */
 .feedback-overlay {
   position: fixed;
   top: 0;
@@ -2886,6 +2079,7 @@ input[type='text'] {
   color: #333;
 }
 
+/* Environment selector */
 .environment-selector-overlay {
   position: fixed;
   top: 0;
@@ -2961,11 +2155,6 @@ input[type='text'] {
   border: 2px solid #3a57e8;
 }
 
-.env-card-color {
-  height: 100px;
-  width: 100%;
-}
-
 .environment-card h3 {
   margin: 10px 15px;
   color: #333;
@@ -2993,71 +2182,90 @@ input[type='text'] {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.secondary-button {
-  padding: 10px 15px;
-  background: #f0f0f0;
-  color: #555;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+/* Boutons */
+.primary-button {
+  width: auto;
+  min-width: 200px;
+  max-width: 300px;
+  padding: 12px 20px;
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 50px;
   cursor: pointer;
-  font-size: 0.9rem;
-  transition: all 0.2s;
-  display: block;
-  margin: 0 auto;
+  font-size: 1.2rem;
+  font-weight: bold;
+  transition: transform 0.2s, background 0.2s;
+  margin: 15px auto 0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.secondary-button:hover {
-  background: #e0e0e0;
+.primary-button:hover {
+  background: #3d8b40;
+  transform: scale(1.03);
 }
 
-/* Responsive - MISE À JOUR POUR LE NOUVEL ORDRE */
-@media screen and (max-width: 600px) {
-  .main-interface {
-    flex-direction: column;
+/* Responsive */
+@media screen and (max-width: 768px) {
+  .question-overlay {
+    max-height: 50%;
   }
-
-  .environment-view {
-    flex-direction: column;
+  
+  .big-button-group, .color-buttons, .sound-options {
+    flex-wrap: wrap;
+    gap: 10px;
   }
-
-  .room-visualization {
-    height: 50vh;
-    order: 1; /* Placer la visualisation en haut sur mobile */
+  
+  .big-button, .color-button, .sound-option {
+    width: calc(50% - 10px);
+    max-width: 120px;
   }
-
-  .environment-controls {
-    width: 100%;
-    height: auto;
-    max-height: 40vh;
-    overflow-y: auto;
-    order: 2; /* Placer les contrôles en bas sur mobile */
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05); /* Ombre vers le haut */
+  
+  .color-palette {
+    width: calc(50% - 15px);
   }
-
-  .welcome-content h1 {
-    font-size: 1.8rem;
+  
+  .mood-option {
+    width: calc(50% - 15px);
   }
+  
+  .guide-content {
+    width: 95%;
+    padding: 15px 20px;
+  }
+}
 
-  .explanation-steps {
+@media screen and (max-width: 480px) {
+  .big-button-group, .color-buttons, .sound-options, .people-buttons {
     flex-direction: column;
     align-items: center;
   }
-
-  .explanation-step {
-    width: 90%;
+  
+  .big-button, .color-button, .sound-option, .people-button {
+    width: 80%;
     max-width: none;
   }
-
-  .important-points {
+  
+  .color-palettes {
     flex-direction: column;
+    align-items: center;
   }
-
-  .important-point {
+  
+  .color-palette {
+    width: 80%;
     max-width: none;
   }
-
-  .step-content {
-    align-items: center;
+  
+  .mood-option {
+    width: calc(50% - 10px);
+  }
+  
+  .question-container h3 {
+    font-size: 1.1rem;
+  }
+  
+  .question-container p {
+    font-size: 0.9rem;
   }
 }
 </style>
