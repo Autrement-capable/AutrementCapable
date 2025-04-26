@@ -16,8 +16,7 @@ from ..services.scheduler.factory import CronJobFactory
 from ..services.auth.roles import init_roles
 from ..services.content.terms import init_terms
 from .cors.config import init_cors
-from .security.decorators import SecurityRequirement, secured_endpoint
-
+from .security.decorators import SecurityRequirement
 
 @singleton
 class Server:
@@ -129,7 +128,6 @@ class Server:
             version=getenv("VERSION", "0.1.0alpha"),
             description="The API for Autrement Capable Backend.",
             routes=self.app.routes,
-            tags=self.app.openapi_tags
         )
 
         # Define security schemes
@@ -152,8 +150,13 @@ class Server:
         for path, path_item in openapi_schema["paths"].items():
             for method, operation in path_item.items():
                 for route in self.app.routes:
-                    if route.path == path and method.upper() in route.methods:
+                    if hasattr(route, "endpoint") and route.path == path and method.upper() in route.methods:
                         endpoint = route.endpoint
+
+                        # Find the original function if wrapped
+                        while hasattr(endpoint, "__wrapped__"):
+                            endpoint = endpoint.__wrapped__
+
                         if hasattr(endpoint, "requires_auth") and endpoint.requires_auth:
                             security_type = getattr(endpoint, "security_type", SecurityRequirement.ACCESS_TOKEN)
 
