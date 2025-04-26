@@ -5,7 +5,6 @@ from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...core.application import AddRouter
-from ...core.security.token_creation import JWTBearer
 from ...core.security.decorators import secured_endpoint
 from ...db.postgress.engine import getSession
 from ...db.postgress.repositories.user_passions import (
@@ -48,13 +47,13 @@ passions_router = APIRouter(prefix="/user/passions", tags=["User Passions"])
 # ============ Endpoints ============
 
 @passions_router.get("", response_model=PassionList)
-@secured_endpoint
+@secured_endpoint()
 async def get_my_passions(
-    session: AsyncSession = Depends(getSession), 
-    jwt: dict = Depends(JWTBearer())
+    jwt: dict,
+    session: AsyncSession = Depends(getSession)
 ):
     """Get the current user's passions"""
-    user_id = jwt["payload"]["sub"]
+    user_id = jwt["sub"]
     passions = await get_user_passions(session, user_id)
 
     return {"passions": [
@@ -63,14 +62,14 @@ async def get_my_passions(
     ]}
 
 @passions_router.post("", response_model=PassionResponse, status_code=status.HTTP_201_CREATED)
-@secured_endpoint
+@secured_endpoint()
 async def create_passion(
     passion: PassionCreate,
-    session: AsyncSession = Depends(getSession), 
-    jwt: dict = Depends(JWTBearer())
+    jwt: dict,
+    session: AsyncSession = Depends(getSession)
 ):
     """Create a new passion for the current user"""
-    user_id = jwt["payload"]["sub"]
+    user_id = jwt["sub"]
 
     # Check if they already have 3 passions
     existing_passions = await get_user_passions(session, user_id)
@@ -98,15 +97,15 @@ async def create_passion(
     }
 
 @passions_router.patch("/{passion_id}", response_model=PassionResponse)
-@secured_endpoint
+@secured_endpoint()
 async def update_passion(
     passion_update: PassionUpdate,
+    jwt: dict,
+    session: AsyncSession = Depends(getSession),
     passion_id: int = Path(..., description="The ID of the passion to update"),
-    session: AsyncSession = Depends(getSession), 
-    jwt: dict = Depends(JWTBearer())
 ):
     """Update a passion for the current user"""
-    user_id = jwt["payload"]["sub"]
+    user_id = jwt["sub"]
 
     # Verify the passion belongs to the user
     passions = await get_user_passions(session, user_id)
@@ -134,14 +133,14 @@ async def update_passion(
     }
 
 @passions_router.delete("/{passion_id}", status_code=status.HTTP_204_NO_CONTENT)
-@secured_endpoint
+@secured_endpoint()
 async def delete_passion(
+    jwt: dict,
+    session: AsyncSession = Depends(getSession),
     passion_id: int = Path(..., description="The ID of the passion to delete"),
-    session: AsyncSession = Depends(getSession), 
-    jwt: dict = Depends(JWTBearer())
 ):
     """Delete a passion for the current user"""
-    user_id = jwt["payload"]["sub"]
+    user_id = jwt["sub"]
 
     # Verify the passion belongs to the user
     passions = await get_user_passions(session, user_id)
@@ -161,14 +160,14 @@ async def delete_passion(
         )
 
 @passions_router.post("/reorder", response_model=PassionList)
-@secured_endpoint
+@secured_endpoint()
 async def reorder_passions(
     reorder_data: PassionReorder,
-    session: AsyncSession = Depends(getSession), 
-    jwt: dict = Depends(JWTBearer())
+    jwt: dict,
+    session: AsyncSession = Depends(getSession),
 ):
     """Reorder passions for the current user"""
-    user_id = jwt["payload"]["sub"]
+    user_id = jwt["sub"]
 
     # Verify all passions belong to the user
     passions = await get_user_passions(session, user_id)

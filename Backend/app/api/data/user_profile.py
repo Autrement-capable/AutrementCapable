@@ -8,7 +8,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from ...core.application import AddRouter
-from ...core.security.token_creation import JWTBearer
 from ...core.security.decorators import secured_endpoint
 from ...db.postgress.engine import getSession
 from ...db.postgress.models import User, UserDetail, UserPassion, UserPicture
@@ -40,13 +39,13 @@ class ProfileUpdate(BaseModel):
 profile_router = APIRouter(prefix="/user/profile", tags=["User Profile"])
 
 @profile_router.get("", response_model=UserProfileResponse)
-@secured_endpoint
+@secured_endpoint()
 async def get_my_profile(
-    session: AsyncSession = Depends(getSession),
-    jwt: dict = Depends(JWTBearer())
+    jwt: dict,
+    session: AsyncSession = Depends(getSession)
 ):
     """Get the current user's profile information"""
-    user_id = jwt["payload"]["sub"]
+    user_id = jwt["sub"]
 
     # Get the user with its detail
     async with session.begin():
@@ -87,14 +86,14 @@ async def get_my_profile(
     }
 
 @profile_router.put("")
-@secured_endpoint
+@secured_endpoint()
 async def update_my_profile(
     profile_data: ProfileUpdate,
-    session: AsyncSession = Depends(getSession),
-    jwt: dict = Depends(JWTBearer())
+    jwt: dict,
+    session: AsyncSession = Depends(getSession)
 ):
     """Update the current user's profile information"""
-    user_id = jwt["payload"]["sub"]
+    user_id = jwt["sub"]
 
     async with session.begin():
         # Get user
@@ -146,16 +145,16 @@ async def update_my_profile(
     return {"message": "Profile updated successfully"}
 
 @profile_router.put("/complete-setup")
-@secured_endpoint
+@secured_endpoint()
 async def complete_profile_setup(
+    jwt: dict,
+    session: AsyncSession = Depends(getSession),
     username: str = Form(...),
     avatar: Optional[UploadFile] = File(None),
     passions: Optional[str] = Form(None),  # JSON string of passions
-    session: AsyncSession = Depends(getSession),
-    jwt: dict = Depends(JWTBearer())
 ):
     """Complete the user profile setup (username, avatar, passions)"""
-    user_id = jwt["payload"]["sub"]
+    user_id = jwt["sub"]
     is_dev_mode = os.getenv("MODE") == "DEV"
 
     # Check if avatar is required

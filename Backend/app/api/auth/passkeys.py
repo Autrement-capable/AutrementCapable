@@ -43,7 +43,6 @@ class PasskeyRegistrationOptions(BaseModel):
     options: Dict[str, Any] = Field(..., description="WebAuthn registration options")
     user_id: int = Field(..., description="User ID")
 
-
 class PasskeyRegistrationComplete(BaseModel):
     user_id: int = Field(..., description="User ID")
     registration_data: Dict[str, Any] = Field(..., description="WebAuthn registration data")
@@ -103,7 +102,7 @@ async def start_passkey_registration(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Avatar image is required"
         )
-    
+
     # Parse passions if provided
     user_passions = []
     if passions:
@@ -119,7 +118,7 @@ async def start_passkey_registration(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid passions format, must be a JSON array"
             )
-    
+
     # Create the user with the new structure
     try:
         # Transaction for creating user and related data
@@ -131,11 +130,11 @@ async def start_passkey_registration(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail="Default role not found"
                 )
-            
+
             # Generate a random username as placeholder
             random_suffix = secrets.token_hex(8)
             temp_username = f"user_{random_suffix}"
-            
+
             user = User(
                 username=temp_username,
                 is_passkey=True,
@@ -144,7 +143,7 @@ async def start_passkey_registration(
             )
             session.add(user)
             await session.flush()  # Get the user ID
-            
+
             # 2. Create the user detail entry
             user_detail = UserDetail(
                 user_id=user.id,
@@ -153,7 +152,7 @@ async def start_passkey_registration(
                 age=age
             )
             session.add(user_detail)
-            
+
             # 3. Process the avatar if provided
             if avatar:
                 avatar_data = await avatar.read()
@@ -162,7 +161,7 @@ async def start_passkey_registration(
                         status_code=status.HTTP_400_BAD_REQUEST,
                         detail="Avatar image must be less than 2MB"
                     )
-                
+
                 picture = UserPicture(
                     user_id=user.id,
                     picture_data=avatar_data,
@@ -177,7 +176,7 @@ async def start_passkey_registration(
                     type="profile"
                 )
                 session.add(picture)
-            
+
             # 4. Create passions if provided
             for i, passion_text in enumerate(user_passions, 1):
                 passion = UserPassion(
@@ -186,7 +185,7 @@ async def start_passkey_registration(
                     order=i
                 )
                 session.add(passion)
-    
+
         # Generate registration options
         display_name = f"{first_name} {last_name}" if last_name else first_name
         options = generate_passkey_registration_options(user.id, display_name)
@@ -290,7 +289,7 @@ async def complete_passkey_authentication(
 ):
     """
     Complete the passkey authentication process by verifying the authentication response.
-    
+
     The refresh token is automatically stored in an HTTP-only cookie.
     """
     # Extract credential ID from authentication data
@@ -345,7 +344,7 @@ async def complete_passkey_authentication(
     # Create tokens
     access_token = create_token(user.id, user.role_id, refresh=False, fresh=True)
     refresh_token = create_token(user.id, user.role_id, refresh=True, fresh=True)
-    
+
     # Set refresh token in HTTP-only cookie
     set_refresh_cookie(response, refresh_token)
 

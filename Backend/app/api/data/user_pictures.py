@@ -6,7 +6,6 @@ from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...core.application import AddRouter
-from ...core.security.token_creation import JWTBearer
 from ...core.security.decorators import secured_endpoint
 from ...db.postgress.engine import getSession
 from ...db.postgress.repositories.user_pictures import (
@@ -22,14 +21,14 @@ pictures_router = APIRouter(prefix="/user/picture", tags=["User Pictures"])
 # ============ Endpoints ============
 
 @pictures_router.get("", response_class=Response)
-@secured_endpoint
+@secured_endpoint()
 async def get_my_picture(
-    picture_type: str = "profile",
-    session: AsyncSession = Depends(getSession), 
-    jwt: dict = Depends(JWTBearer())
+    jwt: dict,
+    session: AsyncSession = Depends(getSession),
+    picture_type: str = "profile"
 ):
     """Get the current user's picture"""
-    user_id = jwt["payload"]["sub"]
+    user_id = jwt["sub"]
     picture = await get_user_picture(session, user_id, picture_type)
 
     if not picture or not picture.picture_data:
@@ -42,15 +41,15 @@ async def get_my_picture(
     return Response(content=picture.picture_data, media_type="image/jpeg")
 
 @pictures_router.post("", status_code=status.HTTP_201_CREATED)
-@secured_endpoint
+@secured_endpoint()
 async def upload_picture(
+    jwt: dict,
+    session: AsyncSession = Depends(getSession),
     picture: UploadFile = File(...),
     picture_type: str = Form("profile"),
-    session: AsyncSession = Depends(getSession), 
-    jwt: dict = Depends(JWTBearer())
 ):
     """Upload a picture for the current user"""
-    user_id = jwt["payload"]["sub"]
+    user_id = jwt["sub"]
 
     # Validate file type
     if not picture.content_type.startswith("image/"):
@@ -83,14 +82,14 @@ async def upload_picture(
     return {"message": f"Picture of type '{picture_type}' uploaded successfully"}
 
 @pictures_router.delete("", status_code=status.HTTP_204_NO_CONTENT)
-@secured_endpoint
+@secured_endpoint()
 async def delete_picture(
+    jwt: dict,
+    session: AsyncSession = Depends(getSession),
     picture_type: str = "profile",
-    session: AsyncSession = Depends(getSession), 
-    jwt: dict = Depends(JWTBearer())
 ):
     """Delete the current user's picture"""
-    user_id = jwt["payload"]["sub"]
+    user_id = jwt["sub"]
 
     success = await delete_user_picture(session, user_id, picture_type)
 

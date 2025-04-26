@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Request, HTTPException, Response, Cookie
 from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel, Field
 
-from ...core.security.token_creation import create_token, decode_token, JWTBearer, set_refresh_cookie, clear_refresh_cookie
+from ...core.security.token_creation import create_token, decode_token, set_refresh_cookie, clear_refresh_cookie
 from ...core.security.decorators import secured_endpoint, SecurityRequirement
 from ...core.errors import create_response_dict
 from ...db.postgress.engine import getSession
@@ -28,20 +28,16 @@ class RefreshResponse(BaseModel):
 @secured_endpoint(security_type=SecurityRequirement.REFRESH_COOKIE)
 async def refresh(
     response: Response,
-    refresh_token: Optional[str] = Cookie(None, alias="refresh_token"),
-    session: AsyncSession = Depends(getSession)
+    refresh_jwt: dict,
 ):
     """
     Refresh the access token. Requires a valid refresh token stored in an HTTP-only cookie.
 
     The refresh token comes from an HTTP-only cookie, and a new access token is returned in the response body.
     """
-    if not refresh_token:
-        raise HTTPException(status_code=401, detail="Refresh token missing")
-
     try:
         # Decode the refresh token from the cookie
-        jwt_payload = await decode_token(session, refresh_token, is_refresh=True)
+        jwt_payload = refresh_jwt
 
         # Create a new access token
         access_token = create_token(jwt_payload["sub"], jwt_payload["role"], refresh=False)
@@ -64,9 +60,9 @@ async def refresh(
 @secured_endpoint(security_type=SecurityRequirement.BOTH_TOKENS)
 async def logout(
     response: Response,
-    refresh_token: Optional[str] = Cookie(None, alias="refresh_token"),
-    session: AsyncSession = Depends(getSession),
-    JWT: dict = Depends(JWTBearer())
+    jwt: dict,
+    refresh_jwt: dict,
+    session: AsyncSession = Depends(getSession)
 ):
     """
     Revoke access and refresh tokens to log out the user.
@@ -75,9 +71,9 @@ async def logout(
     The refresh token is automatically retrieved from the HTTP-only cookie.
     Both tokens are revoked on the server and the refresh cookie is cleared.
     """
-    access_payload = JWT["payload"]
-    jti_access = access_payload["jti"]
-    expires_access = datetime.utcfromtimestamp(access_payload["exp"])
+
+    jti_access = jwt["jti"]
+    expires_access = datetime.utcfromtimestamp(jwt["exp"])
 
     # Revoke the access token
     is_ok = await revoke_token(session, jti_access, expires_access, "access", commit=False)
@@ -88,15 +84,18 @@ async def logout(
     clear_refresh_cookie(response)
 
     # Revoke the refresh token if it exists
-    if refresh_token:
+
+    if refresh_jwt:
         try:
-            refresh_payload = await decode_token(session, refresh_token, is_refresh=True)
-            jti_refresh = refresh_payload["jti"]
-            expires_refresh = datetime.utcfromtimestamp(refresh_payload["exp"])
+            jti_refresh = refresh_jwt.get("jti")
+            expires_refresh = datetime.utcfromtimestamp(refresh_jwt["exp"])
             await revoke_token(session, jti_refresh, expires_refresh, "refresh")
         except Exception:
             # If token is invalid, we just continue as we already cleared the cookie
             pass
+    else:
+        session.rollback()
+        raise HTTPException(status_code=401, detail="Invalid refresh token")
 
     return {"msg": "Successfully logged out"}
 
