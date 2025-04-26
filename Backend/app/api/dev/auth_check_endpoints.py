@@ -22,9 +22,9 @@ async def test_access_token_with_session(
 @auth_test.get("/test_refresh_token")
 @secured_endpoint(security_type=SecurityRequirement.REFRESH_COOKIE)
 async def test_refresh_token_with_session(
-    jwt_refresh,
+    refresh_jwt: dict,
     session: AsyncSession = Depends(GetSession)
 ):
-    return {"msg": "Refresh Token is valid!", "payload": jwt_refresh}
+    return {"msg": "Refresh Token is valid!", "payload": refresh_jwt}
 
 AddRouter(auth_test)
