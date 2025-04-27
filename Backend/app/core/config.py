@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Any, Dict, List
 from os import getenv
+import re
 
 from yaml import safe_load, YAMLError
 
@@ -37,6 +38,7 @@ class Config:
         try:
             with open(file_path, "r", encoding="utf-8") as file:
                 yaml_content = safe_load(file) or {}
+                cls._eval_expressions(yaml_content)  # Evaluate expressions
                 cls._convert_time_units(yaml_content)  # Convert time units
                 cls._config_data[file_path] = yaml_content  # Cache config
                 return yaml_content
@@ -73,6 +75,41 @@ class Config:
                     raise KeyError(f"Key '{key}' not found in section '{section}'")
             return result
         return section_data  # Return the entire section if no keys provided
+
+    @staticmethod
+    def _eval_expressions(config: Dict[str, Any]):
+        """
+        Evaluate expressions in string values, e.g., "5 * 1024 * 1024"
+
+        Args:
+            config (Dict[str, Any]): Configuration dictionary
+        """
+        # Pattern for simple arithmetic expressions (digits, operators +, -, *, /, and whitespace)
+        expr_pattern = re.compile(r'^\s*\d+(\s*[\+\-\*\/]\s*\d+)+\s*$')
+
+        def process_value(value):
+            if isinstance(value, str) and expr_pattern.match(value):
+                try:
+                    # Evaluate simple arithmetic expression
+                    return eval(value, {"__builtins__": {}}, {})
+                except:
+                    # If evaluation fails, return the original string
+                    return value
+            return value
+
+        def traverse_and_eval(d: Dict[str, Any]):
+            """Recursively traverse dictionary and evaluate expressions."""
+            for key, value in list(d.items()):  # Create a list to avoid dict size change during iteration
+                if isinstance(value, dict):
+                    traverse_and_eval(value)
+                elif isinstance(value, list):
+                    d[key] = [process_value(item) if not isinstance(item, dict) else traverse_and_eval(item) 
+                             for item in value]
+                else:
+                    d[key] = process_value(value)
+            return d
+
+        traverse_and_eval(config)
 
     @staticmethod
     def _convert_time_units(config: Dict[str, Any]):

@@ -16,3 +16,29 @@ verify:
     hours: 1
   password_reset_purge_interval:
     days: 1
+
+# Database connection pool configuration
+database:
+  connection_pool:
+    min_size: 2
+    max_size: 10
+    max_queries: 50000
+    max_inactive_connection_lifetime: 300
+    timeout: 60
+    command_timeout: 60
+    statement_cache_size: 100
+
+# Image handling configuration
+picture:
+  max_size: "5 * 1024 * 1024"  # 5MB
+  chunk_size: "512 * 1024"     # 512KB
+  max_width: 1920
+  max_height: 1080
+  min_width: 100
+  min_height: 100
+  allowed_types:
+    - image/jpeg
+    - image/png
+    - image/avif
+    - image/webp
+  avif_quality: 70  # Quality setting for AVIF conversion (0-100)
