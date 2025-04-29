@@ -12,7 +12,7 @@
     </div>
 
     <!-- Header avec personnage guide -->
-    <div class="guide-character" v-if="!gameStarted">
+    <!-- <div class="guide-character" v-if="!gameStarted">
       <img src="@/assets/avatars/guide.png" alt="Guide" class="guide-avatar" />
       <div class="speech-bubble">
         <p>Bienvenue dans le jeu de vitesse ! Teste ta rapidité de frappe et ta précision à différents niveaux de difficulté.</p>
@@ -22,10 +22,10 @@
     <div class="game-header">
       <h1 class="main-title">Jeu de Vitesse</h1>
       <p class="subtitle" v-if="!gameStarted">Améliore ta vitesse de frappe et ta concentration</p>
-    </div>
+    </div> -->
     
     <!-- Écran d'accueil -->
-    <div class="welcome-screen" v-if="!gameStarted">
+    <!-- <div class="welcome-screen" v-if="!gameStarted">
       <div class="welcome-card">
         <div class="card-icon">⚡</div>
         <h2>Comment jouer ?</h2>
@@ -39,7 +39,14 @@
           <span class="btn-text">Commencer à jouer</span>
         </button>
       </div>
-    </div>
+    </div> -->
+    <GameGuide
+      v-if="!gameStarted"
+      gameId="speed-game"
+      :forceShow="true"
+      @start-game="startGame"
+      @skip-intro="startGame"
+    />
     
     <!-- Zone de jeu principale -->
     <div class="game-playground" v-if="gameStarted && !showResults">
@@ -221,9 +228,14 @@
 
 <script>
 import { unlockBadge, isBadgeUnlocked } from '@/utils/badges';
+import GameGuide from '@/components/GameGuideComponent.vue';
 
 export default {
   name: 'GameSpeed',
+  components: {
+    GameGuide
+  },
+
   data() {
     return {
       gameStarted: false,

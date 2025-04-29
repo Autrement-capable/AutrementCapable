@@ -11,7 +11,7 @@
       </div>
     </div>
 
-    <!-- Header avec personnage guide -->
+    <!-- Header avec personnage guide
     <div class="guide-character" v-if="!gameStarted">
       <img src="@/assets/avatars/guide.png" alt="Guide" class="guide-avatar" />
       <div class="speech-bubble">
@@ -24,7 +24,7 @@
       <p class="subtitle" v-if="!gameStarted">Explore les métiers qui correspondent à tes intérêts et compétences</p>
     </div>
     
-    <!-- Écran d'accueil -->
+     Écran d'accueil
     <div class="welcome-screen" v-if="!gameStarted">
       <div class="welcome-card">
         <div class="card-icon">🚀</div>
@@ -58,7 +58,14 @@
           <span class="btn-text">Commencer à explorer</span>
         </button>
       </div>
-    </div>
+    </div> -->
+    <GameGuide
+      v-if="!gameStarted"
+      gameId="jobs-game"
+      :forceShow="true"
+      @start-game="startGame"
+      @skip-intro="startGame"
+    />
 
     <!-- Zone de jeu principale -->
     <div class="game-playground" v-if="gameStarted && !showResults">
@@ -260,9 +267,13 @@
 import { ref, computed, onMounted } from 'vue';
 import { metiersData } from '@/data/metiersData.js';
 import { unlockBadge, isBadgeUnlocked } from '@/utils/badges';
+import GameGuide from '@/components/GameGuideComponent.vue';
 
 export default {
   name: 'JobDiscoveryGame',
+  components: {
+    GameGuide
+  },
   setup() {
     // Variables réactives
     const gameStarted = ref(false);

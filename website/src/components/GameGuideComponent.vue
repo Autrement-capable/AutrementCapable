@@ -53,6 +53,25 @@
                 <div class="control-color"></div>
               </div>
             </div>
+            <div v-else-if="gameId === 'jobs-game'" class="animation-jobs-cards">
+              <div class="job-card-animation">
+                <div class="job-card-front">👩‍🔬</div>
+                <div class="job-card-shadow"></div>
+              </div>
+              <div class="swipe-arrows">
+                <div class="swipe-left">👎</div>
+                <div class="swipe-right">👍</div>
+              </div>
+            </div>
+            <div v-else-if="gameId === 'speed-game'" class="animation-speed-typing">
+              <div class="keyboard-animation">
+                <div class="keyboard-icon">⌨️</div>
+                <div class="typing-effect">
+                  <span class="typed-text">abc</span>
+                  <span class="typing-cursor">|</span>
+                </div>
+              </div>
+            </div>
           </div>
           
           <!-- Animation pour la deuxième étape (étape 2) -->
@@ -80,6 +99,37 @@
                 <div class="color-swatch swatch-cool"></div>
               </div>
             </div>
+            <div v-else-if="gameId === 'jobs-game'" class="animation-job-video">
+              <div class="video-player-animation">
+                <div class="video-icon">▶️</div>
+              </div>
+              <div class="job-details-container">
+                <div class="job-details-line"></div>
+                <div class="job-details-line"></div>
+                <div class="job-details-line short"></div>
+              </div>
+            </div>
+            <div v-else-if="gameId === 'speed-game'" class="animation-speed-timer">
+              <div class="timer-circle">
+                <div class="timer-fill"></div>
+                <div class="timer-text">15s</div>
+              </div>
+              <div class="target-word">
+                <span class="word-correct">vi</span><span class="word-current">t</span><span class="word-pending">esse</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Animation pour la troisième étape (étape 3) -->
+          <div v-else-if="currentStepIndex === 3" class="animation-step3">
+            <div v-if="gameId === 'jobs-game'" class="animation-job-choices">
+              <div class="choice-buttons">
+                <div class="choice-button dislike">👎</div>
+                <div class="choice-button info">ℹ️</div>
+                <div class="choice-button like">👍</div>
+              </div>
+              <div class="swipe-gesture"></div>
+            </div>
           </div>
           
           <!-- Animation pour la dernière étape -->
@@ -89,6 +139,8 @@
                 <span v-if="gameId === 'skills-wheel'">🎯</span>
                 <span v-else-if="gameId === 'shape-sequence'">🧩</span>
                 <span v-else-if="gameId === 'sensory-environment'">🌈</span>
+                <span v-else-if="gameId === 'jobs-game'">💼</span>
+                <span v-else-if="gameId === 'speed-game'">⌨️</span>
                 <span v-else>🏆</span>
               </div>
             </div>
@@ -259,6 +311,89 @@ export default {
             `<h2>Tu es prêt à explorer?</h2>
               <p>Souviens-toi: tu peux prendre ton temps, il n'y a pas de bonnes ou mauvaises réponses.</p>
               <p>Clique sur le bouton ci-dessous pour commencer l'aventure!</p>`
+          ]
+        },
+        'jobs-game': {
+          title: 'Découvre ton Métier',
+          steps: [
+            `<h2>Bienvenue dans le jeu Découvre ton Métier!</h2>
+              <p>Je suis Léo, et je vais t'accompagner dans cette exploration passionnante du monde professionnel.</p>
+              <p>Ce jeu va t'aider à découvrir des métiers qui pourraient te plaire selon tes intérêts et tes talents!</p>`,
+            
+            `<h2>Étape 1: Explore les métiers</h2>
+              <p>Tu vas découvrir une variété de métiers sous forme de cartes.</p>
+              <p>Chaque carte présente un métier différent avec sa description et ses compétences clés.</p>
+              <div class="animation-hint">👆 Fais défiler les cartes pour découvrir différents métiers</div>`,
+            
+            `<h2>Étape 2: Regarde et informe-toi</h2>
+              <p>Pour chaque métier, tu pourras:</p>
+              <ul>
+                <li><strong>Regarder une vidéo</strong> - Pour voir concrètement en quoi consiste ce métier</li>
+                <li><strong>Lire la description</strong> - Pour comprendre les missions et responsabilités</li>
+                <li><strong>Explorer les compétences requises</strong> - Pour savoir si elles correspondent à tes points forts</li>
+              </ul>`,
+            
+            `<h2>Étape 3: Fais ton choix</h2>
+              <p>Pour chaque métier qui apparaît, tu auras trois options:</p>
+              <ul>
+                <li><strong>👍 Ça me plaît</strong> - Si ce métier t'intéresse et correspond à tes goûts</li>
+                <li><strong>👎 Pas pour moi</strong> - Si ce métier ne t'attire pas</li>
+                <li><strong>ℹ️ Détails</strong> - Si tu veux en savoir plus avant de décider</li>
+              </ul>
+              <p>Tu peux aussi faire glisser la carte vers la droite (j'aime) ou vers la gauche (je n'aime pas).</p>`,
+            
+            `<h2>Étape 4: Découvre tes résultats</h2>
+              <p>À la fin du jeu, tu verras un résumé des métiers qui t'ont le plus intéressé.</p>
+              <p>Tu pourras obtenir plus d'informations sur chacun d'entre eux pour t'aider dans ton orientation.</p>
+              <p>Tu gagneras même un badge "Explorateur de Métiers" si tu découvres suffisamment de métiers!</p>`,
+            
+            `<h2>Tu es prêt à commencer?</h2>
+              <p>C'est parti pour découvrir des métiers passionnants qui pourraient être faits pour toi!</p>
+              <p>Clique sur le bouton ci-dessous pour démarrer le jeu.</p>`
+          ]
+        },
+        'speed-game': {
+          title: 'Jeu de Vitesse',
+          steps: [
+            `<h2>Bienvenue dans le Jeu de Vitesse!</h2>
+              <p>Je suis Léo, et je vais t'accompagner dans ce défi qui va tester ta rapidité de frappe et ta concentration.</p>
+              <p>Ce jeu t'aidera à améliorer ta vitesse de saisie au clavier tout en t'amusant!</p>`,
+            
+            `<h2>Étape 1: Le défi de saisie</h2>
+              <p>Des mots et des phrases vont apparaître à l'écran.</p>
+              <p>Ton objectif est de les taper le plus rapidement possible et sans erreur.</p>
+              <div class="animation-hint">⌨️ Plus tu tapes vite et précisément, plus ton score sera élevé</div>`,
+            
+            `<h2>Étape 2: Attention au chronomètre</h2>
+              <p>Pour chaque niveau, tu as un temps limité:</p>
+              <ul>
+                <li><strong>Le chronomètre décompte</strong> - Sois rapide, chaque seconde compte!</li>
+                <li><strong>Différents niveaux de difficulté</strong> - Des mots simples aux phrases complexes</li>
+                <li><strong>Alerte visuelle</strong> - Le chronomètre change de couleur quand le temps est presque écoulé</li>
+              </ul>`,
+            
+            `<h2>Étape 3: Observe tes performances</h2>
+              <p>Pendant que tu joues, tu pourras suivre en temps réel:</p>
+              <ul>
+                <li><strong>Ta précision</strong> - Le pourcentage de caractères correctement tapés</li>
+                <li><strong>Ton WPM (mots par minute)</strong> - Ta vitesse de frappe</li>
+                <li><strong>Tes erreurs</strong> - Le nombre de fautes commises</li>
+              </ul>
+              <p>Ces indicateurs t'aideront à progresser et à t'améliorer à chaque niveau.</p>`,
+            
+            `<h2>Étape 4: Progression des niveaux</h2>
+              <p>Le jeu comporte plusieurs niveaux avec une difficulté croissante:</p>
+              <ul>
+                <li>Les premiers niveaux sont simples avec des mots courts</li>
+                <li>Puis la difficulté augmente avec des mots plus longs</li>
+                <li>Ensuite viennent des phrases complètes</li>
+                <li>Et enfin des paragraphes entiers pour les experts!</li>
+              </ul>
+              <p>À la fin, tu recevras un score global basé sur ta vitesse et ta précision.</p>`,
+            
+            `<h2>Tu es prêt à relever le défi?</h2>
+              <p>Si tu réussis à terminer tous les niveaux avec une bonne précision, tu pourras débloquer le badge "Maître de la vitesse"!</p>
+              <p>Clique sur le bouton ci-dessous pour commencer à taper!</p>`
           ]
         }
         // Vous pourrez ajouter d'autres jeux ici
@@ -881,6 +1016,78 @@ export default {
   gap: 15px;
 }
 
+/* Animations pour le jeu de vitesse */
+.animation-speed-typing {
+  position: absolute;
+  right: 30px;
+  bottom: 30px;
+  width: 150px;
+  height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.keyboard-animation {
+  background-color: #f5f5f5;
+  border-radius: 12px;
+  width: 140px;
+  height: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.keyboard-icon {
+  font-size: 30px;
+  position: absolute;
+  top: 5px;
+  opacity: 0.7;
+}
+
+.typing-effect {
+  margin-top: 25px;
+  font-family: monospace;
+  font-size: 20px;
+  font-weight: bold;
+  color: #2196F3;
+}
+
+.typed-text {
+  position: relative;
+}
+
+.typing-cursor {
+  animation: cursor-blink 0.8s infinite;
+}
+
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.typed-text::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  width: 0;
+  height: 3px;
+  background-color: #2196F3;
+  animation: typing-progress 2s infinite;
+}
+
+@keyframes typing-progress {
+  0% { width: 0; }
+  50% { width: 100%; }
+  51% { width: 0; }
+  100% { width: 0; }
+}
+
 .environment-slider {
   width: 140px;
   height: 20px;
@@ -911,6 +1118,81 @@ export default {
   animation: colors-appear 0.5s forwards;
   animation-delay: 0.3s;
   opacity: 0;
+}
+
+/* Animation du timer pour le jeu de vitesse */
+.animation-speed-timer {
+  position: absolute;
+  right: 30px;
+  bottom: 30px;
+  width: 150px;
+  height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.timer-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: #f5f5f5;
+  border: 3px solid #e0e0e0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.timer-fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: rgba(244, 67, 54, 0.3);
+  animation: timer-countdown 4s infinite linear;
+  z-index: 1;
+}
+
+@keyframes timer-countdown {
+  0% { height: 0%; }
+  100% { height: 100%; }
+}
+
+.timer-text {
+  position: relative;
+  z-index: 2;
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+}
+
+.target-word {
+  font-size: 24px;
+  font-weight: bold;
+  margin-top: 10px;
+  font-family: monospace;
+}
+
+.word-correct {
+  color: #4CAF50;
+}
+
+.word-current {
+  color: #2196F3;
+  text-decoration: underline;
+  animation: character-highlight 1s infinite;
+}
+
+.word-pending {
+  color: #757575;
+}
+
+@keyframes character-highlight {
+  0%, 100% { background-color: rgba(33, 150, 243, 0); }
+  50% { background-color: rgba(33, 150, 243, 0.2); }
 }
 
 .color-swatch {
@@ -1025,6 +1307,78 @@ export default {
   right: 5px;
 }
 
+/* Animation des statistiques pour le jeu de vitesse */
+.animation-speed-stats {
+  position: absolute;
+  right: 30px;
+  bottom: 30px;
+  width: 150px;
+  height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.stats-bubbles {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+}
+
+.stat-bubble {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  animation: bubble-appear 0.5s forwards, float-bubble 3s infinite ease-in-out;
+}
+
+.stat-bubble.accuracy {
+  background-color: rgba(76, 175, 80, 0.2);
+  border: 2px solid #4CAF50;
+  animation-delay: 0.1s, 0.6s;
+}
+
+.stat-bubble.wpm {
+  background-color: rgba(33, 150, 243, 0.2);
+  border: 2px solid #2196F3;
+  animation-delay: 0.3s, 0.8s;
+}
+
+.stat-bubble.errors {
+  background-color: rgba(244, 67, 54, 0.2);
+  border: 2px solid #F44336;
+  animation-delay: 0.5s, 1s;
+}
+
+.stat-icon {
+  font-size: 10px;
+  margin-bottom: 2px;
+}
+
+.stat-value {
+  font-size: 11px;
+}
+
+@keyframes bubble-appear {
+  0% { transform: scale(0); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes float-bubble {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
 @keyframes highlight-pattern {
   0%, 100% { opacity: 0.5; transform: scale(1); }
   50% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); }
@@ -1038,6 +1392,268 @@ export default {
 @keyframes pulse-brain {
   0% { transform: scale(1); }
   100% { transform: scale(1.1); box-shadow: 0 0 15px rgba(156, 39, 176, 0.5); }
+}
+
+/* Animations pour le jeu des métiers */
+.animation-jobs-cards {
+  position: absolute;
+  right: 30px;
+  bottom: 30px;
+  width: 150px;
+  height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.job-card-animation {
+  position: relative;
+  width: 120px;
+  height: 160px;
+  background-color: white;
+  border-radius: 15px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: card-appear 0.5s forwards, card-float 4s infinite ease-in-out;
+  transform-origin: center bottom;
+}
+
+.job-card-front {
+  font-size: 50px;
+  animation: emoji-pulse 2s infinite alternate;
+}
+
+.job-card-shadow {
+  position: absolute;
+  bottom: -10px;
+  left: 10%;
+  right: 10%;
+  height: 10px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 50%;
+  filter: blur(5px);
+  animation: shadow-move 4s infinite ease-in-out;
+}
+
+.swipe-arrows {
+  position: absolute;
+  width: 180px;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 180px;
+}
+
+.swipe-left, .swipe-right {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  opacity: 0.8;
+  animation: arrow-pulse 1.5s infinite alternate;
+}
+
+.swipe-left {
+  background-color: rgba(244, 67, 54, 0.2);
+  animation-delay: 0.75s;
+}
+
+.swipe-right {
+  background-color: rgba(76, 175, 80, 0.2);
+  animation-delay: 0s;
+}
+
+@keyframes card-appear {
+  0% { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes card-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-5px) rotate(-2deg); }
+  75% { transform: translateY(-5px) rotate(2deg); }
+}
+
+@keyframes emoji-pulse {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.1); }
+}
+
+@keyframes shadow-move {
+  0%, 100% { transform: scaleX(1); opacity: 0.4; }
+  25%, 75% { transform: scaleX(0.8); opacity: 0.2; }
+}
+
+@keyframes arrow-pulse {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.2); opacity: 1; }
+}
+
+/* Animation vidéo pour le jeu des métiers */
+.animation-job-video {
+  position: absolute;
+  right: 30px;
+  bottom: 30px;
+  width: 150px;
+  height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.video-player-animation {
+  width: 120px;
+  height: 80px;
+  background-color: #f5f5f5;
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  animation: video-appear 0.5s forwards;
+}
+
+.video-player-animation:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.3));
+}
+
+.video-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 30px;
+  opacity: 0.8;
+  animation: play-pulse 1.5s infinite;
+}
+
+.job-details-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: details-appear 0.8s forwards;
+  animation-delay: 0.3s;
+  opacity: 0;
+}
+
+.job-details-line {
+  height: 10px;
+  background-color: #e0e0e0;
+  border-radius: 5px;
+  animation: line-grow 1.5s infinite alternate;
+}
+
+.job-details-line:nth-child(1) { width: 100%; animation-delay: 0s; }
+.job-details-line:nth-child(2) { width: 85%; animation-delay: 0.2s; }
+.job-details-line.short { width: 60%; animation-delay: 0.4s; }
+
+@keyframes video-appear {
+  0% { transform: translateY(20px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes play-pulse {
+  0%, 100% { opacity: 0.8; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+}
+
+@keyframes details-appear {
+  0% { transform: translateY(10px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes line-grow {
+  0% { transform: scaleX(0.95); }
+  100% { transform: scaleX(1); }
+}
+
+/* Animation des choix pour le jeu des métiers */
+.animation-job-choices {
+  position: absolute;
+  right: 30px;
+  bottom: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 25px;
+}
+
+.choice-buttons {
+  display: flex;
+  gap: 15px;
+}
+
+.choice-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  animation: button-pop 0.5s forwards;
+}
+
+.choice-button.dislike {
+  background-color: rgba(244, 67, 54, 0.2);
+  animation-delay: 0.1s;
+}
+
+.choice-button.info {
+  background-color: rgba(33, 150, 243, 0.2);
+  animation-delay: 0.3s;
+}
+
+.choice-button.like {
+  background-color: rgba(76, 175, 80, 0.2);
+  animation-delay: 0.5s;
+}
+
+.swipe-gesture {
+  width: 80px;
+  height: 30px;
+  position: relative;
+  margin-top: 15px;
+}
+
+.swipe-gesture:before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.1);
+  transform: translateY(-50%);
+  animation: swipe-dot 3s infinite;
+}
+
+@keyframes button-pop {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes swipe-dot {
+  0% { left: 0; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { left: 100%; opacity: 0; }
 }
 
 /* Animation du badge (dernière étape) */
@@ -1284,7 +1900,10 @@ export default {
   .animation-logic,
   .animation-environment,
   .animation-environment-adjust,
-  .animation-badge {
+  .animation-badge,
+  .animation-jobs-cards,
+  .animation-job-video,
+  .animation-job-choices {
     transform: scale(0.7);
   }
   
@@ -1292,9 +1911,11 @@ export default {
   .option-bubble,
   .environment-controls,
   .environment-colors,
-  .badge-center {
+  .badge-center,
+  .job-card-animation,
+  .video-player-animation,
+  .choice-buttons {
     transform: scale(0.8);
   }
 }
-
 </style>
