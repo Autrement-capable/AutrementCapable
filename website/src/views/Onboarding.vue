@@ -20,7 +20,20 @@
     <div class="content-container">
       <!-- Step 1: Theme Selection -->
       <div v-if="currentStep === 1" class="step-container theme-selection">
-        <h1 class="step-title">Choisis ton thème préféré</h1>
+        <!-- <h1 class="step-title">Choisis ton thème préféré</h1> -->
+        <div class="flamou-container">
+          <img
+            :src="flamouImages.happy"
+            alt="Flamou heureux"
+            class="flamou-image"
+          />
+          <div class="flamou-speech-bubble">
+            <p>
+              Bonjour ! Je m'appelle Flamou. Commençons par choisir un thème que
+              tu aimes !
+            </p>
+          </div>
+        </div>
         <div class="themes-grid">
           <div
             v-for="theme in availableThemes"
@@ -47,6 +60,19 @@
       <!-- Step 2: Age Input -->
       <div v-if="currentStep === 2" class="step-container">
         <h1 class="step-title">Quel âge as-tu ?</h1>
+        <div class="flamou-container">
+          <img
+            :src="flamouImages.normal"
+            alt="Flamou normal"
+            class="flamou-image"
+          />
+          <div class="flamou-speech-bubble">
+            <p>
+              Peux-tu me dire quel âge tu as ? Tu peux utiliser les boutons + et
+              - pour choisir.
+            </p>
+          </div>
+        </div>
         <div class="input-container age-input-container">
           <button @click="decrementAge" class="age-button decrease-button">
             -
@@ -78,6 +104,16 @@
       <!-- Step 3: Nickname Input -->
       <div v-if="currentStep === 3" class="step-container">
         <h1 class="step-title">Quel est ton surnom ?</h1>
+        <div class="flamou-container">
+          <img
+            :src="flamouImages.normal"
+            alt="Flamou normal"
+            class="flamou-image"
+          />
+          <div class="flamou-speech-bubble">
+            <p>Comment aimerais-tu qu'on t'appelle ? Entre ton surnom ici.</p>
+          </div>
+        </div>
         <div class="input-container">
           <input
             type="text"
@@ -102,6 +138,19 @@
       <!-- Step 4: Gender Selection -->
       <div v-if="currentStep === 4" class="step-container">
         <h1 class="step-title">Ton personnage est...</h1>
+        <div class="flamou-container">
+          <img
+            :src="flamouImages.interesting"
+            alt="Flamou intéressé"
+            class="flamou-image"
+          />
+          <div class="flamou-speech-bubble">
+            <p>
+              Maintenant, créons ton avatar ! Est-ce que ton personnage est un
+              garçon, une fille, ou tu préfères ne pas choisir ?
+            </p>
+          </div>
+        </div>
         <div class="gender-container">
           <div
             class="gender-option"
@@ -140,13 +189,23 @@
       <!-- Step 5: Accessories Selection -->
       <div v-if="currentStep === 5" class="step-container">
         <h1 class="step-title">Choisis ce que ton personnage porte</h1>
-        <p class="subtitle">
-          Tu peux choisir ce que ton personnage porte. C'est toi qui choisis.
-        </p>
+        <div class="flamou-container">
+          <img
+            :src="flamouImages.normal"
+            alt="Flamou normal"
+            class="flamou-image"
+          />
+          <div class="flamou-speech-bubble">
+            <p>
+              Tu peux choisir ce que ton personnage porte. C'est toi qui
+              choisis.
+            </p>
+          </div>
+        </div>
         <div class="accessories-container">
           <div
             class="accessory-option"
-            :class="{ selected: accessories.includes('casque audio') }"
+            :class="{ selected: accessories.includes('casque') }"
             @click="toggleAccessory('casque')"
           >
             <div class="accessory-image">🎧</div>
@@ -197,10 +256,19 @@
       <!-- Step 6: Color Selection -->
       <div v-if="currentStep === 6" class="step-container">
         <h1 class="step-title">Quelle est ta couleur préférée ?</h1>
-        <p class="subtitle">
-          Choisis la couleur que tu aimes le plus. Elle servira à décorer ton
-          personnage.
-        </p>
+        <div class="flamou-container">
+          <img
+            :src="flamouImages.interesting"
+            alt="Flamou intéressé"
+            class="flamou-image"
+          />
+          <div class="flamou-speech-bubble">
+            <p>
+              Choisis la couleur que tu aimes le plus. Elle servira à décorer
+              ton personnage.
+            </p>
+          </div>
+        </div>
         <div class="colors-container">
           <div
             v-for="color in availableColors"
@@ -223,9 +291,18 @@
       <!-- Step 7: Passion Selection -->
       <div v-if="currentStep === 7" class="step-container">
         <h1 class="step-title">Qu'est-ce que tu aimes faire ?</h1>
-        <p class="subtitle">
-          Choisis ce que tu aimes le plus. Il n'y a pas de mauvaise réponse.
-        </p>
+        <div class="flamou-container">
+          <img
+            :src="flamouImages.happy"
+            alt="Flamou heureux"
+            class="flamou-image"
+          />
+          <div class="flamou-speech-bubble">
+            <p>
+              Choisis ce que tu aimes le plus. Il n'y a pas de mauvaise réponse.
+            </p>
+          </div>
+        </div>
         <div class="passions-container">
           <div
             v-for="passion in availablePassions"
@@ -250,9 +327,16 @@
       <!-- Step 8: Expression Selection -->
       <div v-if="currentStep === 8" class="step-container">
         <h1 class="step-title">Ton personnage a quelle expression ?</h1>
-        <p class="subtitle">
-          Choisis le visage qui te ressemble ou que tu préfères.
-        </p>
+        <div class="flamou-container">
+          <img
+            :src="flamouImages.interesting"
+            alt="Flamou intéressé"
+            class="flamou-image"
+          />
+          <div class="flamou-speech-bubble">
+            <p>Choisis le visage qui te ressemble ou que tu préfères.</p>
+          </div>
+        </div>
         <div class="expressions-container">
           <div
             v-for="expression in availableExpressions"
@@ -279,7 +363,18 @@
       <!-- Step 9: Generating Avatars -->
       <div v-if="currentStep === 9" class="step-container">
         <h1 class="step-title">Génération de tes avatars</h1>
-        <p class="subtitle">Patiente un peu, nous créons tes personnages...</p>
+        <div class="flamou-container">
+          <img
+            :src="flamouImages.interesting"
+            alt="Flamou intéressé"
+            class="flamou-image animated-bounce"
+          />
+          <div class="flamou-speech-bubble">
+            <p>
+              {{ loadingText }} Patiente un peu, nous créons tes personnages...
+            </p>
+          </div>
+        </div>
         <div class="loading-container">
           <div class="loading-spinner"></div>
           <p class="loading-text">{{ loadingText }}</p>
@@ -289,7 +384,16 @@
       <!-- Step 10: Avatar Selection -->
       <div v-if="currentStep === 10" class="step-container">
         <h1 class="step-title">Choisis ton avatar préféré</h1>
-        <p class="subtitle">Clique sur celui que tu préfères.</p>
+        <div class="flamou-container">
+          <img
+            :src="flamouImages.happy"
+            alt="Flamou heureux"
+            class="flamou-image"
+          />
+          <div class="flamou-speech-bubble">
+            <p>Voici tes avatars ! Clique sur celui que tu préfères.</p>
+          </div>
+        </div>
         <div class="avatars-container">
           <div
             v-for="(avatar, index) in generatedAvatars"
@@ -315,9 +419,18 @@
       <!-- Step 11: Récapitulatif et création du compte -->
       <div v-if="currentStep === 11" class="step-container summary-container">
         <h1 class="step-title">Récapitulatif</h1>
-        <p class="subtitle">
-          Vérifie si tout est correct avant de créer ton compte
-        </p>
+        <div class="flamou-container">
+          <img
+            :src="flamouImages.happy"
+            alt="Flamou heureux"
+            class="flamou-image"
+          />
+          <div class="flamou-speech-bubble">
+            <p>
+              Super ! Vérifie si tout est correct avant de créer ton compte.
+            </p>
+          </div>
+        </div>
 
         <div class="summary-content">
           <div class="summary-avatar">
@@ -428,6 +541,12 @@ export default {
       loadingProgress: 0,
       selectedAvatarIndex: null,
       generatedAvatars: [],
+      flamouImages: {
+        happy: require('@/assets/flamou/happy.png'),
+        normal: require('@/assets/flamou/normal.png'),
+        interesting: require('@/assets/flamou/intresting.png'),
+        sleepy: require('@/assets/flamou/blased.png'),
+      },
       availableThemes: [
         { id: 'cosmic', name: 'Espace', emoji: '🌌' },
         { id: 'ocean', name: 'Océan', emoji: '🌊' },
@@ -753,6 +872,13 @@ Objectif : obtenir un avatar haut de gamme, isolé sur fond blanc, prêt pour un
 </script>
 
 <style scoped>
+@font-face {
+  font-family: 'GlacialIndifference';
+  src: url('@/assets/fonts/GlacialIndifference-Regular.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 .onboarding-container {
   width: 100%;
   height: 100vh;
@@ -1182,7 +1308,7 @@ Objectif : obtenir un avatar haut de gamme, isolé sur fond blanc, prêt pour un
   cursor: pointer;
   transition: all 0.2s ease;
   border: 3px solid transparent;
-  width: 250px;
+  width: 180px;
 }
 
 .avatar-option.selected {
@@ -1260,12 +1386,56 @@ Objectif : obtenir un avatar haut de gamme, isolé sur fond blanc, prêt pour un
   cursor: not-allowed;
 }
 
-.error-message {
-  margin-top: 15px;
-  color: #ff6b6b;
-  font-weight: bold;
-  background-color: rgba(255, 0, 0, 0.1);
-  padding: 10px;
-  border-radius: 8px;
+.flamou-container {
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+  justify-content: center;
+}
+
+.flamou-image {
+  width: 200px;
+  height: auto;
+  margin-right: 15px;
+}
+
+.flamou-speech-bubble {
+  position: relative;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 15px;
+  padding: 15px;
+  max-width: 70%;
+  margin-left: 20px;
+}
+
+.flamou-speech-bubble:before {
+  content: '';
+  position: absolute;
+  left: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 10px;
+  border-style: solid;
+  border-color: transparent rgba(255, 255, 255, 0.2) transparent transparent;
+}
+
+.flamou-speech-bubble p {
+  margin: 0;
+  font-size: 1.3rem;
+  font-family: 'GlacialIndifference', sans-serif;
+  color: white;
+}
+
+.animated-bounce {
+  animation: bounce 1.5s infinite alternate;
+}
+
+@keyframes bounce {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-10px);
+  }
 }
 </style>
