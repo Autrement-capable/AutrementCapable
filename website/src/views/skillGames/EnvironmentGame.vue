@@ -1,6 +1,6 @@
 <template>
   <div class="environment-container">
-    <div v-if="!activityStarted" class="welcome-screen">
+    <!-- <div v-if="!activityStarted" class="welcome-screen">
       <div class="welcome-content">
         <h1>Découvre ton environnement préféré</h1>
 
@@ -57,7 +57,14 @@
           Commencer l'aventure
         </button>
       </div>
-    </div>
+    </div> -->
+    <GameGuide
+      v-if="!activityStarted"
+      gameId="sensory-environment"
+      :forceShow="true"
+      @start-game="startActivity"
+      @skip-intro="startActivity"
+    />
 
     <!-- Section principale avec les environnements -->
     <div v-else class="main-interface">
@@ -356,9 +363,13 @@ import whiteNoiseAudio from '@/assets/sounds/white_noise.mp3'
 import NatureAudio from '@/assets/sounds/nature.mp3'
 import CafeAudio from '@/assets/sounds/cafe.mp3'
 import CrowdAudio from '@/assets/sounds/crowd.mp3'
+import GameGuide from '@/components/GameGuideComponent.vue'
 
 export default {
   name: 'SensoryEnvironments',
+  components: {
+    GameGuide,
+  },
   data() {
     return {
       // Interface state

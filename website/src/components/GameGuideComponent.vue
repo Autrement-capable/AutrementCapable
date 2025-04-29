@@ -45,6 +45,14 @@
               <div class="shape shape-triangle"></div>
               <div class="shape shape-question">?</div>
             </div>
+            <div v-else-if="gameId === 'sensory-environment'" class="animation-environment">
+              <div class="environment-room"></div>
+              <div class="environment-controls">
+                <div class="control-light"></div>
+                <div class="control-sound"></div>
+                <div class="control-color"></div>
+              </div>
+            </div>
           </div>
           
           <!-- Animation pour la deuxième étape (étape 2) -->
@@ -64,6 +72,14 @@
               <div class="logic-arrow">→</div>
               <div class="logic-brain"></div>
             </div>
+            <div v-else-if="gameId === 'sensory-environment'" class="animation-environment-adjust">
+              <div class="environment-slider"></div>
+              <div class="environment-colors">
+                <div class="color-swatch swatch-warm"></div>
+                <div class="color-swatch swatch-neutral"></div>
+                <div class="color-swatch swatch-cool"></div>
+              </div>
+            </div>
           </div>
           
           <!-- Animation pour la dernière étape -->
@@ -72,6 +88,7 @@
               <div class="badge-center">
                 <span v-if="gameId === 'skills-wheel'">🎯</span>
                 <span v-else-if="gameId === 'shape-sequence'">🧩</span>
+                <span v-else-if="gameId === 'sensory-environment'">🌈</span>
                 <span v-else>🏆</span>
               </div>
             </div>
@@ -199,6 +216,49 @@ export default {
               <p>Ce jeu va entraîner ton cerveau et t'aider à développer tes capacités d'analyse.</p>
               <p>Tu pourras même gagner un badge "Expert des formes" si tu réussis assez de niveaux!</p>
               <p>Clique sur le bouton ci-dessous pour commencer.</p>`
+          ]
+        },
+        'sensory-environment': {
+          title: 'Découvre ton environnement préféré',
+          steps: [
+            `<h2>Bienvenue dans l'exploration d'environnements!</h2>
+              <p>Je suis Léo, et je vais t'aider à découvrir ce que tu aimes et ce que tu n'aimes pas dans ton environnement.</p>
+              <p>Ce jeu va te permettre de mieux comprendre tes préférences sensorielles de manière interactive!</p>`,
+            
+            `<h2>Étape 1: Choisis un espace</h2>
+              <p>Tu vas commencer par choisir un environnement parmi plusieurs possibilités:</p>
+              <ul>
+                <li>Espace de concentration</li>
+                <li>Espace de détente</li>
+                <li>Espace social contrôlé</li>
+              </ul>
+              <p>Chaque espace a des caractéristiques différentes que tu pourras explorer.</p>`,
+            
+            `<h2>Étape 2: Personnalise ton environnement</h2>
+              <p>Tu pourras modifier différents éléments comme:</p>
+              <ul>
+                <li><strong>La lumière</strong> - Intensité et couleur</li>
+                <li><strong>Les couleurs</strong> - Des murs, du sol et du plafond</li>
+                <li><strong>Les sons</strong> - Différentes ambiances sonores</li>
+                <li><strong>Les personnes</strong> - Nombre de personnes présentes</li>
+              </ul>
+              <p>Ajuste les réglages jusqu'à ce que tu te sentes bien!</p>`,
+            
+            `<h2>Étape 3: Exprime ton ressenti</h2>
+              <p>Après la personnalisation, tu indiqueras comment tu te sens dans cet environnement:</p>
+              <ul>
+                <li>Es-tu calme? Concentré? Confortable?</li>
+                <li>Ou peut-être mal à l'aise ou surstimulé?</li>
+              </ul>
+              <p>Tu pourras aussi ajouter des commentaires pour expliquer ce que tu aimes ou n'aimes pas.</p>`,
+            
+            `<h2>Étape 4: Découvre tes préférences</h2>
+              <p>À la fin, tu recevras un résumé de tes préférences sensorielles et des recommandations personnalisées.</p>
+              <p>Ces informations t'aideront à créer des environnements adaptés à tes besoins!</p>`,
+            
+            `<h2>Tu es prêt à explorer?</h2>
+              <p>Souviens-toi: tu peux prendre ton temps, il n'y a pas de bonnes ou mauvaises réponses.</p>
+              <p>Clique sur le bouton ci-dessous pour commencer l'aventure!</p>`
           ]
         }
         // Vous pourrez ajouter d'autres jeux ici
@@ -712,6 +772,186 @@ export default {
   50% { transform: translateY(-10px); }
 }
 
+/* Animations pour l'environnement sensoriel */
+.animation-environment {
+  position: absolute;
+  left: 40px;
+  top: 50px;
+  width: 160px;
+  height: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.environment-room {
+  width: 120px;
+  height: 100px;
+  background: linear-gradient(to bottom, #e6f7ff, #ffffff);
+  border: 2px solid #80bdff;
+  border-radius: 10px;
+  position: relative;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  animation: room-appear 1s forwards;
+}
+
+.environment-room:before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 30%;
+  background-color: #d9e6f2;
+  border-radius: 0 0 8px 8px;
+}
+
+.environment-controls {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  gap: 8px;
+}
+
+.control-light, .control-sound, .control-color {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  opacity: 0;
+  animation: control-pop 0.5s forwards;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+.control-light {
+  background-color: #FFC107;
+  animation-delay: 0.3s;
+}
+
+.control-light:before {
+  content: '💡';
+  font-size: 20px;
+}
+
+.control-sound {
+  background-color: #2196F3;
+  animation-delay: 0.5s;
+}
+
+.control-sound:before {
+  content: '🔊';
+  font-size: 20px;
+}
+
+.control-color {
+  background-color: #F44336;
+  animation-delay: 0.7s;
+}
+
+.control-color:before {
+  content: '🎨';
+  font-size: 20px;
+}
+
+@keyframes room-appear {
+  0% { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes control-pop {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Animation pour la personnalisation d'environnement */
+.animation-environment-adjust {
+  position: absolute;
+  left: 40px;
+  top: 50px;
+  width: 160px;
+  height: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.environment-slider {
+  width: 140px;
+  height: 20px;
+  background: linear-gradient(to right, rgba(33, 150, 243, 0.2), rgba(33, 150, 243, 0.8));
+  border-radius: 10px;
+  position: relative;
+  animation: slider-appear 0.5s forwards;
+}
+
+.environment-slider:after {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  width: 30px;
+  height: 30px;
+  background-color: white;
+  border: 2px solid #2196F3;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  animation: slider-move 2s infinite alternate;
+}
+
+.environment-colors {
+  display: flex;
+  gap: 10px;
+  animation: colors-appear 0.5s forwards;
+  animation-delay: 0.3s;
+  opacity: 0;
+}
+
+.color-swatch {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s;
+}
+
+.color-swatch:hover {
+  transform: scale(1.1);
+}
+
+.swatch-warm {
+  background-color: #ffccbc;
+}
+
+.swatch-neutral {
+  background-color: #e0e0e0;
+}
+
+.swatch-cool {
+  background-color: #bbdefb;
+}
+
+@keyframes slider-appear {
+  0% { transform: scaleX(0.5); opacity: 0; }
+  100% { transform: scaleX(1); opacity: 1; }
+}
+
+@keyframes slider-move {
+  0% { left: 20%; }
+  100% { left: 80%; }
+}
+
+@keyframes colors-appear {
+  0% { transform: translateY(20px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
 /* Animation de la logique (pour shape-sequence étape 2) */
 .animation-logic {
   position: absolute;
@@ -822,9 +1062,26 @@ export default {
   animation: shine-badge 3s infinite;
 }
 
+.badge-center::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  border-radius: 50%;
+  border: 2px dashed #FF9800;
+  animation: rotate-ring 10s linear infinite;
+}
+
 @keyframes shine-badge {
   0%, 100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7); }
   50% { box-shadow: 0 0 30px 5px rgba(255, 193, 7, 0.7); }
+}
+
+@keyframes rotate-ring {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* Hint d'animation */
@@ -1024,15 +1281,20 @@ export default {
   .animation-wheel, 
   .animation-shapes, 
   .animation-options, 
-  .animation-logic, 
+  .animation-logic,
+  .animation-environment,
+  .animation-environment-adjust,
   .animation-badge {
     transform: scale(0.7);
   }
   
   .animation-welcome-icon,
   .option-bubble,
+  .environment-controls,
+  .environment-colors,
   .badge-center {
     transform: scale(0.8);
   }
 }
+
 </style>
