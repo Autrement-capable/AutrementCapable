@@ -146,7 +146,7 @@
         <div class="accessories-container">
           <div
             class="accessory-option"
-            :class="{ selected: accessories.includes('casque') }"
+            :class="{ selected: accessories.includes('casque audio') }"
             @click="toggleAccessory('casque')"
           >
             <div class="accessory-image">🎧</div>
@@ -411,7 +411,7 @@
 
 <script>
 import SpaceBackground from '@/components/SpaceBackground.vue'
-import axios from 'axios'
+import { AzureOpenAI } from 'openai'
 import AuthService from '@/services/AuthService'
 
 export default {
@@ -550,12 +550,19 @@ export default {
     async generateAvatars() {
       this.generatedAvatars = []
       this.loadingProgress = 0
-      this.loadingText = 'Création de ton avatar...'
-
       const url = process.env.VUE_APP_AZURE_OPENAI_ENDPOINT
       const apiKey = process.env.VUE_APP_AZURE_OPENAI_API_KEY
 
+      this.loadingText = 'Création de ton avatar...'
       try {
+        // Configuration du client Azure OpenAI
+        const client = new AzureOpenAI({
+          apiKey: apiKey,
+          endpoint: url,
+          apiVersion: '2024-02-01',
+          dangerouslyAllowBrowser: true,
+        })
+
         // Générer 3 avatars différents
         for (let i = 0; i < 3; i++) {
           this.loadingText = `Création de l'avatar ${i + 1}/3...`
@@ -586,34 +593,47 @@ export default {
             ? `avec une expression ${this.responses.avatarExpression}`
             : ''
 
-          const prompt = `Créer une illustration numérique en style cartoon réaliste, avec des traits doux, une palette de couleurs naturelle et harmonieuse.
-          Le fond est gris clair, épuré et minimaliste.
-          Le personnage est de genre ${gender}, ${accessoriesText}, ${colorText}, ${passionText}, ${expressionText}.
-          Le style visuel est moderne, avec des proportions naturelles (pas de déformation type Funko Pop), un rendu propre et professionnel, comme une illustration d'avatar haut de gamme.
-          Le personnage est vu de face, en position debout, bien éclairé, avec des détails soignés sur les vêtements et les accessoires.
-          L'objectif est de produire un visuel prêt pour une utilisation professionnelle ou commerciale.`
+          const prompt = `
+Créer une illustration numérique en style cartoon réaliste 2D, traits doux,
+palette de couleurs naturelle et harmonieuse, rendu propre et professionnel.
 
-          console.log(`Envoi de la requête ${i + 1} à l'API Azure OpenAI...`)
+Fond : blanc uni pur (#FFFFFF), sans motif, sans dégradé, sans ombre.
+Aucun objet, décor, texte ou palette de couleurs autour du personnage.
+
+Personnage : de genre ${gender}, ${accessoriesText}, ${colorText}, ${passionText}, ${expressionText}.
+Vue de face, position debout, proportions naturelles,
+cadré et centré dans l’image, bien éclairé, détails soignés sur vêtements et accessoires.
+
+Objectif : obtenir un avatar haut de gamme, isolé sur fond blanc, prêt pour un détourage automatique et une utilisation professionnelle ou commerciale.
+`.trim()
+
+          console.log(
+            `Envoi de la requête ${i + 1} à l'API Azure OpenAI DALL-E…`,
+          )
           console.log('Prompt:', prompt)
 
           try {
-            const response = await axios.post(
-              url,
-              { prompt, n: 1 },
-              {
-                headers: {
-                  'Content-Type': 'application/json',
-                  'api-key': apiKey,
-                },
-              },
-            )
+            // Appel à l'API DALL-E via Azure
+            const result = await client.images.generate({
+              model: 'dall-e-3', // le nom de votre déploiement DALL-E 3
+              prompt: prompt,
+              n: 1,
+            })
 
-            const imageUrl = response.data.data[0].url
+            // Traitement du résultat pour obtenir l'URL de l'image
+            const resultJson = JSON.parse(JSON.stringify(result))
+            const imageUrl = resultJson.data[0].url
+
             this.generatedAvatars.push(imageUrl)
             console.log(`Image ${i + 1} générée:`, imageUrl)
 
             // Mettre à jour la progression
             this.loadingProgress = ((i + 1) / 3) * 100
+
+            // Ajouter un délai entre les requêtes pour éviter les limitations d'API
+            if (i < 2) {
+              await new Promise((resolve) => setTimeout(resolve, 1000))
+            }
           } catch (error) {
             console.error(
               `Erreur lors de la génération de l'image ${i + 1}:`,
@@ -705,7 +725,7 @@ export default {
           }),
         )
 
-        console.log('User data for registration:', userData)
+        console.log('user data', userData)
 
         // Register with passkey
         const result = await AuthService.registerWithPasskey(userData)
@@ -1162,7 +1182,7 @@ export default {
   cursor: pointer;
   transition: all 0.2s ease;
   border: 3px solid transparent;
-  width: 180px;
+  width: 250px;
 }
 
 .avatar-option.selected {

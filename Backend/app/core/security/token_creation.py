@@ -209,8 +209,23 @@ async def decode_token(session: AsyncSession, token_source: Union[Request, str],
 # HTTP bearer scheme for access token extraction
 http_bearer = HTTPBearer(auto_error=False)
 
+import warnings
+
 class JWTBearer:
-    """ Dependency class for requiring a valid JWT token """
+    """DEPRECATED: This class is deprecated and will be removed in future versions.
+
+    Please use the `secured_endpoint` decorator instead:
+    ```python
+    from app.core.security.decorators import secured_endpoint
+
+    @router.get("/protected-route")
+    @secured_endpoint()  # Use parameters like secured_endpoint(fresh=True) if needed
+    async def protected_endpoint(jwt, session): # jwt and session are auto-injected
+        # jwtP["sub"] is the user ID
+        # jwtP["role"] is the role ID
+        return {"message": "Success"}
+    ```
+    """
 
     def __init__(self, is_refresh: bool = False, required_fresh: bool = False):
         """
@@ -218,6 +233,11 @@ class JWTBearer:
             is_refresh (bool): If True, requires a refresh token instead of an access token.
             required_fresh (bool): If True, ensures the token is fresh.
         """
+        warnings.warn(
+            "JWTBearer is deprecated. Use secured_endpoint instead.",
+            DeprecationWarning,
+            stacklevel=2
+        )
         self.is_refresh = is_refresh
         self.required_fresh = required_fresh
         self._payload = None  # Stores decoded JWT payload

@@ -5,7 +5,6 @@ from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...core.application import AddRouter
-from ...core.security.token_creation import JWTBearer
 from ...core.security.decorators import secured_endpoint
 from ...db.postgress.engine import getSession
 from ...db.postgress.repositories.ability_skills_user import (
@@ -59,13 +58,13 @@ abilities_router = APIRouter(prefix="/abilities", tags=["Abilities"])
 # ============ Skills Endpoints ============
 
 @skills_router.get("", response_model=Dict[str, Any])
-@secured_endpoint
+@secured_endpoint()
 async def get_my_skills(
-    session: AsyncSession = Depends(getSession), 
-    jwt: dict = Depends(JWTBearer())
+    jwt: dict,
+    session: AsyncSession = Depends(getSession)
 ):
     """Get the current user's skills"""
-    user_id = jwt["payload"]["sub"]
+    user_id = jwt["sub"]
     user_skills = await get_user_skills(session, user_id)
 
     if not user_skills:
@@ -77,14 +76,14 @@ async def get_my_skills(
     }
 
 @skills_router.put("", response_model=Dict[str, Any])
-@secured_endpoint
+@secured_endpoint()
 async def update_my_skills(
     skills_data: SkillsData,
-    session: AsyncSession = Depends(getSession), 
-    jwt: dict = Depends(JWTBearer())
+    jwt: dict,
+    session: AsyncSession = Depends(getSession)
 ):
     """Update all skills for the current user"""
-    user_id = jwt["payload"]["sub"]
+    user_id = jwt["sub"]
     user_skills, _ = await create_or_update_user_skills(session, user_id, skills_data.skills)
 
     if not user_skills:
@@ -100,14 +99,14 @@ async def update_my_skills(
     }
 
 @skills_router.patch("", response_model=Dict[str, Any])
-@secured_endpoint
+@secured_endpoint()
 async def update_single_skill(
     skill_update: SkillUpdate,
-    session: AsyncSession = Depends(getSession), 
-    jwt: dict = Depends(JWTBearer())
+    jwt: dict,
+    session: AsyncSession = Depends(getSession)
 ):
     """Update a single skill for the current user"""
-    user_id = jwt["payload"]["sub"]
+    user_id = jwt["sub"]
     user_skills = await update_specific_user_skill(
         session, user_id, skill_update.skill_name, skill_update.skill_value
     )
@@ -127,13 +126,13 @@ async def update_single_skill(
 # ============ Abilities Endpoints ============
 
 @abilities_router.get("", response_model=Dict[str, Any])
-@secured_endpoint
+@secured_endpoint()
 async def get_my_abilities(
-    session: AsyncSession = Depends(getSession), 
-    jwt: dict = Depends(JWTBearer())
+    jwt: dict,
+    session: AsyncSession = Depends(getSession)
 ):
     """Get the current user's abilities"""
-    user_id = jwt["payload"]["sub"]
+    user_id = jwt["sub"]
     user_abilities = await get_user_abilities(session, user_id)
 
     if not user_abilities:
@@ -145,14 +144,14 @@ async def get_my_abilities(
     }
 
 @abilities_router.put("", response_model=Dict[str, Any])
-@secured_endpoint
+@secured_endpoint()
 async def update_my_abilities(
     abilities_data: AbilitiesData,
-    session: AsyncSession = Depends(getSession), 
-    jwt: dict = Depends(JWTBearer())
+    jwt: dict,
+    session: AsyncSession = Depends(getSession)
 ):
     """Update all abilities for the current user"""
-    user_id = jwt["payload"]["sub"]
+    user_id = jwt["sub"]
     user_abilities, _ = await create_or_update_user_abilities(session, user_id, abilities_data.abilities)
 
     if not user_abilities:
@@ -168,13 +167,14 @@ async def update_my_abilities(
     }
 
 @abilities_router.put("/category", response_model=Dict[str, Any])
+@secured_endpoint()
 async def update_category(
     category_update: AbilityCategoryUpdate,
-    session: AsyncSession = Depends(getSession), 
-    jwt: dict = Depends(JWTBearer())
+    jwt: dict,
+    session: AsyncSession = Depends(getSession)
 ):
     """Update a complete category of abilities for the current user"""
-    user_id = jwt["payload"]["sub"]
+    user_id = jwt["sub"]
     user_abilities = await update_ability_category(
         session, user_id, category_update.category, category_update.abilities
     )
@@ -192,13 +192,14 @@ async def update_category(
     }
 
 @abilities_router.post("/add", response_model=Dict[str, Any])
+@secured_endpoint()
 async def add_ability(
     ability_update: AbilityUpdate,
-    session: AsyncSession = Depends(getSession), 
-    jwt: dict = Depends(JWTBearer())
+    jwt: dict,
+    session: AsyncSession = Depends(getSession)
 ):
     """Add an ability to a category for the current user"""
-    user_id = jwt["payload"]["sub"]
+    user_id = jwt["sub"]
     user_abilities = await add_ability_to_category(
         session, user_id, ability_update.category, ability_update.ability
     )
@@ -216,14 +217,14 @@ async def add_ability(
     }
 
 @abilities_router.post("/remove", response_model=Dict[str, Any])
-@secured_endpoint
+@secured_endpoint()
 async def remove_ability(
     ability_update: AbilityUpdate,
-    session: AsyncSession = Depends(getSession), 
-    jwt: dict = Depends(JWTBearer())
+    jwt: dict,
+    session: AsyncSession = Depends(getSession)
 ):
     """Remove an ability from a category for the current user"""
-    user_id = jwt["payload"]["sub"]
+    user_id = jwt["sub"]
     user_abilities = await remove_ability_from_category(
         session, user_id, ability_update.category, ability_update.ability
     )
@@ -241,14 +242,14 @@ async def remove_ability(
     }
 
 @abilities_router.post("/move", response_model=Dict[str, Any])
-@secured_endpoint
+@secured_endpoint()
 async def move_ability(
     ability_move: AbilityMove,
-    session: AsyncSession = Depends(getSession), 
-    jwt: dict = Depends(JWTBearer())
+    jwt: dict,
+    session: AsyncSession = Depends(getSession)
 ):
     """Move an ability from one category to another for the current user"""
-    user_id = jwt["payload"]["sub"]
+    user_id = jwt["sub"]
     user_abilities = await move_ability_between_categories(
         session, 
         user_id, 

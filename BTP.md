@@ -9,7 +9,7 @@ This Beta Test Plan focuses on the MVP features available to young neurodivergen
 | Personalized Profile Generation | A dynamic profile is generated from game inputs and evolves in real-time, helping the user discover their strengths and preferences. | High         | New addition based on gameplay data integration |
 | Passwordless Onboarding         | Secure and inclusive onboarding using Passkey authentication (no passwords).                                                         | High         | Integrated with accessibility-first design      |
 | AI Avatar Generation            | Custom AI-based avatar creation to help users identify with their digital persona.                                                   | Medium       | Added emotional expression options              |
-| Guided Dashboard & Badge System | Minimalist dashboard showing progress through visual badges and a central evolving badge.                                            | High         | Co-designed with autism specialists             |
+| Guided Dashboard & Badge System | Minimalist dashboard showing progress through visual badges and a central badge evolving badge.                                      | High         | Co-designed with autism specialists             |
 | Accessibility Widget            | A floating tool allowing on-the-fly accessibility adaptations (text size, audio, contrast, etc.).                                    | High         | Almost Fully integrated into all pages          |
 | 6 Mini-Games for Self-Discovery | Interactive modules that help build the user profile across logic, typing, preferences, and soft skills.                             | High         | Co-designed with autistic youth and experts     |
 
@@ -19,21 +19,21 @@ This Beta Test Plan focuses on the MVP features available to young neurodivergen
 
 Only one role is involved in the MVP testing phase.
 
-| **Role Name** | **Description**                                                                             |
-| ------------- | ------------------------------------------------------------------------------------------- |
-| Young User    | A neurodivergent teenager discovering their strengths and preferences through the platform. |
+| **Role Name** | **Description**                                                                           |
+| ------------- | ----------------------------------------------------------------------------------------- |
+| User          | A neurodivergent person discovering their strengths and preferences through the platform. |
 
 ### 2.2 Test Scenarios
 
 #### Scenario 1: Onboarding Flow
 
 - **Role Involved:** User
-- **Objective:** Creating Avatar & choose visual personalization.
+- **Objective:** Collect personal informations, creating avatar & choose theme.
 - **Preconditions:** None.
 - **Test Steps:**
   1. Start onboarding process.
   2. Choose prefered theme background.
-  3. Personal information (Name, age).
+  3. Personal informations (Name, age).
   4. Creating avatar based on questions.
 - **Expected Outcome:** Avatar and background reflect user's identity and preferences.
 
@@ -47,18 +47,18 @@ Only one role is involved in the MVP testing phase.
   2. Account creation without password.
 - **Expected Outcome:** Created an account in seconds without the need of user name and password.
 
-#### Scenario 3: Dashboard & Badge Progression Explanation
+#### Scenario 3: Tutorial
 
 - **Role Involved:** User
-- **Objective:** Understanding of the dashboard and badges progression.
+- **Objective:** Follow the tutorial to understand the dashboard and badges progression.
 - **Preconditions:** Finished the onboarding.
 - **Test Steps:**
   1. Following steps from the guide to explore dashboard features.
   2. Following steps from the guide to explore badges progression.
   3. Start your first game.
-- **Expected Outcome:** The user must have understand all features and dashboard.
+- **Expected Outcome:** The user understood core features and dashboard.
 
-#### Scenario 4: Game Modules (Self-Discovery Path)
+#### Scenario 4: Play games and improve the user's profile
 
 - **Role Involved:** User
   Each game contributes to enriching the user's profile. They are:
@@ -72,14 +72,14 @@ Only one role is involved in the MVP testing phase.
 | Skill Self-Assessment  | Find if the user has a skills, want to develop it or doesn't have it.                       |
 | Emotional Intelligence | Choose reactions to life/workplace situations to assess emotional response and soft skills. |
 
-- **Preconditions:** Finish scenario 3.
+- **Preconditions:** Finish tutoriel.
 - **Test Steps:**
 
-  1.  Do games.
-  2.  See your new badges.
+  1.  Play games.
+  2.  Obtain your new badges.
   3.  See your profile progression.
 
-- **Expected Outcome:** Game completes; data is stored and shown in profile/badges.
+- **Expected Outcome:** Enjoy the experience and continue to play; data is stored and shown in profile/badges. Involve your evolutive badge
 
 ## 3. Success Criteria
 
@@ -97,7 +97,7 @@ Only one role is involved in the MVP testing phase.
 | ----------------------------- | ------------------------------------------------------------------- | ---------- | ---------------- |
 | 3D Room Lag                   | Environment builder may lag on old phones/tablets.                  | Medium     | No               |
 | Passkey Browser Compatibility | Limited support on Android and not supported on most Linux devices. | Medium     | No               |
-| Overlapping UI Elements       | Accessibility widget may overlap with some animated elements.       | High       | Yes              |
+| Overlapping UI Elements       | Accessibility widget may overlap with some animated elements.       | Low        | Yes              |
 | Dashboard Background Lag      | Slight performance issues with background effects on older devices. | Medium     | Yes              |
 
 ## 5. Conclusion
