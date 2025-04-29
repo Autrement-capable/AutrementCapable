@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field, EmailStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...core.application import AddRouter
-from ...core.security.token_creation import create_token, JWTBearer, set_refresh_cookie
+from ...core.security.token_creation import create_token, set_refresh_cookie
 from ...core.security.decorators import secured_endpoint
 from ...db.postgress.engine import getSession as GetSession
 from ...db.postgress.repositories.acc_recovery import get_acc_recovery_by_token, del_acc_recovery, create_acc_recovery
@@ -70,17 +70,16 @@ async def reset_password(
 
 @router.get("/create-account-recovery", response_model=dict,
 responses={200: {"message": "Account recovery created."}})
-@secured_endpoint
+@secured_endpoint()
 async def create_account_recovery(
-    request: Request, 
-    session: AsyncSession = Depends(GetSession), 
-    JWT: dict = Depends(JWTBearer())
+    request: Request,
+    jwt:dict,
+    session: AsyncSession = Depends(GetSession),
 ):
     """
     Create an account recovery for a user. (Used when transferring to a new device that does not have registered passkeys)
     """
-    payload = JWT["payload"]
-    user_id = payload["sub"]
+    user_id = jwt["sub"]
     user = await get_user_by_id(session, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found.")
