@@ -545,7 +545,7 @@ export default {
         happy: require('@/assets/flamou/happy.png'),
         normal: require('@/assets/flamou/normal.png'),
         interesting: require('@/assets/flamou/intresting.png'),
-        sleepy: require('@/assets/flamou/blased.png'),
+        sleepy: require('@/assets/flamou/blazed.png'),
       },
       availableThemes: [
         { id: 'cosmic', name: 'Espace', emoji: '🌌' },
