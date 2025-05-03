@@ -13,7 +13,7 @@
     <GameGuide
       v-if="!gameStarted"
       gameId="skills-wheel"
-      :forceShow="false"
+      :forceShow="true"
       @start-game="onGuideComplete"
       @skip-intro="onGuideComplete"
     />

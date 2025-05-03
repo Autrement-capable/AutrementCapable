@@ -396,15 +396,15 @@ export default {
     document.addEventListener('fullscreenchange', this.fullScreenChangeHandler)
     document.addEventListener(
       'webkitfullscreenchange',
-      this.fullScreenChangeHandler
+      this.fullScreenChangeHandler,
     )
     document.addEventListener(
       'mozfullscreenchange',
-      this.fullScreenChangeHandler
+      this.fullScreenChangeHandler,
     )
     document.addEventListener(
       'MSFullscreenChange',
-      this.fullScreenChangeHandler
+      this.fullScreenChangeHandler,
     )
   },
 
@@ -412,19 +412,19 @@ export default {
     // Nettoyage des écouteurs d'événements lors de la destruction du composant
     document.removeEventListener(
       'fullscreenchange',
-      this.fullScreenChangeHandler
+      this.fullScreenChangeHandler,
     )
     document.removeEventListener(
       'webkitfullscreenchange',
-      this.fullScreenChangeHandler
+      this.fullScreenChangeHandler,
     )
     document.removeEventListener(
       'mozfullscreenchange',
-      this.fullScreenChangeHandler
+      this.fullScreenChangeHandler,
     )
     document.removeEventListener(
       'MSFullscreenChange',
-      this.fullScreenChangeHandler
+      this.fullScreenChangeHandler,
     )
   },
 
@@ -507,7 +507,7 @@ export default {
           } catch (error) {
             console.error(
               'Erreur lors de la sortie du mode plein écran:',
-              error
+              error,
             )
             // Forcer la mise à jour de l'état
             this.isFullScreen = false
@@ -525,22 +525,25 @@ export default {
         document.fullscreenElement ||
         document.webkitFullscreenElement ||
         document.mozFullScreenElement ||
-        document.msFullscreenElement;
+        document.msFullscreenElement
 
       // Update the state variable
-      this.isFullScreen = !!fullscreenElement;
+      this.isFullScreen = !!fullscreenElement
 
       // Enregistrer la préférence utilisateur uniquement si nous sommes en plein écran
       // This prevents saving "false" when exiting fullscreen due to a page reload
       if (this.isFullScreen) {
-        this.saveUserPreferences();
+        this.saveUserPreferences()
       } else {
         // When exiting fullscreen mode, update localStorage with the current state
-        const savedPrefs = localStorage.getItem('accessibilityPreferences');
+        const savedPrefs = localStorage.getItem('accessibilityPreferences')
         if (savedPrefs) {
-          const prefs = JSON.parse(savedPrefs);
-          prefs.isFullScreen = false;
-          localStorage.setItem('accessibilityPreferences', JSON.stringify(prefs));
+          const prefs = JSON.parse(savedPrefs)
+          prefs.isFullScreen = false
+          localStorage.setItem(
+            'accessibilityPreferences',
+            JSON.stringify(prefs),
+          )
         }
       }
     },
@@ -694,7 +697,7 @@ export default {
       // Apply clearer font and spacing for better readability
       document.body.style.setProperty(
         '--autism-font',
-        '"Open Sans", "Arial", sans-serif'
+        '"Open Sans", "Arial", sans-serif',
       )
       document.body.style.setProperty('--autism-line-height', '1.5')
       document.body.style.setProperty('--autism-paragraph-spacing', '1.2em')
@@ -726,7 +729,7 @@ export default {
 
         // Apply consistent spacing and structure
         const sections = document.querySelectorAll(
-          'section, article, div.content-section'
+          'section, article, div.content-section',
         )
         sections.forEach((section) => {
           section.style.margin = '1.5rem 0'
@@ -859,14 +862,14 @@ export default {
         oscillator.type = type
         oscillator.frequency.setValueAtTime(
           startFreq,
-          this.audioContext.currentTime
+          this.audioContext.currentTime,
         )
 
         // If start and end frequencies are different, create a frequency ramp
         if (startFreq !== endFreq) {
           oscillator.frequency.linearRampToValueAtTime(
             endFreq,
-            this.audioContext.currentTime + duration
+            this.audioContext.currentTime + duration,
           )
         }
 
@@ -874,11 +877,11 @@ export default {
         gainNode.gain.setValueAtTime(0, this.audioContext.currentTime)
         gainNode.gain.linearRampToValueAtTime(
           volume,
-          this.audioContext.currentTime + 0.05
+          this.audioContext.currentTime + 0.05,
         )
         gainNode.gain.linearRampToValueAtTime(
           0,
-          this.audioContext.currentTime + duration
+          this.audioContext.currentTime + duration,
         )
 
         // Connect nodes
@@ -1054,7 +1057,7 @@ export default {
 
     highlightClickableElements() {
       const clickableElements = document.querySelectorAll(
-        'a, button, .small-button, [role="button"]'
+        'a, button, .small-button, [role="button"]',
       )
       clickableElements.forEach((element) => {
         if (this.isHighlightClickable) {
@@ -1071,7 +1074,7 @@ export default {
       document.body.classList.remove(
         'align-left',
         'align-center',
-        'align-right'
+        'align-right',
       )
       document.body.classList.add(`align-${alignment}`)
 
@@ -1086,7 +1089,7 @@ export default {
 
       document.body.className = document.body.className.replace(
         /theme-\w+/g,
-        ''
+        '',
       )
       document.body.classList.add(`theme-${this.colorTheme}`)
 
@@ -1125,7 +1128,7 @@ export default {
 
       localStorage.setItem(
         'accessibilityPreferences',
-        JSON.stringify(preferences)
+        JSON.stringify(preferences),
       )
     },
 
@@ -1141,7 +1144,7 @@ export default {
             // Special handling for fullscreen state
             if (key === 'isFullScreen') {
               // Just update the UI state but don't auto-enter fullscreen
-              this.isFullScreen = false; // Force to false regardless of saved state
+              this.isFullScreen = false // Force to false regardless of saved state
             } else {
               this[key] = preferences[key]
             }
@@ -1160,13 +1163,13 @@ export default {
           if (this.isLargeCursor) document.body.classList.add('large-cursor')
           if (this.isHighlightClickable) this.highlightClickableElements()
           // Removed the automatic fullscreen restoration
-          
+
           document.body.classList.add(`align-${this.textAlignment}`)
           document.body.classList.add(`theme-${this.colorTheme}`)
-          
+
           // Optionally: Show a notification that fullscreen mode was previously enabled
           if (preferences.isFullScreen) {
-            this.showFullscreenRestoreNotification();
+            this.showFullscreenRestoreNotification()
           }
         })
       }
@@ -1174,93 +1177,93 @@ export default {
 
     showFullscreenRestoreNotification() {
       // Create a notification element
-      const notification = document.createElement('div');
-      notification.className = 'fullscreen-restore-notification';
+      const notification = document.createElement('div')
+      notification.className = 'fullscreen-restore-notification'
       notification.innerHTML = `
         <div class="notification-content">
           <span>Vous étiez précédemment en mode plein écran.</span>
           <button class="restore-fullscreen-btn">Restaurer</button>
           <button class="close-notification-btn">×</button>
         </div>
-      `;
-      
+      `
+
       // Style the notification
-      notification.style.position = 'fixed';
-      notification.style.top = '20px';
-      notification.style.left = '50%';
-      notification.style.transform = 'translateX(-50%)';
-      notification.style.backgroundColor = 'rgba(30, 30, 45, 0.9)';
-      notification.style.color = 'white';
-      notification.style.padding = '12px 20px';
-      notification.style.borderRadius = '8px';
-      notification.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
-      notification.style.zIndex = '9999';
-      notification.style.display = 'flex';
-      notification.style.alignItems = 'center';
-      notification.style.backdropFilter = 'blur(5px)';
-      notification.style.border = '1px solid rgba(255, 255, 255, 0.1)';
-      notification.style.animation = 'fadeIn 0.3s ease';
-      
+      notification.style.position = 'fixed'
+      notification.style.top = '20px'
+      notification.style.left = '50%'
+      notification.style.transform = 'translateX(-50%)'
+      notification.style.backgroundColor = 'rgba(30, 30, 45, 0.9)'
+      notification.style.color = 'white'
+      notification.style.padding = '12px 20px'
+      notification.style.borderRadius = '8px'
+      notification.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)'
+      notification.style.zIndex = '9999'
+      notification.style.display = 'flex'
+      notification.style.alignItems = 'center'
+      notification.style.backdropFilter = 'blur(5px)'
+      notification.style.border = '1px solid rgba(255, 255, 255, 0.1)'
+      notification.style.animation = 'fadeIn 0.3s ease'
+
       // Style the content
-      const content = notification.querySelector('.notification-content');
-      content.style.display = 'flex';
-      content.style.alignItems = 'center';
-      content.style.gap = '15px';
-      
+      const content = notification.querySelector('.notification-content')
+      content.style.display = 'flex'
+      content.style.alignItems = 'center'
+      content.style.gap = '15px'
+
       // Style the buttons
-      const restoreBtn = notification.querySelector('.restore-fullscreen-btn');
-      restoreBtn.style.padding = '6px 12px';
-      restoreBtn.style.backgroundColor = '#007bff';
-      restoreBtn.style.border = 'none';
-      restoreBtn.style.borderRadius = '4px';
-      restoreBtn.style.color = 'white';
-      restoreBtn.style.cursor = 'pointer';
-      restoreBtn.style.transition = 'background-color 0.2s';
-      
-      const closeBtn = notification.querySelector('.close-notification-btn');
-      closeBtn.style.padding = '6px 12px';
-      closeBtn.style.backgroundColor = 'transparent';
-      closeBtn.style.border = '1px solid rgba(255, 255, 255, 0.3)';
-      closeBtn.style.borderRadius = '4px';
-      closeBtn.style.color = 'white';
-      closeBtn.style.cursor = 'pointer';
-      closeBtn.style.transition = 'background-color 0.2s';
-      closeBtn.style.fontSize = '16px';
-      
+      const restoreBtn = notification.querySelector('.restore-fullscreen-btn')
+      restoreBtn.style.padding = '6px 12px'
+      restoreBtn.style.backgroundColor = '#007bff'
+      restoreBtn.style.border = 'none'
+      restoreBtn.style.borderRadius = '4px'
+      restoreBtn.style.color = 'white'
+      restoreBtn.style.cursor = 'pointer'
+      restoreBtn.style.transition = 'background-color 0.2s'
+
+      const closeBtn = notification.querySelector('.close-notification-btn')
+      closeBtn.style.padding = '6px 12px'
+      closeBtn.style.backgroundColor = 'transparent'
+      closeBtn.style.border = '1px solid rgba(255, 255, 255, 0.3)'
+      closeBtn.style.borderRadius = '4px'
+      closeBtn.style.color = 'white'
+      closeBtn.style.cursor = 'pointer'
+      closeBtn.style.transition = 'background-color 0.2s'
+      closeBtn.style.fontSize = '16px'
+
       // Add animation styles
-      const styleElement = document.createElement('style');
+      const styleElement = document.createElement('style')
       styleElement.textContent = `
         @keyframes fadeIn {
           from { opacity: 0; transform: translate(-50%, -20px); }
           to { opacity: 1; transform: translate(-50%, 0); }
         }
-      `;
-      document.head.appendChild(styleElement);
-      
+      `
+      document.head.appendChild(styleElement)
+
       // Add event listeners
       restoreBtn.addEventListener('click', () => {
-        this.enterFullScreen();
-        document.body.removeChild(notification);
-      });
-      
+        this.enterFullScreen()
+        document.body.removeChild(notification)
+      })
+
       closeBtn.addEventListener('click', () => {
-        document.body.removeChild(notification);
-      });
-      
+        document.body.removeChild(notification)
+      })
+
       // Auto-dismiss after 10 seconds
       setTimeout(() => {
         if (document.body.contains(notification)) {
-          notification.style.animation = 'fadeIn 0.3s ease reverse';
+          notification.style.animation = 'fadeIn 0.3s ease reverse'
           setTimeout(() => {
             if (document.body.contains(notification)) {
-              document.body.removeChild(notification);
+              document.body.removeChild(notification)
             }
-          }, 300);
+          }, 300)
         }
-      }, 10000);
-      
+      }, 10000)
+
       // Add to the DOM
-      document.body.appendChild(notification);
+      document.body.appendChild(notification)
     },
 
     resetAllSettings() {
@@ -1297,13 +1300,13 @@ export default {
         'large-cursor',
         'align-left',
         'align-center',
-        'align-right'
+        'align-right',
       )
 
       // Remove any applied themes
       document.body.className = document.body.className.replace(
         /theme-\w+/g,
-        ''
+        '',
       )
 
       // Remove reading guides and masks
@@ -1312,7 +1315,7 @@ export default {
 
       // Remove clickable highlights
       const clickableElements = document.querySelectorAll(
-        '.highlight-clickable'
+        '.highlight-clickable',
       )
       clickableElements.forEach((element) => {
         element.classList.remove('highlight-clickable')
@@ -1326,6 +1329,14 @@ export default {
 </script>
 
 <style>
+@font-face {
+  font-family: 'Glacial Indifference';
+  src: url('./assets/fonts/GlacialIndifference-Regular.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --primary-color: #007bff;
   --secondary-color: #6c757d;
@@ -1337,11 +1348,38 @@ export default {
   --panel-border: #e0e0e0;
   --button-hover: #0056b3;
   --transition-duration: 0.3s;
+  --main-font: 'Glacial Indifference', sans-serif;
 }
 
 body {
   cursor: default;
-  transition: background-color var(--transition-duration),
+  transition:
+    background-color var(--transition-duration),
+    color var(--transition-duration);
+  font-family: var(--main-font);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+div,
+button,
+a,
+input,
+textarea,
+label {
+  font-family: var(--main-font);
+}
+
+body {
+  cursor: default;
+  transition:
+    background-color var(--transition-duration),
     color var(--transition-duration);
 }
 
@@ -1377,7 +1415,9 @@ body {
   align-items: center;
   justify-content: center;
   z-index: 999;
-  transition: transform 0.2s ease-in-out, background-color 0.2s ease;
+  transition:
+    transform 0.2s ease-in-out,
+    background-color 0.2s ease;
 }
 
 .fullscreen-button:hover {
@@ -1415,7 +1455,9 @@ body {
   align-items: center;
   justify-content: center;
   z-index: 999;
-  transition: transform 0.2s ease-in-out, background-color 0.2s ease;
+  transition:
+    transform 0.2s ease-in-out,
+    background-color 0.2s ease;
 }
 
 .dashboard-button:hover {
@@ -1444,7 +1486,9 @@ body {
   align-items: center;
   justify-content: center;
   z-index: 999;
-  transition: transform 0.2s ease-in-out, background-color 0.2s ease;
+  transition:
+    transform 0.2s ease-in-out,
+    background-color 0.2s ease;
 }
 
 .accessibility-widget:hover {
@@ -1473,7 +1517,9 @@ body {
   white-space: nowrap;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.3s, visibility 0.3s;
+  transition:
+    opacity 0.3s,
+    visibility 0.3s;
 }
 
 .accessibility-widget:hover .tooltip {
@@ -1815,7 +1861,8 @@ body {
 
 /* Large cursor */
 .large-cursor {
-  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="black" stroke-width="4"><path d="M12,12 L36,36 M12,36 L36,12"/></svg>')
+  cursor:
+    url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="black" stroke-width="4"><path d="M12,12 L36,36 M12,36 L36,12"/></svg>')
       24 24,
     auto;
 }
