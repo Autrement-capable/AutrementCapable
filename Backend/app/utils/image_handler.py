@@ -1,6 +1,3 @@
-"""
-Utilities for memory-efficient image processing and database storage.
-"""
 import io
 from typing import Optional, BinaryIO, AsyncGenerator
 import asyncio
@@ -8,6 +5,7 @@ from fastapi import UploadFile, HTTPException, status
 from fastapi.responses import StreamingResponse
 
 from PIL import Image, UnidentifiedImageError
+import pillow_avif
 from sqlalchemy.ext.asyncio import AsyncSession
 import asyncpg
 from asyncpg import Connection
@@ -52,21 +50,23 @@ async def validate_image(file: UploadFile, max_size: int = MAX_IMAGE_SIZE) -> No
 
     # Check file size by reading chunks without loading the whole file
     size = 0
-    current_position = await file.seek(0)
+    # First, move to the beginning
+    await file.seek(0)
 
     chunk = await file.read(CHUNK_SIZE)
     while chunk:
         size += len(chunk)
         if size > max_size:
-            await file.seek(current_position)
+            # Reset file pointer to beginning
+            await file.seek(0)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Image is too large. Maximum size is {max_size/1024/1024}MB"
             )
         chunk = await file.read(CHUNK_SIZE)
 
-    # Reset file pointer
-    await file.seek(current_position)
+    # Reset file pointer to beginning
+    await file.seek(0)
 
 async def read_chunks(file: UploadFile) -> AsyncGenerator[bytes, None]:
     """

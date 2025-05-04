@@ -9,7 +9,7 @@ from fastapi import UploadFile, HTTPException, status
 
 from ..models import User, UserPicture
 
-async def get_user_picture(session: AsyncSession, user_id: int, picture_type: str = "profile") -> Optional[UserPicture]:
+async def get_user_picture(session: AsyncSession, user_id: int, picture_type: str = "avatar") -> Optional[UserPicture]:
     """Get a user's picture by type."""
     statement = select(UserPicture).where(
         UserPicture.user_id == user_id,
@@ -24,7 +24,7 @@ async def save_picture_chunk(
     is_first_chunk: bool,
     is_last_chunk: bool,
     user_id: int,
-    picture_type: str = "profile",
+    picture_type: str = "avatar",
     commit: bool = False
 ) -> Optional[UserPicture]:
     """
@@ -32,6 +32,9 @@ async def save_picture_chunk(
 
     For the first chunk, create or retrieve the picture record.
     For subsequent chunks, append data to the existing record.
+
+    This function now properly handles updating existing pictures
+    instead of trying to insert duplicates.
 
     Args:
         session: Database session
@@ -46,7 +49,7 @@ async def save_picture_chunk(
         The UserPicture object
     """
     try:
-        # For the first chunk, verify the user exists and create/get the picture record
+        # For the first chunk, verify the user exists and create/update the picture record
         if is_first_chunk:
             # Check if user exists
             user_statement = select(User).where(User.id == user_id)
@@ -56,16 +59,16 @@ async def save_picture_chunk(
             if not user:
                 raise ValueError(f"User with ID {user_id} not found")
 
-            # Get existing picture or create new one
+            # Check if a picture of this type already exists for this user
             existing_picture = await get_user_picture(session, user_id, picture_type)
 
             if existing_picture:
-                # Clear existing data for a new upload
+                # Update existing picture
                 existing_picture.picture_data = chunk
                 existing_picture.date_updated = datetime.utcnow()
                 picture = existing_picture
             else:
-                # Create new picture with initial chunk
+                # Create new picture
                 picture = UserPicture(
                     user_id=user_id,
                     picture_data=chunk,
@@ -73,13 +76,11 @@ async def save_picture_chunk(
                 )
 
             session.add(picture)
-            # We'll commit only at the end of all chunks
 
             # Store picture object in session for subsequent chunks
-            if hasattr(session, '_custom_attributes'):
-                session._custom_attributes['current_picture'] = picture
-            else:
-                session._custom_attributes = {'current_picture': picture}
+            if not hasattr(session, '_custom_attributes'):
+                session._custom_attributes = {}
+            session._custom_attributes['current_picture'] = picture
 
             return picture
         else:
@@ -120,7 +121,7 @@ async def save_picture_chunk(
 async def delete_user_picture(
     session: AsyncSession, 
     user_id: int,
-    picture_type: str = "profile",
+    picture_type: str = "avatar",
     commit: bool = True
 ) -> bool:
     """Delete a user's picture."""
