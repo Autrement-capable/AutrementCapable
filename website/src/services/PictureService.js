@@ -1,3 +1,6 @@
+// services/PictureService.js
+/* eslint-disable no-constant-condition, no-unused-vars */
+
 import { ref } from 'vue';
 import AuthService from './AuthService';
 
@@ -12,8 +15,11 @@ const DEFAULT_CONFIG = {
   chunkSize: 512 * 1024,    // Chunk size (not used client-side but for reference)
 };
 
-// API endpoint for pictures
-const PICTURE_ENDPOINT = '/user/picture';
+// Get the API URL from environment variables or default to localhost with protocol
+const API_URL = process.env.VUE_APP_SERVER_URL || 'http://localhost:5000';
+
+// API endpoint for pictures - using relative path since we'll use AuthService for requests
+const PICTURE_ENDPOINT = 'user/picture';
 
 /**
  * Check if the browser supports AVIF
@@ -213,11 +219,11 @@ const PictureService = {
    * Upload a picture to the server with automatic AVIF conversion if supported
    * 
    * @param {File|Blob} file Image file or blob
-   * @param {string} pictureType Type of picture (profile, cover, etc.)
+   * @param {string} pictureType Type of picture (avatar, cover, etc.)
    * @param {Object} options Additional options
    * @returns {Promise<Object>} Server response
    */
-  async uploadPicture(file, pictureType = 'profile', options = {}) {
+  async uploadPicture(file, pictureType = 'avatar', options = {}) {
     try {
       // First convert to AVIF if possible
       const { file: processedFile, isAvif, dimensions } = await convertToAvif(file, options);
@@ -254,12 +260,12 @@ const PictureService = {
    * Upload an image from a URL to the server
    * 
    * @param {string} imageUrl URL of the image
-   * @param {string} pictureType Type of picture (profile, cover, etc.)
+   * @param {string} pictureType Type of picture (avatar, cover, etc.)
    * @param {string} filename Custom filename (optional)
    * @param {Object} options Additional options
    * @returns {Promise<Object>} Server response
    */
-  async uploadPictureFromUrl(imageUrl, pictureType = 'profile', filename = null, options = {}) {
+  async uploadPictureFromUrl(imageUrl, pictureType = 'avatar', filename = null, options = {}) {
     try {
       // First fetch the image
       const imageFile = await fetchImageFromUrl(imageUrl, filename);
@@ -273,105 +279,33 @@ const PictureService = {
   },
 
   /**
-   * Get the URL for a user's picture
-   * 
-   * @param {number} userId User ID (defaults to authenticated user)
-   * @param {string} pictureType Type of picture (profile, cover, etc.)
-   * @returns {string} Picture URL with cache-busting parameter
-   */
-  getPictureUrl(userId = null, pictureType = 'profile') {
-    // Add cache-busting parameter to prevent caching
-    const cacheBuster = `_cb=${Date.now()}`;
-
-    if (userId) {
-      // For other users' pictures (if API supports this)
-      // not implemented for now
-    } else {
-      // For current user's picture
-      return `${PICTURE_ENDPOINT}?picture_type=${pictureType}&${cacheBuster}`;
-    }
-  },
-
-  /**
    * Retrieve a picture from the server with streaming support
    * 
    * @param {number} userId User ID (defaults to authenticated user)
-   * @param {string} pictureType Type of picture (profile, cover, etc.)
+   * @param {string} pictureType Type of picture (avatar, cover, etc.)
    * @param {'blob'|'url'|'data-url'} returnType Format to return the image in
    * @param {Function} onProgress Progress callback (receives value from 0-100)
    * @returns {Promise<Blob|string>} Image as Blob, URL or data URL based on returnType
    */
-  async retrievePicture(userId = null, pictureType = 'profile', returnType = 'blob', onProgress = null) {
+  async retrievePicture(userId = null, pictureType = 'avatar', returnType = 'url', onProgress = null) {
     try {
-      // Create request options with authorization
-      const options = {
-        method: 'GET',
-        headers: {}
-      };
-
-      // Add authorization if we have a token
-      const token = AuthService.getAccessToken();
-      if (token) {
-        options.headers['Authorization'] = `Bearer ${token}`;
-      }
-
-      // Build URL
-      let url = `${PICTURE_ENDPOINT}?picture_type=${pictureType}`;
-      if (userId) {
-        url += `&user_id=${userId}`;
-      }
-
-      // Make fetch request - this will receive a streaming response
-      const response = await fetch(url, options);
-
-      // Check if image exists
-      if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error('Image not found');
+      // Use AuthService for authenticated requests
+      const response = await AuthService.request('get', PICTURE_ENDPOINT, null, {
+        params: {
+          picture_type: pictureType,
+          user_id: userId || undefined
+        },
+        responseType: 'arraybuffer',
+        onDownloadProgress: (progressEvent) => {
+          if (onProgress && progressEvent.total) {
+            const progress = Math.min(Math.round((progressEvent.loaded / progressEvent.total) * 100), 100);
+            onProgress(progress);
+          }
         }
-        throw new Error(`Failed to fetch image: ${response.statusText}`);
-      }
+      });
 
-      // Get total size from Content-Length header if available
-      const contentLength = response.headers.get('Content-Length');
-      const totalSize = contentLength ? parseInt(contentLength, 10) : 0;
-
-      // Initialize for streaming
-      let receivedSize = 0;
-      const chunks = [];
-
-      // Process the stream
-      const reader = response.body.getReader();
-
-      while (true) {
-        const { done, value } = await reader.read();
-
-        if (done) {
-          break;
-        }
-
-        // Add this chunk
-        chunks.push(value);
-
-        // Update received size and report progress
-        receivedSize += value.length;
-
-        if (onProgress && totalSize) {
-          const progress = Math.min(Math.round((receivedSize / totalSize) * 100), 100);
-          onProgress(progress);
-        }
-      }
-
-      // Combine all chunks into a single Uint8Array
-      const chunksAll = new Uint8Array(receivedSize);
-      let position = 0;
-      for (const chunk of chunks) {
-        chunksAll.set(chunk, position);
-        position += chunk.length;
-      }
-
-      // Create a blob with the correct MIME type
-      const blob = new Blob([chunksAll], { type: 'image/avif' });
+      // Create a blob with the array buffer response
+      const blob = new Blob([response.data], { type: 'image/avif' });
 
       // Return based on requested format
       if (returnType === 'blob') {
@@ -400,7 +334,7 @@ const PictureService = {
    * @param {string} pictureType Type of picture to delete
    * @returns {Promise<Object>} Server response
    */
-  async deletePicture(pictureType = 'profile') {
+  async deletePicture(pictureType = 'avatar') {
     try {
       const response = await AuthService.request('delete', PICTURE_ENDPOINT, null, {
         params: { picture_type: pictureType }
@@ -452,7 +386,7 @@ export function usePicture() {
    * @param {Object} options Additional options
    * @returns {Promise<Object>} Upload result
    */
-  async function uploadPicture(file, pictureType = 'profile', options = {}) {
+  async function uploadPicture(file, pictureType = 'avatar', options = {}) {
     isUploading.value = true;
     progress.value = 0;
     error.value = null;
@@ -477,12 +411,6 @@ export function usePicture() {
       // Upload with XHR for progress tracking
       const result = await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-
-        // Configure auth
-        const token = AuthService.getAccessToken();
-        if (token) {
-          xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-        }
 
         // Track upload progress
         xhr.upload.addEventListener('progress', (event) => {
@@ -512,12 +440,18 @@ export function usePicture() {
         xhr.onerror = () => reject({ detail: 'Network error during upload' });
 
         // Prepare and send the request
-        xhr.open('POST', PictureService.getPictureUrl(null, pictureType));
+        xhr.open('POST', `${API_URL}/${PICTURE_ENDPOINT}`);
+
+        // Configure auth
+        const token = AuthService.getAccessToken();
+        if (token) {
+          xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+        }
         xhr.send(formData);
       });
 
       // Update picture URL
-      pictureUrl.value = PictureService.getPictureUrl(null, pictureType);
+      pictureUrl.value = await PictureService.retrievePicture(null, pictureType, 'url');
 
       return result;
     } catch (err) {
@@ -537,7 +471,7 @@ export function usePicture() {
    * @param {Object} options Additional options
    * @returns {Promise<Object>} Upload result
    */
-  async function uploadFromUrl(url, pictureType = 'profile', filename = null, options = {}) {
+  async function uploadFromUrl(url, pictureType = 'avatar', filename = null, options = {}) {
     isUploading.value = true;
     progress.value = 0;
     error.value = null;
@@ -571,7 +505,6 @@ export function usePicture() {
     uploadPicture,
     uploadFromUrl,
     retrievePicture: PictureService.retrievePicture,
-    getPictureUrl: PictureService.getPictureUrl,
     deletePicture: PictureService.deletePicture,
     isAvifSupported: PictureService.isAvifSupported,
     getConfig: PictureService.getConfig
