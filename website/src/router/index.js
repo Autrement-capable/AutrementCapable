@@ -20,6 +20,7 @@ import JardinerCard from '@/components/jobsCards/JardinerCard.vue'
 import CoiffeurCard from '@/components/jobsCards/CoiffeurCard.vue'
 import SkillsWheelPage from '@/views/skillGames/SkillsWheelGame.vue'
 import Environment from '@/views/skillGames/EnvironmentGame.vue'
+import ProfilePage from '@/views/ProfilePage.vue'
 
 const routes = [
   {
@@ -46,6 +47,11 @@ const routes = [
     path: '/user-profile',
     name: 'UserProfile',
     component: UserProfile,
+  },
+  {
+    path: '/profile-page',
+    name: 'ProfilePage',
+    component: ProfilePage,
   },
   {
     path: '/game-speed',

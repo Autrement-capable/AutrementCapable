@@ -19,6 +19,7 @@
     "axios": "^1.7.9",
     "core-js": "^3.8.3",
     "dotenv": "^16.4.7",
+    "html2pdf.js": "^0.10.3",
     "mitt": "^3.0.1",
     "openai": "^4.96.0",
     "pixi-isometric-tilemaps": "github:holywyvern/pixi-isometric-tilemaps",
