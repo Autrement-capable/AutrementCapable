@@ -1624,7 +1624,7 @@ export default {
     
     viewProfile() {
       // Dans un cas réel, on redirigerait vers la page de profil
-      this.$router.push('/profile')
+      this.$router.push('/profile-page')
       
       // Fermer la modal
       this.$emit('close')

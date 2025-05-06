@@ -368,11 +368,11 @@
           </h2>
           
           <div class="cv-container">
-            <div class="cv-preview">
-              <div class="cv-header">
-                <h3 class="cv-name">{{ userProfile.firstName }} {{ userProfile.lastName }}</h3>
-                <div class="cv-contact">{{ userProfile.age }} ans | {{ userProfile.city }}</div>
-              </div>
+            <div class="cv-preview" :class="'cv-style-' + currentCVStyle" :style="{ '--cv-color': currentCVColor }">
+							<div class="cv-header">
+								<h3 class="cv-name">{{ userProfile.firstName }} {{ userProfile.lastName }}</h3>
+								<div class="cv-contact">{{ userProfile.age }} ans | {{ userProfile.city }}</div>
+							</div>
               
               <div class="cv-section">
                 <h4 class="cv-section-title">Mes points forts</h4>
@@ -2263,6 +2263,128 @@
     padding: 30px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
   }
+
+	.cv-preview {
+  /* Utiliser la variable CSS pour la couleur principale */
+  --cv-color: #2196F3; /* Couleur par défaut */
+  transition: all 0.3s ease;
+}
+
+/* Appliquer la couleur principale aux éléments du CV */
+.cv-name {
+  color: var(--cv-color);
+}
+
+.cv-section-title {
+  color: var(--cv-color);
+  border-bottom-color: var(--cv-color);
+}
+
+/* Style Simple (par défaut) */
+.cv-style-simple {
+  font-family: 'Arial', sans-serif;
+  padding: 30px;
+}
+
+.cv-style-simple .cv-section-title {
+  font-size: 1.3rem;
+  border-bottom: 1px solid;
+  padding-bottom: 8px;
+}
+
+/* Style Créatif */
+.cv-style-creative {
+  font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+  padding: 25px;
+  background-color: #f9f9f9;
+  border-radius: 20px;
+}
+
+.cv-style-creative .cv-header {
+  background-color: var(--cv-color);
+  margin: -25px -25px 20px -25px;
+  padding: 25px;
+  border-radius: 20px 20px 0 0;
+  text-align: center;
+}
+
+.cv-style-creative .cv-name {
+  color: white;
+  font-size: 2rem;
+}
+
+.cv-style-creative .cv-contact {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.cv-style-creative .cv-section-title {
+  background-color: rgba(0, 0, 0, 0.05);
+  border: none;
+  padding: 10px 15px;
+  border-radius: 10px;
+  font-size: 1.2rem;
+}
+
+.cv-style-creative .cv-skill-item,
+.cv-style-creative .cv-job-item,
+.cv-style-creative .cv-bio {
+  border-radius: 15px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid var(--cv-color);
+}
+
+/* Style Professionnel */
+.cv-style-professional {
+  font-family: 'Calibri', 'Helvetica', sans-serif;
+  padding: 30px;
+  border: 1px solid #e0e0e0;
+}
+
+.cv-style-professional .cv-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--cv-color);
+}
+
+.cv-style-professional .cv-name {
+  font-size: 1.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.cv-style-professional .cv-section-title {
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.cv-style-professional .cv-section-title::before {
+  content: '';
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  background-color: var(--cv-color);
+  margin-right: 10px;
+}
+
+.cv-style-professional .cv-skill-item,
+.cv-style-professional .cv-job-item {
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  padding: 12px;
+}
+
+.cv-style-professional .cv-bio {
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  padding: 15px;
+}
   
   .cv-header {
     text-align: center;
