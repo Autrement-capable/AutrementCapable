@@ -15,24 +15,7 @@
       <div class="profile-header">
         <h1 class="main-title">Mon Profil</h1>
         <p class="subtitle">Apprends à mieux te connaître !</p>
-        
-        <!-- Contrôles d'accessibilité -->
-        <div class="accessibility-controls">
-          <button @click="toggleSound" class="accessibility-button">
-            <span v-if="soundEnabled">🔊</span>
-            <span v-else>🔇</span>
-          </button>
-          <button @click="toggleHighContrast" class="accessibility-button">
-            <span v-if="highContrastMode">🌓</span>
-            <span v-else>🌑</span>
-          </button>
-          <button @click="increaseTextSize" class="accessibility-button">
-            A+
-          </button>
-          <button @click="decreaseTextSize" class="accessibility-button">
-            A-
-          </button>
-        </div>
+
       </div>
   
       <!-- Menu de navigation -->
@@ -61,8 +44,7 @@
           <div class="personal-info-container">
             <div class="avatar-section">
               <div class="avatar-container">
-                <img :src="userProfile.avatar || 'src/assets/avatars/toi.png'" alt="Avatar" class="user-avatar" />
-                <button @click="showAvatarSelector = true" class="edit-avatar-button">✏️</button>
+                <img :src="userProfile.avatar || defaultAvatar" alt="Avatar" class="user-avatar" />
               </div>
               <div class="level-indicator">
                 <div class="level-badge">Niveau {{ calculateLevel() }}</div>
@@ -163,59 +145,7 @@
             </div>
           </div>
         </div>
-  
-        <!-- Section Badges et Réussites -->
-        <div v-if="currentTab === 'badges'" class="profile-section">
-          <h2 class="section-title">
-            <span class="section-icon">🏆</span>
-            Mes Badges et Réussites
-          </h2>
-          
-          <div class="badges-container">
-            <div class="badges-grid">
-              <div 
-                v-for="badge in badges" 
-                :key="badge.id" 
-                class="badge-card"
-                :class="{ 'unlocked': badge.unlocked, 'locked': !badge.unlocked }"
-                @click="showBadgeDetails(badge)"
-              >
-                <div 
-                  class="badge-icon" 
-                  :style="{ backgroundColor: badge.unlocked ? badge.iconColor : '#e0e0e0' }"
-                >
-                  <div v-if="!badge.unlocked" class="lock-overlay">🔒</div>
-                  <span class="badge-emoji">{{ badge.icon }}</span>
-                </div>
-                <h3 class="badge-title">{{ badge.title }}</h3>
-                <div class="badge-status">
-                  <span :class="badge.unlocked ? 'status-unlocked' : 'status-locked'">
-                    {{ badge.unlocked ? 'Obtenu ✅' : 'À débloquer' }}
-                  </span>
-                </div>
-              </div>
-            </div>
-            
-            <div class="achievements-section">
-              <h3 class="subsection-title">Mes Réussites</h3>
-              <div class="achievements-list">
-                <div v-for="(achievement, index) in achievements" :key="index" class="achievement-item">
-                  <div class="achievement-icon">{{ achievement.icon }}</div>
-                  <div class="achievement-details">
-                    <div class="achievement-title">{{ achievement.title }}</div>
-                    <div class="achievement-description">{{ achievement.description }}</div>
-                    <div class="achievement-date">{{ formatDate(achievement.date) }}</div>
-                  </div>
-                </div>
-                
-                <div v-if="achievements.length === 0" class="empty-achievements">
-                  Complète des jeux pour débloquer des réussites !
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-  
+
         <!-- Section Intérêts Professionnels -->
         <div v-if="currentTab === 'career'" class="profile-section">
           <h2 class="section-title">
@@ -270,90 +200,6 @@
                 
                 <div v-if="topCareerSkills.length === 0" class="empty-career-skills">
                   Joue aux jeux pour découvrir tes compétences professionnelles !
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-  
-        <!-- Section Préférences Sensorielles -->
-        <div v-if="currentTab === 'sensory'" class="profile-section">
-          <h2 class="section-title">
-            <span class="section-icon">🌈</span>
-            Mes Préférences Sensorielles
-          </h2>
-          
-          <div class="sensory-container">
-            <div class="sensory-categories">
-              <div class="sensory-category">
-                <h3 class="category-title">
-                  <span class="category-icon">👁️</span>
-                  Visuel
-                </h3>
-                
-                <div class="sensory-preferences">
-                  <div class="preference-item">
-                    <div class="preference-label">Lumière préférée:</div>
-                    <div class="preference-value">{{ sensoryPreferences.light || 'Non défini' }}</div>
-                  </div>
-                  <div class="preference-item">
-                    <div class="preference-label">Couleurs préférées:</div>
-                    <div class="preference-value">{{ sensoryPreferences.colors || 'Non défini' }}</div>
-                  </div>
-                  <div class="preference-item">
-                    <div class="preference-label">Environnement visuel:</div>
-                    <div class="preference-value">{{ sensoryPreferences.visualEnvironment || 'Non défini' }}</div>
-                  </div>
-                </div>
-              </div>
-              
-              <div class="sensory-category">
-                <h3 class="category-title">
-                  <span class="category-icon">👂</span>
-                  Auditif
-                </h3>
-                
-                <div class="sensory-preferences">
-                  <div class="preference-item">
-                    <div class="preference-label">Ambiance sonore:</div>
-                    <div class="preference-value">{{ sensoryPreferences.sound || 'Non défini' }}</div>
-                  </div>
-                  <div class="preference-item">
-                    <div class="preference-label">Volume préféré:</div>
-                    <div class="preference-value">{{ sensoryPreferences.volume || 'Non défini' }}</div>
-                  </div>
-                </div>
-              </div>
-              
-              <div class="sensory-category">
-                <h3 class="category-title">
-                  <span class="category-icon">👥</span>
-                  Social
-                </h3>
-                
-                <div class="sensory-preferences">
-                  <div class="preference-item">
-                    <div class="preference-label">Présence de personnes:</div>
-                    <div class="preference-value">{{ sensoryPreferences.people || 'Non défini' }}</div>
-                  </div>
-                  <div class="preference-item">
-                    <div class="preference-label">Environnement social:</div>
-                    <div class="preference-value">{{ sensoryPreferences.socialEnvironment || 'Non défini' }}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div class="sensory-recommendations">
-              <h3 class="subsection-title">Recommandations personnalisées</h3>
-              <div class="recommendation-list">
-                <div v-for="(recommendation, index) in sensoryRecommendations" :key="index" class="recommendation-item">
-                  <div class="recommendation-icon">💡</div>
-                  <div class="recommendation-text">{{ recommendation }}</div>
-                </div>
-                
-                <div v-if="sensoryRecommendations.length === 0" class="empty-recommendations">
-                  Joue au jeu des environnements sensoriels pour obtenir des recommandations !
                 </div>
               </div>
             </div>
@@ -504,29 +350,6 @@
         </div>
       </div>
   
-      <!-- Sélecteur d'avatar -->
-      <div v-if="showAvatarSelector" class="modal-overlay">
-        <div class="modal-content">
-          <h3 class="modal-title">Choisir mon avatar</h3>
-          <div class="avatar-grid">
-            <div 
-              v-for="(avatar, index) in availableAvatars" 
-              :key="index"
-              @click="selectAvatar(avatar.src)"
-              class="avatar-option"
-              :class="{ 'active': selectedAvatar === avatar.src }"
-            >
-              <img :src="avatar.src" :alt="avatar.name" class="avatar-preview" />
-              <div class="avatar-name">{{ avatar.name }}</div>
-            </div>
-          </div>
-          <div class="modal-actions">
-            <button @click="showAvatarSelector = false" class="modal-button cancel-button">Annuler</button>
-            <button @click="saveAvatar" class="modal-button save-button">Enregistrer</button>
-          </div>
-        </div>
-      </div>
-  
       <!-- Détails du badge -->
       <div v-if="selectedBadge" class="modal-overlay" @click="closeModal">
         <div class="badge-modal" @click.stop>
@@ -580,6 +403,7 @@
   <script>
   import { ref, onMounted, computed, nextTick } from 'vue';
   import html2pdf from 'html2pdf.js';
+  import defaultAvatar from '@/assets/pdp.png';
   
   export default {
     name: 'UserProfile',
@@ -590,7 +414,7 @@
         lastName: 'Martin',
         age: 16,
         city: 'Lyon',
-        avatar: 'src/assets/avatars/toi.png',
+        avatar: defaultAvatar,
         bio: "Je suis quelqu'un de curieux et j'aime découvrir de nouvelles choses. Je m'intéresse particulièrement aux jeux vidéo et à la musique.",
         hobbies: ['Jeux vidéo', 'Musique', 'Dessin', 'Natation'],
         experience: 350, // Points d'expérience pour calculer le niveau
@@ -600,9 +424,7 @@
       const tabs = [
         { id: 'personal', name: 'Informations', icon: '👤' },
         { id: 'skills', name: 'Compétences', icon: '🎯' },
-        { id: 'badges', name: 'Badges', icon: '🏆' },
         { id: 'career', name: 'Métiers', icon: '💼' },
-        { id: 'sensory', name: 'Préférences', icon: '🌈' },
         { id: 'cv', name: 'Mon CV', icon: '📄' },
       ];
       const currentTab = ref('personal');
@@ -613,7 +435,6 @@
       const showHobbyEditor = ref(false);
       const editedHobbies = ref([...userProfile.value.hobbies]);
       const newHobby = ref('');
-      const showAvatarSelector = ref(false);
       const selectedAvatar = ref(userProfile.value.avatar);
       const selectedBadge = ref(null);
   
@@ -775,7 +596,7 @@
   
       // Avatars disponibles
       const availableAvatars = ref([
-        { name: 'Défaut', src: 'src/assets/avatars/toi.png' },
+        { name: 'Défaut', src: defaultAvatar },
         { name: 'Sportif', src: 'src/assets/avatars/sportif.png' },
         { name: 'Créatif', src: 'src/assets/avatars/creatif.png' },
         { name: 'Tech', src: 'src/assets/avatars/tech.png' },
@@ -901,7 +722,6 @@
       // Sauvegarder l'avatar
       const saveAvatar = () => {
         userProfile.value.avatar = selectedAvatar.value;
-        showAvatarSelector.value = false;
         saveUserProfile();
       };
   
@@ -1294,6 +1114,7 @@
       return {
         // Données d'état
         userProfile,
+        defaultAvatar,
         currentTab,
         tabs,
         badges,
@@ -1308,7 +1129,6 @@
         showHobbyEditor,
         editedHobbies,
         newHobby,
-        showAvatarSelector,
         selectedAvatar,
         availableAvatars,
         highContrastMode,
@@ -2288,8 +2108,21 @@
 
 .cv-style-simple .cv-section-title {
   font-size: 1.3rem;
-  border-bottom: 1px solid;
+  border-bottom: 1px solid var(--cv-color);
   padding-bottom: 8px;
+  color: var(--cv-color);
+}
+
+.cv-style-simple .cv-name {
+  color: var(--cv-color);
+}
+
+.cv-style-simple .cv-job-name {
+  color: var(--cv-color);
+}
+
+.cv-style-simple .cv-skill-item {
+  border-left: 3px solid var(--cv-color);
 }
 
 /* Style Créatif */
