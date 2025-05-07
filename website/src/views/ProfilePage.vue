@@ -73,13 +73,16 @@
               <div class="info-field">
                 <label>Mes Loisirs</label>
                 <div class="hobbies-container">
-                  <div v-for="(hobby, index) in userProfile.hobbies" :key="index" class="hobby-tag">
+                  <div v-for="(hobby, index) in userProfile.hobbies" 
+                      :key="index" 
+                      class="hobby-tag"
+                      :data-hobby="hobby">
                     {{ hobby }}
                   </div>
                   <button @click="showHobbyEditor = true" class="add-hobby-button">+</button>
                 </div>
               </div>
-              
+
               <div class="info-field">
                 <label>À propos de moi</label>
                 <div class="field-value bio">{{ userProfile.bio || "Ajoute une description de toi-même !" }}</div>
@@ -93,52 +96,41 @@
         <div v-if="currentTab === 'skills'" class="profile-section">
           <h2 class="section-title">
             <span class="section-icon">🎯</span>
-            Mes Compétences
+            Mes Points Forts
           </h2>
           
           <div class="skills-container">
-            <!-- Affichage circulaire des catégories de compétences -->
-            <div class="skills-chart-container">
-              <div class="skills-wheel">
-                <canvas ref="skillsChart" width="300" height="300"></canvas>
-              </div>
-              <div class="skills-legend">
-                <div v-for="(category, index) in skillCategories" :key="index" class="legend-item">
-                  <div class="color-dot" :style="{backgroundColor: category.color}"></div>
-                  <div class="legend-label">{{ category.name }}</div>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Liste détaillée des compétences -->
-            <div class="skills-lists">
-              <div v-for="(category, catIndex) in skillCategories" :key="catIndex" class="skill-category">
-                <h3 class="category-title" :style="{color: category.color}">
-                  <span class="category-icon">{{ category.icon }}</span>
-                  {{ category.name }}
-                </h3>
-                
-                <div class="skills-grid">
-                  <div v-for="skill in getSkillsByCategory(category.id)" :key="skill.id" class="skill-card">
-                    <div class="skill-icon" :style="{backgroundColor: getLevelColor(skill.level)}">
-                      {{ getSkillIcon(skill.id) }}
-                    </div>
-                    <div class="skill-info">
-                      <div class="skill-name">{{ skill.name }}</div>
-                      <div class="skill-level" :style="{color: getLevelColor(skill.level)}">
-                        {{ getSkillLevelName(skill.level) }}
-                      </div>
-                      <div class="skill-bar">
-                        <div class="skill-fill" :style="{
-                          width: (skill.level / 5 * 100) + '%',
-                          backgroundColor: getLevelColor(skill.level)
-                        }"></div>
-                      </div>
-                    </div>
-                  </div>
+            <!-- Remplacer le graphique complexe par une présentation plus simple -->
+            <div class="skills-simplified">
+              <p class="skills-intro">Ce que je sais bien faire :</p>
+              
+              <!-- Affichage simplifié des catégories de compétences -->
+              <div class="skills-categories-simple">
+                <div v-for="(category, catIndex) in skillCategories" :key="catIndex" class="skill-category-simple">
+                  <h3 class="category-title-simple">
+                    <span class="category-icon-large">{{ category.icon }}</span>
+                    {{ category.name }}
+                  </h3>
                   
-                  <div v-if="getSkillsByCategory(category.id).length === 0" class="empty-category">
-                    Joue aux jeux pour découvrir tes compétences !
+                  <div class="skills-list-simple">
+                    <div v-for="skill in getSkillsByCategory(category.id)" :key="skill.id" class="skill-item-simple">
+                      <div class="skill-icon-simple" :style="{backgroundColor: getLevelColor(skill.level)}">
+                        {{ getSkillIcon(skill.id) }}
+                      </div>
+                      <div class="skill-info-simple">
+                        <div class="skill-name-simple">{{ skill.name }}</div>
+                        <!-- Remplacer les niveaux numériques par des étoiles -->
+                        <div class="skill-stars">
+                          <span v-for="n in 5" :key="n" class="skill-star" :class="{ 'filled': n <= skill.level }">★</span>
+                        </div>
+                        <!-- Ajouter une description simple du niveau -->
+                        <div class="skill-level-simple" v-html="getSimpleSkillLevel(skill.level)"></div>
+                      </div>
+                    </div>
+                    
+                    <div v-if="getSkillsByCategory(category.id).length === 0" class="empty-category-simple">
+                      Tu découvriras tes points forts en jouant aux jeux !
+                    </div>
                   </div>
                 </div>
               </div>
@@ -641,6 +633,20 @@
           'Expert'
         ];
         return levels[Math.min(level, 5) - 1] || levels[0];
+      };
+
+      const getSimpleSkillLevel = (level) => {
+        const levels = [
+          { text: "Je débute", class: "level-debut" },
+          { text: "Je progresse", class: "level-progres" },
+          { text: "Je suis fort", class: "level-fort" },
+          { text: "Je suis très fort", class: "level-fort" },
+          { text: "Super champion !", class: "level-super" }
+        ];
+        
+        // Retourner l'objet pour le niveau (1-5)
+        const simpleLevel = levels[Math.min(level, 5) - 1] || levels[0];
+        return `<span class="${simpleLevel.class}">${simpleLevel.text}</span>`;
       };
   
       // Obtenir une icône pour une compétence
@@ -1147,6 +1153,7 @@
         topCareerSkills,
         
         // Méthodes
+        getSimpleSkillLevel,
         calculateLevel,
         getExpPercentage,
         getSkillsByCategory,
@@ -1225,6 +1232,144 @@
     text-align: center;
     margin: 0;
   }
+
+  /* Styles pour la section compétences simplifiée */
+.skills-simplified {
+  width: 100%;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 15px;
+}
+
+.skills-intro {
+  font-size: 1.2rem;
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.skills-categories-simple {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.skill-category-simple {
+  background-color: white;
+  border-radius: 15px;
+  padding: 15px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+}
+
+.category-title-simple {
+  display: flex;
+  align-items: center;
+  font-size: 1.5rem;
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #3f51b5;
+}
+
+.category-icon-large {
+  font-size: 2rem;
+  margin-right: 10px;
+}
+
+.skills-list-simple {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.skill-item-simple {
+  display: flex;
+  align-items: center;
+  background-color: #f5f5f5;
+  border-radius: 12px;
+  padding: 12px;
+  transition: transform 0.3s;
+}
+
+.skill-item-simple:hover {
+  transform: translateY(-3px);
+}
+
+.skill-icon-simple {
+  width: 50px;
+  height: 50px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  margin-right: 15px;
+  color: white;
+}
+
+.skill-info-simple {
+  flex: 1;
+}
+
+.skill-name-simple {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.skill-stars {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 5px;
+}
+
+.skill-star {
+  font-size: 1.5rem;
+  color: #e0e0e0;
+}
+
+.skill-star.filled {
+  color: #FFD700; /* Couleur or pour les étoiles remplies */
+}
+
+.skill-level-simple {
+  font-size: 1rem;
+  padding: 4px 12px;
+  border-radius: 20px;
+  display: inline-block;
+  font-weight: bold;
+}
+
+/* Couleurs pour les différents niveaux simplifiés */
+.level-debut {
+  background-color: #E3F2FD;
+  color: #1976D2;
+}
+
+.level-progres {
+  background-color: #E8F5E9;
+  color: #388E3C;
+}
+
+.level-fort {
+  background-color: #FFF3E0;
+  color: #E64A19;
+}
+
+.level-super {
+  background-color: #F3E5F5;
+  color: #7B1FA2;
+}
+
+.empty-category-simple {
+  text-align: center;
+  padding: 15px;
+  background-color: #f5f5f5;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  color: #757575;
+}
   
   /* Contrôles d'accessibilité */
   .accessibility-controls {
@@ -1461,17 +1606,117 @@
   .hobbies-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 12px;
+    margin-top: 8px;
   }
   
   .hobby-tag {
     background-color: #e3f2fd;
     color: #1976d2;
-    padding: 8px 15px;
+    padding: 10px 16px;
     border-radius: 50px;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(25, 118, 210, 0.1);
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
   }
-  
+
+  .hobby-tag:hover {
+    background-color: #bbdefb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+  }
+
+  .hobby-tag:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .hobby-tag::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background-color: #1976d2;
+    border-radius: 50%;
+    margin-right: 2px;
+  }
+
+  /* Icônes spécifiques pour chaque loisir */
+  .hobby-tag[data-hobby="Jeux vidéo"]::before {
+    content: '🎮';
+    background: none;
+    width: auto;
+    height: auto;
+    margin-right: 0;
+  }
+
+  .hobby-tag[data-hobby="Musique"]::before {
+    content: '🎵';
+    background: none;
+    width: auto;
+    height: auto;
+    margin-right: 0;
+  }
+
+  .hobby-tag[data-hobby="Dessin"]::before {
+    content: '🎨';
+    background: none;
+    width: auto;
+    height: auto;
+    margin-right: 0;
+  }
+
+  .hobby-tag[data-hobby="Natation"]::before {
+    content: '🏊';
+    background: none;
+    width: auto;
+    height: auto;
+    margin-right: 0;
+  }
+
+  .add-hobby-button {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background-color: #3f51b5;
+    color: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  }
+
+  .add-hobby-button:hover {
+    background-color: #303f9f;
+    transform: rotate(90deg) scale(1.1);
+  }
+
+  /* Animation subtile d'apparition */
+  @keyframes fadeInScale {
+    from {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .hobby-tag {
+    animation: fadeInScale 0.3s ease forwards;
+  }
+
   .add-hobby-button {
     width: 35px;
     height: 35px;
