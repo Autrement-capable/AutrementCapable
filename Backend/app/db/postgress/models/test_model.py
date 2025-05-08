@@ -1,7 +1,7 @@
 from typing import Optional, List
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, func, LargeBinary, JSON
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, func, LargeBinary, JSON, UniqueConstraint
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from sqlalchemy.ext.asyncio import AsyncAttrs
 
@@ -57,12 +57,17 @@ class UserPicture(AsyncAttrs, Base):
     __tablename__ = "user_pictures"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, unique=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     picture_data: Mapped[bytes] = mapped_column(LargeBinary, nullable=True)
     date_updated: Mapped[DateTime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
     type: Mapped[str] = mapped_column(String, nullable=False)  # Type of picture (e.g., "profile", "cover")
 
     user: Mapped["User"] = relationship(back_populates="picture", lazy="selectin")
+    
+    # Add composite unique constraint
+    __table_args__ = (
+        UniqueConstraint('user_id', 'type', name='unique_user_picture_type'),
+    )
 
 class UserPassion(AsyncAttrs, Base):
     __tablename__ = "user_passions"

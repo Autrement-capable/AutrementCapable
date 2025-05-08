@@ -7,6 +7,7 @@ PyYAML
 passlib
 pymupdf
 pillow
+pillow-avif-plugin
 pdf2image
 fillpdf
 apscheduler

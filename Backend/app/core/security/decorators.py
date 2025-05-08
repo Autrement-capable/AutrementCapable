@@ -1,6 +1,9 @@
+## core/security/decorators.py
 from functools import wraps
 from enum import Enum, auto
 from typing import List, Optional, Callable, Dict, Any, TypeVar, Awaitable
+import inspect
+from inspect import Parameter, Signature
 
 from fastapi import Request, Response, HTTPException, status, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -63,31 +66,31 @@ async def get_jwt_data(
             detail="Both access and refresh tokens are required"
         )
 
-    # Return appropriate payload(s)
+    # Return payload directly for simpler access
     if security_type == SecurityRequirement.ACCESS_TOKEN:
-        return {"jwt": access_payload}
+        return access_payload  # Return payload directly
     elif security_type == SecurityRequirement.REFRESH_COOKIE:
-        return {"jwt": refresh_payload}
+        return refresh_payload  # Return payload directly
     else:  # BOTH_TOKENS
-        return {"jwt": access_payload, "refresh_jwt": refresh_payload}
+        # For both tokens, we need to return both payloads
+        # but we'll handle this differently in the decorator
+        return {"access": access_payload, "refresh": refresh_payload}
 
 def secured_endpoint(security_type: SecurityRequirement = SecurityRequirement.ACCESS_TOKEN, description: Optional[str] = None):
     """
     Decorator that adds JWT authentication to an endpoint.
 
-    Instead of injecting parameters directly, it uses a dependency approach
-    that's compatible with FastAPI's response model generation.
+    This decorator injects JWT data directly into the function parameters:
+    - For ACCESS_TOKEN: jwt parameter contains the access token payload
+    - For REFRESH_COOKIE: jwt parameter contains the refresh token payload
+    - For BOTH_TOKENS: jwt parameter contains access payload, refresh_jwt contains refresh payload
 
     Args:
         security_type: Type of security requirements
         description: Optional custom description for the security requirement
 
     Returns:
-        A decorator that wraps the endpoint function.
-
-        decorrator sets the following params of the endpoint function based on SecurityRequirement:
-        - jwt: JWT payload from the access token
-        - refresh_jwt: JWT payload from the refresh token (if required)
+        A decorator that wraps the endpoint function and properly injects JWT data.
     """
     def decorator(func: Callable):
         # Store security requirements on the function for OpenAPI docs
@@ -95,37 +98,53 @@ def secured_endpoint(security_type: SecurityRequirement = SecurityRequirement.AC
         func.security_type = security_type
         func.security_description = description
 
-        # Explicitly set response_model=None to prevent FastAPI from trying
-        # to generate a response model from the function signature
-        if hasattr(func, "__annotations__") and "return" in func.__annotations__:
-            # Function has a return type annotation, we should keep it
-            pass
-        else:
-            # No return type annotation, mark explicitly to not generate response model
-            func.response_model = None
+        # Get the original function signature
+        sig = inspect.signature(func)
 
-        # Create dependency that FastAPI will properly handle
-        async def jwt_dependency(request: Request):
-            jwt_data = await get_jwt_data(request, security_type)
-            return jwt_data
+        # Create a helper function for dependency injection
+        async def jwt_dependency(
+            request: Request,
+            session: AsyncSession = Depends(getSession)
+        ) -> Dict[str, Any]:
+            return await get_jwt_data(request, security_type, session)
 
-        # Store the dependency on the function
-        if not hasattr(func, "dependencies"):
-            func.dependencies = []
-        func.dependencies.append(Depends(jwt_dependency))
+        # Create a new parameter list with JWT dependency properly injected
+        new_params = []
 
-        # Use normal FastAPI dependency injection - this is cleaner and works with OpenAPI
+        for name, param in sig.parameters.items():
+            if name == "jwt":
+                # Replace jwt parameter with our dependency
+                new_param = Parameter(
+                    name="jwt",
+                    kind=param.kind,
+                    annotation=dict,
+                    default=Depends(jwt_dependency)
+                )
+                new_params.append(new_param)
+            elif name == "refresh_jwt" and security_type == SecurityRequirement.BOTH_TOKENS:
+                # For refresh_jwt, we'll inject it in the wrapper
+                continue
+            else:
+                new_params.append(param)
+
+        # Create a new signature with the modified parameters
+        new_sig = sig.replace(parameters=new_params)
+
+        # Create a wrapper function
         @wraps(func)
         async def wrapper(*args, **kwargs):
-            # Extract JWT data from kwargs if injected by FastAPI
-            jwt_data = {}
-            if "jwt" in kwargs:
-                jwt_data["jwt"] = kwargs["jwt"]
-            if "refresh_jwt" in kwargs:
-                jwt_data["refresh_jwt"] = kwargs["refresh_jwt"]
+            # Handle BOTH_TOKENS case
+            if security_type == SecurityRequirement.BOTH_TOKENS and 'jwt' in kwargs:
+                combined_data = kwargs['jwt']
+                # Split the combined data into separate parameters
+                kwargs['jwt'] = combined_data['access']
+                if 'refresh_jwt' in sig.parameters:
+                    kwargs['refresh_jwt'] = combined_data['refresh']
 
-            # Call the function
             return await func(*args, **kwargs)
+
+        # Apply the new signature to our wrapper
+        wrapper.__signature__ = new_sig
 
         return wrapper
     return decorator
