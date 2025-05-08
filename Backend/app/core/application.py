@@ -37,7 +37,6 @@ class Server:
         # I disagree but need to make the code compatible with the rest of the code
         @asynccontextmanager
         async def lifespan(app: FastAPI):
-            # Startup
             CronJobFactory.set_add_cron_job(self.AddCronJob)
 
             # Check if tables exist and initialize data if needed
@@ -46,6 +45,11 @@ class Server:
                 await self.postgress.create_all()
                 await self.init_roles()
                 await init_terms()
+
+            # Initialize the AsyncPG connection pool
+            from ..db.postgress.postgress_pool import init_pg_pool
+            print("Initializing PostgreSQL connection pool...")
+            await init_pg_pool()
 
             # Start scheduler
             self.scheduler.start()
@@ -60,6 +64,14 @@ class Server:
                     self.scheduler.shutdown(wait=False)
             except Exception as e:
                 print(f"Error shutting down scheduler: {e}")
+
+            try:
+                # Close AsyncPG connection pool
+                from ..db.postgress.postgress_pool import close_pg_pool
+                print("Closing PostgreSQL connection pool...")
+                await close_pg_pool()
+            except Exception as e:
+                print(f"Error closing PostgreSQL connection pool: {e}")
 
             try:
                 if self.postgress:
