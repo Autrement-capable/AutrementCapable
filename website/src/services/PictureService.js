@@ -22,19 +22,95 @@ const API_URL = process.env.VUE_APP_SERVER_URL || 'http://localhost:5000';
 const PICTURE_ENDPOINT = 'user/picture';
 
 /**
- * Check if the browser supports AVIF
+ * Improved check if the browser supports AVIF using multiple detection methods
  * 
  * @returns {Promise<boolean>} True if AVIF is supported
  */
 async function checkAvifSupport() {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => resolve(img.width > 0 && img.height > 0);
-    img.onerror = () => resolve(false);
-    img.src = 'data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAGF2aWZtaWYxbWlhZk1BMUEAAADybWV0YQAAAAAAAAAoaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAGxpYmF2aWYAAAAADnBpdG0AAAAAAAEAAAAeaWxvYwAAAABEAAABAAEAAAABAAABGgAAAF0AAAAoaWluZgAAAAAAAQAAABppbmZlAgAAAAABAABhdjAxQ29sb3IAAAAAamlwcnAAAABLaXBjbwAAABRpc3BlAAAAAAAAAAIAAAACAAAAEHBpeGkAAAAAAwgICAAAAAxhdjFDgQAMAAAAABNjb2xybmNseAACAAIABoAAAAAXaXBtYQAAAAAAAAABAAEEAQKDBAAAAGVtZGF0EgAKBzgADlgICAoXS';
-  });
-}
 
+  // Method 1: Feature detection via canvas
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1;
+    canvas.height = 1;
+
+    // Try to check if canvas.toBlob supports AVIF
+    if (canvas && canvas.getContext && canvas.toBlob) {
+      return new Promise((resolve) => {
+        try {
+          canvas.toBlob((blob) => {
+            if (blob) {
+              resolve(true);  // If we can create any blob, we'll try AVIF later
+            } else {
+              resolve(false);
+            }
+          }, 'image/avif');
+        } catch (e) {
+          resolve(false);
+        }
+      });
+    } else {
+    }
+  } catch (e) {
+    console.log('Canvas feature detection failed:', e);
+  }
+
+  // Method 2: Image decode test with a simple minimal AVIF image
+  // This is a tiny valid AVIF image (1x1 pixel)
+  const avifTestImages = [
+    // Minimal AVIF image
+    'data:image/avif;base64,AAAAGGZ0eXBhdmlmAAAAAG1pZjFtaWFmAAAA0m1ldGEAAAAAAAAAIWhkbHIAAAAAAAAAAHBpY3QAAAAAAAAAAAAAAAAAAAAADnBpdG0AAAAAAAEAAAAeaWxvYwAAAABEAAABAAEAAAABAAABGgAAABcAAAAoaWluZgAAAAAAAQAAABppbmZlAgAAAAABAABhdjAxQ29sb3IAAAAAamlwcnAAAABLaXBjbwAAABRpc3BlAAAAAAAAAAEAAAABAAAAEHBpeGkAAAAAAwgICAAAAAxhdjFDgQAMAAAAABNjb2xybmNseAACAAIABoAAAAAXaXBtYQAAAAAAAAABAAEEAQKDBAAAAB9tZGF0EgAKCBgABogQEDQgMgkQAAAAB8dSLZ0=',
+
+    // Alternative test image (simpler)
+    'data:image/avif;base64,AAAAHGZ0eXBhdmlmAAAAAG1pZjFtaWFmAAAAD21ldGEAAAAAAAAAIWhkbHIAAAAAAAAAAHBpY3QAAAAAAAAAAAAAAAAAAAAADnBpdG0AAAAAAAEAAAAeaWxvYwAAAABEAAABAAEAAAABAAABGgAAABoAAAAoaWluZgAAAAAAAQAAABppbmZlAgAAAAABAABhdjAxQ29sb3IAAAAAamlwcnAAAABLaXBjbwAAABRpc3BlAAAAAAAAAAEAAAABAAAAEHBpeGkAAAAAAwgICAAAAAxhdjFDgQ0MAAAAABNjb2xybmNseAACAAIABoAAAAAXaXBtYQAAAAAAAAABAAEEAQKDBAAAACBtZGF0EgAKCRgADIgw0IZcJxgQAAAAvGm9oA=='
+  ];
+
+  for (const testImage of avifTestImages) {
+    try {
+      const result = await new Promise((resolve) => {
+        const img = new Image();
+
+        // Set a reasonable timeout
+        const timeout = setTimeout(() => {
+          resolve(false);
+        }, 1000);
+
+        img.onload = () => {
+          clearTimeout(timeout);
+          resolve(img.width > 0 && img.height > 0);
+        };
+
+        img.onerror = () => {
+          clearTimeout(timeout);
+          resolve(false);
+        };
+
+        img.src = testImage;
+      });
+
+      if (result) {
+        return true; // Successfully loaded an AVIF image
+      }
+    } catch (e) {
+      console.log('Image decode test failed:', e);
+    }
+  }
+
+  // Method 3: Simple feature detection
+  // Check if image/avif is in the accepted types list
+  try {
+    if (self.createImageBitmap && 
+        document.createElement('canvas').toDataURL('image/avif').indexOf('data:image/avif') === 0) {
+      return true;
+    }
+  } catch (e) {
+    console.log('HTMLImageElement.prototype.decode method failed:', e);
+  }
+
+  // All methods failed - AVIF is not supported
+  console.log('All AVIF detection methods failed');
+  return false;
+}
 /**
  * Parse image dimensions from a File or Blob
  * 
@@ -99,27 +175,23 @@ async function convertToAvif(file, options = {}) {
   // Merge options with defaults
   const config = { ...DEFAULT_CONFIG, ...options };
 
+  // If already AVIF, return the file as is
+  if (file.type === 'image/avif') {
+    const dimensions = await getImageDimensions(file);
+    return { file, isAvif: true, dimensions };
+  }
+
   // Check if browser supports AVIF
   const avifSupported = await checkAvifSupport();
 
-  // If already AVIF or browser doesn't support AVIF, return the file as is
-  if (file.type === 'image/avif' || !avifSupported) {
-    // Still check dimensions for validation
+  // If browser doesn't support AVIF, return the file as is
+  if (!avifSupported) {
     const dimensions = await getImageDimensions(file);
-
-    // Validate dimensions
-    if (dimensions.width < config.minWidth || dimensions.height < config.minHeight) {
-      throw new Error(`Image dimensions (${dimensions.width}x${dimensions.height}) are too small. Minimum required is ${config.minWidth}x${config.minHeight}`);
-    }
-
-    return { 
-      file, 
-      isAvif: file.type === 'image/avif',
-      dimensions
-    };
+    return { file, isAvif: false, dimensions };
   }
 
   try {
+
     // Load image for processing
     const img = await new Promise((resolve, reject) => {
       const img = new Image();
@@ -140,42 +212,45 @@ async function convertToAvif(file, options = {}) {
     // Clean up image URL
     URL.revokeObjectURL(img.src);
 
-    // Convert to AVIF
-    const avifBlob = await new Promise((resolve, reject) => {
-      canvas.toBlob(resolve, 'image/avif', config.quality / 100);
-    });
+    // Try AVIF first, then fall back to WebP if AVIF fails
+    try {
+      const avifBlob = await new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('Canvas.toBlob timed out'));
+        }, 1000);
 
-    if (!avifBlob) { 
-      throw new Error('Failed to convert image to AVIF format');
+        canvas.toBlob((blob) => {
+          clearTimeout(timeout);
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error('Canvas.toBlob returned null'));
+          }
+        }, 'image/avif', config.quality / 100);
+      });
+
+      // Create File object from Blob
+      const avifFile = new File([avifBlob], file.name.replace(/\.[^.]+$/, '.avif'), {
+        type: 'image/avif',
+        lastModified: Date.now()
+      });
+
+      // Get dimensions
+      const dimensions = { width: canvas.width, height: canvas.height };
+      return { file: avifFile, isAvif: true, dimensions };
+    } catch (e) {
+      console.log('AVIF conversion failed, falling back to original format:', e);
     }
 
-    // Get dimensions of the resulting image
-    const dimensions = {
-      width: canvas.width,
-      height: canvas.height
-    };
+    // If AVIF conversion fails, return original file
+    const dimensions = { width: img.width, height: img.height };
+    return { file, isAvif: false, dimensions };
 
-    // Create File object from Blob
-    const avifFile = new File([avifBlob], file.name.replace(/\.[^.]+$/, '.avif'), {
-      type: 'image/avif',
-      lastModified: Date.now()
-    });
-
-    return { 
-      file: avifFile, 
-      isAvif: true,
-      dimensions
-    };
   } catch (error) {
-    console.error('Error converting to AVIF:', error);
-
+    console.error('Error in conversion process:', error);
     // Fall back to original file if conversion fails
     const dimensions = await getImageDimensions(file);
-    return { 
-      file, 
-      isAvif: false,
-      dimensions
-    };
+    return { file, isAvif: false, dimensions };
   }
 }
 
@@ -386,12 +461,13 @@ export function usePicture() {
    * @param {Object} options Additional options
    * @returns {Promise<Object>} Upload result
    */
-  async function uploadPicture(file, pictureType = 'avatar', options = {}) {
+  async function uploadPicture(file, pictureType = 'profile', options = {}) {
     isUploading.value = true;
     progress.value = 0;
     error.value = null;
 
     try {
+
       // Conversion progress (30%)
       progress.value = 10;
       const { file: processedFile, isAvif, dimensions } = await convertToAvif(file, options);
@@ -407,6 +483,11 @@ export function usePicture() {
       if (options.quality) {
         formData.append('quality', options.quality);
       }
+
+      // Log form data for debugging
+      // for (let [key, value] of formData.entries()) {
+      //   console.log(key, ':', value);
+      // }
 
       // Upload with XHR for progress tracking
       const result = await new Promise((resolve, reject) => {
