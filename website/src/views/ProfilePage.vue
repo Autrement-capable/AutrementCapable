@@ -409,7 +409,7 @@
         avatar: defaultAvatar,
         bio: "Je suis quelqu'un de curieux et j'aime découvrir de nouvelles choses. Je m'intéresse particulièrement aux jeux vidéo et à la musique.",
         hobbies: ['Jeux vidéo', 'Musique', 'Dessin', 'Natation'],
-        experience: 350, // Points d'expérience pour calculer le niveau
+        experience: 150, // Points d'expérience pour calculer le niveau
       });
   
       // États des onglets de navigation
@@ -531,24 +531,6 @@
         }
       ]);
   
-      // Préférences sensorielles (simulées)
-      const sensoryPreferences = ref({
-        light: "Modérée",
-        colors: "Naturelles et douces",
-        visualEnvironment: "Organisé avec peu de distractions",
-        sound: "Ambiance calme",
-        volume: "Faible à modéré",
-        people: "Petit groupe (1-3 personnes)",
-        socialEnvironment: "Espace calme avec interactions limitées"
-      });
-  
-      // Recommandations sensorielles (simulées)
-      const sensoryRecommendations = ref([
-        "Privilégie un éclairage indirect et tamisé dans ton espace de travail.",
-        "Utilise des écouteurs avec un bruit blanc léger pour te concentrer.",
-        "Prévois des pauses régulières dans un environnement calme."
-      ]);
-  
       // Catégories de compétences
       const skillCategories = ref([
         { id: 'communication', name: 'Communication', color: '#FF5722', icon: '💬' },
@@ -585,15 +567,6 @@
         { name: 'Rouge', value: '#F44336' }
       ]);
       const currentCVColor = ref('#2196F3');
-  
-      // Avatars disponibles
-      const availableAvatars = ref([
-        { name: 'Défaut', src: defaultAvatar },
-        { name: 'Sportif', src: 'src/assets/avatars/sportif.png' },
-        { name: 'Créatif', src: 'src/assets/avatars/creatif.png' },
-        { name: 'Tech', src: 'src/assets/avatars/tech.png' },
-        { name: 'Aventurier', src: 'src/assets/avatars/aventurier.png' }
-      ]);
 
       // Calculer le niveau de l'utilisateur
       const calculateLevel = () => {
@@ -717,17 +690,6 @@
       const saveHobbies = () => {
         userProfile.value.hobbies = [...editedHobbies.value];
         showHobbyEditor.value = false;
-        saveUserProfile();
-      };
-  
-      // Sélectionner un avatar
-      const selectAvatar = (avatarSrc) => {
-        selectedAvatar.value = avatarSrc;
-      };
-  
-      // Sauvegarder l'avatar
-      const saveAvatar = () => {
-        userProfile.value.avatar = selectedAvatar.value;
         saveUserProfile();
       };
   
@@ -920,10 +882,6 @@
   
       // Charger le profil utilisateur
       const loadUserProfile = () => {
-        const savedProfile = localStorage.getItem('userProfile');
-        if (savedProfile) {
-          userProfile.value = JSON.parse(savedProfile);
-        }
       };
   
       // Sauvegarder les paramètres d'accessibilité
@@ -1126,8 +1084,6 @@
         badges,
         achievements,
         likedJobs,
-        sensoryPreferences,
-        sensoryRecommendations,
         skillCategories,
         skills,
         showBioEditor,
@@ -1136,7 +1092,6 @@
         editedHobbies,
         newHobby,
         selectedAvatar,
-        availableAvatars,
         highContrastMode,
         soundEnabled,
         textSizeLevel,
@@ -1165,8 +1120,6 @@
         addHobby,
         removeHobby,
         saveHobbies,
-        selectAvatar,
-        saveAvatar,
         showBadgeDetails,
         closeModal,
         selectCVStyle,
