@@ -122,16 +122,39 @@ async def stream_avif_to_db(
         result = None
         is_first_chunk = True
 
-        # Get total file size for progress tracking
-        await file.seek(0, 2)  # Seek to end
-        total_size = file.tell()
-        await file.seek(0)  # Reset to beginning
+        # Try to get file size from content length header
+        content_length = None
+        try:
+            if hasattr(file, 'size'):
+                content_length = file.size
+            elif hasattr(file, 'headers') and 'content-length' in file.headers:
+                content_length = int(file.headers['content-length'])
+        except (TypeError, ValueError):
+            # If we can't get the size, we'll detect the end by empty chunk
+            pass
+
+        # Reset file pointer to beginning
+        await file.seek(0)
 
         # Stream file directly to database in chunks
+        total_bytes_read = 0
         async for chunk in read_chunks(file):
+            # Update total bytes read
+            total_bytes_read += len(chunk)
+
             # Check if this is the last chunk
-            current_position = file.tell()
-            is_last_chunk = current_position >= total_size
+            is_last_chunk = False
+            if content_length is not None:
+                is_last_chunk = total_bytes_read >= content_length
+            else:
+                # If we don't know the size, we'll need to look ahead
+                # to see if there's more data
+                next_chunk = await file.read(1)
+                if not next_chunk:
+                    is_last_chunk = True
+                else:
+                    # Put the byte back (if possible)
+                    await file.seek(total_bytes_read)
 
             # Save this chunk
             result = await save_chunk_function(
@@ -145,6 +168,10 @@ async def stream_avif_to_db(
             )
 
             is_first_chunk = False
+
+            # If this was the last chunk, break
+            if is_last_chunk:
+                break
 
         # Final commit after all chunks are processed
         if commit and result:
@@ -357,14 +384,47 @@ async def get_streaming_response_for_image(
     Returns:
         StreamingResponse with the image
     """
+    # Get a connection from the pool
+    pool = await init_pg_pool()
+    conn = None
+
+    # We'll manage the connection explicitly to avoid leaks
     async def stream_generator():
-        # Get a connection from the pool
-        pool = await init_pg_pool()
-        async with pool.acquire() as conn:
+        nonlocal conn
+        try:
+            # Acquire connection from pool
+            conn = await pool.acquire()
+
+            # Stream the image in chunks
             async for chunk in stream_image_from_db(conn, user_id, picture_type):
                 yield chunk
 
-    return StreamingResponse(
+        except Exception as e:
+            # Log the error but don't raise - StreamingResponse can't handle exceptions after it starts
+            print(f"Error in stream_generator: {e}")
+
+        finally:
+            # Always release the connection back to the pool
+            if conn:
+                await pool.release(conn)
+                conn = None
+
+    # Create the response
+    response = StreamingResponse(
         stream_generator(),
         media_type="image/avif"
     )
+
+    # Add a callback to ensure connection cleanup if the client disconnects
+    # (This is a bit of a hack but necessary for proper cleanup)
+    response.background = lambda: asyncio.create_task(ensure_connection_cleanup(conn, pool))
+
+    return response
+
+async def ensure_connection_cleanup(conn, pool):
+    """Ensure the connection is released back to the pool"""
+    if conn:
+        try:
+            await pool.release(conn)
+        except Exception as e:
+            print(f"Error releasing connection: {e}")
