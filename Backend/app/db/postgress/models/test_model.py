@@ -1,12 +1,13 @@
 from typing import Optional, List
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, func, LargeBinary, JSON, UniqueConstraint
-from sqlalchemy.orm import relationship, Mapped, mapped_column
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, func, LargeBinary, JSON, UniqueConstraint, Float
+from sqlalchemy.orm import relationship, Mapped, mapped_column, DeclarativeBase
 from sqlalchemy.ext.asyncio import AsyncAttrs
 
 from ..engine import Base
 ## AUTH
+
 
 class Role(AsyncAttrs, Base):
     __tablename__ = "roles"
@@ -220,3 +221,78 @@ class UserAbilities(Base):
     last_updated: Mapped[DateTime] = mapped_column(DateTime, server_default=func.now())
     # Relationships
     user: Mapped["User"] = relationship(back_populates="abilities")
+
+## game schemas
+
+
+##scenario game json example
+# {
+#   "currentLevel": 3,
+#   "completion": 37.5,
+#   "traits": {
+#     "empathy": 4,
+#     "diplomacy": 3,
+#     "assertiveness": 2,
+#     "pragmatism": 5
+#   },
+# }
+class ScenarioGameData(Base):
+    __tablename__ = "scenario_game_data"
+
+    id = mapped_column(Integer, primary_key=True)
+    user_id = mapped_column(ForeignKey("users.id"), nullable=False)
+
+    current_level = mapped_column(Integer, nullable=False, default=0)
+    completion = mapped_column(Float, nullable=False, default=0.0)
+
+    traits = mapped_column(JSON, nullable=False, default={})
+    penalties = mapped_column(JSON, nullable=False, default={})
+
+# --- 2️⃣ Shape Sequence Game ---
+class ShapeSequenceGameData(Base):
+    __tablename__ = "shape_sequence_game_data"
+
+    id = mapped_column(Integer, primary_key=True)
+    user_id = mapped_column(ForeignKey("users.id"), nullable=False)
+
+    completion = mapped_column(Float, nullable=False, default=0.0)
+    highest_level = mapped_column(Integer, nullable=False, default=0)
+
+# --- 3️⃣ Jobs Game ---
+class JobsGameData(Base):
+    __tablename__ = "jobs_game_data"
+
+    id = mapped_column(Integer, primary_key=True)
+    user_id = mapped_column(ForeignKey("users.id"), nullable=False)
+
+    completion = mapped_column(Float, nullable=False, default=0.0)
+
+# --- 4️⃣ Speed Game ---
+class SpeedGameData(Base):
+    __tablename__ = "speed_game_data"
+
+    id = mapped_column(Integer, primary_key=True)
+    user_id = mapped_column(ForeignKey("users.id"), nullable=False)
+
+    completion = mapped_column(Float, nullable=False, default=0.0)
+    wpm = mapped_column(Integer, nullable=False, default=0)
+
+# --- 5️⃣ Abilities Game ---
+class AbilitiesGameData(Base):
+    __tablename__ = "abilities_game_data"
+
+    id = mapped_column(Integer, primary_key=True)
+    user_id = mapped_column(ForeignKey("users.id"), nullable=False)
+
+    completion = mapped_column(Float, nullable=False, default=0.0)
+    abilities = mapped_column(JSON, nullable=False, default={})  # Assuming it's a dict
+
+# --- 6️⃣ Skills Game ---
+class SkillsGameData(Base):
+    __tablename__ = "skills_game_data"
+
+    id = mapped_column(Integer, primary_key=True)
+    user_id = mapped_column(ForeignKey("users.id"), nullable=False)
+
+    completion = mapped_column(Float, nullable=False, default=0.0)
+    skills = mapped_column(JSON, nullable=False, default={})  # Assuming it's a dict
