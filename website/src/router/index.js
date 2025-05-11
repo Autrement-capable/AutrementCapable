@@ -4,6 +4,7 @@ import Onboarding from '@/views/Onboarding.vue'
 import FormationPage from '@/views/FormationPage.vue'
 import Dashboard from '@/views/Dashboard.vue'
 import UserProfile from '@/views/UserProfile.vue'
+import DebugPage from '@/views/DebugPage.vue'
 
 // Scenarios
 import ScenarioList from '@/views/skillGames/ScenarioMenuGame.vue'
@@ -119,6 +120,11 @@ const routes = [
     name: 'SkillsWheelPage',
     component: SkillsWheelPage,
   },
+  {
+    path: '/debug',
+    name: 'DebugPage',
+    component: DebugPage,
+  }
 ]
 
 const router = createRouter({
