@@ -14,7 +14,45 @@ from ...db.postgress.repositories.games_data import (
     get_speed_game_data,
     get_abilities_game_data,
     get_skills_game_data,
+    upsert_scenario_game_data,
+    upsert_shape_sequence_game_data,
+    upsert_jobs_game_data,
+    upsert_speed_game_data,
+    upsert_abilities_game_data,
+    upsert_skills_game_data,
 )
+from pydantic import BaseModel, Field
+from typing import Dict
+
+# === Shared ===
+class BaseGamePost(BaseModel):
+    completion: float = Field(..., ge=0.0, le=1.0)
+
+# === Scenario Game ===
+class ScenarioGamePost(BaseGamePost):
+    current_level: int
+    traits: Dict = {}
+    penalties: Dict = {}
+
+# === Shape Sequence ===
+class ShapeSequencePost(BaseGamePost):
+    highest_level: int
+
+# === Jobs ===
+class JobsPost(BaseGamePost):
+    pass
+
+# === Speed ===
+class SpeedPost(BaseGamePost):
+    wpm: int
+
+# === Abilities ===
+class AbilitiesPost(BaseGamePost):
+    abilities: Dict
+
+# === Skills ===
+class SkillsPost(BaseGamePost):
+    skills: Dict
 
 games_router = APIRouter(prefix="/games", tags=["Games"])
 
@@ -102,6 +140,48 @@ async def get_skills_game_data_endpoint(jwt: dict, session: AsyncSession = Depen
         "completion": data.completion,
         "skills": data.skills,
     }
+
+# POST /games/scenario
+@games_router.post("/scenario")
+@secured_endpoint()
+async def post_scenario_data(payload: ScenarioGamePost, jwt: dict = Depends(), session: AsyncSession = Depends(getSession)):
+    data = await upsert_scenario_game_data(session, jwt["sub"], payload.dict())
+    return {"message": "Scenario game data saved", "data": data.__dict__}
+
+# POST /games/shape-sequence
+@games_router.post("/shape-sequence")
+@secured_endpoint()
+async def post_shape_sequence_data(payload: ShapeSequencePost, jwt: dict = Depends(), session: AsyncSession = Depends(getSession)):
+    data = await upsert_shape_sequence_game_data(session, jwt["sub"], payload.dict())
+    return {"message": "Shape sequence game data saved", "data": data.__dict__}
+
+# POST /games/jobs
+@games_router.post("/jobs")
+@secured_endpoint()
+async def post_jobs_data(payload: JobsPost, jwt: dict = Depends(), session: AsyncSession = Depends(getSession)):
+    data = await upsert_jobs_game_data(session, jwt["sub"], payload.dict())
+    return {"message": "Jobs game data saved", "data": data.__dict__}
+
+# POST /games/speed
+@games_router.post("/speed")
+@secured_endpoint()
+async def post_speed_data(payload: SpeedPost, jwt: dict = Depends(), session: AsyncSession = Depends(getSession)):
+    data = await upsert_speed_game_data(session, jwt["sub"], payload.dict())
+    return {"message": "Speed game data saved", "data": data.__dict__}
+
+# POST /games/abilities
+@games_router.post("/abilities")
+@secured_endpoint()
+async def post_abilities_data(payload: AbilitiesPost, jwt: dict = Depends(), session: AsyncSession = Depends(getSession)):
+    data = await upsert_abilities_game_data(session, jwt["sub"], payload.dict())
+    return {"message": "Abilities game data saved", "data": data.__dict__}
+
+# POST /games/skills
+@games_router.post("/skills")
+@secured_endpoint()
+async def post_skills_data(payload: SkillsPost, jwt: dict = Depends(), session: AsyncSession = Depends(getSession)):
+    data = await upsert_skills_game_data(session, jwt["sub"], payload.dict())
+    return {"message": "Skills game data saved", "data": data.__dict__}
 
 # Register router
 AddRouter(games_router)
