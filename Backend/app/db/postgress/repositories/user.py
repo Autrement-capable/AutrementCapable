@@ -8,8 +8,9 @@ from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload
 from faker import Faker
+from pydantic import BaseModel
 
-from ..models import User, UnverifiedDetails, UserDetail
+from ..models import User, UnverifiedDetails, UserDetail, UserAvatarInfo
 from ..engine import postgress
 from .role import get_role_by_name
 from ....services.auth.password import verify_password, hash_password
@@ -380,3 +381,71 @@ async def update_ver_details(session: AsyncSession, user: User, eagerly_loaded:b
         print(f"Error updating verification details: {e}")
         await session.rollback()
         return None
+
+## User avatar data storage
+class AvatarInfo(BaseModel):
+    """ Pydantic model for avatar information """
+    avatarGender: Optional[str] = None
+    avatarAccessories: Optional[str] = None
+    avatarColor: Optional[str] = None
+    avatarPassions: Optional[str] = None
+    avatarExpression: Optional[str] = None
+
+async def store_avatar_info(session: AsyncSession, user_id: int, data:dict, fresh=True, commit=True) -> UserAvatarInfo | None:
+    """ Store avatar information in the database asynchronously(IF already exists overwrite it)
+
+    Args:
+        session (AsyncSession): The database session
+        user_id (int): The user's ID
+        data (dict): The avatar information
+
+    Returns:
+        UserAvatarInfo | None: The created avatar info object if successful, None otherwise
+    """
+    data = AvatarInfo(**data) ## will raise validation error if invalid
+    try:
+        # Check if the user already has avatar info
+        statement = select(UserAvatarInfo).where(UserAvatarInfo.user_id == user_id)
+        result = await session.execute(statement)
+        avatar_info = result.scalars().first()
+
+        if avatar_info:
+            # Update existing avatar info
+            for key, value in data.model_dump(exclude_unset=True).items():
+                setattr(avatar_info, key, value)
+            session.add(avatar_info)
+        else:
+            # Create new avatar info
+            avatar_info = UserAvatarInfo(user_id=user_id, **data.model_dump())
+            session.add(avatar_info)
+
+        if commit:
+            await session.commit()
+        if fresh:
+            await session.refresh(avatar_info)
+        return avatar_info
+    except IntegrityError:
+        await session.rollback()
+        print("A user with this email or username already exists.")
+        return None
+    except Exception as e:
+        await session.rollback()
+        print(f"Error storing avatar info: {e}")
+        return None
+
+async def get_avatar_info(session: AsyncSession, user_id: int) -> UserAvatarInfo | None:
+    """ Get avatar information for a user asynchronously
+    Args:
+        session (AsyncSession): The database session
+        user_id (int): The user's ID
+    Returns:
+        UserAvatarInfo | None: The avatar info object if found, None otherwise
+    """
+    statement = select(UserAvatarInfo).where(UserAvatarInfo.user_id == user_id)
+    result = await session.execute(statement)
+    avatar_info = result.scalars().first()
+    if not avatar_info:
+        print("Avatar info not found")
+        return None
+    return avatar_info
+
