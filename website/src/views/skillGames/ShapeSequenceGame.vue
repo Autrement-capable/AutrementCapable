@@ -15,7 +15,7 @@
     <GameGuide
       v-if="!gameStarted"
       gameId="shape-sequence"
-      :forceShow="false"
+      :forceShow="true"
       @start-game="onGuideComplete"
       @skip-intro="onGuideComplete"
     />

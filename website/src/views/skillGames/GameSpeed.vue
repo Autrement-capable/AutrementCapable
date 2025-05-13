@@ -11,35 +11,6 @@
       </div>
     </div>
 
-    <!-- Header avec personnage guide -->
-    <!-- <div class="guide-character" v-if="!gameStarted">
-      <img src="@/assets/avatars/guide.png" alt="Guide" class="guide-avatar" />
-      <div class="speech-bubble">
-        <p>Bienvenue dans le jeu de vitesse ! Teste ta rapidité de frappe et ta précision à différents niveaux de difficulté.</p>
-      </div>
-    </div>
-
-    <div class="game-header">
-      <h1 class="main-title">Jeu de Vitesse</h1>
-      <p class="subtitle" v-if="!gameStarted">Améliore ta vitesse de frappe et ta concentration</p>
-    </div> -->
-    
-    <!-- Écran d'accueil -->
-    <!-- <div class="welcome-screen" v-if="!gameStarted">
-      <div class="welcome-card">
-        <div class="card-icon">⚡</div>
-        <h2>Comment jouer ?</h2>
-        <ol class="instructions-list">
-          <li><span class="instruction-step">1</span> Tape le texte qui apparaît à l'écran le plus rapidement possible</li>
-          <li><span class="instruction-step">2</span> La difficulté augmente progressivement avec des mots puis des phrases</li>
-          <li><span class="instruction-step">3</span> Fais attention au timer ! Plus tu avances, plus le défi est grand</li>
-        </ol>
-        <button @click="startGame" class="start-button">
-          <span class="btn-icon">🎮</span>
-          <span class="btn-text">Commencer à jouer</span>
-        </button>
-      </div>
-    </div> -->
     <GameGuide
       v-if="!gameStarted"
       gameId="speed-game"
