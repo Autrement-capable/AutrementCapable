@@ -105,6 +105,17 @@ class UserTermsAgreement(AsyncAttrs, Base):
     terms_version: Mapped["TermsVersion"] = relationship(back_populates="user_agreements", lazy="selectin")
 
 
+class UserAvatarInfo(AsyncAttrs, Base):
+    __tablename__ = "user_avatar_info"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    avatarGender: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    avatarAccessories: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    avatarColor: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    avatarPassions: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    avatarExpression: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+
 class User(AsyncAttrs, Base):
     __tablename__ = "users"
 
