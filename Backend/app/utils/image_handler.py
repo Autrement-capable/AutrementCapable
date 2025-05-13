@@ -5,6 +5,7 @@ from fastapi import UploadFile, HTTPException, status
 from fastapi.responses import StreamingResponse
 
 from PIL import Image, UnidentifiedImageError
+import pillow_avif
 from sqlalchemy.ext.asyncio import AsyncSession
 import asyncpg
 from asyncpg import Connection
