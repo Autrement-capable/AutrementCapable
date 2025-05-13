@@ -501,7 +501,7 @@ async function loginWithPasskey() {
 async function fetchUserProfile() {
   try {
     // Option 1: Using the request helper method
-    const response = await AuthService.request('get', '/api/user/profile');
+    const response = await AuthService.request('get', '/user/profile');
     console.log('User profile:', response.data);
     
     // Option 2: Using fetchWithAuth for more control
