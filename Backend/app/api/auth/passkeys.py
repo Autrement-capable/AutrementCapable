@@ -13,12 +13,12 @@ from ...core.security.token_creation import create_token, set_refresh_cookie
 from ...db.postgress.engine import getSession
 from ...db.postgress.models import User, UserDetail, UserPicture, UserPassion
 from ...db.postgress.repositories.passkey import (
-    create_passkey_user,
+    create_passkey_user, #needs to be fixxed
     register_passkey_credential,
-    get_user_by_credential_id,
+    get_user_by_credential_id, #needs to be fixxed
     get_credential_by_id,
     update_credential_counter,
-    update_user_profile
+    update_user_profile #needs to be fixxed
 )
 from ...db.postgress.repositories.role import get_role_by_name
 from ...services.auth.webauthn import (
@@ -369,7 +369,7 @@ async def rec_acc_passkey(
     complete the registration of new passkey (old passkey does not get deleted)
     """
     # Get the user from the recovery code
-    from database.postgress.actions.acc_recovery import get_acc_recovery_by_token
+    from ...db.postgress.repositories.acc_recovery import get_acc_recovery_by_token
     recovery = await get_acc_recovery_by_token(session, code)
     if not recovery:
         raise HTTPException(
