@@ -543,12 +543,6 @@ export default {
           description: "C'est ton profil personnel ! Tu peux voir ton avatar, ton niveau actuel et tes informations personnelles comme ton âge et ta ville."
         },
         {
-          id: 'progress-map',
-          name: 'Carte de progression',
-          selector: '.progress-map-container',
-          description: "Cette carte montre tous tes badges. Les badges débloqués sont en couleur, et les badges à débloquer sont grisés avec un cadenas. Le badge clignotant orange est ta prochaine activité recommandée !"
-        },
-        {
           id: 'next-activity',
           name: 'Prochaine activité',
           selector: '.next-activity',
@@ -561,10 +555,34 @@ export default {
           description: "Cette section affiche tous tes badges, débloqués ou non. Clique sur un badge pour voir plus de détails et comment le débloquer si tu ne l'as pas encore."
         },
         {
+          id: 'neural-progress',
+          name: 'Carte de progression',
+          selector: '.neural-progress-map',
+          description: "Cette carte interactive montre ta progression dans le parcours ! À gauche, tu as les jeux que tu peux débloquer. Au centre, tu vois ton avancement principal à travers le profil, le CV et la formation. Les connexions colorées montrent les étapes débloquées."
+        },
+        {
+          id: 'games-path',
+          name: 'Chemin des jeux',
+          selector: '.games-path',
+          description: "Voici les différents jeux disponibles. Chaque jeu débloqué est coloré et connecté à ton profil. Les jeux verrouillés s'ouvriront au fur et à mesure de ta progression !"
+        },
+        {
+          id: 'main-path',
+          name: 'Chemin principal',
+          selector: '.main-path',
+          description: "Ce chemin montre les étapes principales de ton parcours : compléter ton profil, créer ton CV et trouver une formation. Chaque étape se débloque en réalisant les activités précédentes."
+        },
+        {
+          id: 'progress-indicator',
+          name: 'Indicateur de progression',
+          selector: '.progress-indicator',
+          description: "Cet indicateur montre ton pourcentage d'avancement dans l'ensemble du parcours. Plus tu débloques de badges, plus la barre progresse !"
+        },
+        {
           id: 'actions',
           name: 'Actions',
           selector: '.action-buttons',
-          description: "Le boutons 'Mon profil' te permet d'accéder à un profil complet et le bouton 'Créer mon CV' te permet de générer un CV professionnel basé sur tes compétences. Il sera disponible quand tu auras fini ton parcours !"
+          description: "Le bouton 'Mon profil' te permet d'accéder à ton profil complet et le bouton 'Créer mon CV' te permet de générer un CV professionnel basé sur tes compétences. Il sera disponible quand tu auras fini ton parcours !"
         }
       ],
       
@@ -1246,7 +1264,7 @@ export default {
     /**
      * Met en évidence une section du profil
      */
-     highlightProfileSection(selector) {
+    highlightProfileSection(selector) {
       this.removeHighlights();
       
       const element = document.querySelector(selector);
@@ -1256,15 +1274,11 @@ export default {
         
         const rect = element.getBoundingClientRect();
         
-        //
         const container = document.querySelector('.rewards-container');
         const containerRect = container.getBoundingClientRect();
         
-        
-        
         const top = rect.top - containerRect.top + container.scrollTop;
         const left = rect.left - containerRect.left + container.scrollLeft;
-        
         
         highlight.style.position = 'absolute';
         highlight.style.top = `${top}px`;
@@ -1278,26 +1292,33 @@ export default {
         highlight.style.zIndex = '1050';
         highlight.style.animation = 'highlight-pulse 2s ease-out infinite';
         
-        
         container.appendChild(highlight);
         
-        
-        
+        // Amélioration du défilement pour s'assurer que l'élément est bien visible
         const elementTopRelativeToContainer = top;
         const elementBottomRelativeToContainer = top + rect.height;
         const containerVisibleTop = container.scrollTop;
         const containerVisibleBottom = container.scrollTop + container.clientHeight;
         
-        
-        if (elementTopRelativeToContainer < containerVisibleTop || elementBottomRelativeToContainer > containerVisibleBottom) {
+        // Si l'élément est hors de la zone visible ou partiellement visible
+        if (elementTopRelativeToContainer < containerVisibleTop || 
+            elementBottomRelativeToContainer > containerVisibleBottom ||
+            elementBottomRelativeToContainer - elementTopRelativeToContainer > container.clientHeight) {
           
-          container.scrollTo({
-            top: elementTopRelativeToContainer - container.clientHeight / 2 + rect.height / 2,
-            behavior: 'smooth'
-          });
+          // Pour les éléments très grands, on privilégie le haut de l'élément
+          if (rect.height > container.clientHeight * 0.7) {
+            container.scrollTo({
+              top: elementTopRelativeToContainer,
+              behavior: 'smooth'
+            });
+          } else {
+            // Pour les éléments plus petits, on centre
+            container.scrollTo({
+              top: elementTopRelativeToContainer - container.clientHeight / 2 + rect.height / 2,
+              behavior: 'smooth'
+            });
+          }
         }
-        
-        
         
         this.positionGuideDuringTour();
       } else {
