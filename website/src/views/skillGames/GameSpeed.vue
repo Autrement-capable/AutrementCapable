@@ -230,6 +230,8 @@ export default {
       showBadgeUnlockAnimation: false,
       badgeSpeedMasterId: 1,
       countdownInterval: null,
+      totalErrorsTracked: 0,
+      errorPositions: new Set(),
       badgeData: {
         name: "Maître de la vitesse",
         description: "Tu as terminé le jeu de vitesse avec une excellente performance !"
@@ -458,6 +460,8 @@ export default {
       this.timeLeft = this.levels[this.currentLevel].timeLimit;
       this.inputValue = '';
       this.mistakes = 0;
+      this.totalErrorsTracked = 0;  // Réinitialiser le compteur total d'erreurs
+      this.errorPositions = new Set(); // Réinitialiser les positions d'erreurs
       this.wpm = 0;
       this.accuracy = 100;
       this.feedback = '';
@@ -525,27 +529,39 @@ export default {
       // Vérifier si le niveau est déjà complété
       if (this.levelCompleted) return;
       
-      // Calculer les erreurs
-      let currentMistakes = 0;
+      // Pour suivre les nouvelles erreurs découvertes dans cette frappe
+      let newErrorsFound = 0;
+      
+      // Vérifier chaque caractère tapé
       for (let i = 0; i < input.length; i++) {
         if (i >= target.length || input[i] !== target[i]) {
-          currentMistakes++;
+          // Si cette position n'a pas déjà été marquée comme erreur
+          if (!this.errorPositions.has(i)) {
+            this.errorPositions.add(i);
+            newErrorsFound++;
+          }
         }
       }
       
-      this.mistakes = currentMistakes;
+      // Mettre à jour le nombre total d'erreurs de frappe
+      this.totalErrorsTracked += newErrorsFound;
       
-      // Calculer la précision
-      const accuracy = input.length > 0
-        ? Math.max(0, Math.round(((input.length - currentMistakes) / input.length) * 100))
+      // Utiliser le total des erreurs détectées pour les statistiques
+      this.mistakes = this.totalErrorsTracked;
+      
+      // Calculer la précision basée sur le nombre total d'erreurs par rapport aux caractères tapés
+      const totalCharactersAttempted = Math.max(input.length, this.errorPositions.size);
+      const accuracy = totalCharactersAttempted > 0
+        ? Math.max(0, Math.round(((totalCharactersAttempted - this.totalErrorsTracked) / totalCharactersAttempted) * 100))
         : 100;
       this.accuracy = accuracy;
       
       // Calculer le WPM (mots par minute)
       const timeElapsed = (new Date() - this.levelStartTime) / 1000 / 60;
-      const wordsTyped = input.length / 5;
+      const wordsTyped = input.length / 5; // Considère qu'un mot est en moyenne 5 caractères
       this.wpm = timeElapsed > 0 ? Math.round(wordsTyped / timeElapsed) : 0;
       
+      // Forcer la mise à jour de la vue
       this.$nextTick(() => {
         this.inputValue = this.inputValue.slice();
       });
