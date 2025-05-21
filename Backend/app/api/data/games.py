@@ -253,7 +253,6 @@ async def post_skills_data(payload: SkillsPost, jwt: dict, session: AsyncSession
 @secured_endpoint()
 async def get_room_env_data(jwt: dict, session: AsyncSession = Depends(getSession)):
     user_id = jwt["sub"]
-    # You'll need to implement this repository function
     data = await get_room_env_game_data(session, user_id)
     if not data:
         return RoomEnvGameResponse(
