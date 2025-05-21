@@ -183,44 +183,44 @@ class PasskeyCredential(AsyncAttrs, Base):
 
 ## Schema may change so we do json instead of individual columns
 ## Data validation does not exist as a result
-class UserSkill(Base):
-    __tablename__ = "user_skills"
+# class UserSkill(Base): # DEPRECATED
+#     __tablename__ = "user_skills"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
-    skills_data: Mapped[dict] = mapped_column(JSON, nullable=False, default={})
-    # Example:
-    # {
-    #   "empathie": 10,
-    #   "initiative": 8,
-    #   "communication": 12,
-    #   ...
-    # }
-    last_updated: Mapped[DateTime] = mapped_column(DateTime, server_default=func.now())
+#     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+#     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+#     skills_data: Mapped[dict] = mapped_column(JSON, nullable=False, default={})
+#     # Example:
+#     # {
+#     #   "empathie": 10,
+#     #   "initiative": 8,
+#     #   "communication": 12,
+#     #   ...
+#     # }
+#     last_updated: Mapped[DateTime] = mapped_column(DateTime, server_default=func.now())
 
-    # Relationships
-    user: Mapped["User"] = relationship(back_populates="skills")
+#     # Relationships
+#     user: Mapped["User"] = relationship(back_populates="skills")
 
 
-## same shit schema can change
-class UserAbilities(Base):
-    __tablename__ = "user_abilities"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
-    abilities_data: Mapped[dict] = mapped_column(JSON, nullable=False, default={})
+# ## same shit schema can change
+# class UserAbilities(Base): # DEP
+#     __tablename__ = "user_abilities"
+#     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+#     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+#     abilities_data: Mapped[dict] = mapped_column(JSON, nullable=False, default={})
 
-    # Example:
-    # {
-    #   "WantToLearn": ["Gestion du stress", ...],
-    #   "Unknow": ["Gestion du stress", ...],
-    #   "Weak": ["Gestion du stress", ...],
-    #   "Strong": ["Gestion du stress", ...],
-    #   "Skipped": ["Gestion du stress", ...],
-    # }
+#     # Example:
+#     # {
+#     #   "WantToLearn": ["Gestion du stress", ...],
+#     #   "Unknow": ["Gestion du stress", ...],
+#     #   "Weak": ["Gestion du stress", ...],
+#     #   "Strong": ["Gestion du stress", ...],
+#     #   "Skipped": ["Gestion du stress", ...],
+#     # }
 
-    last_updated: Mapped[DateTime] = mapped_column(DateTime, server_default=func.now())
-    # Relationships
-    user: Mapped["User"] = relationship(back_populates="abilities")
+#     last_updated: Mapped[DateTime] = mapped_column(DateTime, server_default=func.now())
+#     # Relationships
+#     user: Mapped["User"] = relationship(back_populates="abilities")
 
 ## game schemas
 
@@ -256,7 +256,7 @@ class ShapeSequenceGameData(Base):
     user_id = mapped_column(ForeignKey("users.id"), nullable=False)
 
     completion = mapped_column(Float, nullable=False, default=0.0)
-    highest_level = mapped_column(Integer, nullable=False, default=0)
+    levelResults = mapped_column(JSON, nullable=False, default={})
 
 # --- 3️⃣ Jobs Game ---
 class JobsGameData(Base):
@@ -266,6 +266,7 @@ class JobsGameData(Base):
     user_id = mapped_column(ForeignKey("users.id"), nullable=False)
 
     completion = mapped_column(Float, nullable=False, default=0.0)
+    jobChoices = mapped_column(JSON, nullable=False, default={})  # Assuming it's a dict
 
 # --- 4️⃣ Speed Game ---
 class SpeedGameData(Base):
@@ -274,8 +275,9 @@ class SpeedGameData(Base):
     id = mapped_column(Integer, primary_key=True)
     user_id = mapped_column(ForeignKey("users.id"), nullable=False)
 
+    current_level = mapped_column(Integer, nullable=False, default=0)
     completion = mapped_column(Float, nullable=False, default=0.0)
-    wpm = mapped_column(Integer, nullable=False, default=0)
+    levelStats = mapped_column(JSON, nullable=False, default={})
 
 # --- 5️⃣ Abilities Game ---
 class AbilitiesGameData(Base):
@@ -285,7 +287,7 @@ class AbilitiesGameData(Base):
     user_id = mapped_column(ForeignKey("users.id"), nullable=False)
 
     completion = mapped_column(Float, nullable=False, default=0.0)
-    abilities = mapped_column(JSON, nullable=False, default={})  # Assuming it's a dict
+    skillAssessment = mapped_column(JSON, nullable=False, default={})  # Assuming it's a dict
 
 # --- 6️⃣ Skills Game ---
 class SkillsGameData(Base):
@@ -295,4 +297,14 @@ class SkillsGameData(Base):
     user_id = mapped_column(ForeignKey("users.id"), nullable=False)
 
     completion = mapped_column(Float, nullable=False, default=0.0)
-    skills = mapped_column(JSON, nullable=False, default={})  # Assuming it's a dict
+    skillsAssessment = mapped_column(JSON, nullable=False, default={})  # Assuming it's a dict
+
+# --- 7️⃣ Room env ---
+class RoomEnvGameData(Base):
+    __tablename__ = "room_env_game_data"
+
+    id = mapped_column(Integer, primary_key=True)
+    user_id = mapped_column(ForeignKey("users.id"), nullable=False)
+
+    completion = mapped_column(Float, nullable=False, default=0.0)
+    roomData = mapped_column(JSON, nullable=False, default=list)  # Assuming it's a array of json objects
