@@ -13,12 +13,14 @@ from ...db.postgress.repositories.games_data import (
     get_speed_game_data,
     get_abilities_game_data,
     get_skills_game_data,
+    get_room_env_game_data,
     upsert_scenario_game_data,
     upsert_shape_sequence_game_data,
     upsert_jobs_game_data,
     upsert_speed_game_data,
     upsert_abilities_game_data,
     upsert_skills_game_data,
+    upsert_room_env_game_data,
 )
 from pydantic import BaseModel, Field
 from typing import Dict, Optional
@@ -59,6 +61,9 @@ class AbilitiesPost(BaseGamePost):
 class SkillsPost(BaseGamePost):
     skillsAssessment: Dict = {}
 
+class RoomEnvPost(BaseGamePost):
+    roomData: List[Dict] = Field(default_factory=list, description="Room environment configuration items")
+
 ## === Response Models ===
 class ScenarioGameResponse(BaseGameResponse):
     current_level: int = Field(..., description="Current level in the scenario game")
@@ -67,7 +72,7 @@ class ScenarioGameResponse(BaseGameResponse):
     
 class ShapeSequenceResponse(BaseGameResponse):
     levelResults: Dict[str, Any] = Field(default_factory=dict, description="Results for each completed level")
-    
+    current_level: int = Field(..., description="Current level in the shape sequence game")
 class JobsGameResponse(BaseGameResponse):
     jobChoices: Dict[str, Any] = Field(default_factory=dict, description="User's job selections and preferences")
     
@@ -132,6 +137,7 @@ async def get_shape_sequence_data(jwt: dict, session: AsyncSession = Depends(get
     return ShapeSequenceResponse(
         completion=data.completion,
         levelResults=data.levelResults,
+        current_level=data.current_level,
     )
 
 @games_router.post("/shape-sequence")
@@ -241,6 +247,31 @@ async def get_skills_game_data_endpoint(jwt: dict, session: AsyncSession = Depen
 async def post_skills_data(payload: SkillsPost, jwt: dict, session: AsyncSession = Depends(getSession)):
     data = await upsert_skills_game_data(session, jwt["sub"], payload.model_dump())
     return {"message": "Skills game data saved", "data": data.__dict__}
+
+# Add the RoomEnv game endpoint
+@games_router.get("/room-env", response_model=RoomEnvGameResponse)
+@secured_endpoint()
+async def get_room_env_data(jwt: dict, session: AsyncSession = Depends(getSession)):
+    user_id = jwt["sub"]
+    data = await get_room_env_game_data(session, user_id)
+    if not data:
+        return RoomEnvGameResponse(
+            message="No room environment data found",
+            completion=0.0,
+            roomData=[]
+        )
+
+    return RoomEnvGameResponse(
+        completion=data.completion,
+        roomData=data.roomData,
+    )
+
+@games_router.post("/room-env")
+@secured_endpoint()
+async def post_room_env_data(payload: RoomEnvPost, jwt: dict, session: AsyncSession = Depends(getSession)):
+    # You'll need to implement this repository function
+    data = await upsert_room_env_game_data(session, jwt["sub"], payload.model_dump())
+    return {"message": "Room environment data saved", "data": data.__dict__}
 
 # Register the router with the main application
 AddRouter(games_router)

@@ -262,6 +262,7 @@ class ShapeSequenceGameData(Base):
 
     completion = mapped_column(Float, nullable=False, default=0.0)
     levelResults = mapped_column(JSON, nullable=False, default={})
+    current_level = mapped_column(Integer, nullable=False, default=0)
 
 # --- 3️⃣ Jobs Game ---
 class JobsGameData(Base):
