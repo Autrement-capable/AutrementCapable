@@ -132,12 +132,6 @@ class User(AsyncAttrs, Base):
     passions: Mapped[list["UserPassion"]] = relationship(
         back_populates="user", lazy="selectin", cascade="all, delete-orphan"
     )
-    skills: Mapped[list["UserSkill"]] = relationship(
-        back_populates="user", lazy="selectin", cascade="all, delete-orphan"
-    )
-    abilities: Mapped[list["UserAbilities"]] = relationship(
-        back_populates="user", lazy="selectin", cascade="all, delete-orphan"
-    )
     terms_agreements: Mapped[list["UserTermsAgreement"]] = relationship(
         back_populates="user", lazy="selectin", cascade="all, delete-orphan"
     )
