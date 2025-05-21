@@ -200,6 +200,7 @@
 <script>
 import { unlockBadge, isBadgeUnlocked } from '@/utils/badges';
 import GameGuide from '@/components/GameGuideComponent.vue';
+import AuthService from '@/services/AuthService';
 
 export default {
   name: 'GameSpeed',
@@ -348,6 +349,97 @@ export default {
     this.clearTimers();
   },
   methods: {
+    saveCurrentLevelStats(isSuccess) {
+      // D'abord, récupérer les données existantes
+      AuthService.request('get', '/games/speed')
+        .then(response => {
+          // Initialiser la structure si les données sont invalides
+          let currentData = response.data && typeof response.data === 'object' 
+            ? response.data 
+            : { currentLevel: 0, completion: 0, levelStats: {} };
+          
+          // S'assurer que la structure minimale est présente
+          if (!currentData.levelStats) {
+            currentData.levelStats = {};
+          }
+          
+          // Mettre à jour le niveau actuel si le niveau complété est plus élevé
+          if (this.currentLevel + 1 > currentData.currentLevel) {
+            currentData.currentLevel = this.currentLevel + 1;
+          }
+          
+          // Calculer le pourcentage de complétion
+          currentData.completion = parseFloat(((currentData.currentLevel / this.levels.length) * 100).toFixed(1));
+          
+          // Ajouter les statistiques du niveau actuel
+          const levelKey = String(this.currentLevel + 1); // Les niveaux commencent à 1 dans le JSON
+          
+          currentData.levelStats[levelKey] = {
+            success: isSuccess,
+            wpm: this.wpm,
+            accuracy: this.accuracy,
+            errors: this.mistakes
+          };
+          
+          console.log('Données à envoyer au backend:', currentData);
+          
+          // Envoyer les données mises à jour
+          return AuthService.request('post', '/games/speed', currentData);
+        })
+        .then(response => {
+          console.log('Réponse complète du backend après mise à jour:', response);
+        })
+        .catch(error => {
+          console.error('Erreur lors de la mise à jour des statistiques:', error);
+          
+          if (error.response) {
+            console.error('Réponse d\'erreur du serveur:', {
+              status: error.response.status,
+              statusText: error.response.statusText,
+              data: error.response.data
+            });
+          }
+          
+          // En cas d'erreur d'authentification, sauvegarder localement
+          if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+            console.warn('Problème d\'authentification. Vos statistiques seront sauvegardées localement.');
+            this.saveStatsLocally(isSuccess);
+          }
+        });
+    },
+
+    saveStatsLocally(isSuccess) {
+      // Récupérer les données existantes du localStorage
+      let localData = JSON.parse(localStorage.getItem('speedGameStats') || '{"currentLevel":0,"completion":0,"levelStats":{}}');
+      
+      // S'assurer que la structure minimale est présente
+      if (!localData.levelStats) {
+        localData.levelStats = {};
+      }
+      
+      // Mettre à jour le niveau actuel si le niveau complété est plus élevé
+      if (this.currentLevel + 1 > localData.currentLevel) {
+        localData.currentLevel = this.currentLevel + 1;
+      }
+      
+      // Calculer le pourcentage de complétion
+      localData.completion = parseFloat(((localData.currentLevel / this.levels.length) * 100).toFixed(1));
+      
+      // Ajouter les statistiques du niveau actuel
+      const levelKey = String(this.currentLevel + 1); // Les niveaux commencent à 1 dans le JSON
+      
+      localData.levelStats[levelKey] = {
+        success: isSuccess,
+        wpm: this.wpm,
+        accuracy: this.accuracy,
+        errors: this.mistakes
+      };
+      
+      // Sauvegarder dans localStorage
+      localStorage.setItem('speedGameStats', JSON.stringify(localData));
+      console.log('Statistiques sauvegardées localement:', localData);
+    },
+
     // Démarrer le jeu
     startGame() {
       this.gameStarted = true;
@@ -482,6 +574,9 @@ export default {
       this.feedback = "Excellent ! Niveau complété !";
       this.feedbackClass = "feedback-correct";
       
+      // Sauvegarder les statistiques avec succès
+      this.saveCurrentLevelStats(true);
+      
       // Débloquer le badge si c'est le dernier niveau et si la performance est bonne
       if (this.currentLevel === this.levels.length - 1 && this.accuracy >= 90) {
         this.unlockSpeedMasterBadge();
@@ -502,6 +597,9 @@ export default {
         time: this.levels[this.currentLevel].timeLimit // temps maximal utilisé
       });
       
+      // Sauvegarder les statistiques avec échec
+      this.saveCurrentLevelStats(false);
+      
       // Permettre de passer au niveau suivant même si celui-ci n'est pas complété
       this.levelCompleted = true;
     },
@@ -520,6 +618,32 @@ export default {
     // Terminer le jeu et afficher les résultats
     endGame() {
       this.clearTimers();
+      
+      // Sauvegarder les statistiques finales du jeu complet
+      const finalStats = {
+        currentLevel: this.currentLevel + 1,
+        completion: parseFloat((((this.currentLevel + 1) / this.levels.length) * 100).toFixed(1)),
+        levelStats: {}
+      };
+      
+      // Convertir les résultats des niveaux en statistiques finales
+      this.levelResults.forEach(result => {
+        finalStats.levelStats[result.level] = {
+          success: result.accuracy >= 70, // Considéré comme réussi si précision >= 70%
+          wpm: result.wpm,
+          accuracy: result.accuracy,
+          errors: result.mistakes
+        };
+      });
+      
+      // Envoyer les statistiques finales
+      AuthService.request('post', '/games/speed', finalStats)
+        .catch(error => {
+          console.error('Erreur lors de la mise à jour des statistiques finales:', error);
+          // En cas d'erreur, sauvegarder localement
+          localStorage.setItem('speedGameStats', JSON.stringify(finalStats));
+        });
+      
       this.showResults = true;
     },
     
