@@ -769,56 +769,43 @@ export default {
 
       const backendCategory = answerTypeMapping[answerType];
       
-      // Calculer le nombre total de compétences disponibles dans le jeu
-      const calculateTotalSkillsCount = () => {
-        let count = 0;
-        const categories = Object.keys(this.skillsList || {});
-        
-        categories.forEach(category => {
-          count += Object.keys(this.skillsList[category] || {}).length;
-        });
-        
-        return count > 0 ? count : this.totalSkills; // Fallback sur totalSkills si le calcul échoue
-      };
-      
       // D'abord, récupérer les données existantes
       AuthService.request('get', '/games/skills')
         .then(response => {
           // Initialiser une structure par défaut si les données sont invalides
           let currentData = response.data && typeof response.data === 'object' 
             ? response.data 
-            : { completion: 0, abilities: {} };
+            : { completion: 0, skills: {} };
 
           console.log('Données récupérées du backend:', currentData);
           
           // S'assurer que la structure minimale est présente
-          if (!currentData.abilities) {
-            currentData.abilities = {};
+          if (!currentData.skills) {
+            currentData.skills = {};
           }
           
           // Créer la catégorie si elle n'existe pas
-          if (!currentData.abilities[backendCategory]) {
-            currentData.abilities[backendCategory] = {};
+          if (!currentData.skills[backendCategory]) {
+            currentData.skills[backendCategory] = {};
           }
           
           // Ajouter la nouvelle compétence à la catégorie
-          currentData.abilities[backendCategory][skillName] = {};
+          currentData.skills[backendCategory][skillName] = {};
           
           // Calculer le nombre total de compétences répondues
           let answeredSkillsCount = 0;
-          Object.keys(currentData.abilities).forEach(category => {
-            answeredSkillsCount += Object.keys(currentData.abilities[category]).length;
+          Object.keys(currentData.skills).forEach(category => {
+            answeredSkillsCount += Object.keys(currentData.skills[category]).length;
           });
           
           // Calculer le pourcentage de complétion
-          const totalPossibleSkills = calculateTotalSkillsCount();
-          // const completionPercentage = totalPossibleSkills > 0 
-          //   ? answeredSkillsCount / totalPossibleSkills 
-          //   : 0;
+          const totalPossibleSkills = 29; // Nombre total de compétences possibles
+          const completionPercentage = totalPossibleSkills > 0 
+            ? answeredSkillsCount / totalPossibleSkills 
+            : 0;
           
-          // S'assurer que la complétion est entre 0 et 1 (pour un pourcentage)
-          // currentData.completion = Math.min(1, Math.max(0, completionPercentage));
-          currentData.completion = 0;
+          // S'assurer que la complétion est un pourcentage
+          currentData.completion = Math.min(1, Math.max(0, completionPercentage));
 
           console.log(`Complétion: ${(currentData.completion * 100).toFixed(2)}% (${answeredSkillsCount}/${totalPossibleSkills} compétences)`);
           
@@ -851,39 +838,27 @@ export default {
 
     saveLocallyIfNeeded(skillName, category) {
       // Récupérer les données existantes du localStorage
-      let localData = JSON.parse(localStorage.getItem('userAbilities') || '{"completion":0,"abilities":{}}');
+      let localData = JSON.parse(localStorage.getItem('userskills') || '{"completion":0,"skills":{}}');
       
       // Mettre à jour les données locales
-      if (!localData.abilities[category]) {
-        localData.abilities[category] = {};
+      if (!localData.skills[category]) {
+        localData.skills[category] = {};
       }
       
-      localData.abilities[category][skillName] = {};
-      
-      // Calculer le pourcentage de complétion pour les données locales
-      const calculateTotalSkillsCount = () => {
-        let count = 0;
-        const categories = Object.keys(this.skillsList || {});
-        
-        categories.forEach(category => {
-          count += Object.keys(this.skillsList[category] || {}).length;
-        });
-        
-        return count > 0 ? count : this.totalSkills;
-      };
+      localData.skills[category][skillName] = {};
       
       // Compter les compétences répondues
       let answeredCount = 0;
-      Object.keys(localData.abilities).forEach(cat => {
-        answeredCount += Object.keys(localData.abilities[cat]).length;
+      Object.keys(localData.skills).forEach(cat => {
+        answeredCount += Object.keys(localData.skills[cat]).length;
       });
       
       // Calculer et mettre à jour la complétion
-      const totalPossible = calculateTotalSkillsCount();
+      const totalPossible = 29; // Nombre total de compétences possibles
       localData.completion = totalPossible > 0 ? answeredCount / totalPossible : 0;
       
       // Sauvegarder dans localStorage
-      localStorage.setItem('userAbilities', JSON.stringify(localData));
+      localStorage.setItem('userskills', JSON.stringify(localData));
       console.log('Données sauvegardées localement:', localData);
     },
     
