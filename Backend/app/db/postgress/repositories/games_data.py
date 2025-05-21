@@ -161,3 +161,28 @@ async def upsert_skills_game_data(session: AsyncSession, user_id: int, payload: 
 
     await session.commit()
     return data
+
+# === Room Environment Game ===
+async def get_room_env_game_data(session: AsyncSession, user_id: int) -> Optional[RoomEnvGameData]:
+    try:
+        stmt = select(RoomEnvGameData).where(RoomEnvGameData.user_id == user_id)
+        result = await session.execute(stmt)
+        return result.scalars().first()
+    except Exception as e:
+        print(f"Error getting room environment game data: {e}")
+        return None
+
+async def upsert_room_env_game_data(session: AsyncSession, user_id: int, payload: dict):
+    stmt = select(RoomEnvGameData).where(RoomEnvGameData.user_id == user_id)
+    result = await session.execute(stmt)
+    data = result.scalars().first()
+
+    if data:
+        for key, value in payload.items():
+            setattr(data, key, value)
+    else:
+        data = RoomEnvGameData(user_id=user_id, **payload)
+        session.add(data)
+
+    await session.commit()
+    return data

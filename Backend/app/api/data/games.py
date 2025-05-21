@@ -13,12 +13,14 @@ from ...db.postgress.repositories.games_data import (
     get_speed_game_data,
     get_abilities_game_data,
     get_skills_game_data,
+    get_room_env_game_data,
     upsert_scenario_game_data,
     upsert_shape_sequence_game_data,
     upsert_jobs_game_data,
     upsert_speed_game_data,
     upsert_abilities_game_data,
     upsert_skills_game_data,
+    upsert_room_env_game_data,
 )
 from pydantic import BaseModel, Field
 from typing import Dict, Optional
@@ -58,6 +60,9 @@ class AbilitiesPost(BaseGamePost):
 # === Skills ===
 class SkillsPost(BaseGamePost):
     skillsAssessment: Dict = {}
+
+class RoomEnvPost(BaseGamePost):
+    roomData: List[Dict] = Field(default_factory=list, description="Room environment configuration items")
 
 ## === Response Models ===
 class ScenarioGameResponse(BaseGameResponse):
@@ -242,6 +247,32 @@ async def get_skills_game_data_endpoint(jwt: dict, session: AsyncSession = Depen
 async def post_skills_data(payload: SkillsPost, jwt: dict, session: AsyncSession = Depends(getSession)):
     data = await upsert_skills_game_data(session, jwt["sub"], payload.model_dump())
     return {"message": "Skills game data saved", "data": data.__dict__}
+
+# Add the RoomEnv game endpoint
+@games_router.get("/room-env", response_model=RoomEnvGameResponse)
+@secured_endpoint()
+async def get_room_env_data(jwt: dict, session: AsyncSession = Depends(getSession)):
+    user_id = jwt["sub"]
+    # You'll need to implement this repository function
+    data = await get_room_env_game_data(session, user_id)
+    if not data:
+        return RoomEnvGameResponse(
+            message="No room environment data found",
+            completion=0.0,
+            roomData=[]
+        )
+
+    return RoomEnvGameResponse(
+        completion=data.completion,
+        roomData=data.roomData,
+    )
+
+@games_router.post("/room-env")
+@secured_endpoint()
+async def post_room_env_data(payload: RoomEnvPost, jwt: dict, session: AsyncSession = Depends(getSession)):
+    # You'll need to implement this repository function
+    data = await upsert_room_env_game_data(session, jwt["sub"], payload.model_dump())
+    return {"message": "Room environment data saved", "data": data.__dict__}
 
 # Register the router with the main application
 AddRouter(games_router)
