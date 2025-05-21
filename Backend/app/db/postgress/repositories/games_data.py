@@ -9,10 +9,8 @@ from ..models.test_model import (
     SpeedGameData,
     AbilitiesGameData,
     SkillsGameData,
+    RoomEnvGameData,
 )
-
-# new styling for python 3.11
-# Option[thing] == thing | None
 
 # === Scenario Game ===
 async def get_scenario_game_data(session: AsyncSession, user_id: int) -> Optional[ScenarioGameData]:
