@@ -769,20 +769,57 @@ export default {
 
       const backendCategory = answerTypeMapping[answerType];
       
-      const abilityData = {
-        category: backendCategory,
-        ability: skillName,
-      };
-
-      console.log('Données envoyées au backend:', abilityData);
-      
-      // N'ajoutez plus func=add dans l'URL
-      AuthService.request('post', '/abilities/add', abilityData)
+      // D'abord, récupérer les données existantes
+      AuthService.request('get', '/games/skills')
         .then(response => {
-          console.log('Réponse complète du backend:', response);
+          // Initialiser une structure par défaut si les données sont invalides
+          let currentData = response.data && typeof response.data === 'object' 
+            ? response.data 
+            : { completion: 0, skills: {} };
+
+          console.log('Données récupérées du backend:', currentData);
+          
+          // S'assurer que la structure minimale est présente
+          if (!currentData.skills) {
+            currentData.skills = {};
+          }
+          
+          // Créer la catégorie si elle n'existe pas
+          if (!currentData.skills[backendCategory]) {
+            currentData.skills[backendCategory] = {};
+          }
+          
+          // Ajouter la nouvelle compétence à la catégorie
+          currentData.skills[backendCategory][skillName] = {};
+          
+          // Calculer le nombre total de compétences répondues
+          let answeredSkillsCount = 0;
+          Object.keys(currentData.skills).forEach(category => {
+            answeredSkillsCount += Object.keys(currentData.skills[category]).length;
+          });
+          
+          // Calculer le pourcentage de complétion
+          const totalPossibleSkills = 29; // Nombre total de compétences possibles
+          const completionPercentage = totalPossibleSkills > 0 
+            ? answeredSkillsCount / totalPossibleSkills 
+            : 0;
+          
+          // S'assurer que la complétion est un pourcentage
+          currentData.completion = Math.min(1, Math.max(0, completionPercentage));
+
+          console.log(`Complétion: ${(currentData.completion * 100).toFixed(2)}% (${answeredSkillsCount}/${totalPossibleSkills} compétences)`);
+          
+          // Envoyer les données mises à jour
+          console.log('Envoi des données au backend...');
+          console.log('Données envoyées:', currentData);
+          return AuthService.request('post', '/games/skills', currentData);
+        })
+        .then(response => {
+          console.log('Réponse complète du backend après mise à jour:', response);
         })
         .catch(error => {
-          console.error('Erreur détaillée lors de l\'envoi:', error);
+          console.error('Erreur lors de la mise à jour des compétences:', error);
+          
           if (error.response) {
             console.error('Réponse d\'erreur du serveur:', {
               status: error.response.status,
@@ -791,10 +828,38 @@ export default {
             });
           }
           
+          // En cas d'erreur d'authentification, sauvegarder localement
           if (error.response && (error.response.status === 401 || error.response.status === 403)) {
             console.warn('Problème d\'authentification. Vos réponses seront sauvegardées localement.');
+            this.saveLocallyIfNeeded(skillName, backendCategory);
           }
         });
+    },
+
+    saveLocallyIfNeeded(skillName, category) {
+      // Récupérer les données existantes du localStorage
+      let localData = JSON.parse(localStorage.getItem('userskills') || '{"completion":0,"skills":{}}');
+      
+      // Mettre à jour les données locales
+      if (!localData.skills[category]) {
+        localData.skills[category] = {};
+      }
+      
+      localData.skills[category][skillName] = {};
+      
+      // Compter les compétences répondues
+      let answeredCount = 0;
+      Object.keys(localData.skills).forEach(cat => {
+        answeredCount += Object.keys(localData.skills[cat]).length;
+      });
+      
+      // Calculer et mettre à jour la complétion
+      const totalPossible = 29; // Nombre total de compétences possibles
+      localData.completion = totalPossible > 0 ? answeredCount / totalPossible : 0;
+      
+      // Sauvegarder dans localStorage
+      localStorage.setItem('userskills', JSON.stringify(localData));
+      console.log('Données sauvegardées localement:', localData);
     },
     
     // Get icon for a skill

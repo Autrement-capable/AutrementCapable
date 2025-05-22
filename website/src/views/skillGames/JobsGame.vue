@@ -268,6 +268,7 @@ import { ref, computed, onMounted } from 'vue';
 import { metiersData } from '@/data/metiersData.js';
 import { unlockBadge, isBadgeUnlocked } from '@/utils/badges';
 import GameGuide from '@/components/GameGuideComponent.vue';
+import AuthService from '@/services/AuthService';
 
 export default {
   name: 'JobDiscoveryGame',
@@ -436,6 +437,9 @@ export default {
         likedJobs.value.push(currentMetier.value);
       }
       
+      // Envoyer le choix au backend
+      sendJobChoiceToBackend(currentMetier.value.name, 'like');
+      
       saveData();
       checkBadges();
       nextCard();
@@ -449,9 +453,119 @@ export default {
         seenJobs.value.push(currentMetier.value.id);
       }
       
+      // Envoyer le choix au backend
+      sendJobChoiceToBackend(currentMetier.value.name, 'dislike');
+      
       saveData();
       checkBadges();
       nextCard();
+    }
+
+    function unknownJob() {
+      if (!currentMetier.value) return;
+      
+      // Ajouter aux métiers vus
+      if (!seenJobs.value.includes(currentMetier.value.id)) {
+        seenJobs.value.push(currentMetier.value.id);
+      }
+      
+      // Envoyer le choix au backend
+      sendJobChoiceToBackend(currentMetier.value.name, 'unknown');
+      
+      saveData();
+      nextCard();
+    }
+
+    function sendJobChoiceToBackend(jobName, choiceType) {
+      // Mapper les types de choix aux valeurs attendues par le backend
+      const choiceTypeMapping = {
+        'like': 'like',
+        'dislike': 'dislike',
+        'unknown': 'unknown',
+        'skip': 'unknown' // Si on veut gérer les sauts, on peut les mapper à 'unknown'
+      };
+
+      const backendChoice = choiceTypeMapping[choiceType];
+      
+      // D'abord, récupérer les données existantes
+      AuthService.request('get', '/games/jobs')
+        .then(response => {
+          // Initialiser une structure par défaut si les données sont invalides
+          let currentData = response.data && typeof response.data === 'object' 
+            ? response.data 
+            : { completion: 0, jobChoices: {} };
+          
+          // S'assurer que la structure minimale est présente
+          if (!currentData.jobChoices) {
+            currentData.jobChoices = {};
+          }
+          
+          // Ajouter le nouveau choix de métier
+          currentData.jobChoices[jobName] = backendChoice;
+          
+          // Calculer le pourcentage de complétion
+          const totalPossibleJobs = metiersData.length;
+          const answeredJobsCount = Object.keys(currentData.jobChoices).length;
+          
+          // Calculer et formater le pourcentage (0-100)
+          const completionPercentage = totalPossibleJobs > 0 
+            ? Math.min(100, Math.round((answeredJobsCount / totalPossibleJobs) * 100))
+            : 0;
+          
+          currentData.completion = completionPercentage / 100;
+          
+          console.log('Données à envoyer au backend:', currentData);
+          console.log(`Complétion: ${completionPercentage}% (${answeredJobsCount}/${totalPossibleJobs} métiers)`);
+          
+          // Envoyer les données mises à jour
+          return AuthService.request('post', '/games/jobs', currentData);
+        })
+        .then(response => {
+          console.log('Réponse complète du backend après mise à jour:', response);
+        })
+        .catch(error => {
+          console.error('Erreur lors de la mise à jour des choix de métiers:', error);
+          
+          if (error.response) {
+            console.error('Réponse d\'erreur du serveur:', {
+              status: error.response.status,
+              statusText: error.response.statusText,
+              data: error.response.data
+            });
+          }
+          
+          // En cas d'erreur d'authentification, sauvegarder localement
+          if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+            console.warn('Problème d\'authentification. Vos choix de métiers seront sauvegardés localement.');
+            saveJobChoicesLocally(jobName, backendChoice);
+          }
+        });
+    }
+
+    function saveJobChoicesLocally(jobName, choiceType) {
+      // Récupérer les données existantes du localStorage
+      let localData = JSON.parse(localStorage.getItem('userJobChoices') || '{"completion":0,"jobChoices":{}}');
+      
+      // Mettre à jour les données locales
+      if (!localData.jobChoices) {
+        localData.jobChoices = {};
+      }
+      
+      // Ajouter le choix de métier
+      localData.jobChoices[jobName] = choiceType;
+      
+      // Calculer le pourcentage de complétion
+      const totalPossibleJobs = metiersData.length;
+      const answeredJobsCount = Object.keys(localData.jobChoices).length;
+      
+      // Calculer et formater le pourcentage (0-100)
+      localData.completion = totalPossibleJobs > 0 
+        ? Math.min(100, Math.round((answeredJobsCount / totalPossibleJobs) * 100))
+        : 0;
+      
+      // Sauvegarder dans localStorage
+      localStorage.setItem('userJobChoices', JSON.stringify(localData));
+      console.log('Choix de métiers sauvegardés localement:', localData);
     }
     
     function showDetails() {
@@ -578,7 +692,10 @@ export default {
       goToNextGame,
       goToJobDetails,
       checkBadges,
-      closeBadgeAnimation
+      closeBadgeAnimation,
+      sendJobChoiceToBackend,
+      saveJobChoicesLocally,
+      unknownJob,
     };
   }
 };

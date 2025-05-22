@@ -9,7 +9,7 @@ from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload
 
-from ..models import User, PasskeyCredential, Role
+from ..models import User, PasskeyCredential, Role, UserDetail
 from .role import get_role_by_name
 
 

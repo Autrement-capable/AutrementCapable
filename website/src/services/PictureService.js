@@ -49,7 +49,6 @@ async function checkAvifSupport() {
           resolve(false);
         }
       });
-    } else {
     }
   } catch (e) {
     console.log('Canvas feature detection failed:', e);

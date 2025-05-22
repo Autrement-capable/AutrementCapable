@@ -200,6 +200,7 @@
 <script>
 import { unlockBadge, isBadgeUnlocked } from '@/utils/badges';
 import GameGuide from '@/components/GameGuideComponent.vue';
+import AuthService from '@/services/AuthService';
 
 export default {
   name: 'GameSpeed',
@@ -229,6 +230,8 @@ export default {
       showBadgeUnlockAnimation: false,
       badgeSpeedMasterId: 1,
       countdownInterval: null,
+      totalErrorsTracked: 0,
+      errorPositions: new Set(),
       badgeData: {
         name: "Maître de la vitesse",
         description: "Tu as terminé le jeu de vitesse avec une excellente performance !"
@@ -348,6 +351,97 @@ export default {
     this.clearTimers();
   },
   methods: {
+    saveCurrentLevelStats(isSuccess) {
+      // D'abord, récupérer les données existantes
+      AuthService.request('get', '/games/speed')
+        .then(response => {
+          // Initialiser la structure si les données sont invalides
+          let currentData = response.data && typeof response.data === 'object' 
+            ? response.data 
+            : { currentLevel: 0, completion: 0, levelStats: {} };
+          
+          // S'assurer que la structure minimale est présente
+          if (!currentData.levelStats) {
+            currentData.levelStats = {};
+          }
+          
+          // Mettre à jour le niveau actuel si le niveau complété est plus élevé
+          if (this.currentLevel + 1 > currentData.currentLevel) {
+            currentData.currentLevel = this.currentLevel + 1;
+          }
+          
+          // Calculer le pourcentage de complétion
+          currentData.completion = parseFloat(((currentData.currentLevel / this.levels.length) * 100).toFixed(1));
+          
+          // Ajouter les statistiques du niveau actuel
+          const levelKey = String(this.currentLevel + 1); // Les niveaux commencent à 1 dans le JSON
+          
+          currentData.levelStats[levelKey] = {
+            success: isSuccess,
+            wpm: this.wpm,
+            accuracy: this.accuracy,
+            errors: this.mistakes
+          };
+          
+          console.log('Données à envoyer au backend:', currentData);
+          
+          // Envoyer les données mises à jour
+          return AuthService.request('post', '/games/speed', currentData);
+        })
+        .then(response => {
+          console.log('Réponse complète du backend après mise à jour:', response);
+        })
+        .catch(error => {
+          console.error('Erreur lors de la mise à jour des statistiques:', error);
+          
+          if (error.response) {
+            console.error('Réponse d\'erreur du serveur:', {
+              status: error.response.status,
+              statusText: error.response.statusText,
+              data: error.response.data
+            });
+          }
+          
+          // En cas d'erreur d'authentification, sauvegarder localement
+          if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+            console.warn('Problème d\'authentification. Vos statistiques seront sauvegardées localement.');
+            this.saveStatsLocally(isSuccess);
+          }
+        });
+    },
+
+    saveStatsLocally(isSuccess) {
+      // Récupérer les données existantes du localStorage
+      let localData = JSON.parse(localStorage.getItem('speedGameStats') || '{"currentLevel":0,"completion":0,"levelStats":{}}');
+      
+      // S'assurer que la structure minimale est présente
+      if (!localData.levelStats) {
+        localData.levelStats = {};
+      }
+      
+      // Mettre à jour le niveau actuel si le niveau complété est plus élevé
+      if (this.currentLevel + 1 > localData.currentLevel) {
+        localData.currentLevel = this.currentLevel + 1;
+      }
+      
+      // Calculer le pourcentage de complétion
+      localData.completion = parseFloat(((localData.currentLevel / this.levels.length) * 100).toFixed(1));
+      
+      // Ajouter les statistiques du niveau actuel
+      const levelKey = String(this.currentLevel + 1); // Les niveaux commencent à 1 dans le JSON
+      
+      localData.levelStats[levelKey] = {
+        success: isSuccess,
+        wpm: this.wpm,
+        accuracy: this.accuracy,
+        errors: this.mistakes
+      };
+      
+      // Sauvegarder dans localStorage
+      localStorage.setItem('speedGameStats', JSON.stringify(localData));
+      console.log('Statistiques sauvegardées localement:', localData);
+    },
+
     // Démarrer le jeu
     startGame() {
       this.gameStarted = true;
@@ -366,6 +460,8 @@ export default {
       this.timeLeft = this.levels[this.currentLevel].timeLimit;
       this.inputValue = '';
       this.mistakes = 0;
+      this.totalErrorsTracked = 0;  // Réinitialiser le compteur total d'erreurs
+      this.errorPositions = new Set(); // Réinitialiser les positions d'erreurs
       this.wpm = 0;
       this.accuracy = 100;
       this.feedback = '';
@@ -433,27 +529,39 @@ export default {
       // Vérifier si le niveau est déjà complété
       if (this.levelCompleted) return;
       
-      // Calculer les erreurs
-      let currentMistakes = 0;
+      // Pour suivre les nouvelles erreurs découvertes dans cette frappe
+      let newErrorsFound = 0;
+      
+      // Vérifier chaque caractère tapé
       for (let i = 0; i < input.length; i++) {
         if (i >= target.length || input[i] !== target[i]) {
-          currentMistakes++;
+          // Si cette position n'a pas déjà été marquée comme erreur
+          if (!this.errorPositions.has(i)) {
+            this.errorPositions.add(i);
+            newErrorsFound++;
+          }
         }
       }
       
-      this.mistakes = currentMistakes;
+      // Mettre à jour le nombre total d'erreurs de frappe
+      this.totalErrorsTracked += newErrorsFound;
       
-      // Calculer la précision
-      const accuracy = input.length > 0
-        ? Math.max(0, Math.round(((input.length - currentMistakes) / input.length) * 100))
+      // Utiliser le total des erreurs détectées pour les statistiques
+      this.mistakes = this.totalErrorsTracked;
+      
+      // Calculer la précision basée sur le nombre total d'erreurs par rapport aux caractères tapés
+      const totalCharactersAttempted = Math.max(input.length, this.errorPositions.size);
+      const accuracy = totalCharactersAttempted > 0
+        ? Math.max(0, Math.round(((totalCharactersAttempted - this.totalErrorsTracked) / totalCharactersAttempted) * 100))
         : 100;
       this.accuracy = accuracy;
       
       // Calculer le WPM (mots par minute)
       const timeElapsed = (new Date() - this.levelStartTime) / 1000 / 60;
-      const wordsTyped = input.length / 5;
+      const wordsTyped = input.length / 5; // Considère qu'un mot est en moyenne 5 caractères
       this.wpm = timeElapsed > 0 ? Math.round(wordsTyped / timeElapsed) : 0;
       
+      // Forcer la mise à jour de la vue
       this.$nextTick(() => {
         this.inputValue = this.inputValue.slice();
       });
@@ -482,6 +590,9 @@ export default {
       this.feedback = "Excellent ! Niveau complété !";
       this.feedbackClass = "feedback-correct";
       
+      // Sauvegarder les statistiques avec succès
+      this.saveCurrentLevelStats(true);
+      
       // Débloquer le badge si c'est le dernier niveau et si la performance est bonne
       if (this.currentLevel === this.levels.length - 1 && this.accuracy >= 90) {
         this.unlockSpeedMasterBadge();
@@ -502,6 +613,9 @@ export default {
         time: this.levels[this.currentLevel].timeLimit // temps maximal utilisé
       });
       
+      // Sauvegarder les statistiques avec échec
+      this.saveCurrentLevelStats(false);
+      
       // Permettre de passer au niveau suivant même si celui-ci n'est pas complété
       this.levelCompleted = true;
     },
@@ -520,6 +634,32 @@ export default {
     // Terminer le jeu et afficher les résultats
     endGame() {
       this.clearTimers();
+      
+      // Sauvegarder les statistiques finales du jeu complet
+      const finalStats = {
+        currentLevel: this.currentLevel + 1,
+        completion: parseFloat((((this.currentLevel + 1) / this.levels.length) * 100).toFixed(1)),
+        levelStats: {}
+      };
+      
+      // Convertir les résultats des niveaux en statistiques finales
+      this.levelResults.forEach(result => {
+        finalStats.levelStats[result.level] = {
+          success: result.accuracy >= 70, // Considéré comme réussi si précision >= 70%
+          wpm: result.wpm,
+          accuracy: result.accuracy,
+          errors: result.mistakes
+        };
+      });
+      
+      // Envoyer les statistiques finales
+      AuthService.request('post', '/games/speed', finalStats)
+        .catch(error => {
+          console.error('Erreur lors de la mise à jour des statistiques finales:', error);
+          // En cas d'erreur, sauvegarder localement
+          localStorage.setItem('speedGameStats', JSON.stringify(finalStats));
+        });
+      
       this.showResults = true;
     },
     

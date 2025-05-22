@@ -12,6 +12,7 @@ from ...core.security.decorators import secured_endpoint
 from ...db.postgress.engine import getSession
 from ...db.postgress.models import User, UserDetail, UserPassion, UserPicture
 from ...db.postgress.repositories.user_passions import get_user_passions, create_user_passion, delete_user_passion
+from ...db.postgress.repositories.user import store_avatar_info, get_avatar_info, AvatarInfo
 
 class UserProfileResponse(BaseModel):
     username: Optional[str]
@@ -142,5 +143,62 @@ async def update_my_profile(
         session.add(user_detail)
 
     return {"message": "Profile updated successfully"}
+
+
+## avatar data
+@profile_router.post("/avatar-creation-data")
+@secured_endpoint()
+async def process_avatar_creation_data(
+    data: AvatarInfo,
+    jwt: dict,
+    session: AsyncSession = Depends(getSession)
+):
+    """Process avatar creation data"""
+    user_id = jwt["sub"]
+
+    try:
+        await store_avatar_info(session, user_id, data)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while processing avatar creation data"
+        )
+
+    return {"message": "Avatar creation data processed successfully"}
+
+@profile_router.get("/avatar-creation-data", response_model=AvatarInfo)
+@secured_endpoint()
+async def get_avatar_creation_data(
+    jwt: dict,
+    session: AsyncSession = Depends(getSession)
+):
+    """Get avatar creation data"""
+    user_id = jwt["sub"]
+
+    async with session.begin():
+        # Get user
+        user = await session.get(User, user_id)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+
+        # Get avatar info
+        avatar_info = await get_avatar_info(session, user_id)
+
+        if not avatar_info:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Avatar creation data not found"
+            )
+    avatar_info = {
+        "avatarGender" : avatar_info.avatarGender,
+        "avatarAccessories" : avatar_info.avatarAccessories,
+        "avatarColor" : avatar_info.avatarColor,
+        "avatarPassions" : avatar_info.avatarPassions,
+        "avatarExpression" : avatar_info.avatarExpression,
+    }
+    return avatar_info
 
 AddRouter(profile_router)
