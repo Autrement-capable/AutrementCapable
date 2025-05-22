@@ -122,12 +122,6 @@
           <span v-if="highContrastMode">🌓</span>
           <span v-else>🌑</span>
         </button>
-        <!-- <button @click="increaseTextSize" class="accessibility-button">
-          A+
-        </button>
-        <button @click="decreaseTextSize" class="accessibility-button">
-          A-
-        </button> -->
       </div>
   
       <!-- Message de chargement -->
@@ -142,6 +136,7 @@
   import { scenarios } from '@/data/data.js';
   import { unlockBadge } from '@/utils/badges.js';
   const avatars = require.context('@/assets/avatars/', false, /\.png$/);
+  import AuthService from '@/services/AuthService';
   
   export default {
     name: "ScenarioPage",
@@ -159,7 +154,7 @@
         lastChoiceSkills: [],
         soundEnabled: true,
         highContrastMode: false,
-        textSizeLevel: 0, // 0 = normal, -1 = small, 1 = large
+        textSizeLevel: 0,
         completedScenarios: []
       };
     },
@@ -484,8 +479,92 @@
           }
         }
         
-        // Sauvegarder les compétences mises à jour
+        // Sauvegarder les compétences mises à jour dans localStorage
         localStorage.setItem('userSoftSkills', JSON.stringify(savedSkills));
+        
+        // Sauvegarder vers le backend
+        this.saveProgressToBackend(savedSkills);
+      },
+
+      saveProgressLocally(skills) {
+        // Calculer le niveau actuel et la complétion
+        const completedScenarios = JSON.parse(localStorage.getItem('completedScenarios') || '[]');
+        
+        // S'assurer que nous avons des nombres valides
+        const currentLevel = completedScenarios.length > 0 ? Math.max(...completedScenarios) : 0;
+        
+        // Calculer la complétion (entre 0 et 1)
+        const totalScenarios = scenarios.length;
+        const completionDecimal = totalScenarios > 0 
+          ? currentLevel / totalScenarios 
+          : 0;
+        
+        // S'assurer que la complétion est un nombre valide entre 0 et 1
+        const completion = isNaN(completionDecimal) ? 0 : parseFloat(completionDecimal.toFixed(4));
+        
+        // Utiliser directement les compétences individuelles
+        const traits = { ...skills };
+        
+        // Créer l'objet à sauvegarder
+        const progressData = {
+          currentLevel,
+          completion,
+          traits
+        };
+        
+        console.log(`Complétion locale Scenario: ${(completion * 100).toFixed(1)}% (${currentLevel}/${totalScenarios} scénarios)`);
+        
+        // Sauvegarder dans localStorage
+        localStorage.setItem('scenarioProgressBackup', JSON.stringify(progressData));
+        console.log('Sauvegarde locale de la progression:', progressData);
+      },
+
+      saveProgressToBackend(skills) {
+        // D'abord récupérer les données déjà sauvegardées
+        AuthService.request('get', '/games/scenario')
+          .then(response => {
+            // Initialiser les données si elles n'existent pas
+            let data = response.data && typeof response.data === 'object'
+              ? response.data
+              : { currentLevel: 0, completion: 0, traits: {} };
+            
+            // S'assurer que currentLevel est un nombre valide
+            if (typeof data.currentLevel !== 'number' || isNaN(data.currentLevel)) {
+              data.currentLevel = 0;
+            }
+            
+            // Mettre à jour le niveau actuel
+            const currentScenarioId = this.scenario.id;
+            if (currentScenarioId > data.currentLevel) {
+              data.currentLevel = currentScenarioId;
+            }
+            
+            // Calculer le pourcentage de complétion (entre 0 et 1)
+            const totalScenarios = scenarios.length;
+            const completionDecimal = totalScenarios > 0 
+              ? data.currentLevel / totalScenarios 
+              : 0;
+            
+            // S'assurer que la complétion est un nombre entre 0 et 1 arrondi au centième
+            data.completion = isNaN(completionDecimal) ? 0 : parseFloat(completionDecimal.toFixed(4));
+            
+            // Utiliser directement les compétences individuelles
+            data.traits = { ...skills };
+            
+            console.log(`Complétion Scenario: ${(data.completion * 100).toFixed(1)}% (${data.currentLevel}/${totalScenarios} scénarios)`);
+            console.log('Données à envoyer au backend:', data);
+            
+            // Envoyer les données au backend
+            return AuthService.request('post', '/games/scenario', data);
+          })
+          .then(response => {
+            console.log('Progression sauvegardée avec succès:', response.data);
+          })
+          .catch(error => {
+            console.error('Erreur lors de la sauvegarde de la progression:', error);
+            // Sauvegarde locale comme fallback
+            this.saveProgressLocally(skills);
+          });
       },
       
       getAvatarPath(filename) {
