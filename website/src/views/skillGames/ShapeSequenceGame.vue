@@ -235,6 +235,11 @@ export default {
             currentData.levelResults = {};
           }
           
+          // S'assurer que currentLevel est un nombre valide
+          if (typeof currentData.currentLevel !== 'number' || isNaN(currentData.currentLevel)) {
+            currentData.currentLevel = 0;
+          }
+          
           // Mettre à jour le niveau actuel si le niveau complété est plus élevé
           if (currentLevel.value + 1 > currentData.currentLevel) {
             currentData.currentLevel = currentLevel.value + 1;
@@ -243,9 +248,16 @@ export default {
           // Ajouter le résultat du niveau actuel
           currentData.levelResults[levelNumber] = isCorrect;
           
-          // Calculer le pourcentage de complétion avec une précision d'une décimale
-          currentData.completion = parseFloat(((currentData.currentLevel / levels.length) * 100).toFixed(1));
+          // Calculer le pourcentage de complétion (entre 0 et 1)
+          const totalLevels = levels.length; // 12 niveaux
+          const completionDecimal = totalLevels > 0 
+            ? currentData.currentLevel / totalLevels 
+            : 0;
           
+          // S'assurer que la complétion est un nombre entre 0 et 1 arrondi au centième
+          currentData.completion = isNaN(completionDecimal) ? 0 : parseFloat(completionDecimal.toFixed(4));
+          
+          console.log(`Complétion Shape Sequence: ${(currentData.completion * 100).toFixed(1)}% (${currentData.currentLevel}/${totalLevels} niveaux)`);
           console.log('Données à envoyer au backend:', currentData);
           
           // Envoyer les données mises à jour
@@ -282,6 +294,11 @@ export default {
         localData.levelResults = {};
       }
       
+      // S'assurer que currentLevel est un nombre valide
+      if (typeof localData.currentLevel !== 'number' || isNaN(localData.currentLevel)) {
+        localData.currentLevel = 0;
+      }
+      
       // Mettre à jour le niveau actuel si le niveau complété est plus élevé
       if (currentLevel.value + 1 > localData.currentLevel) {
         localData.currentLevel = currentLevel.value + 1;
@@ -290,8 +307,16 @@ export default {
       // Ajouter le résultat du niveau actuel
       localData.levelResults[levelNumber] = isCorrect;
       
-      // Calculer le pourcentage de complétion
-      localData.completion = parseFloat(((localData.currentLevel / levels.length) * 100).toFixed(1));
+      // Calculer le pourcentage de complétion (entre 0 et 1)
+      const totalLevels = levels.length; // 12 niveaux
+      const completionDecimal = totalLevels > 0 
+        ? localData.currentLevel / totalLevels 
+        : 0;
+      
+      // S'assurer que la complétion est un nombre entre 0 et 1
+      localData.completion = isNaN(completionDecimal) ? 0 : parseFloat(completionDecimal.toFixed(4));
+      
+      console.log(`Complétion locale Shape Sequence: ${(localData.completion * 100).toFixed(1)}% (${localData.currentLevel}/${totalLevels} niveaux)`);
       
       // Sauvegarder dans localStorage
       localStorage.setItem('shapeSequenceResults', JSON.stringify(localData));
@@ -446,7 +471,7 @@ export default {
       score.value = 0;
       correctAnswers.value = 0;
       showResults.value = false;
-      levelResults.value = {}; // Réinitialiser les résultats des niveaux
+      levelResults.value = {};
       
       // Réinitialiser les données dans le backend
       const resetData = {
@@ -469,18 +494,18 @@ export default {
       showResults.value = true;
       
       // Calculer les statistiques finales
-      const finalStats = {
-        currentLevel: levels.length,
-        completion: 100.0,
-        levelResults: levelResults.value
-      };
+      // const finalStats = {
+      //   currentLevel: levels.length,
+      //   completion: 100.0,
+      //   levelResults: levelResults.value
+      // };
       
       // Envoyer les statistiques finales au backend
-      AuthService.request('post', '/games/shape-sequence', finalStats)
-        .catch(error => {
-          console.error('Erreur lors de la mise à jour des statistiques finales:', error);
-          localStorage.setItem('shapeSequenceResults', JSON.stringify(finalStats));
-        });
+      // AuthService.request('post', '/games/shape-sequence', finalStats)
+      //   .catch(error => {
+      //     console.error('Erreur lors de la mise à jour des statistiques finales:', error);
+      //     localStorage.setItem('shapeSequenceResults', JSON.stringify(finalStats));
+      //   });
       
       // Débloquer le badge si 80% ou plus de réponses correctes
       if ((correctAnswers.value / levels.length) >= 0.8) {
