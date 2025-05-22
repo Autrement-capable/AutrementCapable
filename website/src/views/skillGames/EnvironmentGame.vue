@@ -446,66 +446,34 @@ export default {
       // Liste des environnements prédéfinis
       environments: [
         {
-          name: 'Espace de concentration',
-          shortDescription:
-            'Environnement optimisé pour le travail intellectuel',
+          name: 'Espace Polyvalent (Concentration & Détente)',
+          shortDescription: 'Environnement modulable pour travail et relaxation',
           description:
-            'Un espace conçu pour favoriser la concentration avec un éclairage adapté, des couleurs apaisantes et un minimum de distractions.',
-          previewColor: '#4A90E2',
-          imageSrc: '/images/concentration_space.png',
-          icon: '🧠',
-          objectsCategory: 'concentration',
+            'Un espace hybride offrant des zones dédiées à la concentration intellectuelle et à la détente sensorielle, avec des paramètres personnalisables.',
+          previewColor: '#7986CB', // A blend color
+          imageSrc: '/images/concentration_space.png', // Placeholder, ideally a new image like '/images/polyvalent_space.png'
+          icon: '🧠🌿', // Merged icon
+          objectsCategory: 'polyvalent', // New category for RoomRenderer
           defaultSettings: {
             room: {
               width: 9,
               depth: 9,
               height: 3.2,
-              wallColor: '#f0f0f5',
-              floorColor: '#6a75a3',
-              ceilingColor: '#ffffff',
+              wallColor: '#eaf0f5',    // Blend of '#f0f0f5' (concentration) and '#e6f0f5' (détente)
+              floorColor: '#a0a8c4',   // Blend of '#6a75a3' (concentration) and '#d1dde6' (détente)
+              ceilingColor: '#f8fafc', // Blend of '#ffffff' (concentration) and '#f0f7fa' (détente)
             },
             lighting: {
-              color: '#ffffff',
-              intensity: 2,
+              color: '#f8f8ff',       // Slightly off-white, between '#ffffff' and '#f0f7fa'
+              intensity: 1.6,         // Average of 2 (concentration) and 1.2 (détente)
               ambient: true,
             },
             sound: {
-              type: 'whitenoise',
-              volume: 0.2,
+              type: 'whitenoise',     // Default to 'whitenoise'
+              volume: 0.25,           // Average of 0.2 (concentration) and 0.3 (détente)
               peopleCount: 0,
             },
-            clutter: 'minimal',
-          },
-        },
-        {
-          name: 'Espace de détente',
-          shortDescription: 'Zone calme pour se ressourcer',
-          description:
-            'Un environnement tranquille conçu pour apaiser les sens avec des tons doux, un éclairage tamisé et une ambiance sonore relaxante.',
-          previewColor: '#66BB6A',
-          imageSrc: '/images/relaxation_space.png',
-          icon: '🌿',
-          objectsCategory: 'detente',
-          defaultSettings: {
-            room: {
-              width: 9,
-              depth: 9,
-              height: 3.2,
-              wallColor: '#e6f0f5',
-              floorColor: '#d1dde6',
-              ceilingColor: '#f0f7fa',
-            },
-            lighting: {
-              color: '#f0f7fa',
-              intensity: 1.2,
-              ambient: true,
-            },
-            sound: {
-              type: 'nature',
-              volume: 0.3,
-              peopleCount: 0,
-            },
-            clutter: 'moderate',
+            clutter: 'moderate', // To accommodate items from both zones
           },
         },
         {

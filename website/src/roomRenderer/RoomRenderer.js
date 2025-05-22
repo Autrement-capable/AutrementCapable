@@ -25,44 +25,11 @@ export default class RoomRenderer {
       this.onLoadingProgressCallback = null;
 
       this.objectCategories = {
-        concentration: ['desk', 'chair', 'bookshelf', 'computer', 'filing', 'notebook', 'whiteboard', 'lamp1', 'plant'],
-        detente: ['sofa', 'coffeetable', 'plant', 'rug', 'bookshelf', 'lamp1', 'beanbag', 'tv', 'tvstand' , 'painting1', 'painting2', 'painting3', 'toi'],
+        polyvalent: ['desk', 'chair', 'bookshelf', 'computer', 'filing', 'lamp1', 'notebook', 'tv', 'tvstand', 'whiteboard', 'sofa', 'coffeetable', 'rug', 'beanbag', 'plant', 'toi', 'painting1', 'painting2', 'painting3'],
         social: ['coffeetable', 'plant', 'speakers', 'ceilingFan', 'meetingTable', 'moi', 'painting1', 'painting2', 'painting3', 'tvstand'],
-        sensoriel: ['colorbox', 'textureboard', 'lightpanel', 'cushion', 'plant', 'lamp', 'sofa', 'lightbulb'],
-        transition: ['bench', 'plant', 'sign', 'clock', 'lightbulb']
       };
       
       this.categoryConfigurations = {
-        // Espace de concentration
-        concentration: {
-          desk: { position: [5, 0, 1], scale: 0.2, rotation: [0, 0, 0] },
-          chair: { position: [4.6, 0, 2], scale: 0.015, rotation: [0, Math.PI, 0] },
-          bookshelf: { position: [0.19, 0, 3], scale: 0.9, rotation: [0, Math.PI/2, 0] },
-          computer: { position: [4.65, 1.28, 1.2], scale: 1, rotation: [0, Math.PI, 0] },
-          filing: { position: [0.61, 0, 8], scale: 1.4, rotation: [0, Math.PI/2, 0] },
-          notebook: { position: [6, 0, 2.4], scale: 0.1, rotation: [0, Math.PI/3, 0] },
-          whiteboard: { position: [5, 1.35, 0.1], scale: 2.6, rotation: [0, 0, 0] },
-          lamp1: { position: [5.55, 2.4, 5.55], scale: 1.2, rotation: [0, Math.PI/4, 0] },
-          plant: { position: [9, 0.25, 1], scale: 0.005, rotation: [0, 0, 0] }
-        },
-        
-        // Espace de détente
-        detente: {
-          sofa: { position: [8, -0.1, 5], scale: 0.017, rotation: [0, -Math.PI/2, 0] },
-          coffeetable: { position: [6, 0.5, 0.3], scale: 0.3, rotation: [0, 0, 0] },
-          plant: { position: [9, 0.25, 1], scale: 0.005, rotation: [0, 0, 0] },
-          rug: { position: [5, 0, 5], scale: 3, rotation: [0, Math.PI/2, 0] },
-          bookshelf: { position: [3, 0, 0.3], scale: 0.9, rotation: [0, 0, 0] },
-          lamp1: { position: [5.55, 2.4, 5.55], scale: 1.2, rotation: [0, Math.PI/4, 0] },
-          beanbag: { position: [1, 0, 9], scale: 20, rotation: [0, Math.PI - 45, 0] },
-          tv: { position: [2, 1, 5], scale: 1.8, rotation: [0, Math.PI/2, 0] },
-          tvstand: { position: [2, 0, 5], scale: 0.021, rotation: [0, Math.PI/2, 0] },
-          painting1: { position: [0, 1.5, 2], scale: 1.7, rotation: [0, Math.PI/2, 0] },
-          painting2: { position: [0, 1.5, 9], scale: 1.7, rotation: [0, Math.PI, 0] },
-          painting3: { position: [8, 1.5, 0.05], scale: 1.7, rotation: [0, 0, 0] },
-          toi: { position: [3.8, 0.284, 0.3], scale: 0.027, rotation: [0, Math.PI/2, 0] },
-        },
-        
         // Espace social contrôlé
         social: {
           coffeetable: { position: [6, 1.4, 0.3], scale: 0.25, rotation: [0, 0, 0] },
@@ -76,8 +43,34 @@ export default class RoomRenderer {
           painting3: { position: [3, 1.5, 0.05], scale: 1.7, rotation: [0, 0, 0] },
           tvstand: { position: [5, 0, 0.5], scale: 0.021, rotation: [0, 0, 0] },
         },
+        polyvalent: {
+          // Work zone (left side)
+          desk: { position: [2.5, 0, 3], scale: 0.02, rotation: [0, 0, 0] },
+          chair: { position: [2.1, 0, 4], scale: 0.001, rotation: [0, Math.PI, 0] },
+          computer: { position: [2.15, 1.28, 3.2], scale: 0.5, rotation: [0, Math.PI, 0] },
+          notebook: { position: [3, 0, 2.6], scale: 0.1, rotation: [0, Math.PI/3, 0] },
+          whiteboard: { position: [1.5, 1.35, 1.1], scale: 0.2, rotation: [0, 0, 0] },
+          filing: { position: [0.5, 0, 2], scale: 0.4, rotation: [0, Math.PI/2, 0] },
+          
+          // Relaxation zone (right side)
+          sofa: { position: [7, -0.1, 6], scale: 0.017, rotation: [0, -Math.PI/2, 0] },
+          coffeetable: { position: [5.5, 0.5, 6], scale: 0.3, rotation: [0, 0, 0] },
+          rug: { position: [6, 0, 6], scale: 1.5, rotation: [0, Math.PI/2, 0] },
+          beanbag: { position: [8, 0, 8], scale: 1, rotation: [0, Math.PI - 45, 0] },
+          tv: { position: [8, 1, 5], scale: 0.8, rotation: [0, -Math.PI/2, 0] },
+          tvstand: { position: [8, 0, 5], scale: 0.021, rotation: [0, -Math.PI/2, 0] },
+          
+          // Shared elements
+          bookshelf: { position: [0.3, 0, 5], scale: 0.9, rotation: [0, Math.PI/2, 0] },
+          lamp1: { position: [4.5, 2.4, 4.5], scale: 1.2, rotation: [0, Math.PI/4, 0] },
+          plant: { position: [8.5, 0.25, 2], scale: 0.005, rotation: [0, 0, 0] },
+          painting1: { position: [4.5, 1.5, 0.1], scale: 0.7, rotation: [0, 0, 0] },
+          painting2: { position: [8, 1.5, 2], scale: 0.7, rotation: [0, -Math.PI/2, 0] },
+          painting3: { position: [0.1, 1.5, 7], scale: 0.7, rotation: [0, Math.PI/2, 0] },
+          toi: { position: [7, 0.284, 8], scale: 0.027, rotation: [0, -Math.PI/2, 0] },
+        },
       };
-      
+
       this.room = {
         width: 9,
         depth: 9, 
