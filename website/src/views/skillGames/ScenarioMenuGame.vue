@@ -230,8 +230,8 @@ export default {
             console.log('Données du backend:', serverData);
             
             // S'assurer que les données sont valides
-            const currentLevel = typeof serverData.currentLevel === 'number' && !isNaN(serverData.currentLevel) 
-              ? serverData.currentLevel 
+            const current_level = typeof serverData.current_level === 'number' && !isNaN(serverData.current_level) 
+              ? serverData.current_level 
               : 0;
             
             const completion = typeof serverData.completion === 'number' && !isNaN(serverData.completion) 
@@ -244,7 +244,7 @@ export default {
             
             // Générer la liste des scénarios complétés
             const completedIds = [];
-            for (let i = 1; i <= Math.max(currentLevel, completedScenariosCount); i++) {
+            for (let i = 1; i <= Math.max(current_level, completedScenariosCount); i++) {
               completedIds.push(i);
             }
             
@@ -315,7 +315,7 @@ export default {
       
       // Réinitialiser les données sur le backend en incluant toutes les compétences individuelles
       const resetData = {
-        currentLevel: 0,
+        current_level: 0,
         completion: 0, // 0 (entre 0 et 1)
         traits: {},
       };
@@ -359,7 +359,7 @@ export default {
           .then(response => {
             // Utiliser la réponse du GET pour créer les données réinitialisées
             let resetData = {
-              currentLevel: 0,
+              current_level: 0,
               completion: 0.0,
               traits: {}
             };
@@ -368,7 +368,7 @@ export default {
             if (response.data && typeof response.data === 'object') {
               resetData = {
                 ...response.data,
-                currentLevel: 0,
+                current_level: 0,
                 completion: 0.0,
                 traits: {}
               };

@@ -491,12 +491,12 @@
         const completedScenarios = JSON.parse(localStorage.getItem('completedScenarios') || '[]');
         
         // S'assurer que nous avons des nombres valides
-        const currentLevel = completedScenarios.length > 0 ? Math.max(...completedScenarios) : 0;
+        const current_level = completedScenarios.length > 0 ? Math.max(...completedScenarios) : 0;
         
         // Calculer la complétion (entre 0 et 1)
         const totalScenarios = scenarios.length;
         const completionDecimal = totalScenarios > 0 
-          ? currentLevel / totalScenarios 
+          ? current_level / totalScenarios 
           : 0;
         
         // S'assurer que la complétion est un nombre valide entre 0 et 1
@@ -507,12 +507,12 @@
         
         // Créer l'objet à sauvegarder
         const progressData = {
-          currentLevel,
+          current_level,
           completion,
           traits
         };
         
-        console.log(`Complétion locale Scenario: ${(completion * 100).toFixed(1)}% (${currentLevel}/${totalScenarios} scénarios)`);
+        console.log(`Complétion locale Scenario: ${(completion * 100).toFixed(1)}% (${current_level}/${totalScenarios} scénarios)`);
         
         // Sauvegarder dans localStorage
         localStorage.setItem('scenarioProgressBackup', JSON.stringify(progressData));
@@ -526,23 +526,23 @@
             // Initialiser les données si elles n'existent pas
             let data = response.data && typeof response.data === 'object'
               ? response.data
-              : { currentLevel: 0, completion: 0, traits: {} };
+              : { current_level: 0, completion: 0, traits: {} };
             
             // S'assurer que currentLevel est un nombre valide
-            if (typeof data.currentLevel !== 'number' || isNaN(data.currentLevel)) {
-              data.currentLevel = 0;
+            if (typeof data.current_level !== 'number' || isNaN(data.current_level)) {
+              data.current_level = 0;
             }
             
             // Mettre à jour le niveau actuel
             const currentScenarioId = this.scenario.id;
-            if (currentScenarioId > data.currentLevel) {
-              data.currentLevel = currentScenarioId;
+            if (currentScenarioId > data.current_level) {
+              data.current_level = currentScenarioId;
             }
             
             // Calculer le pourcentage de complétion (entre 0 et 1)
             const totalScenarios = scenarios.length;
             const completionDecimal = totalScenarios > 0 
-              ? data.currentLevel / totalScenarios 
+              ? data.current_level / totalScenarios 
               : 0;
             
             // S'assurer que la complétion est un nombre entre 0 et 1 arrondi au centième
@@ -551,7 +551,7 @@
             // Utiliser directement les compétences individuelles
             data.traits = { ...skills };
             
-            console.log(`Complétion Scenario: ${(data.completion * 100).toFixed(1)}% (${data.currentLevel}/${totalScenarios} scénarios)`);
+            console.log(`Complétion Scenario: ${(data.completion * 100).toFixed(1)}% (${data.current_level}/${totalScenarios} scénarios)`);
             console.log('Données à envoyer au backend:', data);
             
             // Envoyer les données au backend
