@@ -360,33 +360,57 @@ export default {
             ? response.data 
             : { currentLevel: 0, completion: 0, levelStats: {} };
           
-          // S'assurer que la structure minimale est présente
+          // S'assurer que la structure minimale est présente et que les valeurs sont valides
           if (!currentData.levelStats) {
             currentData.levelStats = {};
           }
           
-          // Mettre à jour le niveau actuel si le niveau complété est plus élevé
-          if (this.currentLevel + 1 > currentData.currentLevel) {
-            currentData.currentLevel = this.currentLevel + 1;
+          // Harmoniser les noms de propriétés - utiliser currentLevel du backend s'il existe
+          if (currentData.current_level !== undefined) {
+            currentData.currentLevel = currentData.current_level;
+            delete currentData.current_level; // Supprimer l'ancienne propriété
           }
           
-          // Calculer le pourcentage de complétion
-          currentData.completion = parseFloat(((currentData.currentLevel / this.levels.length) * 100).toFixed(1));
+          // S'assurer que currentLevel est un nombre valide
+          if (typeof currentData.currentLevel !== 'number' || isNaN(currentData.currentLevel)) {
+            currentData.currentLevel = 0;
+          }
+          
+          // Mettre à jour le niveau actuel si le niveau complété est plus élevé
+          const newLevel = this.currentLevel + 1;
+          if (newLevel > currentData.currentLevel) {
+            currentData.currentLevel = newLevel;
+          }
+          
+          // Calculer le pourcentage de complétion avec validation
+          const levelsLength = this.levels && this.levels.length ? this.levels.length : 1;
+          const currentLevel = currentData.currentLevel || 0;
+          const completionPercentage = (currentLevel / levelsLength) * 100;
+          
+          // S'assurer que le résultat est un nombre valide
+          currentData.completion = isNaN(completionPercentage) ? 0 : (parseFloat(completionPercentage.toFixed(1)) / 100);
           
           // Ajouter les statistiques du niveau actuel
           const levelKey = String(this.currentLevel + 1); // Les niveaux commencent à 1 dans le JSON
           
           currentData.levelStats[levelKey] = {
             success: isSuccess,
-            wpm: this.wpm,
-            accuracy: this.accuracy,
-            errors: this.mistakes
+            wpm: this.wpm || 0,
+            accuracy: this.accuracy || 0,
+            errors: this.mistakes || 0
           };
           
-          console.log('Données à envoyer au backend:', currentData);
+          // Nettoyer l'objet pour n'envoyer que les propriétés nécessaires
+          const dataToSend = {
+            currentLevel: currentData.currentLevel,
+            completion: currentData.completion,
+            levelStats: currentData.levelStats
+          };
+          
+          console.log('Données à envoyer au backend:', dataToSend);
           
           // Envoyer les données mises à jour
-          return AuthService.request('post', '/games/speed', currentData);
+          return AuthService.request('post', '/games/speed', dataToSend);
         })
         .then(response => {
           console.log('Réponse complète du backend après mise à jour:', response);
@@ -419,27 +443,51 @@ export default {
         localData.levelStats = {};
       }
       
-      // Mettre à jour le niveau actuel si le niveau complété est plus élevé
-      if (this.currentLevel + 1 > localData.currentLevel) {
-        localData.currentLevel = this.currentLevel + 1;
+      // Harmoniser les noms de propriétés si nécessaire
+      if (localData.current_level !== undefined) {
+        localData.currentLevel = localData.current_level;
+        delete localData.current_level;
       }
       
-      // Calculer le pourcentage de complétion
-      localData.completion = parseFloat(((localData.currentLevel / this.levels.length) * 100).toFixed(1));
+      // S'assurer que currentLevel est un nombre valide
+      if (typeof localData.currentLevel !== 'number' || isNaN(localData.currentLevel)) {
+        localData.currentLevel = 0;
+      }
+      
+      // Mettre à jour le niveau actuel si le niveau complété est plus élevé
+      const newLevel = this.currentLevel + 1;
+      if (newLevel > localData.currentLevel) {
+        localData.currentLevel = newLevel;
+      }
+      
+      // Calculer le pourcentage de complétion avec validation
+      const levelsLength = this.levels && this.levels.length ? this.levels.length : 1;
+      const currentLevel = localData.currentLevel || 0;
+      const completionPercentage = (currentLevel / levelsLength) * 100;
+      
+      // S'assurer que le résultat est un nombre valide
+      localData.completion = isNaN(completionPercentage) ? 0 : parseFloat(completionPercentage.toFixed(1));
       
       // Ajouter les statistiques du niveau actuel
       const levelKey = String(this.currentLevel + 1); // Les niveaux commencent à 1 dans le JSON
       
       localData.levelStats[levelKey] = {
         success: isSuccess,
-        wpm: this.wpm,
-        accuracy: this.accuracy,
-        errors: this.mistakes
+        wpm: this.wpm || 0,
+        accuracy: this.accuracy || 0,
+        errors: this.mistakes || 0
+      };
+      
+      // Nettoyer l'objet pour ne garder que les propriétés nécessaires
+      const dataToSave = {
+        currentLevel: localData.currentLevel,
+        completion: localData.completion,
+        levelStats: localData.levelStats
       };
       
       // Sauvegarder dans localStorage
-      localStorage.setItem('speedGameStats', JSON.stringify(localData));
-      console.log('Statistiques sauvegardées localement:', localData);
+      localStorage.setItem('speedGameStats', JSON.stringify(dataToSave));
+      console.log('Statistiques sauvegardées localement:', dataToSave);
     },
 
     // Démarrer le jeu
@@ -635,10 +683,15 @@ export default {
     endGame() {
       this.clearTimers();
       
+      // Calculer la complétion avec validation
+      const levelsLength = this.levels && this.levels.length ? this.levels.length : 1;
+      const currentLevel = this.currentLevel + 1;
+      const completionPercentage = (currentLevel / levelsLength) * 100;
+      
       // Sauvegarder les statistiques finales du jeu complet
       const finalStats = {
-        currentLevel: this.currentLevel + 1,
-        completion: parseFloat((((this.currentLevel + 1) / this.levels.length) * 100).toFixed(1)),
+        currentLevel: currentLevel,
+        completion: isNaN(completionPercentage) ? 0 : parseFloat(completionPercentage.toFixed(1)),
         levelStats: {}
       };
       
@@ -646,19 +699,21 @@ export default {
       this.levelResults.forEach(result => {
         finalStats.levelStats[result.level] = {
           success: result.accuracy >= 70, // Considéré comme réussi si précision >= 70%
-          wpm: result.wpm,
-          accuracy: result.accuracy,
-          errors: result.mistakes
+          wpm: result.wpm || 0,
+          accuracy: result.accuracy || 0,
+          errors: result.mistakes || 0
         };
       });
       
+      console.log('Statistiques finales à envoyer:', finalStats);
+      
       // Envoyer les statistiques finales
-      AuthService.request('post', '/games/speed', finalStats)
-        .catch(error => {
-          console.error('Erreur lors de la mise à jour des statistiques finales:', error);
-          // En cas d'erreur, sauvegarder localement
-          localStorage.setItem('speedGameStats', JSON.stringify(finalStats));
-        });
+      // AuthService.request('post', '/games/speed', finalStats)
+      //   .catch(error => {
+      //     console.error('Erreur lors de la mise à jour des statistiques finales:', error);
+      //     // En cas d'erreur, sauvegarder localement
+      //     localStorage.setItem('speedGameStats', JSON.stringify(finalStats));
+      //   });
       
       this.showResults = true;
     },
