@@ -1174,8 +1174,6 @@ export default {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /* Masquer les contrôles pendant l'autoplay initial si souhaité */
-  /* pointer-events: none; */
 }
 
 /* Indicateur de lecture automatique */
