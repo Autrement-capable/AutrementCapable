@@ -591,15 +591,12 @@ export default {
       try {
         const response = await AuthService.request('get', '/games/room-env')
         if (response.data && response.data.roomData && Array.isArray(response.data.roomData) && response.data.roomData.length > 0) {
-          console.log('Données chargées depuis le backend:', response.data)
           
           // Restaurer le Set des rooms complétées à partir des données du backend
           this.completedRooms.clear()
           response.data.roomData.forEach(roomData => {
             this.completedRooms.add(roomData.room)
           })
-          
-          console.log(`Progression chargée: ${this.completedRooms.size}/2 rooms complétées`)
         }
       } catch (error) {
         console.warn('Impossible de charger depuis le backend, tentative locale...')
@@ -609,44 +606,51 @@ export default {
         const savedCompletedRooms = JSON.parse(localStorage.getItem('completedRooms') || '[]')
         
         if (localPayload.roomData && Array.isArray(localPayload.roomData) && localPayload.roomData.length > 0) {
-          console.log('Données chargées localement:', localPayload)
           
           // Restaurer le Set des rooms complétées depuis les données locales
           this.completedRooms.clear()
           localPayload.roomData.forEach(roomData => {
             this.completedRooms.add(roomData.room)
           })
-          
-          console.log(`Progression locale chargée: ${this.completedRooms.size}/2 rooms complétées`)
         } else if (savedCompletedRooms.length > 0) {
           // Fallback: utiliser l'ancien format si disponible
           this.completedRooms.clear()
           savedCompletedRooms.forEach(roomName => {
             this.completedRooms.add(roomName)
           })
-          
-          console.log(`Progression locale (format legacy) chargée: ${this.completedRooms.size}/2 rooms complétées`)
         }
       }
     },
 
     calculateCompletion() {
       const totalRooms = 2 // Focus Room et Open Room
-      const completedCount = this.completedRooms.size
+      const completedRoomsArray = Array.from(this.completedRooms)
+      const completedCount = completedRoomsArray.length
+      
+      // Vérification spécifique des rooms attendues
+      const expectedRooms = ['Focus Room', 'Open Room']
+      const hasAllExpectedRooms = expectedRooms.every(room => this.completedRooms.has(room))
       
       if (completedCount === 0) return 0
       if (completedCount === 1) return 0.5
-      if (completedCount === 2) return 1.0
+      if (completedCount >= 2 || hasAllExpectedRooms) return 1.0
       
-      return completedCount / totalRooms
+      const result = Math.min(completedCount / totalRooms, 1.0)
+      return result
     },
 
     mapEnvironmentToRoomName(environmentName) {
+      // Mapping plus strict avec trim pour éviter les problèmes d'espaces
+      const cleanName = environmentName.trim()
+      
       const mapping = {
         'Espace Polyvalent (Concentration & Détente)': 'Focus Room',
         'Espace social contrôlé': 'Open Room'
       }
-      return mapping[environmentName] || 'Focus Room'
+      
+      const result = mapping[cleanName] || 'Focus Room'
+      
+      return result
     },
 
     // Mapper l'intensité lumineuse numérique vers les valeurs API
@@ -721,7 +725,7 @@ export default {
       
       return {
         room: roomName,
-        completion: this.calculateCompletion(),
+        completion: 1.0,
         lightIntensity: this.mapLightIntensity(this.lightIntensity),
         lightColor: this.mapLightColor(this.lightColor),
         roomColor: this.mapRoomColor(this.wallColor, this.floorColor, this.ceilingColor),
@@ -739,8 +743,6 @@ export default {
       const globalCompletion = this.calculateCompletion()
       
       try {
-        console.log(`Sauvegarde des données pour ${roomName}:`, roomData)
-        
         // Récupérer les données existantes
         let existingRoomData = []
         try {
@@ -755,13 +757,12 @@ export default {
         // Supprimer l'ancienne version de cette room si elle existe
         existingRoomData = existingRoomData.filter(room => room.room !== roomName)
         
-        // Ajouter la nouvelle room data
-        roomData.completion = globalCompletion
+        // Ajouter la nouvelle room data (roomData.completion reste à 1.0)
         existingRoomData.push(roomData)
         
-        // Construire le payload final
+        // Construire le payload final avec completion globale
         const payload = {
-          completion: globalCompletion,
+          completion: globalCompletion, // Completion globale basée sur nombre de rooms
           message: "Success",
           roomData: existingRoomData
         }
@@ -781,7 +782,7 @@ export default {
           })
         }
         
-        // Sauvegarde locale en cas d'erreur (la room reste marquée comme complétée)
+        // Sauvegarde locale en cas d'erreur
         this.saveRoomLocally(roomName, roomData, globalCompletion)
       }
     },
@@ -800,11 +801,10 @@ export default {
         // Supprimer l'ancienne version de cette room si elle existe
         localPayload.roomData = localPayload.roomData.filter(room => room.room !== roomName)
         
-        // Ajouter la nouvelle room data
-        roomData.completion = globalCompletion
+        // Ajouter la nouvelle room data (roomData.completion reste à 1.0)
         localPayload.roomData.push(roomData)
         
-        // Mettre à jour la completion globale
+        // Mettre à jour SEULEMENT la completion globale
         localPayload.completion = globalCompletion
         
         // Sauvegarder
@@ -917,7 +917,13 @@ export default {
       // Sauvegarder le feedback final
       this.saveFeedback()
       
-      // AJOUT: Construire et sauvegarder les données de la room actuelle
+      // Vérifier que currentRoomName est bien défini
+      if (!this.currentRoomName) {
+        console.error('currentRoomName est vide! Recalcul...')
+        this.currentRoomName = this.mapEnvironmentToRoomName(this.currentEnvironment.name)
+      }
+      
+      // Construire et sauvegarder les données de la room actuelle
       const roomData = this.buildRoomData(this.currentRoomName)
       await this.saveRoomToBackend(this.currentRoomName, roomData)
       
@@ -936,11 +942,13 @@ export default {
     },
 
     // Sélectionner un environnement
-    selectEnvironment(index) {
+    async selectEnvironment(index) {
       this.currentEnvironmentIndex = index
       const env = this.environments[index]
 
       this.currentRoomName = this.mapEnvironmentToRoomName(env.name)
+
+      await this.loadSavedRoomData()
 
       // Show loading overlay
       this.modelsLoading = true
