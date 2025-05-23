@@ -1,63 +1,5 @@
 <template>
   <div class="environment-container">
-    <!-- <div v-if="!activityStarted" class="welcome-screen">
-      <div class="welcome-content">
-        <h1>Découvre ton environnement préféré</h1>
-
-        <p class="intro-text">
-          Tu vas découvrir ce que tu aimes et ce que tu n'aimes pas.
-        </p>
-
-        <div class="activity-explanation">
-          <h2>Comment jouer?</h2>
-
-          <div class="explanation-steps">
-            <div class="explanation-step">
-              <div class="step-number">1</div>
-              <div class="step-content">
-                <h3>Choisi 1 espace parmi 5</h3>
-                <div class="step-image">
-                  <img src="/images/maison_coloré.png" alt="Maisons colorées" />
-                </div>
-              </div>
-            </div>
-
-            <div class="explanation-step">
-              <div class="step-number">2</div>
-              <div class="step-content">
-                <h3>Change les couleurs et les sons</h3>
-                <div class="step-image">
-                  <img src="/images/son_couleur_reglage.png" alt="Contrôles" />
-                </div>
-              </div>
-            </div>
-
-            <div class="explanation-step">
-              <div class="step-number">3</div>
-              <div class="step-content">
-                <h3>Dis comment tu te sens</h3>
-                <div class="step-image">
-                  <img src="/images/emotions.png" alt="Émotions" />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="important-note">
-            <h3>Souviens-toi</h3>
-            <div class="important-points">
-              <p>Tu peux prendre ton temps.</p>
-              <p>Il n'y a pas de bonnes ou mauvaises réponses.</p>
-              <p>Tu peux faire une pause quand tu veux.</p>
-            </div>
-          </div>
-        </div>
-
-        <button @click="startActivity" class="primary-button">
-          Commencer l'aventure
-        </button>
-      </div>
-    </div> -->
     <GameGuide
       v-if="!activityStarted"
       gameId="sensory-environment"
@@ -364,6 +306,7 @@ import NatureAudio from '@/assets/sounds/nature.mp3'
 import CafeAudio from '@/assets/sounds/cafe.mp3'
 import CrowdAudio from '@/assets/sounds/crowd.mp3'
 import GameGuide from '@/components/GameGuideComponent.vue'
+import AuthService from '@/services/AuthService'
 
 export default {
   name: 'SensoryEnvironments',
@@ -381,6 +324,8 @@ export default {
       currentLoadingItem: '',
       showQuestion: false,
       currentQuestionIndex: 0,
+      currentRoomName: '',
+      completedRooms: new Set(),
 
       // Questions séquentielles
       questions: [
@@ -617,6 +562,264 @@ export default {
     }
   },
   methods: {
+    async resetAllData() {
+      // try {
+      //   // Réinitialiser au backend avec le nouveau format
+      //   const emptyPayload = {
+      //     completion: 0,
+      //     message: "Success",
+      //     roomData: []
+      //   }
+        
+      //   await AuthService.request('post', '/games/room-env', emptyPayload)
+      //   console.log('Données réinitialisées au backend')
+      // } catch (error) {
+      //   console.warn('Impossible de réinitialiser au backend, réinitialisation locale uniquement')
+      // }
+      
+      // Réinitialiser le Set des rooms complétées
+      this.completedRooms.clear()
+      
+      // Réinitialiser localStorage
+      localStorage.removeItem('roomEnvironmentData')
+      localStorage.removeItem('completedRooms')
+      
+      console.log('Toutes les données ont été réinitialisées')
+    },
+
+    async loadSavedRoomData() {
+      try {
+        const response = await AuthService.request('get', '/games/room-env')
+        if (response.data && response.data.roomData && Array.isArray(response.data.roomData) && response.data.roomData.length > 0) {
+          console.log('Données chargées depuis le backend:', response.data)
+          
+          // Restaurer le Set des rooms complétées à partir des données du backend
+          this.completedRooms.clear()
+          response.data.roomData.forEach(roomData => {
+            this.completedRooms.add(roomData.room)
+          })
+          
+          console.log(`Progression chargée: ${this.completedRooms.size}/2 rooms complétées`)
+        }
+      } catch (error) {
+        console.warn('Impossible de charger depuis le backend, tentative locale...')
+        
+        // Charger depuis localStorage
+        const localPayload = JSON.parse(localStorage.getItem('roomEnvironmentData') || '{"roomData": []}')
+        const savedCompletedRooms = JSON.parse(localStorage.getItem('completedRooms') || '[]')
+        
+        if (localPayload.roomData && Array.isArray(localPayload.roomData) && localPayload.roomData.length > 0) {
+          console.log('Données chargées localement:', localPayload)
+          
+          // Restaurer le Set des rooms complétées depuis les données locales
+          this.completedRooms.clear()
+          localPayload.roomData.forEach(roomData => {
+            this.completedRooms.add(roomData.room)
+          })
+          
+          console.log(`Progression locale chargée: ${this.completedRooms.size}/2 rooms complétées`)
+        } else if (savedCompletedRooms.length > 0) {
+          // Fallback: utiliser l'ancien format si disponible
+          this.completedRooms.clear()
+          savedCompletedRooms.forEach(roomName => {
+            this.completedRooms.add(roomName)
+          })
+          
+          console.log(`Progression locale (format legacy) chargée: ${this.completedRooms.size}/2 rooms complétées`)
+        }
+      }
+    },
+
+    calculateCompletion() {
+      const totalRooms = 2 // Focus Room et Open Room
+      const completedCount = this.completedRooms.size
+      
+      if (completedCount === 0) return 0
+      if (completedCount === 1) return 0.5
+      if (completedCount === 2) return 1.0
+      
+      return completedCount / totalRooms
+    },
+
+    mapEnvironmentToRoomName(environmentName) {
+      const mapping = {
+        'Espace Polyvalent (Concentration & Détente)': 'Focus Room',
+        'Espace social contrôlé': 'Open Room'
+      }
+      return mapping[environmentName] || 'Focus Room'
+    },
+
+    // Mapper l'intensité lumineuse numérique vers les valeurs API
+    mapLightIntensity(intensity) {
+      if (intensity <= 1.2) return 'low'
+      if (intensity >= 3) return 'high'
+      return 'normal'
+    },
+
+    // Mapper la couleur de lumière hex vers les présets API
+    mapLightColor(colorHex) {
+      const mapping = {
+        '#ffffff': 'neutral',
+        '#ffe0b2': 'hot',
+        '#b3e5fc': 'cold',
+        '#f0e6ff': 'soft',
+        '#fff8e1': 'natural'
+      }
+      return mapping[colorHex] || 'neutral'
+    },
+
+    // Mapper les couleurs de room vers les palettes API
+    mapRoomColor(wallColor, floorColor, ceilingColor) {
+      // Comparer avec les palettes définies
+      const palettes = this.colorPalettes
+      for (let palette of palettes) {
+        if (palette.wall === wallColor && 
+            palette.floor === floorColor && 
+            palette.ceiling === ceilingColor) {
+          const mapping = {
+            'Neutre': 'neutral',
+            'Apaisant': 'chill',
+            'Chaleureux': 'hot',
+            'Naturel': 'natural',
+            'Concentration': 'focus',
+            'Sensoriel doux': 'soft'
+          }
+          return mapping[palette.name] || 'neutral'
+        }
+      }
+      return 'neutral'
+    },
+
+    // Mapper le type d'ambiance sonore
+    mapNoiseType(selectedAmbience) {
+      const mapping = {
+        'none': 'silence',
+        'whitenoise': 'white noise',
+        'nature': 'natural',
+        'cafe': 'coffee',
+        'crowd': 'working'
+      }
+      return mapping[selectedAmbience] || 'silence'
+    },
+
+    // Mapper le mood utilisateur
+    mapUserFeedback(mood) {
+      const mapping = {
+        'veryCalm': 'very calm',
+        'focused': 'focused',
+        'comfortable': 'comfortable',
+        'neutral': 'neutral',
+        'uneasy': 'uncomfortable',
+        'overwhelmed': 'overstimulated'
+      }
+      return mapping[mood] || 'neutral'
+    },
+
+    // Construire les données à envoyer au backend
+    buildRoomData(roomName) {
+      const feedback = this.getCurrentFeedback()
+      
+      return {
+        room: roomName,
+        completion: this.calculateCompletion(),
+        lightIntensity: this.mapLightIntensity(this.lightIntensity),
+        lightColor: this.mapLightColor(this.lightColor),
+        roomColor: this.mapRoomColor(this.wallColor, this.floorColor, this.ceilingColor),
+        noiseType: this.mapNoiseType(this.selectedAmbience),
+        noiseVolume: Math.round(this.soundVolume * 10),
+        peopleInRoom: this.peopleCount,
+        userFeedback: this.mapUserFeedback(feedback.mood),
+        commentary: feedback.comments || ''
+      }
+    },
+
+    // Sauvegarder les données d'une room au backend
+    async saveRoomToBackend(roomName, roomData) {
+      this.completedRooms.add(roomName)
+      const globalCompletion = this.calculateCompletion()
+      
+      try {
+        console.log(`Sauvegarde des données pour ${roomName}:`, roomData)
+        
+        // Récupérer les données existantes
+        let existingRoomData = []
+        try {
+          const response = await AuthService.request('get', '/games/room-env')
+          if (response.data && response.data.roomData && Array.isArray(response.data.roomData)) {
+            existingRoomData = response.data.roomData
+          }
+        } catch (getError) {
+          console.log('Aucune donnée existante trouvée, création d\'un nouveau dataset')
+        }
+        
+        // Supprimer l'ancienne version de cette room si elle existe
+        existingRoomData = existingRoomData.filter(room => room.room !== roomName)
+        
+        // Ajouter la nouvelle room data
+        roomData.completion = globalCompletion
+        existingRoomData.push(roomData)
+        
+        // Construire le payload final
+        const payload = {
+          completion: globalCompletion,
+          message: "Success",
+          roomData: existingRoomData
+        }
+        
+        const response = await AuthService.request('post', '/games/room-env', payload)
+        console.log(`Données sauvegardées avec succès pour ${roomName}:`, response.data)
+        console.log(`Progression: ${this.completedRooms.size}/2 rooms complétées (${(globalCompletion * 100)}%)`)
+        
+      } catch (error) {
+        console.error(`Erreur lors de la sauvegarde pour ${roomName}:`, error)
+        
+        if (error.response) {
+          console.error('Réponse d\'erreur du serveur:', {
+            status: error.response.status,
+            statusText: error.response.statusText,
+            data: error.response.data
+          })
+        }
+        
+        // Sauvegarde locale en cas d'erreur (la room reste marquée comme complétée)
+        this.saveRoomLocally(roomName, roomData, globalCompletion)
+      }
+    },
+
+    // Sauvegarder localement en cas d'erreur backend
+    saveRoomLocally(roomName, roomData, globalCompletion) {
+      try {
+        // Récupérer les données locales existantes
+        let localPayload = JSON.parse(localStorage.getItem('roomEnvironmentData') || '{"completion": 0, "message": "Success", "roomData": []}')
+        
+        // S'assurer que la structure est correcte
+        if (!localPayload.roomData || !Array.isArray(localPayload.roomData)) {
+          localPayload.roomData = []
+        }
+        
+        // Supprimer l'ancienne version de cette room si elle existe
+        localPayload.roomData = localPayload.roomData.filter(room => room.room !== roomName)
+        
+        // Ajouter la nouvelle room data
+        roomData.completion = globalCompletion
+        localPayload.roomData.push(roomData)
+        
+        // Mettre à jour la completion globale
+        localPayload.completion = globalCompletion
+        
+        // Sauvegarder
+        localStorage.setItem('roomEnvironmentData', JSON.stringify(localPayload))
+        
+        // Sauvegarder aussi le Set des rooms complétées
+        const completedRoomsArray = Array.from(this.completedRooms)
+        localStorage.setItem('completedRooms', JSON.stringify(completedRoomsArray))
+        
+        console.log(`Données sauvegardées localement pour ${roomName}:`, localPayload)
+      } catch (error) {
+        console.error('Erreur lors de la sauvegarde locale:', error)
+      }
+    },
+
     // Initialiser le renderer
     initRenderer() {
       if (this.$refs.container) {
@@ -665,8 +868,9 @@ export default {
     },
 
     // Commencer l'activité
-    startActivity() {
+    async startActivity() {
       this.activityStarted = true
+      await this.loadSavedRoomData()
 
       // Initialiser les feedbacks pour tous les environnements
       this.environments.forEach((env, index) => {
@@ -709,9 +913,13 @@ export default {
     },
 
     // Finaliser l'exploration
-    finishExploration() {
+    async finishExploration() {
       // Sauvegarder le feedback final
       this.saveFeedback()
+      
+      // AJOUT: Construire et sauvegarder les données de la room actuelle
+      const roomData = this.buildRoomData(this.currentRoomName)
+      await this.saveRoomToBackend(this.currentRoomName, roomData)
       
       // Afficher le récapitulatif
       this.showFeedbackMessage = true
@@ -731,6 +939,8 @@ export default {
     selectEnvironment(index) {
       this.currentEnvironmentIndex = index
       const env = this.environments[index]
+
+      this.currentRoomName = this.mapEnvironmentToRoomName(env.name)
 
       // Show loading overlay
       this.modelsLoading = true
@@ -1164,11 +1374,13 @@ export default {
 
     // Recommencer l'exploration
     restartExploration() {
+      this.resetAllData()
       // Réinitialiser les données
       this.showFeedbackMessage = false
       this.currentEnvironmentIndex = 0
       this.currentQuestionIndex = 0
       this.showQuestion = false
+      this.currentRoomName = ''
       
       // Réinitialiser les personnes à zéro
       this.peopleCount = 0
