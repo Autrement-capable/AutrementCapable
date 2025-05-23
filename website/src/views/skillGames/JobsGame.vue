@@ -116,11 +116,17 @@
                 <div class="video-player">
                   <video 
                     v-if="currentMetier.video"
+                    ref="jobVideo"
                     :src="getVideoSource(currentMetier.video)"
                     :poster="currentMetier.poster"
                     controls
+                    autoplay
+                    muted
                     preload="metadata"
                     class="video-element"
+                    @loadeddata="handleVideoLoaded"
+                    @play="handleVideoPlay"
+                    @error="handleVideoError"
                   >
                     Votre navigateur ne supporte pas la lecture de vidéos.
                   </video>
@@ -264,7 +270,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { metiersData } from '@/data/metiersData.js';
 import { unlockBadge, isBadgeUnlocked } from '@/utils/badges';
 import GameGuide from '@/components/GameGuideComponent.vue';
@@ -290,7 +296,81 @@ export default {
     const highContrastMode = ref(false);
     const showBadgeUnlockAnimation = ref(false);
     const badgeJobDiscoveryId = ref(7);
+    const jobVideo = ref(null);
+
+    // Métier actuel
+    const currentMetier = computed(() => {
+      if (currentBatch.value.length === 0 || currentIndex.value >= currentBatch.value.length) {
+        return null;
+      }
+      return currentBatch.value[currentIndex.value];
+    });
+
+    watch(currentMetier, async (newMetier) => {
+      if (newMetier && newMetier.video) {
+        await nextTick(); // Attendre que le DOM soit mis à jour
+        tryAutoplayVideo();
+      }
+    });
+
+    function tryAutoplayVideo() {
+      if (jobVideo.value) {
+        const video = jobVideo.value;
+        
+        // Réinitialiser la vidéo
+        video.currentTime = 0;
+        
+        // Essayer de lancer la vidéo
+        const playPromise = video.play();
+        
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              console.log("Autoplay réussi");
+            })
+            .catch((error) => {
+              console.log("Autoplay bloqué par le navigateur:", error);
+              // Si l'autoplay échoue, on peut essayer sans le son
+              video.muted = true;
+              video.play().catch(() => {
+                console.log("Impossible de lancer la vidéo automatiquement");
+              });
+            });
+        }
+      }
+    }
     
+    // Gestionnaire quand la vidéo est chargée
+    function handleVideoLoaded() {
+      console.log("Vidéo chargée");
+      tryAutoplayVideo();
+    }
+    
+    // Gestionnaire quand la vidéo commence à jouer
+    function handleVideoPlay() {
+      console.log("Vidéo en cours de lecture");
+    }
+    
+    // Gestionnaire d'erreur vidéo
+    function handleVideoError(event) {
+      console.error("Erreur lors du chargement de la vidéo:", event);
+    }
+    
+    // Modifier la fonction nextCard pour gérer l'autoplay
+    function nextCard() {
+      currentIndex.value++;
+      
+      // Vérifier si tous les métiers du lot ont été vus
+      if (currentIndex.value >= currentBatch.value.length) {
+        batchCompleted.value = true;
+      } else {
+        // Si il y a un nouveau métier, essayer l'autoplay après un court délai
+        setTimeout(() => {
+          tryAutoplayVideo();
+        }, 100);
+      }
+    }
+
     // Données pour le badge
     const badgeData = ref({
       name: "Explorateur de Métiers",
@@ -302,15 +382,6 @@ export default {
       if (batchSize.value === 0) return 0;
       // Faire commencer la barre à 0 et atteindre 100% au dernier élément
       return Math.min(100, (currentIndex.value / batchSize.value) * 100);
-    });
-
-    
-    // Métier actuel
-    const currentMetier = computed(() => {
-      if (currentBatch.value.length === 0 || currentIndex.value >= currentBatch.value.length) {
-        return null;
-      }
-      return currentBatch.value[currentIndex.value];
     });
     
     // Vérifier si le niveau est complété
@@ -575,15 +646,6 @@ export default {
       // window.location.href = `/metier/${currentMetier.value.id}`;
     }
     
-    function nextCard() {
-      currentIndex.value++;
-      
-      // Vérifier si tous les métiers du lot ont été vus
-      if (currentIndex.value >= currentBatch.value.length) {
-        batchCompleted.value = true;
-      }
-    }
-    
     function finishAndShowResults() {
       showResults.value = true;
     }
@@ -696,6 +758,11 @@ export default {
       sendJobChoiceToBackend,
       saveJobChoicesLocally,
       unknownJob,
+      jobVideo,
+      handleVideoLoaded,
+      handleVideoPlay,
+      handleVideoError,
+      tryAutoplayVideo,
     };
   }
 };
@@ -1107,6 +1174,28 @@ export default {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* Masquer les contrôles pendant l'autoplay initial si souhaité */
+  /* pointer-events: none; */
+}
+
+/* Indicateur de lecture automatique */
+.video-player::after {
+  content: "▶️ Lecture automatique";
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  opacity: 0;
+  animation: showAutoplayIndicator 2s ease-in-out;
+}
+
+@keyframes showAutoplayIndicator {
+  0%, 100% { opacity: 0; }
+  20%, 80% { opacity: 1; }
 }
 
 .video-placeholder {
@@ -1120,6 +1209,16 @@ export default {
   justify-content: center;
   align-items: center;
   background-color: #f5f5f5;
+}
+
+/* Animation pour la transition entre vidéos */
+.video-element {
+  transition: opacity 0.3s ease;
+}
+
+/* Style pour les vidéos en cours de chargement */
+.video-element[data-loading="true"] {
+  opacity: 0.7;
 }
 
 .placeholder-icon {
