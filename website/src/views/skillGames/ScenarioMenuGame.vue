@@ -164,6 +164,7 @@
 <script>
 import { scenarios } from '@/data/data.js'
 import { resetBadge } from '@/utils/badges'
+import AuthService from '@/services/AuthService';
 
 export default {
   name: 'ScenariosList',
@@ -220,42 +221,116 @@ export default {
     },
     // Charger la progression depuis le localStorage
     loadProgress() {
-      // Récupérer les scénarios complétés
-      const completedIds = localStorage.getItem('completedScenarios')
-      if (completedIds) {
-        this.completedScenarios = JSON.parse(completedIds).map((id) =>
-          parseInt(id),
-        )
+      // D'abord essayer de charger depuis le backend
+      AuthService.request('get', '/games/scenario')
+        .then(response => {
+          if (response.data && typeof response.data === 'object') {
+            const serverData = response.data;
+            
+            console.log('Données du backend:', serverData);
+            
+            // S'assurer que les données sont valides
+            const current_level = typeof serverData.current_level === 'number' && !isNaN(serverData.current_level) 
+              ? serverData.current_level 
+              : 0;
+            
+            const completion = typeof serverData.completion === 'number' && !isNaN(serverData.completion) 
+              ? serverData.completion 
+              : 0;
+            
+            // Calculer les scénarios complétés en fonction de la complétion (entre 0 et 1)
+            const totalScenarios = this.scenarios.length;
+            const completedScenariosCount = Math.floor(completion * totalScenarios);
+            
+            // Générer la liste des scénarios complétés
+            const completedIds = [];
+            for (let i = 1; i <= Math.max(current_level, completedScenariosCount); i++) {
+              completedIds.push(i);
+            }
+            
+            // Mettre à jour l'état local
+            this.completedScenarios = completedIds;
+            this.hasStarted = completedIds.length > 0;
+            
+            // Mettre à jour le localStorage pour assurer la cohérence
+            localStorage.setItem('completedScenarios', JSON.stringify(completedIds));
+            
+            console.log(`Progression chargée: ${completedIds.length}/${totalScenarios} scénarios (${(completion * 100).toFixed(1)}%)`);
+            console.log('Scénarios complétés:', completedIds);
+          } else {
+            console.warn('Données du backend invalides, chargement des données locales');
+            this.loadLocalProgress();
+          }
+        })
+        .catch(error => {
+          console.warn('Erreur lors du chargement depuis le backend, utilisation des données locales:', error);
+          // Fallback : charger depuis localStorage
+          this.loadLocalProgress();
+        });
+    },
 
-        // Définir hasStarted uniquement si l'utilisateur a réellement commencé (au moins un scénario complété)
-        this.hasStarted = this.completedScenarios.length > 0
+    loadLocalProgress() {
+      // Récupérer les scénarios complétés depuis localStorage
+      const completedIds = localStorage.getItem('completedScenarios');
+      if (completedIds) {
+        try {
+          this.completedScenarios = JSON.parse(completedIds).map((id) => parseInt(id)).filter(id => !isNaN(id));
+          // Définir hasStarted uniquement si l'utilisateur a réellement commencé (au moins un scénario complété)
+          this.hasStarted = this.completedScenarios.length > 0;
+          
+          console.log('Progression locale chargée:', this.completedScenarios);
+        } catch (error) {
+          console.error('Erreur lors du parsing des données locales:', error);
+          this.hasStarted = false;
+          this.completedScenarios = [];
+        }
       } else {
-        this.hasStarted = false
-        this.completedScenarios = []
+        this.hasStarted = false;
+        this.completedScenarios = [];
       }
 
       // Vérifier aussi les compétences pour plus de sécurité
-      const savedSkills = localStorage.getItem('userSoftSkills')
+      const savedSkills = localStorage.getItem('userSoftSkills');
       if (savedSkills && !this.hasStarted) {
-        // Si des compétences sont enregistrées mais aucun scénario complété,
-        // cela pourrait indiquer un état partiel où l'utilisateur a commencé mais n'a pas terminé
-        const skills = JSON.parse(savedSkills)
-        // Vérifier si l'objet des compétences n'est pas vide
-        this.hasStarted = Object.keys(skills).length > 0
+        try {
+          // Si des compétences sont enregistrées mais aucun scénario complété,
+          // cela pourrait indiquer un état partiel où l'utilisateur a commencé mais n'a pas terminé
+          const skills = JSON.parse(savedSkills);
+          // Vérifier si l'objet des compétences n'est pas vide
+          this.hasStarted = Object.keys(skills).length > 0;
+          console.log('Ajustement hasStarted basé sur les compétences:', this.hasStarted);
+        } catch (error) {
+          console.error('Erreur lors du parsing des compétences:', error);
+        }
       }
     },
 
     // Démarrer l'aventure (premier scénario)
     startAdventure() {
-      localStorage.setItem('userSoftSkills', JSON.stringify({}))
-      localStorage.setItem('completedScenarios', JSON.stringify([]))
-      this.hasStarted = true
-      this.completedScenarios = []
-      const firstScenario = this.scenarios.find((s) => s.id === 1)
+      // Réinitialiser les données locales
+      localStorage.setItem('userSoftSkills', JSON.stringify({}));
+      localStorage.setItem('completedScenarios', JSON.stringify([]));
+      this.hasStarted = true;
+      this.completedScenarios = [];
+      
+      // Réinitialiser les données sur le backend en incluant toutes les compétences individuelles
+      const resetData = {
+        current_level: 0,
+        completion: 0, // 0 (entre 0 et 1)
+        traits: {},
+      };
+      
+      AuthService.request('post', '/games/scenario', resetData)
+        .catch(error => {
+          console.error('Erreur lors de la réinitialisation des données sur le backend:', error);
+        });
+      
+      // Rediriger vers le premier scénario
+      const firstScenario = this.scenarios.find((s) => s.id === 1);
       this.$router.push({
         name: 'ScenarioPage',
         params: { urlName: firstScenario.urlName },
-      })
+      });
     },
 
     getNextScenarioUrlName() {
@@ -266,20 +341,59 @@ export default {
 
     // Réinitialiser l'aventure
     resetAdventure() {
-      if (
-        confirm(
-          "Es-tu sûr de vouloir recommencer toute l'aventure ? Tes données seront réinitialisés !",
-        )
-      ) {
-        localStorage.setItem('userSoftSkills', JSON.stringify({}))
-        localStorage.setItem('completedScenarios', JSON.stringify([]))
-        this.completedScenarios = []
-        resetBadge(2)
-        const firstScenario = this.scenarios.find((s) => s.id === 1)
-        this.$router.push({
-          name: 'ScenarioPage',
-          params: { urlName: firstScenario.urlName },
-        })
+      if (confirm("Es-tu sûr de vouloir recommencer toute l'aventure ? Tes données seront réinitialisés !")) {
+        // Réinitialiser IMMÉDIATEMENT l'état local de l'Adventure Map
+        this.completedScenarios = [];
+        this.hasStarted = false;
+        
+        // Réinitialiser les données locales
+        localStorage.setItem('userSoftSkills', JSON.stringify({}));
+        localStorage.setItem('completedScenarios', JSON.stringify([]));
+        localStorage.removeItem('scenarioProgressBackup');
+        
+        // Réinitialiser le badge
+        resetBadge(2);
+        
+        // GET puis POST pour réinitialiser les données backend
+        AuthService.request('get', '/games/scenario')
+          .then(response => {
+            // Utiliser la réponse du GET pour créer les données réinitialisées
+            let resetData = {
+              current_level: 0,
+              completion: 0.0,
+              traits: {}
+            };
+            
+            // Si des données existent, les utiliser comme base et réinitialiser les valeurs
+            if (response.data && typeof response.data === 'object') {
+              resetData = {
+                ...response.data,
+                current_level: 0,
+                completion: 0.0,
+                traits: {}
+              };
+            }
+            
+            console.log('Réinitialisation des données basée sur GET:', resetData);
+            
+            // POST pour réinitialiser
+            return AuthService.request('post', '/games/scenario', resetData);
+          })
+          .then(response => {
+            console.log('Aventure réinitialisée avec succès:', response.data);
+          })
+          .catch(error => {
+            console.error('Erreur lors de la réinitialisation:', error);
+          })
+          .finally(() => {
+            // Rediriger vers le premier scénario
+            this.hasStarted = true;
+            const firstScenario = this.scenarios.find((s) => s.id === 1);
+            this.$router.push({
+              name: 'ScenarioPage',
+              params: { urlName: firstScenario.urlName },
+            });
+          });
       }
     },
 

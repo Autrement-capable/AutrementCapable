@@ -526,6 +526,7 @@
 import SpaceBackground from '@/components/SpaceBackground.vue'
 import { AzureOpenAI } from 'openai'
 import AuthService from '@/services/AuthService'
+import { usePicture } from '@/services/PictureService'
 
 export default {
   name: 'UserOnboarding',
@@ -848,12 +849,36 @@ Objectif : obtenir un avatar haut de gamme, isolé sur fond blanc, prêt pour un
           }),
         )
 
+
+        const avatarData = {
+          avatarGender: this.responses.avatarGender,
+          avatarAccessories: this.responses.avatarAccessories,
+          avatarColor: this.responses.avatarColor,
+          avatarPassions: this.responses.avatarPassion,
+          avatarExpression: this.responses.avatarExpression,
+        }
         console.log('user data', userData)
 
         // Register with passkey
         const result = await AuthService.registerWithPasskey(userData)
 
+        AuthService.request("post", "/user/profile/avatar-creation-data", avatarData)
+          .then((response) => {
+            console.log('Avatar creation data saved successfully:', response)
+          })
+          .catch((error) => {
+            console.error('Error saving avatar creation data:', error)
+          })
         console.log('Passkey registration successful:', result)
+
+        const { uploadFromUrl } = usePicture()
+        uploadFromUrl(this.selectedAvatarUrl, "avatar")
+          .then((response) => {
+            console.log('Avatar uploaded successfully:', response)
+          })
+          .catch((error) => {
+            console.error('Error uploading avatar:', error)
+          })
 
         this.$router.push('/dashboard')
       } catch (error) {

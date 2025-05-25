@@ -15,7 +15,7 @@ python-multipart
 # for database
 asyncpg
 sqlalchemy[asyncio]
-psycopg2
+psycopg2-binary
 # for testing
 pytest
 pytest-asyncio

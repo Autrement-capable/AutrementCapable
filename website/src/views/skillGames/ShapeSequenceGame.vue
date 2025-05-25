@@ -15,7 +15,7 @@
     <GameGuide
       v-if="!gameStarted"
       gameId="shape-sequence"
-      :forceShow="false"
+      :forceShow="true"
       @start-game="onGuideComplete"
       @skip-intro="onGuideComplete"
     />
@@ -103,14 +103,9 @@
           <span class="btn-text">Passer ce niveau</span>
         </button>
         
-        <button @click="nextLevel" class="action-button next-button" v-if="answerSelected && answerCorrect">
+        <button @click="nextLevel" class="action-button next-button" v-if="answerSelected">
           <span class="btn-icon">▶️</span>
           <span class="btn-text">Niveau suivant</span>
-        </button>
-        
-        <button @click="retryLevel" class="action-button retry-button" v-if="answerSelected && !answerCorrect">
-          <span class="btn-icon">🔄</span>
-          <span class="btn-text">Réessayer</span>
         </button>
       </div>
     </div>
@@ -166,6 +161,7 @@
 import { ref, computed } from "vue";
 import { unlockBadge, isBadgeUnlocked } from '@/utils/badges';
 import GameGuide from "@/components/GameGuideComponent.vue";
+import AuthService from '@/services/AuthService';
 
 export default {
   name: "ShapeSequenceGame",
@@ -187,6 +183,7 @@ export default {
     const showResults = ref(false);
     const showBadgeUnlockAnimation = ref(false);
     const badgeShapeSequenceId = ref(3);
+    const levelResults = ref({});
 
     // Données pour le badge
     const badgeData = ref({
@@ -224,9 +221,170 @@ export default {
       return (currentLevel.value / levels.length) * 100;
     });
 
+    const saveResultToBackend = (levelNumber, isCorrect) => {
+      // D'abord, récupérer les données existantes
+      AuthService.request('get', '/games/shape-sequence')
+        .then(response => {
+          // Initialiser une structure par défaut si les données sont invalides
+          let currentData = response.data && typeof response.data === 'object' 
+            ? response.data 
+            : { currentLevel: 0, completion: 0, levelResults: {} };
+          
+          // S'assurer que la structure minimale est présente
+          if (!currentData.levelResults) {
+            currentData.levelResults = {};
+          }
+          
+          // S'assurer que currentLevel est un nombre valide
+          if (typeof currentData.currentLevel !== 'number' || isNaN(currentData.currentLevel)) {
+            currentData.currentLevel = 0;
+          }
+          
+          // Mettre à jour le niveau actuel si le niveau complété est plus élevé
+          if (currentLevel.value + 1 > currentData.currentLevel) {
+            currentData.currentLevel = currentLevel.value + 1;
+          }
+          
+          // Ajouter le résultat du niveau actuel
+          currentData.levelResults[levelNumber] = isCorrect;
+          
+          // Calculer le pourcentage de complétion (entre 0 et 1)
+          const totalLevels = levels.length; // 12 niveaux
+          const completionDecimal = totalLevels > 0 
+            ? currentData.currentLevel / totalLevels 
+            : 0;
+          
+          // S'assurer que la complétion est un nombre entre 0 et 1 arrondi au centième
+          currentData.completion = isNaN(completionDecimal) ? 0 : parseFloat(completionDecimal.toFixed(4));
+          
+          console.log(`Complétion Shape Sequence: ${(currentData.completion * 100).toFixed(1)}% (${currentData.currentLevel}/${totalLevels} niveaux)`);
+          console.log('Données à envoyer au backend:', currentData);
+          
+          // Envoyer les données mises à jour
+          return AuthService.request('post', '/games/shape-sequence', currentData);
+        })
+        .then(response => {
+          console.log('Réponse complète du backend après mise à jour:', response);
+        })
+        .catch(error => {
+          console.error('Erreur lors de la mise à jour des résultats:', error);
+          
+          if (error.response) {
+            console.error('Réponse d\'erreur du serveur:', {
+              status: error.response.status,
+              statusText: error.response.statusText,
+              data: error.response.data
+            });
+          }
+          
+          // En cas d'erreur d'authentification, sauvegarder localement
+          if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+            console.warn('Problème d\'authentification. Vos résultats seront sauvegardés localement.');
+            saveResultLocally(levelNumber, isCorrect);
+          }
+        });
+    };
+
+    const saveResultLocally = (levelNumber, isCorrect) => {
+      // Récupérer les données existantes du localStorage
+      let localData = JSON.parse(localStorage.getItem('shapeSequenceResults') || '{"currentLevel":0,"completion":0,"levelResults":{}}');
+      
+      // S'assurer que la structure minimale est présente
+      if (!localData.levelResults) {
+        localData.levelResults = {};
+      }
+      
+      // S'assurer que currentLevel est un nombre valide
+      if (typeof localData.currentLevel !== 'number' || isNaN(localData.currentLevel)) {
+        localData.currentLevel = 0;
+      }
+      
+      // Mettre à jour le niveau actuel si le niveau complété est plus élevé
+      if (currentLevel.value + 1 > localData.currentLevel) {
+        localData.currentLevel = currentLevel.value + 1;
+      }
+      
+      // Ajouter le résultat du niveau actuel
+      localData.levelResults[levelNumber] = isCorrect;
+      
+      // Calculer le pourcentage de complétion (entre 0 et 1)
+      const totalLevels = levels.length; // 12 niveaux
+      const completionDecimal = totalLevels > 0 
+        ? localData.currentLevel / totalLevels 
+        : 0;
+      
+      // S'assurer que la complétion est un nombre entre 0 et 1
+      localData.completion = isNaN(completionDecimal) ? 0 : parseFloat(completionDecimal.toFixed(4));
+      
+      console.log(`Complétion locale Shape Sequence: ${(localData.completion * 100).toFixed(1)}% (${localData.currentLevel}/${totalLevels} niveaux)`);
+      
+      // Sauvegarder dans localStorage
+      localStorage.setItem('shapeSequenceResults', JSON.stringify(localData));
+      console.log('Résultats sauvegardés localement:', localData);
+    };
+
+    const loadSavedResults = () => {
+      // Essayer d'abord de récupérer depuis le backend
+      AuthService.request('get', '/games/shape-sequence')
+        .then(response => {
+          if (response.data && response.data.currentLevel > 0) {
+            console.log('Données chargées depuis le backend:', response.data);
+            
+            // Charger les données
+            const savedData = response.data;
+            
+            // Mettre à jour le niveau actuel (si le jeu n'est pas encore terminé)
+            if (savedData.currentLevel < levels.length) {
+              currentLevel.value = savedData.currentLevel;
+            }
+            
+            // Charger les résultats des niveaux
+            levelResults.value = savedData.levelResults || {};
+            
+            // Recalculer le nombre de réponses correctes
+            correctAnswers.value = Object.values(levelResults.value).filter(result => result === true).length;
+            
+            // Recalculer le score (10 points par bonne réponse, -2 points par mauvaise réponse)
+            const correctCount = correctAnswers.value;
+            const incorrectCount = Object.keys(levelResults.value).length - correctCount;
+            score.value = (correctCount * 10) - (incorrectCount * 2);
+            
+            // Afficher un message pour indiquer que la progression a été chargée
+            console.log(`Progression chargée: Niveau ${currentLevel.value + 1}/${levels.length}`);
+          }
+        })
+        .catch(() => {
+          // En cas d'erreur, essayer de charger depuis localStorage
+          const localData = JSON.parse(localStorage.getItem('shapeSequenceResults') || 'null');
+          
+          if (localData && localData.currentLevel > 0) {
+            console.log('Données chargées depuis localStorage:', localData);
+            
+            // Charger les données locales
+            if (localData.currentLevel < levels.length) {
+              currentLevel.value = localData.currentLevel;
+            }
+            
+            // Charger les résultats des niveaux
+            levelResults.value = localData.levelResults || {};
+            
+            // Recalculer le nombre de réponses correctes
+            correctAnswers.value = Object.values(levelResults.value).filter(result => result === true).length;
+            
+            // Recalculer le score
+            const correctCount = correctAnswers.value;
+            const incorrectCount = Object.keys(levelResults.value).length - correctCount;
+            score.value = (correctCount * 10) - (incorrectCount * 2);
+            
+            console.log(`Progression locale chargée: Niveau ${currentLevel.value + 1}/${levels.length}`);
+          }
+        });
+    };
+
     // Méthode pour démarrage du jeu après le guide
     const onGuideComplete = () => {
       gameStarted.value = true;
+      loadSavedResults();
       loadLevel();
     };
 
@@ -279,11 +437,17 @@ export default {
         answerCorrect.value = true;
         score.value += 10;
         correctAnswers.value++;
+        
+        // Sauvegarder le résultat positif
+        saveResultToBackend(currentLevel.value + 1, true);
       } else {
-        feedback.value = "Ce n'est pas la bonne réponse. Essaie encore !";
+        feedback.value = "Ce n'est pas la bonne réponse. La bonne réponse était : " + correctShape;
         feedbackClass.value = "feedback-incorrect";
         answerCorrect.value = false;
         score.value = Math.max(0, score.value - 2); // Pénalité légère
+        
+        // Sauvegarder le résultat négatif
+        saveResultToBackend(currentLevel.value + 1, false);
       }
     };
 
@@ -293,15 +457,10 @@ export default {
       loadLevel();
     };
 
-    // Réessayer le niveau actuel
-    const retryLevel = () => {
-      answerSelected.value = false;
-      feedback.value = "";
-      feedbackClass.value = "";
-    };
-
     // Sauter un niveau
     const skipLevel = () => {
+      saveResultToBackend(currentLevel.value + 1, false);
+      
       currentLevel.value++;
       loadLevel();
     };
@@ -312,12 +471,41 @@ export default {
       score.value = 0;
       correctAnswers.value = 0;
       showResults.value = false;
+      levelResults.value = {};
+      
+      // Réinitialiser les données dans le backend
+      const resetData = {
+        currentLevel: 0,
+        completion: 0,
+        levelResults: {}
+      };
+      
+      AuthService.request('post', '/games/shape-sequence', resetData)
+        .catch(error => {
+          console.error('Erreur lors de la réinitialisation des données:', error);
+          localStorage.setItem('shapeSequenceResults', JSON.stringify(resetData));
+        });
+      
       loadLevel();
     };
 
     // Terminer le jeu
     const endGame = () => {
       showResults.value = true;
+      
+      // Calculer les statistiques finales
+      // const finalStats = {
+      //   currentLevel: levels.length,
+      //   completion: 100.0,
+      //   levelResults: levelResults.value
+      // };
+      
+      // Envoyer les statistiques finales au backend
+      // AuthService.request('post', '/games/shape-sequence', finalStats)
+      //   .catch(error => {
+      //     console.error('Erreur lors de la mise à jour des statistiques finales:', error);
+      //     localStorage.setItem('shapeSequenceResults', JSON.stringify(finalStats));
+      //   });
       
       // Débloquer le badge si 80% ou plus de réponses correctes
       if ((correctAnswers.value / levels.length) >= 0.8) {
@@ -377,6 +565,7 @@ export default {
       showResults,
       levels,
       progressPercentage,
+      levelResults,
       
       // Animation du badge
       showBadgeUnlockAnimation,
@@ -388,12 +577,15 @@ export default {
       getShapeImage,
       checkAnswer,
       nextLevel,
-      retryLevel,
       skipLevel,
       restartGame,
       closeBadgeAnimation,
       goToMetierPage,
-      getResultMessage
+      getResultMessage,
+
+      saveResultToBackend,
+      loadSavedResults,
+      saveResultLocally,
     };
   }
 };

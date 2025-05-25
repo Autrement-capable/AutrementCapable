@@ -769,20 +769,73 @@ export default {
 
       const backendCategory = answerTypeMapping[answerType];
       
-      const abilityData = {
-        category: backendCategory,
-        ability: skillName,
-      };
-
-      console.log('Données envoyées au backend:', abilityData);
-      
-      // N'ajoutez plus func=add dans l'URL
-      AuthService.request('post', '/abilities/add', abilityData)
+      // D'abord, récupérer les données existantes
+      AuthService.request('get', '/games/skills')
         .then(response => {
-          console.log('Réponse complète du backend:', response);
+          // Initialiser une structure par défaut si les données sont invalides
+          let currentData = response.data && typeof response.data === 'object' 
+            ? response.data 
+            : { completion: 0, skillsAssessment: {} };
+
+          console.log('Données récupérées du backend:', currentData);
+          
+          // S'assurer que la structure minimale est présente
+          if (!currentData.skillsAssessment) {
+            currentData.skillsAssessment = {};
+          }
+          
+          // Créer la catégorie si elle n'existe pas
+          if (!currentData.skillsAssessment[backendCategory]) {
+            currentData.skillsAssessment[backendCategory] = {};
+          }
+          
+          // Vérifier si cette compétence a déjà été répondue dans une autre catégorie
+          Object.keys(currentData.skillsAssessment).forEach(category => {
+            if (currentData.skillsAssessment[category][skillName]) {
+              // Si la compétence existe déjà dans une autre catégorie, la supprimer
+              if (category !== backendCategory) {
+                delete currentData.skillsAssessment[category][skillName];
+                console.log(`Compétence "${skillName}" déplacée de ${category} vers ${backendCategory}`);
+              }
+            }
+          });
+          
+          // Ajouter la nouvelle compétence à la catégorie
+          currentData.skillsAssessment[backendCategory][skillName] = {};
+          
+          // Calculer le nombre total de compétences répondues (unique)
+          const answeredSkillsSet = new Set();
+          Object.keys(currentData.skillsAssessment).forEach(category => {
+            Object.keys(currentData.skillsAssessment[category]).forEach(skill => {
+              answeredSkillsSet.add(skill);
+            });
+          });
+          
+          const answeredSkillsCount = answeredSkillsSet.size;
+          
+          // Calculer le pourcentage de complétion (entre 0 et 1)
+          const totalPossibleSkills = 29; // Nombre total de compétences possibles
+          const completionDecimal = totalPossibleSkills > 0 
+            ? answeredSkillsCount / totalPossibleSkills // Valeur entre 0 et 1
+            : 0;
+          
+          // S'assurer que la complétion est un nombre entre 0 et 1 arrondi au centième
+          currentData.completion = parseFloat(completionDecimal.toFixed(4));
+
+          console.log(`Complétion: ${(currentData.completion * 100).toFixed(2)}% (${answeredSkillsCount}/${totalPossibleSkills} compétences uniques)`);
+          console.log('Compétences répondues:', Array.from(answeredSkillsSet));
+          
+          // Envoyer les données mises à jour
+          console.log('Envoi des données au backend...');
+          console.log('Données envoyées:', currentData);
+          return AuthService.request('post', '/games/skills', currentData);
+        })
+        .then(response => {
+          console.log('Réponse complète du backend après mise à jour:', response);
         })
         .catch(error => {
-          console.error('Erreur détaillée lors de l\'envoi:', error);
+          console.error('Erreur lors de la mise à jour des compétences:', error);
+          
           if (error.response) {
             console.error('Réponse d\'erreur du serveur:', {
               status: error.response.status,
@@ -791,10 +844,60 @@ export default {
             });
           }
           
+          // En cas d'erreur d'authentification, sauvegarder localement
           if (error.response && (error.response.status === 401 || error.response.status === 403)) {
             console.warn('Problème d\'authentification. Vos réponses seront sauvegardées localement.');
+            this.saveLocallyIfNeeded(skillName, backendCategory);
           }
         });
+    },
+
+    saveLocallyIfNeeded(skillName, category) {
+      // Récupérer les données existantes du localStorage
+      let localData = JSON.parse(localStorage.getItem('userskills') || '{"completion":0,"skillsAssessment":{}}');
+      
+      // S'assurer que la structure minimale est présente
+      if (!localData.skillsAssessment) {
+        localData.skillsAssessment = {};
+      }
+      
+      // Créer la catégorie si elle n'existe pas
+      if (!localData.skillsAssessment[category]) {
+        localData.skillsAssessment[category] = {};
+      }
+      
+      // Vérifier si cette compétence a déjà été répondue dans une autre catégorie
+      Object.keys(localData.skillsAssessment).forEach(existingCategory => {
+        if (localData.skillsAssessment[existingCategory][skillName] && existingCategory !== category) {
+          delete localData.skillsAssessment[existingCategory][skillName];
+          console.log(`Compétence "${skillName}" déplacée de ${existingCategory} vers ${category} (local)`);
+        }
+      });
+      
+      // Ajouter la compétence à la nouvelle catégorie
+      localData.skillsAssessment[category][skillName] = {};
+      
+      // Compter les compétences uniques répondues
+      const answeredSkillsSet = new Set();
+      Object.keys(localData.skillsAssessment).forEach(cat => {
+        Object.keys(localData.skillsAssessment[cat]).forEach(skill => {
+          answeredSkillsSet.add(skill);
+        });
+      });
+      
+      const answeredCount = answeredSkillsSet.size;
+      
+      // Calculer et mettre à jour la complétion (entre 0 et 1)
+      const totalPossible = 29; // Nombre total de compétences possibles
+      localData.completion = totalPossible > 0 
+        ? parseFloat((answeredCount / totalPossible).toFixed(4)) 
+        : 0;
+      
+      console.log(`Complétion locale: ${(localData.completion * 100).toFixed(2)}% (${answeredCount}/${totalPossible} compétences uniques)`);
+      
+      // Sauvegarder dans localStorage
+      localStorage.setItem('userskills', JSON.stringify(localData));
+      console.log('Données sauvegardées localement:', localData);
     },
     
     // Get icon for a skill

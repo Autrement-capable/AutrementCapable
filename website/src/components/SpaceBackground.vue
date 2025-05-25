@@ -3282,12 +3282,12 @@ export default {
 }
 
 .penguin-wing-left {
-  left: -10px;
+  left: 50px;
   animation: penguinWingLeft 3s ease-in-out infinite;
 }
 
 .penguin-wing-right {
-  right: -10px;
+  right: 50px;
   animation: penguinWingRight 3s ease-in-out infinite;
 }
 

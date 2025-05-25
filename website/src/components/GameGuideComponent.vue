@@ -1124,7 +1124,7 @@ export default {
 .animation-speed-timer {
   position: absolute;
   right: 30px;
-  bottom: 30px;
+  bottom: 5px;
   width: 150px;
   height: 150px;
   display: flex;
@@ -1397,7 +1397,7 @@ export default {
 /* Animations pour le jeu des métiers */
 .animation-jobs-cards {
   position: absolute;
-  right: 30px;
+  right: 5px;
   bottom: 30px;
   width: 150px;
   height: 150px;
@@ -1498,7 +1498,7 @@ export default {
 .animation-job-video {
   position: absolute;
   right: 30px;
-  bottom: 30px;
+  bottom: 0px;
   width: 150px;
   height: 150px;
   display: flex;

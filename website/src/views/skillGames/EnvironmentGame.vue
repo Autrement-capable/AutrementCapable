@@ -1,63 +1,5 @@
 <template>
   <div class="environment-container">
-    <!-- <div v-if="!activityStarted" class="welcome-screen">
-      <div class="welcome-content">
-        <h1>Découvre ton environnement préféré</h1>
-
-        <p class="intro-text">
-          Tu vas découvrir ce que tu aimes et ce que tu n'aimes pas.
-        </p>
-
-        <div class="activity-explanation">
-          <h2>Comment jouer?</h2>
-
-          <div class="explanation-steps">
-            <div class="explanation-step">
-              <div class="step-number">1</div>
-              <div class="step-content">
-                <h3>Choisi 1 espace parmi 5</h3>
-                <div class="step-image">
-                  <img src="/images/maison_coloré.png" alt="Maisons colorées" />
-                </div>
-              </div>
-            </div>
-
-            <div class="explanation-step">
-              <div class="step-number">2</div>
-              <div class="step-content">
-                <h3>Change les couleurs et les sons</h3>
-                <div class="step-image">
-                  <img src="/images/son_couleur_reglage.png" alt="Contrôles" />
-                </div>
-              </div>
-            </div>
-
-            <div class="explanation-step">
-              <div class="step-number">3</div>
-              <div class="step-content">
-                <h3>Dis comment tu te sens</h3>
-                <div class="step-image">
-                  <img src="/images/emotions.png" alt="Émotions" />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="important-note">
-            <h3>Souviens-toi</h3>
-            <div class="important-points">
-              <p>Tu peux prendre ton temps.</p>
-              <p>Il n'y a pas de bonnes ou mauvaises réponses.</p>
-              <p>Tu peux faire une pause quand tu veux.</p>
-            </div>
-          </div>
-        </div>
-
-        <button @click="startActivity" class="primary-button">
-          Commencer l'aventure
-        </button>
-      </div>
-    </div> -->
     <GameGuide
       v-if="!activityStarted"
       gameId="sensory-environment"
@@ -364,6 +306,7 @@ import NatureAudio from '@/assets/sounds/nature.mp3'
 import CafeAudio from '@/assets/sounds/cafe.mp3'
 import CrowdAudio from '@/assets/sounds/crowd.mp3'
 import GameGuide from '@/components/GameGuideComponent.vue'
+import AuthService from '@/services/AuthService'
 
 export default {
   name: 'SensoryEnvironments',
@@ -381,6 +324,8 @@ export default {
       currentLoadingItem: '',
       showQuestion: false,
       currentQuestionIndex: 0,
+      currentRoomName: '',
+      completedRooms: new Set(),
 
       // Questions séquentielles
       questions: [
@@ -446,66 +391,34 @@ export default {
       // Liste des environnements prédéfinis
       environments: [
         {
-          name: 'Espace de concentration',
-          shortDescription:
-            'Environnement optimisé pour le travail intellectuel',
+          name: 'Espace Polyvalent (Concentration & Détente)',
+          shortDescription: 'Environnement modulable pour travail et relaxation',
           description:
-            'Un espace conçu pour favoriser la concentration avec un éclairage adapté, des couleurs apaisantes et un minimum de distractions.',
-          previewColor: '#4A90E2',
-          imageSrc: '/images/concentration_space.png',
-          icon: '🧠',
-          objectsCategory: 'concentration',
+            'Un espace hybride offrant des zones dédiées à la concentration intellectuelle et à la détente sensorielle, avec des paramètres personnalisables.',
+          previewColor: '#7986CB', // A blend color
+          imageSrc: '/images/concentration_space.png', // Placeholder, ideally a new image like '/images/polyvalent_space.png'
+          icon: '🧠🌿', // Merged icon
+          objectsCategory: 'polyvalent', // New category for RoomRenderer
           defaultSettings: {
             room: {
               width: 9,
               depth: 9,
               height: 3.2,
-              wallColor: '#f0f0f5',
-              floorColor: '#6a75a3',
-              ceilingColor: '#ffffff',
+              wallColor: '#eaf0f5',    // Blend of '#f0f0f5' (concentration) and '#e6f0f5' (détente)
+              floorColor: '#a0a8c4',   // Blend of '#6a75a3' (concentration) and '#d1dde6' (détente)
+              ceilingColor: '#f8fafc', // Blend of '#ffffff' (concentration) and '#f0f7fa' (détente)
             },
             lighting: {
-              color: '#ffffff',
-              intensity: 2,
+              color: '#f8f8ff',       // Slightly off-white, between '#ffffff' and '#f0f7fa'
+              intensity: 1.6,         // Average of 2 (concentration) and 1.2 (détente)
               ambient: true,
             },
             sound: {
-              type: 'whitenoise',
-              volume: 0.2,
+              type: 'whitenoise',     // Default to 'whitenoise'
+              volume: 0.25,           // Average of 0.2 (concentration) and 0.3 (détente)
               peopleCount: 0,
             },
-            clutter: 'minimal',
-          },
-        },
-        {
-          name: 'Espace de détente',
-          shortDescription: 'Zone calme pour se ressourcer',
-          description:
-            'Un environnement tranquille conçu pour apaiser les sens avec des tons doux, un éclairage tamisé et une ambiance sonore relaxante.',
-          previewColor: '#66BB6A',
-          imageSrc: '/images/relaxation_space.png',
-          icon: '🌿',
-          objectsCategory: 'detente',
-          defaultSettings: {
-            room: {
-              width: 9,
-              depth: 9,
-              height: 3.2,
-              wallColor: '#e6f0f5',
-              floorColor: '#d1dde6',
-              ceilingColor: '#f0f7fa',
-            },
-            lighting: {
-              color: '#f0f7fa',
-              intensity: 1.2,
-              ambient: true,
-            },
-            sound: {
-              type: 'nature',
-              volume: 0.3,
-              peopleCount: 0,
-            },
-            clutter: 'moderate',
+            clutter: 'moderate', // To accommodate items from both zones
           },
         },
         {
@@ -649,6 +562,264 @@ export default {
     }
   },
   methods: {
+    async resetAllData() {
+      // try {
+      //   // Réinitialiser au backend avec le nouveau format
+      //   const emptyPayload = {
+      //     completion: 0,
+      //     message: "Success",
+      //     roomData: []
+      //   }
+        
+      //   await AuthService.request('post', '/games/room-env', emptyPayload)
+      //   console.log('Données réinitialisées au backend')
+      // } catch (error) {
+      //   console.warn('Impossible de réinitialiser au backend, réinitialisation locale uniquement')
+      // }
+      
+      // Réinitialiser le Set des rooms complétées
+      this.completedRooms.clear()
+      
+      // Réinitialiser localStorage
+      localStorage.removeItem('roomEnvironmentData')
+      localStorage.removeItem('completedRooms')
+      
+      console.log('Toutes les données ont été réinitialisées')
+    },
+
+    async loadSavedRoomData() {
+      try {
+        const response = await AuthService.request('get', '/games/room-env')
+        if (response.data && response.data.roomData && Array.isArray(response.data.roomData) && response.data.roomData.length > 0) {
+          
+          // Restaurer le Set des rooms complétées à partir des données du backend
+          this.completedRooms.clear()
+          response.data.roomData.forEach(roomData => {
+            this.completedRooms.add(roomData.room)
+          })
+        }
+      } catch (error) {
+        console.warn('Impossible de charger depuis le backend, tentative locale...')
+        
+        // Charger depuis localStorage
+        const localPayload = JSON.parse(localStorage.getItem('roomEnvironmentData') || '{"roomData": []}')
+        const savedCompletedRooms = JSON.parse(localStorage.getItem('completedRooms') || '[]')
+        
+        if (localPayload.roomData && Array.isArray(localPayload.roomData) && localPayload.roomData.length > 0) {
+          
+          // Restaurer le Set des rooms complétées depuis les données locales
+          this.completedRooms.clear()
+          localPayload.roomData.forEach(roomData => {
+            this.completedRooms.add(roomData.room)
+          })
+        } else if (savedCompletedRooms.length > 0) {
+          // Fallback: utiliser l'ancien format si disponible
+          this.completedRooms.clear()
+          savedCompletedRooms.forEach(roomName => {
+            this.completedRooms.add(roomName)
+          })
+        }
+      }
+    },
+
+    calculateCompletion() {
+      const totalRooms = 2 // Focus Room et Open Room
+      const completedRoomsArray = Array.from(this.completedRooms)
+      const completedCount = completedRoomsArray.length
+      
+      // Vérification spécifique des rooms attendues
+      const expectedRooms = ['Focus Room', 'Open Room']
+      const hasAllExpectedRooms = expectedRooms.every(room => this.completedRooms.has(room))
+      
+      if (completedCount === 0) return 0
+      if (completedCount === 1) return 0.5
+      if (completedCount >= 2 || hasAllExpectedRooms) return 1.0
+      
+      const result = Math.min(completedCount / totalRooms, 1.0)
+      return result
+    },
+
+    mapEnvironmentToRoomName(environmentName) {
+      // Mapping plus strict avec trim pour éviter les problèmes d'espaces
+      const cleanName = environmentName.trim()
+      
+      const mapping = {
+        'Espace Polyvalent (Concentration & Détente)': 'Focus Room',
+        'Espace social contrôlé': 'Open Room'
+      }
+      
+      const result = mapping[cleanName] || 'Focus Room'
+      
+      return result
+    },
+
+    // Mapper l'intensité lumineuse numérique vers les valeurs API
+    mapLightIntensity(intensity) {
+      if (intensity <= 1.2) return 'low'
+      if (intensity >= 3) return 'high'
+      return 'normal'
+    },
+
+    // Mapper la couleur de lumière hex vers les présets API
+    mapLightColor(colorHex) {
+      const mapping = {
+        '#ffffff': 'neutral',
+        '#ffe0b2': 'hot',
+        '#b3e5fc': 'cold',
+        '#f0e6ff': 'soft',
+        '#fff8e1': 'natural'
+      }
+      return mapping[colorHex] || 'neutral'
+    },
+
+    // Mapper les couleurs de room vers les palettes API
+    mapRoomColor(wallColor, floorColor, ceilingColor) {
+      // Comparer avec les palettes définies
+      const palettes = this.colorPalettes
+      for (let palette of palettes) {
+        if (palette.wall === wallColor && 
+            palette.floor === floorColor && 
+            palette.ceiling === ceilingColor) {
+          const mapping = {
+            'Neutre': 'neutral',
+            'Apaisant': 'chill',
+            'Chaleureux': 'hot',
+            'Naturel': 'natural',
+            'Concentration': 'focus',
+            'Sensoriel doux': 'soft'
+          }
+          return mapping[palette.name] || 'neutral'
+        }
+      }
+      return 'neutral'
+    },
+
+    // Mapper le type d'ambiance sonore
+    mapNoiseType(selectedAmbience) {
+      const mapping = {
+        'none': 'silence',
+        'whitenoise': 'white noise',
+        'nature': 'natural',
+        'cafe': 'coffee',
+        'crowd': 'working'
+      }
+      return mapping[selectedAmbience] || 'silence'
+    },
+
+    // Mapper le mood utilisateur
+    mapUserFeedback(mood) {
+      const mapping = {
+        'veryCalm': 'very calm',
+        'focused': 'focused',
+        'comfortable': 'comfortable',
+        'neutral': 'neutral',
+        'uneasy': 'uncomfortable',
+        'overwhelmed': 'overstimulated'
+      }
+      return mapping[mood] || 'neutral'
+    },
+
+    // Construire les données à envoyer au backend
+    buildRoomData(roomName) {
+      const feedback = this.getCurrentFeedback()
+      
+      return {
+        room: roomName,
+        completion: 1.0,
+        lightIntensity: this.mapLightIntensity(this.lightIntensity),
+        lightColor: this.mapLightColor(this.lightColor),
+        roomColor: this.mapRoomColor(this.wallColor, this.floorColor, this.ceilingColor),
+        noiseType: this.mapNoiseType(this.selectedAmbience),
+        noiseVolume: Math.round(this.soundVolume * 10),
+        peopleInRoom: this.peopleCount,
+        userFeedback: this.mapUserFeedback(feedback.mood),
+        commentary: feedback.comments || ''
+      }
+    },
+
+    // Sauvegarder les données d'une room au backend
+    async saveRoomToBackend(roomName, roomData) {
+      this.completedRooms.add(roomName)
+      const globalCompletion = this.calculateCompletion()
+      
+      try {
+        // Récupérer les données existantes
+        let existingRoomData = []
+        try {
+          const response = await AuthService.request('get', '/games/room-env')
+          if (response.data && response.data.roomData && Array.isArray(response.data.roomData)) {
+            existingRoomData = response.data.roomData
+          }
+        } catch (getError) {
+          console.log('Aucune donnée existante trouvée, création d\'un nouveau dataset')
+        }
+        
+        // Supprimer l'ancienne version de cette room si elle existe
+        existingRoomData = existingRoomData.filter(room => room.room !== roomName)
+        
+        // Ajouter la nouvelle room data (roomData.completion reste à 1.0)
+        existingRoomData.push(roomData)
+        
+        // Construire le payload final avec completion globale
+        const payload = {
+          completion: globalCompletion, // Completion globale basée sur nombre de rooms
+          message: "Success",
+          roomData: existingRoomData
+        }
+        
+        const response = await AuthService.request('post', '/games/room-env', payload)
+        console.log(`Données sauvegardées avec succès pour ${roomName}:`, response.data)
+        console.log(`Progression: ${this.completedRooms.size}/2 rooms complétées (${(globalCompletion * 100)}%)`)
+        
+      } catch (error) {
+        console.error(`Erreur lors de la sauvegarde pour ${roomName}:`, error)
+        
+        if (error.response) {
+          console.error('Réponse d\'erreur du serveur:', {
+            status: error.response.status,
+            statusText: error.response.statusText,
+            data: error.response.data
+          })
+        }
+        
+        // Sauvegarde locale en cas d'erreur
+        this.saveRoomLocally(roomName, roomData, globalCompletion)
+      }
+    },
+
+    // Sauvegarder localement en cas d'erreur backend
+    saveRoomLocally(roomName, roomData, globalCompletion) {
+      try {
+        // Récupérer les données locales existantes
+        let localPayload = JSON.parse(localStorage.getItem('roomEnvironmentData') || '{"completion": 0, "message": "Success", "roomData": []}')
+        
+        // S'assurer que la structure est correcte
+        if (!localPayload.roomData || !Array.isArray(localPayload.roomData)) {
+          localPayload.roomData = []
+        }
+        
+        // Supprimer l'ancienne version de cette room si elle existe
+        localPayload.roomData = localPayload.roomData.filter(room => room.room !== roomName)
+        
+        // Ajouter la nouvelle room data (roomData.completion reste à 1.0)
+        localPayload.roomData.push(roomData)
+        
+        // Mettre à jour SEULEMENT la completion globale
+        localPayload.completion = globalCompletion
+        
+        // Sauvegarder
+        localStorage.setItem('roomEnvironmentData', JSON.stringify(localPayload))
+        
+        // Sauvegarder aussi le Set des rooms complétées
+        const completedRoomsArray = Array.from(this.completedRooms)
+        localStorage.setItem('completedRooms', JSON.stringify(completedRoomsArray))
+        
+        console.log(`Données sauvegardées localement pour ${roomName}:`, localPayload)
+      } catch (error) {
+        console.error('Erreur lors de la sauvegarde locale:', error)
+      }
+    },
+
     // Initialiser le renderer
     initRenderer() {
       if (this.$refs.container) {
@@ -697,8 +868,9 @@ export default {
     },
 
     // Commencer l'activité
-    startActivity() {
+    async startActivity() {
       this.activityStarted = true
+      await this.loadSavedRoomData()
 
       // Initialiser les feedbacks pour tous les environnements
       this.environments.forEach((env, index) => {
@@ -741,9 +913,19 @@ export default {
     },
 
     // Finaliser l'exploration
-    finishExploration() {
+    async finishExploration() {
       // Sauvegarder le feedback final
       this.saveFeedback()
+      
+      // Vérifier que currentRoomName est bien défini
+      if (!this.currentRoomName) {
+        console.error('currentRoomName est vide! Recalcul...')
+        this.currentRoomName = this.mapEnvironmentToRoomName(this.currentEnvironment.name)
+      }
+      
+      // Construire et sauvegarder les données de la room actuelle
+      const roomData = this.buildRoomData(this.currentRoomName)
+      await this.saveRoomToBackend(this.currentRoomName, roomData)
       
       // Afficher le récapitulatif
       this.showFeedbackMessage = true
@@ -760,9 +942,13 @@ export default {
     },
 
     // Sélectionner un environnement
-    selectEnvironment(index) {
+    async selectEnvironment(index) {
       this.currentEnvironmentIndex = index
       const env = this.environments[index]
+
+      this.currentRoomName = this.mapEnvironmentToRoomName(env.name)
+
+      await this.loadSavedRoomData()
 
       // Show loading overlay
       this.modelsLoading = true
@@ -1196,11 +1382,13 @@ export default {
 
     // Recommencer l'exploration
     restartExploration() {
+      this.resetAllData()
       // Réinitialiser les données
       this.showFeedbackMessage = false
       this.currentEnvironmentIndex = 0
       this.currentQuestionIndex = 0
       this.showQuestion = false
+      this.currentRoomName = ''
       
       // Réinitialiser les personnes à zéro
       this.peopleCount = 0
