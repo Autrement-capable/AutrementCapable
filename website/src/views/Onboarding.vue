@@ -62,7 +62,7 @@
         <h1 class="step-title">Quel âge as-tu ?</h1>
         <div class="flamou-container">
           <img
-            :src="flamouImages.normal"
+            :src="flamouImages.hey"
             alt="Flamou normal"
             class="flamou-image"
           />
@@ -191,7 +191,7 @@
         <h1 class="step-title">Choisis ce que ton personnage porte</h1>
         <div class="flamou-container">
           <img
-            :src="flamouImages.normal"
+            :src="flamouImages.thinking2"
             alt="Flamou normal"
             class="flamou-image"
           />
@@ -365,7 +365,7 @@
         <h1 class="step-title">Génération de tes avatars</h1>
         <div class="flamou-container">
           <img
-            :src="flamouImages.interesting"
+            :src="flamouImages.happy2"
             alt="Flamou intéressé"
             class="flamou-image animated-bounce"
           />
@@ -421,7 +421,7 @@
         <h1 class="step-title">Récapitulatif</h1>
         <div class="flamou-container">
           <img
-            :src="flamouImages.happy"
+            :src="flamouImages.hey"
             alt="Flamou heureux"
             class="flamou-image"
           />
@@ -543,9 +543,13 @@ export default {
       generatedAvatars: [],
       flamouImages: {
         happy: require('@/assets/flamou/happy.png'),
+        happy2: require('@/assets/flamou/happy2.png'),
         normal: require('@/assets/flamou/normal.png'),
         interesting: require('@/assets/flamou/intresting.png'),
-        sleepy: require('@/assets/flamou/blazed.png'),
+        blazed: require('@/assets/flamou/blazed.png'),
+        hey: require('@/assets/flamou/hey.png'),
+        thinking1: require('@/assets/flamou/thinking1.png'),
+        thinking2: require('@/assets/flamou/thinking2.png'),
       },
       availableThemes: [
         { id: 'cosmic', name: 'Espace', emoji: '🌌' },
