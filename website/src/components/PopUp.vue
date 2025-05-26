@@ -74,8 +74,8 @@
     .popup-box {
         background-color: white;
         padding: 2rem;
-        width: 30%;
-        height: 40%;
+        max-width: 40%;
+        max-height: 35%;
         border-radius: 1rem;
         text-align: center;
         display: flex;
@@ -87,7 +87,7 @@
 
     .close-button {
         position: relative;
-        top: -1rem;
+        top: -1.5rem;
         left: 51%;
         font-size: 2.5rem;
         font-weight: bold;
@@ -103,18 +103,21 @@
     }
   
     .popup-image {
-        max-width: 40%;
+        max-width: 30%;
+        background-color: red;
         height: auto;
     }
 
     .popup-box p {
         font-size: 1.2rem;
+        background-color: blue;
+        margin-top: 0.2rem;
     }
   
     .buttons {
         display: flex;
         gap: 2rem;
-        margin-top: 1rem;
+        margin-top: 0.2rem;
     }
 
     button {
