@@ -355,7 +355,7 @@
   </div>
   <guide-avatar
     v-if="internalShowGuide"
-    guide-name="Léo"
+    guide-name="Flamou"
     :forced-message="profileGuideMessage"
     :forced-options="profileGuideOptions"
     :force-show-message="profileTourActive || forceShowGuide"

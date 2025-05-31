@@ -5,7 +5,7 @@
   >
     <!-- En-tête avec personnage guide -->
     <div class="guide-character">
-      <img src="@/assets/avatars/guide.png" alt="Guide" class="guide-avatar" />
+      <img src="@/assets/flamou/hey.png" alt="Guide" class="guide-avatar" />
       <div class="speech-bubble">
         <p>
           Découvre ce métier et ses spécificités. Utilise les boutons ci-dessous pour donner ton avis !

@@ -425,7 +425,7 @@ export default {
     
     // Image du guide
     guideImage() {
-      return require('@/assets/avatars/guide.png'); // Assurez-vous que ce chemin est correct
+      return require('@/assets/flamou/hey.png'); // Assurez-vous que ce chemin est correct
     }
   },
   methods: {
