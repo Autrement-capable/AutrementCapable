@@ -8,7 +8,7 @@
     <!-- Guide Avatar pour guider l'utilisateur -->
     <guide-avatar
       v-if="!showRewardsModal"
-      guide-name="Léo"
+      guide-name="Flamou"
       :forced-message="guideMessage"
       :forced-options="guideOptions"
       :force-show-message="guideForceShow"
@@ -310,7 +310,7 @@ export default {
         'Esprit Créatif',
       ],
       guideContext: 'dashboard',
-      guideMessage: "Salut ! Je suis Léo, ton guide. Bienvenue sur ton tableau de bord personnel ! C'est ici que tu pourras suivre ta progression, accéder à ton profil et commencer les jeux.",
+      guideMessage: "Salut ! Je suis Flamou, ton guide. Bienvenue sur ton tableau de bord personnel ! C'est ici que tu pourras suivre ta progression, accéder à ton profil et commencer les jeux.",
       guideOptions: [
         { text: "Comment utiliser le dashboard ?", action: "explainDashboard" },
       ],
@@ -471,7 +471,7 @@ export default {
       this.guideTourStep = 0;
       
       // Préparer le guide avec un message pour redécouvrir le dashboard
-      this.guideMessage = "Salut ! Je suis Léo, ton guide. Clique sur moi si tu veux redécouvrir le dashboard !";
+      this.guideMessage = "Salut ! Je suis Flamou, ton guide. Clique sur moi si tu veux redécouvrir le dashboard !";
       this.guideOptions = [
         { text: "Comment utiliser le dashboard ?", action: "explainDashboard" },
       ];
@@ -502,7 +502,7 @@ export default {
 
     resetGuideState() {
       this.guideTourStep = 0;
-      this.guideMessage = "Salut ! Je suis Léo, ton guide. Clique sur moi si tu veux redécouvrir le dashboard !";
+      this.guideMessage = "Salut ! Je suis Flamou, ton guide. Clique sur moi si tu veux redécouvrir le dashboard !";
       this.guideOptions = [
         { text: "Comment utiliser le dashboard ?", action: "explainDashboard" },
       ];

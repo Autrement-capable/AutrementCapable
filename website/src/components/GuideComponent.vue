@@ -50,7 +50,7 @@ export default {
     // Nom du guide
     guideName: {
       type: String,
-      default: 'Léo'
+      default: 'Flamou'
     },
     // Position (top-right, bottom-left, etc.)
     position: {
@@ -163,7 +163,12 @@ export default {
     // Image du guide (peut changer selon le contexte)
     guideImage() {
       // Ici, on pourrait définir différentes images selon le contexte
-      return require('@/assets/avatars/guide.png'); // Image par défaut
+      console.log("context", this.context);
+      if (this.context == "dashboard" ) {
+        return require('@/assets/flamou/logo.png');
+      }
+
+      return require('@/assets/flamou/hey.png'); // Image par défaut
     },
     
     // Message actuel à afficher

@@ -382,7 +382,7 @@
       <!-- Guide d'aide contextuel -->
       <div class="profile-guide" v-if="showGuide">
         <div class="guide-character">
-          <img src="src/assets/avatars/guide.png" alt="Guide" class="guide-avatar" />
+          <img src="@/assets/flamou/hey.png" alt="Guide" class="guide-avatar" />
         </div>
         <div class="guide-bubble">
           <p>{{ guideMessage }}</p>

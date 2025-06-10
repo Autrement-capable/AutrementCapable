@@ -13,7 +13,7 @@
     </div>
     <!-- En-tête avec personnage guide -->
     <div class="guide-character">
-      <img src="@/assets/avatars/guide.png" alt="Guide" class="guide-avatar" />
+      <img src="@/assets/flamou/hey.png" alt="Guide" class="guide-avatar" />
       <div class="speech-bubble">
         <p>Bienvenue dans ton aventure des scénarios ! Commence l'aventure !</p>
       </div>
