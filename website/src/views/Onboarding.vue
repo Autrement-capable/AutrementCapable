@@ -20,7 +20,6 @@
     <div class="content-container">
       <!-- Step 1: Theme Selection -->
       <div v-if="currentStep === 1" class="step-container theme-selection">
-        <!-- <h1 class="step-title">Choisis ton thème préféré</h1> -->
         <div class="flamou-container">
           <img
             :src="flamouImages.happy"
@@ -360,8 +359,29 @@
         </div>
       </div>
 
-      <!-- Step 9: Generating Avatars -->
+      <!-- Step 9: Account Creation -->
       <div v-if="currentStep === 9" class="step-container">
+        <h1 class="step-title">Création de ton compte</h1>
+        <div class="flamou-container">
+          <img
+            :src="flamouImages.interesting"
+            alt="Flamou intéressé"
+            class="flamou-image animated-bounce"
+          />
+          <div class="flamou-speech-bubble">
+            <p>
+              Parfait ! Maintenant, créons ton compte pour sauvegarder tes informations...
+            </p>
+          </div>
+        </div>
+        <div class="loading-container">
+          <div class="loading-spinner"></div>
+          <p class="loading-text">Création de ton compte...</p>
+        </div>
+      </div>
+
+      <!-- Step 10: Generating Avatars -->
+      <div v-if="currentStep === 10" class="step-container">
         <h1 class="step-title">Génération de tes avatars</h1>
         <div class="flamou-container">
           <img
@@ -378,11 +398,28 @@
         <div class="loading-container">
           <div class="loading-spinner"></div>
           <p class="loading-text">{{ loadingText }}</p>
+          <div v-if="generationProgress > 0" class="generation-progress">
+            <div class="progress-bar-container">
+              <div 
+                class="progress-bar-fill" 
+                :style="{ width: generationProgress + '%' }"
+              ></div>
+            </div>
+            <p class="progress-text">{{ Math.round(generationProgress) }}%</p>
+          </div>
+        </div>
+        
+        <!-- Show error if generation fails -->
+        <div v-if="generationError" class="error-container">
+          <p class="error-message">{{ generationError }}</p>
+          <button class="retry-button" @click="retryAvatarGeneration">
+            Réessayer
+          </button>
         </div>
       </div>
 
-      <!-- Step 10: Avatar Selection -->
-      <div v-if="currentStep === 10" class="step-container">
+      <!-- Step 11: Avatar Selection -->
+      <div v-if="currentStep === 11" class="step-container">
         <h1 class="step-title">Choisis ton avatar préféré</h1>
         <div class="flamou-container">
           <img
@@ -397,16 +434,19 @@
         <div class="avatars-container">
           <div
             v-for="(avatar, index) in generatedAvatars"
-            :key="index"
+            :key="avatar.id"
             class="avatar-option"
             :class="{ selected: selectedAvatarIndex === index }"
             @click="selectedAvatarIndex = index"
           >
-            <img :src="avatar" alt="Avatar option" class="avatar-image" />
+            <img :src="avatar.data_url" :alt="`Avatar option ${index + 1}`" class="avatar-image" />
+            <div class="avatar-label">Option {{ index + 1 }}</div>
           </div>
         </div>
         <div class="navigation-buttons">
-          <button class="back-button" @click="previousStep">Retour</button>
+          <button class="back-button" @click="retryAvatarGeneration">
+            Générer d'autres avatars
+          </button>
           <button
             class="next-button"
             @click="nextStep"
@@ -416,8 +456,9 @@
           </button>
         </div>
       </div>
-      <!-- Step 11: Récapitulatif et création du compte -->
-      <div v-if="currentStep === 11" class="step-container summary-container">
+
+      <!-- Step 12: Récapitulatif et finalisation -->
+      <div v-if="currentStep === 12" class="step-container summary-container">
         <h1 class="step-title">Récapitulatif</h1>
         <div class="flamou-container">
           <img
@@ -427,7 +468,7 @@
           />
           <div class="flamou-speech-bubble">
             <p>
-              Super ! Vérifie si tout est correct avant de créer ton compte.
+              Super ! Vérifie si tout est correct avant de finaliser ton profil.
             </p>
           </div>
         </div>
@@ -506,16 +547,16 @@
         <div class="navigation-buttons">
           <button class="back-button" @click="previousStep">Modifier</button>
           <button
-            class="create-account-button"
-            @click="createAccountAndStartGame"
-            :disabled="isRegistering"
+            class="finalize-button"
+            @click="finalizeProfile"
+            :disabled="isFinalizingProfile"
           >
-            {{ isRegistering ? 'Création en cours...' : 'Créer mon compte' }}
+            {{ isFinalizingProfile ? 'Finalisation en cours...' : 'Finaliser mon profil' }}
           </button>
         </div>
 
-        <div v-if="registrationError" class="error-message">
-          {{ registrationError }}
+        <div v-if="finalizationError" class="error-message">
+          {{ finalizationError }}
         </div>
       </div>
     </div>
@@ -524,7 +565,6 @@
 
 <script>
 import SpaceBackground from '@/components/SpaceBackground.vue'
-import { AzureOpenAI } from 'openai'
 import AuthService from '@/services/AuthService'
 import { usePicture } from '@/services/PictureService'
 
@@ -539,9 +579,13 @@ export default {
       selectedTheme: 'cosmic',
       accessories: [],
       loadingText: 'Création de ton avatar...',
-      loadingProgress: 0,
+      generationProgress: 0,
       selectedAvatarIndex: null,
       generatedAvatars: [],
+      generationError: null,
+      isFinalizingProfile: false,
+      finalizationError: null,
+      
       flamouImages: {
         happy: require('@/assets/flamou/happy.png'),
         normal: require('@/assets/flamou/normal.png'),
@@ -586,9 +630,7 @@ export default {
         avatarPassion: null,
         avatarExpression: null,
       },
-      totalSteps: 11,
-      isRegistering: false,
-      registrationError: null,
+      totalSteps: 12, // Updated total steps
     }
   },
   computed: {
@@ -600,7 +642,7 @@ export default {
         this.selectedAvatarIndex !== null &&
         this.generatedAvatars.length > this.selectedAvatarIndex
       ) {
-        return this.generatedAvatars[this.selectedAvatarIndex]
+        return this.generatedAvatars[this.selectedAvatarIndex].data_url
       }
       return null
     },
@@ -638,8 +680,12 @@ export default {
       // Move to next step
       this.currentStep++
 
-      // If on the avatar generation step, trigger avatar generation
+      // Handle different steps
       if (this.currentStep === 9) {
+        // Create account first
+        this.createAccount()
+      } else if (this.currentStep === 10) {
+        // Then generate avatars
         this.generateAvatars()
       }
     },
@@ -667,143 +713,165 @@ export default {
       this.responses.avatarExpression = null
       this.nextStep()
     },
-    async generateAvatars() {
-      this.generatedAvatars = []
-      this.loadingProgress = 0
-      const url = process.env.VUE_APP_AZURE_OPENAI_ENDPOINT
-      const apiKey = process.env.VUE_APP_AZURE_OPENAI_API_KEY
 
-      this.loadingText = 'Création de ton avatar...'
+    async createAccount() {
       try {
-        // Configuration du client Azure OpenAI
-        const client = new AzureOpenAI({
-          apiKey: apiKey,
-          endpoint: url,
-          apiVersion: '2024-02-01',
-          dangerouslyAllowBrowser: true,
-        })
-
-        // Générer 3 avatars différents
-        for (let i = 0; i < 3; i++) {
-          this.loadingText = `Création de l'avatar ${i + 1}/3...`
-
-          // Construction du prompt basé sur les choix de l'avatar
-          const gender =
-            this.responses.avatarGender === 'boy'
-              ? 'masculin'
-              : this.responses.avatarGender === 'girl'
-                ? 'féminin'
-                : 'neutre'
-
-          const accessoriesText =
-            this.responses.avatarAccessories !== 'none'
-              ? `portant les accessoires suivants : ${this.responses.avatarAccessories.replace(/,/g, ', ')}`
-              : 'sans accessoires particuliers'
-
-          const colorText = this.responses.avatarColor
-            ? `avec des tons dominants de ${this.responses.avatarColor}`
-            : ''
-
-          const passionText =
-            this.responses.avatarPassion !== 'none'
-              ? `reflétant la passion pour : ${this.responses.avatarPassion}`
-              : ''
-
-          const expressionText = this.responses.avatarExpression
-            ? `avec une expression ${this.responses.avatarExpression}`
-            : ''
-
-          const prompt = `
-Créer une illustration numérique en style cartoon réaliste 2D, traits doux,
-palette de couleurs naturelle et harmonieuse, rendu propre et professionnel.
-
-Fond : blanc uni pur (#FFFFFF), sans motif, sans dégradé, sans ombre.
-Aucun objet, décor, texte ou palette de couleurs autour du personnage.
-
-Personnage : de genre ${gender}, ${accessoriesText}, ${colorText}, ${passionText}, ${expressionText}.
-Vue de face, position debout, proportions naturelles,
-cadré et centré dans l’image, bien éclairé, détails soignés sur vêtements et accessoires.
-
-Objectif : obtenir un avatar haut de gamme, isolé sur fond blanc, prêt pour un détourage automatique et une utilisation professionnelle ou commerciale.
-`.trim()
-
-          console.log(
-            `Envoi de la requête ${i + 1} à l'API Azure OpenAI DALL-E…`,
-          )
-          console.log('Prompt:', prompt)
-
-          try {
-            // Appel à l'API DALL-E via Azure
-            const result = await client.images.generate({
-              model: 'dall-e-3', // le nom de votre déploiement DALL-E 3
-              prompt: prompt,
-              n: 1,
-            })
-
-            // Traitement du résultat pour obtenir l'URL de l'image
-            const resultJson = JSON.parse(JSON.stringify(result))
-            const imageUrl = resultJson.data[0].url
-
-            this.generatedAvatars.push(imageUrl)
-            console.log(`Image ${i + 1} générée:`, imageUrl)
-
-            // Mettre à jour la progression
-            this.loadingProgress = ((i + 1) / 3) * 100
-
-            // Ajouter un délai entre les requêtes pour éviter les limitations d'API
-            if (i < 2) {
-              await new Promise((resolve) => setTimeout(resolve, 1000))
-            }
-          } catch (error) {
-            console.error(
-              `Erreur lors de la génération de l'image ${i + 1}:`,
-              error,
-            )
-            // Ajouter une image de remplacement en cas d'erreur
-            this.generatedAvatars.push(
-              `/images/avatars/fallback-avatar-${i + 1}.jpg`,
-            )
-          }
+        // Prepare user data for registration
+        const userData = {
+          first_name: this.responses.nickname,
+          last_name: '', // Optional
+          age: parseInt(this.responses.age),
         }
 
-        // Après la génération de tous les avatars, passer à l'étape de sélection
-        setTimeout(() => {
-          this.currentStep = 10
-        }, 1000)
-      } catch (error) {
-        console.error(
-          'Erreur générale lors de la génération des avatars:',
-          error,
-        )
-        this.loadingText = 'Une erreur est survenue. Réessayons...'
+        console.log('Creating account with data:', userData)
 
-        // Fallback à des avatars prédéfinis en cas d'erreur globale
-        setTimeout(() => {
-          this.generatedAvatars = [
-            '/images/avatars/fallback-avatar-1.jpg',
-            '/images/avatars/fallback-avatar-2.jpg',
-            '/images/avatars/fallback-avatar-3.jpg',
-          ]
-          this.currentStep = 10
-        }, 2000)
+        // Register with passkey
+        const result = await AuthService.registerWithPasskey(userData)
+        console.log('Account creation successful:', result)
+
+        // Save avatar creation data
+        const avatarData = {
+          avatarGender: this.responses.avatarGender,
+          avatarAccessories: this.responses.avatarAccessories,
+          avatarColor: this.responses.avatarColor,
+          avatarPassions: this.responses.avatarPassion,
+          avatarExpression: this.responses.avatarExpression,
+        }
+
+        try {
+          await AuthService.request("post", "/user/profile/avatar-creation-data", avatarData)
+          console.log('Avatar creation data saved successfully')
+        } catch (error) {
+          console.error('Error saving avatar creation data:', error)
+          // Non-critical error, continue with flow
+        }
+
+        // Move to avatar generation
+        this.nextStep()
+
+      } catch (error) {
+        console.error('Account creation error:', error)
+        alert('Erreur lors de la création du compte. Veuillez réessayer.')
+        this.currentStep = 8 // Go back to last step before account creation
       }
     },
-    // Cette méthode n'est plus utilisée, remplacée par l'appel API réel
-    // simulateAvatarGeneration(index) {
-    //   // In a real implementation, this would be a call to OpenAI's API
-    //   return new Promise((resolve) => {
-    //     setTimeout(() => {
-    //       // For this simulation, we're using placeholder images
-    //       // In a real implementation, you would use the response from OpenAI
-    //       this.generatedAvatars.push(`/images/avatars/generated-avatar-${index + 1}.jpg`);
-    //
-    //       this.loadingProgress = ((index + 1) / 3) * 100;
-    //       this.loadingText = `Création de l'avatar ${index + 1}/3...`;
-    //
-    //       resolve();
-    //     }, 2000); // Simulate API delay
-    //   });
-    // },
+
+    async generateAvatars() {
+      this.generatedAvatars = []
+      this.generationProgress = 0
+      this.generationError = null
+      this.loadingText = 'Création de tes avatars...'
+
+      try {
+        // Prepare avatar generation request
+        const avatarRequest = {
+          gender: this.responses.avatarGender || 'neutral',
+          accessories: this.responses.avatarAccessories,
+          color: this.responses.avatarColor,
+          passion: this.responses.avatarPassion,
+          expression: this.responses.avatarExpression,
+        }
+
+        console.log('Generating avatars with data:', avatarRequest)
+
+        // Simulate progress updates
+        const progressInterval = setInterval(() => {
+          if (this.generationProgress < 90) {
+            this.generationProgress += Math.random() * 10
+          }
+        }, 1000)
+
+        // Call backend endpoint for avatar generation
+        const response = await AuthService.request('post', '/avatars/generate', avatarRequest)
+        
+        clearInterval(progressInterval)
+        this.generationProgress = 100
+
+        console.log('Avatar generation response:', response.data)
+
+        if (response.data.avatars && response.data.avatars.length > 0) {
+          this.generatedAvatars = response.data.avatars
+          
+          // Add a small delay to show completion
+          setTimeout(() => {
+            this.currentStep = 11 // Move to avatar selection
+          }, 1000)
+        } else {
+          throw new Error('No avatars received from server')
+        }
+
+      } catch (error) {
+        console.error('Avatar generation error:', error)
+        this.generationError = error.response?.data?.detail || error.message || 'Erreur lors de la génération des avatars'
+        
+        // Show fallback avatars or retry option
+        this.loadingText = 'Une erreur est survenue...'
+      }
+    },
+
+    async retryAvatarGeneration() {
+      this.currentStep = 10 // Go back to generation step
+      await this.generateAvatars()
+    },
+
+    async finalizeProfile() {
+      if (this.isFinalizingProfile) return
+
+      this.isFinalizingProfile = true
+      this.finalizationError = null
+
+      try {
+        if (this.selectedAvatarIndex === null) {
+          throw new Error('Aucun avatar sélectionné')
+        }
+
+        const selectedAvatar = this.generatedAvatars[this.selectedAvatarIndex]
+        console.log('Selected avatar:', selectedAvatar)
+
+        // Convert data URL to blob for upload
+        const response = await fetch(selectedAvatar.data_url)
+        const blob = await response.blob()
+
+        // Try to convert to AVIF if supported
+        const { uploadPicture } = usePicture()
+        
+        try {
+          await uploadPicture(blob, 'profile')
+          console.log('Avatar uploaded successfully')
+        } catch (uploadError) {
+          console.error('Error uploading avatar:', uploadError)
+          // Non-critical error, but inform user
+          this.finalizationError = 'Avatar sauvegardé mais problème lors du téléchargement'
+        }
+
+        // Save user profile data in localStorage for potential future use
+        localStorage.setItem(
+          'user_profile',
+          JSON.stringify({
+            name: this.responses.nickname,
+            age: this.responses.age,
+            theme: this.selectedTheme,
+            avatar: selectedAvatar.data_url,
+            avatarGender: this.responses.avatarGender,
+            avatarAccessories: this.responses.avatarAccessories,
+            avatarColor: this.responses.avatarColor,
+            avatarPassion: this.responses.avatarPassion,
+            avatarExpression: this.responses.avatarExpression,
+          }),
+        )
+
+        // Redirect to dashboard
+        this.$router.push('/dashboard')
+
+      } catch (error) {
+        console.error('Profile finalization error:', error)
+        this.finalizationError =
+          error.message || 'Erreur lors de la finalisation du profil. Veuillez réessayer.'
+      } finally {
+        this.isFinalizingProfile = false
+      }
+    },
+
     getThemeName(themeId) {
       const theme = this.availableThemes.find((t) => t.id === themeId)
       return theme ? theme.name : ''
@@ -814,85 +882,7 @@ Objectif : obtenir un avatar haut de gamme, isolé sur fond blanc, prêt pour un
       if (gender === 'girl') return 'Fille'
       return 'Neutre'
     },
-
-    async createAccountAndStartGame() {
-      if (this.isRegistering) return
-
-      this.isRegistering = true
-      this.registrationError = null
-
-      try {
-        // Prepare user data for registration
-        const userData = {
-          first_name: this.responses.nickname,
-          last_name: '', // Optional
-          age: parseInt(this.responses.age),
-        }
-
-        // Save the user's data in localStorage for profile creation later
-        localStorage.setItem(
-          'user_profile',
-          JSON.stringify({
-            name: this.responses.nickname,
-            age: this.responses.age,
-            theme: this.selectedTheme,
-            avatar: this.selectedAvatarUrl,
-            avatarGender: this.responses.avatarGender,
-            avatarAccessories: this.responses.avatarAccessories,
-            avatarColor: this.responses.avatarColor,
-            avatarPassion: this.responses.avatarPassion,
-            avatarExpression: this.responses.avatarExpression,
-          }),
-        )
-
-
-        const avatarData = {
-          avatarGender: this.responses.avatarGender,
-          avatarAccessories: this.responses.avatarAccessories,
-          avatarColor: this.responses.avatarColor,
-          avatarPassions: this.responses.avatarPassion,
-          avatarExpression: this.responses.avatarExpression,
-        }
-        console.log('user data', userData)
-
-        // Register with passkey
-        const result = await AuthService.registerWithPasskey(userData)
-
-        AuthService.request("post", "/user/profile/avatar-creation-data", avatarData)
-          .then((response) => {
-            console.log('Avatar creation data saved successfully:', response)
-          })
-          .catch((error) => {
-            console.error('Error saving avatar creation data:', error)
-          })
-        console.log('Passkey registration successful:', result)
-
-        const { uploadFromUrl } = usePicture()
-        uploadFromUrl(this.selectedAvatarUrl, "avatar")
-          .then((response) => {
-            console.log('Avatar uploaded successfully:', response)
-          })
-          .catch((error) => {
-            console.error('Error uploading avatar:', error)
-          })
-
-        this.$router.push('/dashboard')
-      } catch (error) {
-        console.error('Registration error:', error)
-        this.registrationError =
-          error.message || 'Failed to create account. Please try again.'
-
-        // Show error message to user
-        alert(this.registrationError)
-      } finally {
-        this.isRegistering = false
-      }
-    },
-
-    finishOnboarding() {
-      this.nextStep()
-    },
-  },
+  }
 }
 </script>
 
@@ -981,7 +971,9 @@ Objectif : obtenir un avatar haut de gamme, isolé sur fond blanc, prêt pour un
 
 .back-button,
 .next-button,
-.skip-button {
+.skip-button,
+.retry-button,
+.finalize-button {
   padding: 12px 24px;
   border-radius: 8px;
   font-size: 1rem;
@@ -1013,6 +1005,16 @@ Objectif : obtenir un avatar haut de gamme, isolé sur fond blanc, prêt pour un
   text-decoration: underline;
 }
 
+.retry-button {
+  background-color: #ff9800;
+  color: white;
+}
+
+.finalize-button {
+  background-color: #4caf50;
+  color: white;
+}
+
 .back-button:hover,
 .skip-button:hover {
   background-color: rgba(255, 255, 255, 0.1);
@@ -1020,6 +1022,19 @@ Objectif : obtenir un avatar haut de gamme, isolé sur fond blanc, prêt pour un
 
 .next-button:hover:not(:disabled) {
   background-color: #2a75e5;
+}
+
+.retry-button:hover {
+  background-color: #f57c00;
+}
+
+.finalize-button:hover:not(:disabled) {
+  background-color: #388e3c;
+}
+
+.finalize-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
 }
 
 /* Theme Selection Styles */
@@ -1318,12 +1333,56 @@ Objectif : obtenir un avatar haut de gamme, isolé sur fond blanc, prêt pour un
   color: #e0e0e0;
 }
 
+/* Generation Progress Styles */
+.generation-progress {
+  margin-top: 20px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 8px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background-color: #4285f4;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 1rem;
+  color: #ffffff;
+}
+
+/* Error Styles */
+.error-container {
+  margin-top: 30px;
+  padding: 20px;
+  background-color: rgba(244, 67, 54, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(244, 67, 54, 0.3);
+}
+
+.error-message {
+  color: #ff6b6b;
+  font-size: 1rem;
+  margin-bottom: 15px;
+}
+
 /* Avatar Selection Styles */
 .avatars-container {
   display: flex;
   justify-content: center;
   gap: 30px;
   margin: 30px 0;
+  flex-wrap: wrap;
 }
 
 .avatar-option {
@@ -1333,7 +1392,8 @@ Objectif : obtenir un avatar haut de gamme, isolé sur fond blanc, prêt pour un
   cursor: pointer;
   transition: all 0.2s ease;
   border: 3px solid transparent;
-  width: 180px;
+  width: 200px;
+  position: relative;
 }
 
 .avatar-option.selected {
@@ -1345,6 +1405,21 @@ Objectif : obtenir un avatar haut de gamme, isolé sur fond blanc, prêt pour un
   transform: scale(1.05);
 }
 
+.avatar-image {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  display: block;
+}
+
+.avatar-label {
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: #ffffff;
+  text-align: center;
+}
+
+/* Summary Styles */
 .summary-container {
   max-width: 700px;
 }
@@ -1390,27 +1465,7 @@ Objectif : obtenir un avatar haut de gamme, isolé sur fond blanc, prêt pour un
   color: white;
 }
 
-.create-account-button {
-  background-color: #4caf50;
-  color: white;
-  padding: 14px 28px;
-  border-radius: 8px;
-  font-size: 1.1rem;
-  font-weight: bold;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.create-account-button:hover:not(:disabled) {
-  background-color: #388e3c;
-}
-
-.create-account-button:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
-}
-
+/* Flamou Character Styles */
 .flamou-container {
   display: flex;
   align-items: center;
@@ -1451,6 +1506,7 @@ Objectif : obtenir un avatar haut de gamme, isolé sur fond blanc, prêt pour un
   color: white;
 }
 
+/* Animations */
 .animated-bounce {
   animation: bounce 1.5s infinite alternate;
 }
@@ -1461,6 +1517,67 @@ Objectif : obtenir un avatar haut de gamme, isolé sur fond blanc, prêt pour un
   }
   100% {
     transform: translateY(-10px);
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .flamou-container {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .flamou-image {
+    margin-right: 0;
+    margin-bottom: 15px;
+  }
+  
+  .flamou-speech-bubble {
+    margin-left: 0;
+    max-width: 90%;
+  }
+  
+  .flamou-speech-bubble:before {
+    display: none;
+  }
+  
+  .avatars-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .avatar-option {
+    width: 250px;
+  }
+  
+  .summary-content {
+    flex-direction: column;
+  }
+  
+  .summary-avatar {
+    margin-right: 0;
+    margin-bottom: 20px;
+    text-align: center;
   }
 }
 </style>
