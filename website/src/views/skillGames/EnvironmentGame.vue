@@ -330,6 +330,11 @@ export default {
       // Questions séquentielles
       questions: [
         { 
+          type: 'sounds', 
+          title: 'Ambiance sonore?', 
+          description: 'Quel type de son te met à l\'aise?' 
+        },
+        { 
           type: 'light', 
           title: 'Intensité de lumière?', 
           description: "Choisis l'intensité qui te convient le mieux." 
@@ -343,11 +348,6 @@ export default {
           type: 'colors', 
           title: 'Couleurs de la pièce?', 
           description: 'Choisis une palette de couleur qui te plaît.' 
-        },
-        { 
-          type: 'sounds', 
-          title: 'Ambiance sonore?', 
-          description: 'Quel type de son te met à l\'aise?' 
         },
         { 
           type: 'people', 
@@ -397,7 +397,7 @@ export default {
             'Un espace hybride offrant des zones dédiées à la concentration intellectuelle et à la détente sensorielle, avec des paramètres personnalisables.',
           previewColor: '#7986CB', // A blend color
           imageSrc: '/images/concentration_space.png', // Placeholder, ideally a new image like '/images/polyvalent_space.png'
-          icon: '🧠🌿', // Merged icon
+          icon: '🛋️', // Icône canapé
           objectsCategory: 'polyvalent', // New category for RoomRenderer
           defaultSettings: {
             room: {
@@ -644,8 +644,8 @@ export default {
       const cleanName = environmentName.trim()
       
       const mapping = {
-        'Espace Polyvalent (Concentration & Détente)': 'Focus Room',
-        'Espace social contrôlé': 'Open Room'
+        'Espace de Détente': 'Focus Room',
+        'Espace de Travail': 'Open Room'
       }
       
       const result = mapping[cleanName] || 'Focus Room'
@@ -995,12 +995,6 @@ export default {
         this.applyEnvironmentChanges()
       }
 
-      // Afficher le guide pour le nouvel environnement
-      this.showGuideMessage({
-        title: 'Bienvenue dans ' + this.currentEnvironment.name,
-        description: 'Explorer cet environnement et réponds aux questions qui apparaîtront en bas de l\'écran.',
-      })
-      
       // Afficher la première question après un délai
       setTimeout(() => {
         this.showQuestion = true

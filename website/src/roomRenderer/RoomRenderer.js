@@ -35,7 +35,7 @@ export default class RoomRenderer {
           coffeetable: { position: [6, 1.4, 0.3], scale: 0.25, rotation: [0, 0, 0] },
           plant: { position: [9, 0.25, 1], scale: 0.005, rotation: [0, 0, 0] },
           speakers: { position: [7, 0.8, 2], scale: 0.4, rotation: [0, -Math.PI/6, 0] },
-          ceilingFan: { position: [5.5, 1, 5.5], scale: 0.3, rotation: [0, Math.PI/2, 0] },
+          ceilingFan: { position: [5, 1, 5], scale: 0.3, rotation: [0, Math.PI/2, 0] },
           meetingTable: { position: [5.5, 0.35, 7], scale: 0.75, rotation: [0, Math.PI, 0] },
           moi: { position: [9, 0.25, 1], scale: 0.10, rotation: [0, Math.PI/2, 0] },
           painting1: { position: [0, 1.5, 3], scale: 1.7, rotation: [0, Math.PI/2, 0] },
@@ -45,11 +45,11 @@ export default class RoomRenderer {
         },
         polyvalent: {
           // Work zone (left side)
-          desk: { position: [2.5, 0, 3], scale: 0.02, rotation: [0, 0, 0] },
-          chair: { position: [2.1, 0, 4], scale: 0.001, rotation: [0, Math.PI, 0] },
-          computer: { position: [2.15, 1.28, 3.2], scale: 0.5, rotation: [0, Math.PI, 0] },
+          desk: { position: [4, 0, 1], scale: 0.2, rotation: [0, 0, 0] },
+          chair: { position: [3.6, 0, 2], scale: 0.015, rotation: [0, Math.PI, 0] },
+          computer: { position: [3.65, 1.28, 1.2], scale: 1, rotation: [0, Math.PI, 0] },
           notebook: { position: [3, 0, 2.6], scale: 0.1, rotation: [0, Math.PI/3, 0] },
-          whiteboard: { position: [1.5, 1.35, 1.1], scale: 0.2, rotation: [0, 0, 0] },
+          whiteboard: { position: [4, 1.35, 0.1], scale: 2.6, rotation: [0, 0, 0] },
           filing: { position: [0.5, 0, 2], scale: 0.4, rotation: [0, Math.PI/2, 0] },
           
           // Relaxation zone (right side)
@@ -62,11 +62,11 @@ export default class RoomRenderer {
           
           // Shared elements
           bookshelf: { position: [0.3, 0, 5], scale: 0.9, rotation: [0, Math.PI/2, 0] },
-          lamp1: { position: [4.5, 2.4, 4.5], scale: 1.2, rotation: [0, Math.PI/4, 0] },
+          lamp1: { position: [5, 2.4, 5], scale: 1.2, rotation: [0, Math.PI/4, 0] },
           plant: { position: [8.5, 0.25, 2], scale: 0.005, rotation: [0, 0, 0] },
-          painting1: { position: [4.5, 1.5, 0.1], scale: 0.7, rotation: [0, 0, 0] },
-          painting2: { position: [8, 1.5, 2], scale: 0.7, rotation: [0, -Math.PI/2, 0] },
-          painting3: { position: [0.1, 1.5, 7], scale: 0.7, rotation: [0, Math.PI/2, 0] },
+          painting1: { position: [0, 1.5, 3], scale: 1.7, rotation: [0, Math.PI/2, 0] },
+          painting2: { position: [0, 1.5, 10], scale: 1.7, rotation: [0, Math.PI, 0] },
+          painting3: { position: [7, 1.5, 0.05], scale: 1.7, rotation: [0, 0, 0] },
           toi: { position: [7, 0.284, 8], scale: 0.027, rotation: [0, -Math.PI/2, 0] },
         },
       };
