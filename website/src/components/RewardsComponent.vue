@@ -86,6 +86,13 @@
               {{ badge.unlocked ? 'Obtenu ✅' : 'À débloquer' }}
             </span>
           </div>
+          <!-- Affichage du pourcentage de complétion si disponible -->
+          <div v-if="badge.completion !== undefined" class="badge-completion">
+            <div class="badge-completion-bar">
+              <div class="badge-completion-fill" :style="{ width: Math.round((badge.completion || 0) * 100) + '%' }"></div>
+            </div>
+            <span class="badge-completion-text">{{ Math.round((badge.completion || 0) * 100) }}%</span>
+          </div>
         </div>
       </div>
     </div>
@@ -376,6 +383,7 @@
 import UserJourneyService from '@/services/UserJourneyService.js'
 import { eventBus } from '@/utils/eventBus'
 import GuideAvatar from '@/components/GuideComponent.vue'
+import AuthService from '@/services/AuthService.js'
 
 export default {
   name: 'RewardsComponent',
@@ -657,6 +665,9 @@ export default {
 
     // Vérifier si c'est la première fois que l'utilisateur accède au profil
     this.checkFirstProfileVisit();
+
+    // Charger la progression des jeux pour les badges
+    this.fetchGamesProgress();
   },
   mounted() {
     // Vérifier si c'est la première visite du profil
@@ -1690,6 +1701,47 @@ export default {
       )
       if (this.textSizeLevel > 0) {
         document.body.classList.add(`text-size-${this.textSizeLevel}`)
+      }
+    },
+
+    async fetchGamesProgress() {
+      // Map des endpoints et des indices de badge associés
+      const gameEndpoints = [
+        { endpoint: '/games/scenario', badgeId: 2 },
+        //{ endpoint: '/games/shape-sequence', badgeId: 3 },
+        { endpoint: '/games/jobs', badgeId: 7 },
+        { endpoint: '/games/speed', badgeId: 1 },
+        { endpoint: '/games/abilities', badgeId: 4 },
+        { endpoint: '/games/skills', badgeId: 3 },
+        { endpoint: '/games/room-env', badgeId: 5 },
+      ];
+      const updatedBadges = [...this.badges];
+      let anyChange = false;
+      for (const { endpoint, badgeId } of gameEndpoints) {
+        try {
+          const response = await AuthService.fetchWithAuth({
+            method: 'get',
+            url: endpoint,
+          });
+          // On considère le badge débloqué si completion === 1
+          const completion = response.data.completion;
+          const badge = updatedBadges.find(b => b.id === badgeId);
+          if (badge) {
+            badge.completion = completion;
+            if (completion >= 1 && !badge.unlocked) {
+              badge.unlocked = true;
+              badge.dateUnlocked = new Date().toISOString().split('T')[0];
+              anyChange = true;
+            }
+          }
+        } catch (error) {
+          // L'utilisateur n'a peut-être pas encore joué à ce jeu
+          // On ignore l'erreur pour garder l'expérience fluide
+        }
+      }
+      this.badges = updatedBadges;
+      if (anyChange) {
+        this.saveBadges();
       }
     },
   },
@@ -3096,5 +3148,32 @@ export default {
   .badge-detail-emoji {
     font-size: 40px;
   }
+}
+
+/* Styles pour la barre de complétion des badges */
+.badge-completion {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.badge-completion-bar {
+  width: 48px;
+  height: 6px;
+  background: #e0e0e0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.badge-completion-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4caf50, #8bc34a);
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+.badge-completion-text {
+  font-size: 0.85em;
+  color: #555;
+  min-width: 28px;
+  text-align: right;
 }
 </style>

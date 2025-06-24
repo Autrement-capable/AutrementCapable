@@ -206,8 +206,8 @@ export default {
           seenIds.push(slugToId[slug]);
           localStorage.setItem('seen-metiers', JSON.stringify(seenIds));
           
-          // Vérifier si l'utilisateur a vu au moins 3 métiers pour débloquer le badge
-          if (seenIds.length >= 3) {
+          // Vérifier si l'utilisateur a vu au moins 5 métiers pour débloquer le badge
+          if (seenIds.length >= 5) {
             this.checkBadgeUnlock(seenIds.length);
           }
         }
@@ -222,15 +222,11 @@ export default {
       try {
         const { unlockBadge, isBadgeUnlocked } = require('@/utils/badges');
         
-        // Badge Apprenti des métiers (3 métiers vus)
-        if (seenCount >= 3 && !isBadgeUnlocked(7)) {
+        // Badge Apprenti des métiers (5 métiers vus)
+        if (seenCount >= 5 && !isBadgeUnlocked(7)) {
           unlockBadge(7);
         }
         
-        // Badge Chercheur curieux (10 métiers vus)
-        if (seenCount >= 10 && !isBadgeUnlocked(3)) {
-          unlockBadge(3);
-        }
       } catch (error) {
         console.error('Erreur lors de la vérification des badges:', error);
       }
