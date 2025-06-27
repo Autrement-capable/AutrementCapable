@@ -1,10 +1,22 @@
 <template>
-  <div
-    class="dashboard"
-    :class="{
-      'achievements-unlocked': hasNewAchievement,
-    }"
-  >
+  <div class="dashboard" :class="{ 'achievements-unlocked': hasNewAchievement }">
+    
+    <!-- Animation de badge débloqué -->
+    <div v-if="showBadgeUnlockAnimation" class="badge-unlock-overlay">
+      <div class="badge-unlock-animation" :class="{ 'special-celebration': newlyUnlockedBadge && newlyUnlockedBadge.id === 9 }">
+        <div class="badge-icon" v-if="newlyUnlockedBadge">{{ newlyUnlockedBadge.icon }}</div>
+        <h2 v-if="newlyUnlockedBadge && newlyUnlockedBadge.id === 9">🎉 Félicitations ! 🎉</h2>
+        <h2 v-else>Badge débloqué !</h2>
+        <h3 v-if="newlyUnlockedBadge">{{ newlyUnlockedBadge.title }}</h3>
+        <p v-if="newlyUnlockedBadge && newlyUnlockedBadge.id === 9">
+          Bravo ! Tu as terminé tous les jeux disponibles ! Tu es maintenant prêt à créer ton CV professionnel. 🌟
+        </p>
+        <p v-else-if="newlyUnlockedBadge">{{ newlyUnlockedBadge.description }}</p>
+        <button @click="closeBadgeAnimation" class="close-animation-btn" :class="{ 'celebration-btn': newlyUnlockedBadge && newlyUnlockedBadge.id === 9 }">
+          Continuer
+        </button>
+      </div>
+    </div>
     <!-- Guide Avatar pour guider l'utilisateur -->
     <guide-avatar
       v-if="!showRewardsModal"
@@ -372,6 +384,9 @@ export default {
       badgeClickCount: 0,
       badgeNeedsEvolution: false,
       lastEvolvedLevel: 0,
+      showBadgeUnlockAnimation: false,
+      newlyUnlockedBadge: null,
+      userBadges: [],
     }
   },
   created() {
@@ -405,6 +420,70 @@ export default {
     }
   },
   methods: {
+    /**
+     * Vérifie si tous les jeux sont terminés pour débloquer le badge "Tous les jeux finis"
+     */
+    async checkAllGamesCompleted() {
+      try {
+        // Charger les badges depuis localStorage
+        const savedBadges = localStorage.getItem('userBadges');
+        if (!savedBadges) return;
+
+        this.userBadges = JSON.parse(savedBadges);
+        
+        // IDs des badges de jeux (excluant le profil, CV et formation)
+        const gameIds = [1, 2, 3, 4, 5, 7];
+        
+        // Vérifier si tous les jeux sont terminés
+        const allGamesCompleted = gameIds.every(id => {
+          const badge = this.userBadges.find(badge => badge.id === id);
+          return badge && badge.unlocked;
+        });
+
+        // Trouver le badge "Tous les jeux finis"
+        const allGamesCompletedBadge = this.userBadges.find(badge => badge.id === 9);
+        
+        if (allGamesCompleted && allGamesCompletedBadge && !allGamesCompletedBadge.unlocked) {
+          // Débloquer le badge
+          allGamesCompletedBadge.unlocked = true;
+          allGamesCompletedBadge.dateUnlocked = new Date().toISOString().split('T')[0];
+          
+          // Sauvegarder dans localStorage
+          localStorage.setItem('userBadges', JSON.stringify(this.userBadges));
+          
+          // Déclencher l'animation après un petit délai
+          setTimeout(() => {
+            this.newlyUnlockedBadge = allGamesCompletedBadge;
+            this.showBadgeUnlockAnimation = true;
+          }, 1000);
+
+          // Mettre à jour la progression
+          this.updateProgress();
+        }
+      } catch (error) {
+        console.error('Erreur lors de la vérification des badges:', error);
+      }
+    },
+
+    /**
+     * Met à jour la progression basée sur les badges débloqués
+     */
+    updateProgress() {
+      if (this.userBadges && this.userBadges.length > 0) {
+        const unlockedCount = this.userBadges.filter(badge => badge.unlocked).length;
+        const totalCount = this.userBadges.length;
+        this.progress = Math.round((unlockedCount / totalCount) * 100);
+      }
+    },
+
+    /**
+     * Ferme l'animation de badge
+     */
+    closeBadgeAnimation() {
+      this.showBadgeUnlockAnimation = false;
+      this.newlyUnlockedBadge = null;
+    },
+
     getCurrentBadgeImage() {
       // Obtenir le niveau actuel
       const currentLevel = this.calculateLevel();
@@ -1025,6 +1104,8 @@ export default {
     },
   },
   mounted() {
+    this.checkAllGamesCompleted();
+
     // Check if the showBadges query parameter exists
     if (
       this.$route.query.showBadges === 'true' ||
@@ -1376,6 +1457,160 @@ export default {
   overflow: hidden;
   pointer-events: none;
   z-index: 1;
+}
+
+/* Animation badge débloqué */
+.badge-unlock-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 3000;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.badge-unlock-animation {
+  background-color: #fff;
+  border-radius: 20px;
+  padding: 30px;
+  text-align: center;
+  max-width: 400px;
+  box-shadow: 0 0 30px rgba(249, 71, 136, 0.6);
+  animation: scaleIn 0.5s ease-out;
+}
+
+.badge-unlock-animation.special-celebration {
+  background: linear-gradient(135deg, #FFD700, #FFA500, #FF6347);
+  box-shadow: 0 0 50px rgba(255, 215, 0, 0.8);
+  animation: scaleIn 0.5s ease-out, celebration-glow 2s ease-in-out infinite alternate;
+}
+
+.badge-unlock-animation .badge-icon {
+  font-size: 80px;
+  margin-bottom: 20px;
+  animation: pulse 2s infinite;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background-color: #f3f3f3;
+}
+
+.special-celebration .badge-icon {
+  background: radial-gradient(circle, #FFD700, #FFA500);
+  animation: pulse 2s infinite, trophy-bounce 1s ease-in-out infinite alternate;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.7);
+}
+
+.badge-unlock-animation h2 {
+  color: #FF4081;
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.special-celebration h2 {
+  color: #8B4513;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  animation: text-celebration 1.5s ease-in-out infinite alternate;
+}
+
+.badge-unlock-animation h3 {
+  color: #333;
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+}
+
+.special-celebration h3 {
+  color: #654321;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.badge-unlock-animation p {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.special-celebration p {
+  color: #4B3621;
+  font-weight: 500;
+  font-size: 1.1rem;
+}
+
+.close-animation-btn {
+  background-color: #FF4081;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 50px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.close-animation-btn.celebration-btn {
+  background: linear-gradient(135deg, #FF6347, #FFD700);
+  color: #8B4513;
+  font-weight: bold;
+  animation: button-celebration 1s ease-in-out infinite alternate;
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5);
+}
+
+.close-animation-btn:hover {
+  background-color: #D81B60;
+  transform: scale(1.05);
+}
+
+.close-animation-btn.celebration-btn:hover {
+  background: linear-gradient(135deg, #FFD700, #FF6347);
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(255, 215, 0, 0.7);
+}
+
+/* Animations spéciales */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes celebration-glow {
+  0% { box-shadow: 0 0 50px rgba(255, 215, 0, 0.8); }
+  100% { box-shadow: 0 0 70px rgba(255, 165, 0, 1); }
+}
+
+@keyframes trophy-bounce {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.1); }
+}
+
+@keyframes text-celebration {
+  0% { transform: scale(1); color: #8B4513; }
+  100% { transform: scale(1.05); color: #654321; }
+}
+
+@keyframes button-celebration {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.02); }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
 }
 
 /* Particules en arrière-plan - Plus nombreuses et plus dynamiques */
