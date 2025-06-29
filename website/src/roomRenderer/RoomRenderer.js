@@ -133,10 +133,6 @@ export default class RoomRenderer {
         1000
       );
       
-      const { width, height, depth } = this.room;
-      this.camera.position.set(width, height/2 + 3, depth * 1.5);
-      this.camera.lookAt(width/2, height/2, depth/2);
-      
       // Create renderer
       this.renderer = new THREE.WebGLRenderer({ antialias: true });
       this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
@@ -153,6 +149,12 @@ export default class RoomRenderer {
       this.controls = new OrbitControls(this.camera, this.renderer.domElement);
       this.controls.enableDamping = true;
       this.controls.dampingFactor = 0.05;
+
+      // Set camera to view the center of the room
+      const { width, height, depth } = this.room;
+      this.camera.position.set(width / 2, height / 2, depth * 1.5);
+      this.controls.target.set(width / 2, height / 2, depth / 2);
+      this.controls.update();
       
       // Add lighting
       this.setupLighting();
@@ -482,6 +484,15 @@ export default class RoomRenderer {
       rightWall.receiveShadow = true;
       this.roomMeshes.rightWall = rightWall;
       this.scene.add(rightWall);
+
+      // Front wall
+      const frontWallGeometry = new this.THREE.PlaneGeometry(width, height);
+      const frontWall = new this.THREE.Mesh(frontWallGeometry, wallMaterial);
+      frontWall.position.set(width / 2, height / 2, depth);
+      frontWall.rotation.y = Math.PI;
+      frontWall.receiveShadow = true;
+      this.roomMeshes.frontWall = frontWall;
+      this.scene.add(frontWall);
     }
     
     updateRoom(width, depth, height, wallColor, floorColor, ceilingColor) {
@@ -502,8 +513,9 @@ export default class RoomRenderer {
       this.createRoom();
       
       // Update camera and lights
-      this.camera.position.set(width, height/2 + 3, depth * 1.5);
-      this.camera.lookAt(width/2, height/2, depth/2);
+      this.camera.position.set(width / 2, height / 2, depth * 1.5);
+      this.controls.target.set(width / 2, height / 2, depth / 2);
+      this.controls.update();
             
       // Update furniture positions
       this.updateFurniturePositions();
@@ -534,6 +546,10 @@ export default class RoomRenderer {
       
       if (this.roomMeshes.rightWall) {
         this.roomMeshes.rightWall.material.color.set(wallColor);
+      }
+
+      if (this.roomMeshes.frontWall) {
+        this.roomMeshes.frontWall.material.color.set(wallColor);
       }
     }
     
