@@ -15,7 +15,7 @@ python-multipart
 # for database
 asyncpg
 sqlalchemy[asyncio]
-psycopg2-binary
+psycopg2
 # for testing
 pytest
 pytest-asyncio
@@ -33,3 +33,5 @@ cryptography
 # WebAuthn/Passkeys support
 webauthn
 cbor2
+# Avatag gen
+openai
