@@ -440,7 +440,8 @@ export default {
           game: 'Jeu de Vitesse',
           gameRoute: '/game-speed',
           shareable: true,
-          hint: 'Badge déjà obtenu'
+          hint: 'Termine le jeu de vitesse le mieux que tu peux !',
+          completion: 0,
         },
         {
           id: 2,
@@ -454,7 +455,8 @@ export default {
           game: 'Jeu des Scénarios',
           gameRoute: '/scenarios',
           shareable: true,
-          hint: 'Badge déjà obtenu'
+          hint: 'Termine tous les scénarios !',
+          completion: 0,
         },
         {
           id: 3,
@@ -468,6 +470,7 @@ export default {
           game: 'Jeu des Formes',
           gameRoute: '/shape-sequence-game',
           shareable: true,
+          completion: 0,
         },
         {
           id: 4,
@@ -481,6 +484,7 @@ export default {
           game: 'Roulette des Compétences',
           gameRoute: '/roue-des-competences',
           shareable: true,
+          completion: 0,
         },
         {
           id: 5,
@@ -493,6 +497,7 @@ export default {
           game: 'Environnement',
           gameRoute: '/environment',
           shareable: true,
+          completion: 0,
         },
         {
           id: 6,
@@ -519,6 +524,7 @@ export default {
           game: 'Découverte des métiers',
           gameRoute: '/metiers',
           shareable: false,
+          completion: 0,
         },
         {
           id: 8,
@@ -1762,7 +1768,7 @@ export default {
     async fetchGamesProgress() {
       // Map des endpoints et des indices de badge associés
       const gameEndpoints = [
-        { endpoint: '/games/scenario', badgeId: 2 },
+        { endpoint: '/games/scenarios', badgeId: 2 },
         //{ endpoint: '/games/shape-sequence', badgeId: 3 },
         { endpoint: '/games/jobs', badgeId: 7 },
         { endpoint: '/games/speed', badgeId: 1 },
@@ -1779,7 +1785,7 @@ export default {
             url: endpoint,
           });
           // On considère le badge débloqué si completion === 1
-          const completion = response.data.completion;
+          const completion = response.data.completion || 0;
           const badge = updatedBadges.find(b => b.id === badgeId);
           if (badge) {
             badge.completion = completion;
