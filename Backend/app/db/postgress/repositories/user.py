@@ -391,7 +391,7 @@ class AvatarInfo(BaseModel):
     avatarPassions: Optional[str] = None
     avatarExpression: Optional[str] = None
 
-async def store_avatar_info(session: AsyncSession, user_id: int, data:dict, fresh=True, commit=True) -> UserAvatarInfo | None:
+async def store_avatar_info(session: AsyncSession, user_id: int, data:dict | AvatarInfo, fresh=True, commit=True) -> UserAvatarInfo | None:
     """ Store avatar information in the database asynchronously(IF already exists overwrite it)
 
     Args:
@@ -402,7 +402,16 @@ async def store_avatar_info(session: AsyncSession, user_id: int, data:dict, fres
     Returns:
         UserAvatarInfo | None: The created avatar info object if successful, None otherwise
     """
-    data = AvatarInfo(**data) ## will raise validation error if invalid
+    if isinstance(data, dict):
+        # If data is a dict, convert it to AvatarInfo model
+        try:
+            data = AvatarInfo(**data)
+        except Exception as e:
+            print(f"Invalid avatar data: {e}")
+            return None
+    elif isinstance(data, AvatarInfo):
+        # If data is already an AvatarInfo model, use it directly
+        pass
     try:
         # Check if the user already has avatar info
         statement = select(UserAvatarInfo).where(UserAvatarInfo.user_id == user_id)
