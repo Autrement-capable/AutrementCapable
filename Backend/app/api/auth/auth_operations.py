@@ -22,6 +22,11 @@ class LogoutResponse(BaseModel):
 class RefreshResponse(BaseModel):
     access_token: str = Field(..., description="The new access token")
 
+class MeResponse(BaseModel):
+    user_id: int = Field(..., description="The ID of the authenticated user")
+    role: str = Field(..., description="The role of the authenticated user")
+    msg: str = Field(..., description="A message indicating successful authentication")
+
 @router.post("/refresh",
              response_model=RefreshResponse,
              responses=create_response_dict(AccessToken=False))
@@ -98,5 +103,28 @@ async def logout(
         raise HTTPException(status_code=401, detail="Invalid refresh token")
 
     return {"msg": "Successfully logged out"}
+# endpoint to check if user is authenticated
+@router.get("/status", responses=create_response_dict(AccessToken=False), response_model=MeResponse)
+@secured_endpoint(security_type=SecurityRequirement.ACCESS_TOKEN)
+async def is_authenticated(
+    jwt: dict,
+    session: AsyncSession = Depends(getSession)
+):
+    """
+    Check if the user is authenticated.
+
+    This endpoint verifies the access token and returns a success message if valid.
+    """
+    user_id = jwt.get("sub")
+    
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid access token")
+
+    # Optionally, you can check if the user exists in the database
+    # user = await session.get("User", user_id)
+    # if not user:
+    #     raise HTTPException(status_code=404, detail="User not found")
+
+    return {"msg": "User is authenticated", "user_id": user_id, "role" : jwt.get("role")}
 
 AddRouter(router)
