@@ -684,6 +684,8 @@ export default {
       // Move to next step
       this.currentStep++
 
+      // WTF vlad what black magic control flow is this took me 2 hours to figure out
+
       // Handle different steps
       if (this.currentStep === 9) {
         // Create account first
@@ -729,10 +731,34 @@ export default {
 
         console.log('Creating account with data:', userData)
 
-        // Register with passkey
-        const result = await AuthService.registerWithPasskey(userData)
+        // Register with passkey with dummy passkey we will give the info later
+        const result = await AuthService.registerWithPasskey()
         console.log('Account creation successful:', result)
 
+    // Possible options ofr the profile update endpoint
+    //    first_name: Optional[str]
+    //    last_name: Optional[str]
+    //    email: Optional[str]
+    //    age: Optional[int]
+    //    phone_number: Optional[str]
+    //    address: Optional[str]
+    //    onboarding_complete: Optional[bool]
+
+
+        // Update user profile with additional data
+        const profileData = {
+          first_name: this.responses.nickname,
+          age: parseInt(this.responses.age),
+          onboarding_complete: true, // Mark onboarding as complete
+        }
+        console.log('Updating profile with data:', profileData)
+        // we dont await this call because we dont need its result
+        AuthService.request("put", "/user/profile", profileData).then((response) => {
+          console.log('Profile updated successfully:', response.data)
+        }).catch((error) => {
+          console.error('Error updating profile:', error)
+          // Non-critical error, continue with flow
+        })
         // Save avatar creation data
         const avatarData = {
           avatarGender: this.responses.avatarGender,
@@ -741,14 +767,14 @@ export default {
           avatarPassions: this.responses.avatarPassion,
           avatarExpression: this.responses.avatarExpression,
         }
-
-        try {
-          await AuthService.request("post", "/user/profile/avatar-creation-data", avatarData)
-          console.log('Avatar creation data saved successfully')
-        } catch (error) {
-          console.error('Error saving avatar creation data:', error)
-          // Non-critical error, continue with flow
-        }
+          // no need to await this call because we dont need its result either
+          AuthService.request("post", "/user/profile/avatar-creation-data", avatarData)
+          .then((response) => {
+            console.log('Avatar creation data saved successfully:', response.data)
+          }).catch((error) => {
+            console.error('Error saving avatar creation data:', error)
+            // Non-critical error, continue with flow
+          })
 
         // Move to avatar generation
         this.nextStep()

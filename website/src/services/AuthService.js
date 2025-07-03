@@ -226,55 +226,44 @@ const AuthService = {
   },
 
   // Start passkey registration for new user
-  async registerWithPasskey(userData) {
-    try {
-     // Create FormData object for multipart form submission
-    const formData = new FormData();
-    formData.append('first_name', userData.first_name);
-    
-    if (userData.last_name) formData.append('last_name', userData.last_name);
-    if (userData.age) formData.append('age', userData.age);
-    
-    // Handle passions as JSON string
-    if (userData.passions) {
-      formData.append('passions', JSON.stringify(userData.passions));
-    }
-    
-    // Add avatar if provided
-    if (userData.avatar) {
-      formData.append('avatar', userData.avatar);
-    }
-    
-    // Step 1: Send user data to server and get registration options
+  // Start passkey registration for new user
+async registerWithPasskey(userData = {}) {
+  try {
+    // Step 1: Send basic user data as JSON to server and get registration options
     const { data } = await axios.post(
       `${API_URL}/auth/passkey/registration/start`, 
-      formData,
       {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        // Only send the minimal fields that the backend expects
+        first_name: userData?.first_name || null,
+        last_name: userData?.last_name || null,
+        age: userData?.age || null
+      },
+      {
+        headers: { 'Content-Type': 'application/json' }
       }
     );
 
-    // Rest of the function remains the same...
+    // Step 2: Use SimpleWebAuthn to create the passkey
     const registrationResponse = await startRegistration(data.options);
 
+    // Step 3: Send the response to server to complete registration
     const completeResponse = await axios.post(`${API_URL}/auth/passkey/registration/complete`, {
       user_id: data.user_id,
       registration_data: registrationResponse,
       challenge: data.options.challenge
     }, {
-      withCredentials: true,
+      withCredentials: true, // Important: This ensures cookies are saved
     });
 
-      // Store access token (refresh token is in HTTP-only cookie)
-      this.setAccessToken(completeResponse.data.access_token);
+    // Store access token (refresh token is in HTTP-only cookie)
+    this.setAccessToken(completeResponse.data.access_token);
 
-      return completeResponse.data;
-    } catch (error) {
-      console.error('Registration error:', error);
-      throw error;
-    }
-  },
-
+    return completeResponse.data;
+  } catch (error) {
+    console.error('Registration error:', error);
+    throw error;
+  }
+},
   // Authenticate with passkey
   async authenticateWithPasskey() {
     try {
