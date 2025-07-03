@@ -1,4 +1,14 @@
 <template>
+  <PopUp
+    v-if="showGameModal"
+    message="Souhaites-tu continuer à jouer ?"
+    :image="flamouImage"
+    :redirect="getRandomGameRoute()"
+    buttonConfirm="Changer de jeux"
+    buttonCancel="Rester ici"
+    :visible="showGameModal"
+    @close="closeModal"
+  />
   <div class="skills-wheel-container">
     <!-- Animation de déblocage du badge -->
     <div v-if="showBadgeUnlockAnimation" class="badge-unlock-overlay">
@@ -7,7 +17,9 @@
         <h2>Badge débloqué !</h2>
         <h3>{{ badgeData.name }}</h3>
         <p>{{ badgeData.description }}</p>
-        <button @click="closeBadgeAnimation" class="close-animation-btn">Continuer</button>
+        <button @click="closeBadgeAnimation" class="close-animation-btn">
+          Continuer
+        </button>
       </div>
     </div>
     <GameGuide
@@ -29,7 +41,7 @@
       <h1 class="main-title">Roulette des Compétences</h1>
       <p class="subtitle" v-if="!gameStarted">Tourne la roue, découvre des compétences et indique ton niveau de maîtrise</p>
     </div> -->
-    
+
     <!-- Écran d'accueil -->
     <!-- <div class="welcome-screen" v-if="!gameStarted">
       <div class="welcome-card">
@@ -46,45 +58,61 @@
         </button>
       </div>
     </div> -->
-    
+
     <!-- Zone de jeu principale -->
     <div class="game-playground" v-if="gameStarted">
       <!-- Barre de progression -->
       <div class="progress-container">
         <div class="progress-steps">
-          <div class="progress-step" :class="{ 'completed': answeredCount > 0 }">
+          <div class="progress-step" :class="{ completed: answeredCount > 0 }">
             <div class="step-icon">🎮</div>
             <div class="step-label">Démarrage</div>
           </div>
-          
+
           <div class="progress-connector"></div>
-          
-          <div class="progress-step" :class="{ 'completed': answeredCount >= Math.floor(totalSkills/3) }">
+
+          <div
+            class="progress-step"
+            :class="{ completed: answeredCount >= Math.floor(totalSkills / 3) }"
+          >
             <div class="step-icon">🏃</div>
             <div class="step-label">En cours</div>
           </div>
-          
+
           <div class="progress-connector"></div>
-          
-          <div class="progress-step" :class="{ 'completed': answeredCount >= Math.floor(totalSkills*2/3) }">
+
+          <div
+            class="progress-step"
+            :class="{
+              completed: answeredCount >= Math.floor((totalSkills * 2) / 3),
+            }"
+          >
             <div class="step-icon">🔍</div>
             <div class="step-label">Avancé</div>
           </div>
-          
+
           <div class="progress-connector"></div>
-          
-          <div class="progress-step" :class="{ 'completed': answeredCount >= totalSkills }">
+
+          <div
+            class="progress-step"
+            :class="{ completed: answeredCount >= totalSkills }"
+          >
             <div class="step-icon">🏆</div>
             <div class="step-label">Terminé</div>
           </div>
         </div>
-        
+
         <div class="progress-bar">
-          <div class="progress-fill" :style="{ width: progressPercentage + '%' }"></div>
-          <div class="progress-text">{{ answeredCount }} / {{ totalSkills }}</div>
+          <div
+            class="progress-fill"
+            :style="{ width: progressPercentage + '%' }"
+          ></div>
+          <div class="progress-text">
+            {{ answeredCount }} / {{ totalSkills }}
+          </div>
         </div>
       </div>
-      
+
       <div class="game-content">
         <!-- Wheel Section using ApexCharts -->
         <div class="wheel-section">
@@ -98,14 +126,19 @@
                 :series="chartSeries"
               ></apexchart>
             </div>
-            
+
             <div class="wheel-pointer">
-              <svg width="40" height="40" viewBox="0 0 40 40" transform="rotate(180)">
+              <svg
+                width="40"
+                height="40"
+                viewBox="0 0 40 40"
+                transform="rotate(180)"
+              >
                 <polygon points="20,0 0,20 40,20" fill="#f44336" />
               </svg>
             </div>
-            
-            <button 
+
+            <button
               class="spin-button"
               :disabled="isSpinning || showAnswerOptions"
               @click="spinWheel"
@@ -115,22 +148,26 @@
             </button>
           </div>
         </div>
-        
+
         <!-- Current Skill Section -->
         <div class="skill-section" v-if="showAnswerOptions && currentSkill">
           <div class="skill-card">
             <div class="skill-header">
-              <div class="skill-icon-large">{{ getSkillIcon(currentSkill) }}</div>
+              <div class="skill-icon-large">
+                {{ getSkillIcon(currentSkill) }}
+              </div>
               <h2 class="skill-title">{{ currentSkill.nom }}</h2>
             </div>
-            
+
             <p class="skill-description">{{ currentSkill.description }}</p>
-            
-            <h3 class="question-text">Quelle est ta position par rapport à cette compétence ?</h3>
-            
+
+            <h3 class="question-text">
+              Quelle est ta position par rapport à cette compétence ?
+            </h3>
+
             <div class="answers-grid">
-              <button 
-                v-for="(option, index) in answerOptions" 
+              <button
+                v-for="(option, index) in answerOptions"
                 :key="index"
                 class="answer-option"
                 :class="option.class"
@@ -140,9 +177,12 @@
                 <div class="option-text">{{ option.text }}</div>
               </button>
             </div>
-            
+
             <div class="skill-actions">
-              <button @click="skipCurrentSkill" class="action-button skip-button">
+              <button
+                @click="skipCurrentSkill"
+                class="action-button skip-button"
+              >
                 <span class="btn-icon">⏭️</span>
                 <span class="btn-text">Passer cette compétence</span>
               </button>
@@ -151,7 +191,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Modal Results -->
     <div class="results-overlay" v-if="showResults">
       <div class="results-modal">
@@ -160,9 +200,11 @@
             <div class="results-title-icon">🏆</div>
             <h2 class="results-title">Tes résultats</h2>
           </div>
-          <p class="results-subtitle">Voici un résumé de tes réponses sur les compétences</p>
+          <p class="results-subtitle">
+            Voici un résumé de tes réponses sur les compétences
+          </p>
         </div>
-        
+
         <div class="results-grid">
           <div class="result-category strength-category">
             <div class="category-header">
@@ -170,49 +212,70 @@
               <h3>Mes points forts</h3>
             </div>
             <ul class="skills-list">
-              <li v-for="(skill, index) in results.strengths" :key="`strength-${index}`" class="skill-item">
+              <li
+                v-for="(skill, index) in results.strengths"
+                :key="`strength-${index}`"
+                class="skill-item"
+              >
                 <span class="skill-badge">{{ getSkillIcon(skill) }}</span>
                 <span class="skill-name">{{ skill.nom }}</span>
               </li>
-              <li v-if="results.strengths.length === 0" class="empty-list">Aucune compétence sélectionnée</li>
+              <li v-if="results.strengths.length === 0" class="empty-list">
+                Aucune compétence sélectionnée
+              </li>
             </ul>
           </div>
-          
+
           <div class="result-category improve-category">
             <div class="category-header">
               <div class="category-icon">🌱</div>
               <h3>À développer</h3>
             </div>
             <ul class="skills-list">
-              <li v-for="(skill, index) in results.toImprove" :key="`improve-${index}`" class="skill-item">
+              <li
+                v-for="(skill, index) in results.toImprove"
+                :key="`improve-${index}`"
+                class="skill-item"
+              >
                 <span class="skill-badge">{{ getSkillIcon(skill) }}</span>
                 <span class="skill-name">{{ skill.nom }}</span>
               </li>
-              <li v-if="results.toImprove.length === 0" class="empty-list">Aucune compétence sélectionnée</li>
+              <li v-if="results.toImprove.length === 0" class="empty-list">
+                Aucune compétence sélectionnée
+              </li>
             </ul>
           </div>
-          
+
           <div class="result-category difficulty-category">
             <div class="category-header">
               <div class="category-icon">🔍</div>
               <h3>Mes difficultés</h3>
             </div>
             <ul class="skills-list">
-              <li v-for="(skill, index) in results.difficulties" :key="`diff-${index}`" class="skill-item">
+              <li
+                v-for="(skill, index) in results.difficulties"
+                :key="`diff-${index}`"
+                class="skill-item"
+              >
                 <span class="skill-badge">{{ getSkillIcon(skill) }}</span>
                 <span class="skill-name">{{ skill.nom }}</span>
               </li>
-              <li v-if="results.difficulties.length === 0" class="empty-list">Aucune compétence sélectionnée</li>
+              <li v-if="results.difficulties.length === 0" class="empty-list">
+                Aucune compétence sélectionnée
+              </li>
             </ul>
           </div>
         </div>
-        
+
         <p class="result-summary">
-          Tu as identifié <strong>{{ results.strengths.length }}</strong> points forts et 
-          <strong>{{ results.toImprove.length }}</strong> compétences à développer. 
-          Continue à travailler sur tes compétences pour progresser !
+          Tu as identifié
+          <strong>{{ results.strengths.length }}</strong>
+          points forts et
+          <strong>{{ results.toImprove.length }}</strong>
+          compétences à développer. Continue à travailler sur tes compétences
+          pour progresser !
         </p>
-        
+
         <div class="results-actions">
           <button @click="restartGame" class="action-button restart-button">
             <span class="btn-icon">🔄</span>
@@ -229,17 +292,42 @@
 </template>
 
 <script>
-import { getAllSkills } from '@/data/skills-list';
-import VueApexCharts from "vue3-apexcharts";
-import { unlockBadge, isBadgeUnlocked } from '@/utils/badges';
-import AuthService from '@/services/AuthService';
-import GameGuide from '@/components/GameGuideComponent.vue';
+import { getAllSkills } from '@/data/skills-list'
+import VueApexCharts from 'vue3-apexcharts'
+import { unlockBadge, isBadgeUnlocked } from '@/utils/badges'
+import AuthService from '@/services/AuthService'
+import GameGuide from '@/components/GameGuideComponent.vue'
+import PopUp from '@/components/PopUp.vue'
+import { useGameTimer } from '@/services/useGameTimer'
+import flamouImage from '@/assets/flamou/intresting.png'
 
 export default {
   name: 'SkillsWheelGame',
   components: {
     apexchart: VueApexCharts,
-    GameGuide
+    GameGuide,
+    PopUp,
+  },
+  setup() {
+    const {
+      showGameModal,
+      timeRemaining,
+      startTimer,
+      stopTimer,
+      resetTimer,
+      getRandomGameRoute,
+      closeModal,
+    } = useGameTimer()
+    return {
+      showGameModal,
+      timeRemaining,
+      startTimer,
+      stopTimer,
+      resetTimer,
+      getRandomGameRoute,
+      closeModal,
+      flamouImage,
+    }
   },
   data() {
     return {
@@ -255,8 +343,9 @@ export default {
       showBadgeUnlockAnimation: false,
       showGuide: true,
       badgeData: {
-        name: "Explorateur de Compétences",
-        description: "Bravo ! Tu as complété la Roue des Compétences et découvert tes forces et faiblesses !"
+        name: 'Explorateur de Compétences',
+        description:
+          'Bravo ! Tu as complété la Roue des Compétences et découvert tes forces et faiblesses !',
       },
       spinDuration: 3000, // Milliseconds
       minSpins: 2, // Minimum number of full rotations
@@ -264,17 +353,37 @@ export default {
       answeredSkills: [],
       totalSkills: 0,
       answerOptions: [
-        { value: 'strengths', text: 'Je la possède', icon: '💪', class: 'strength' },
-        { value: 'toImprove', text: 'Je veux la développer', icon: '🌱', class: 'improve' },
-        { value: 'difficulties', text: 'J\'ai du mal avec', icon: '🔍', class: 'difficulty' },
-        { value: 'unknown', text: 'Je ne sais pas', icon: '❓', class: 'unknown' }
+        {
+          value: 'strengths',
+          text: 'Je la possède',
+          icon: '💪',
+          class: 'strength',
+        },
+        {
+          value: 'toImprove',
+          text: 'Je veux la développer',
+          icon: '🌱',
+          class: 'improve',
+        },
+        {
+          value: 'difficulties',
+          text: "J'ai du mal avec",
+          icon: '🔍',
+          class: 'difficulty',
+        },
+        {
+          value: 'unknown',
+          text: 'Je ne sais pas',
+          icon: '❓',
+          class: 'unknown',
+        },
       ],
       results: {
         strengths: [],
         toImprove: [],
         difficulties: [],
         unknown: [],
-        skipped: []
+        skipped: [],
       },
       chartOptions: {
         chart: {
@@ -285,13 +394,13 @@ export default {
             speed: 800,
             animateGradually: {
               enabled: true,
-              delay: 150
+              delay: 150,
             },
             dynamicAnimation: {
               enabled: true,
-              speed: 350
-            }
-          }
+              speed: 350,
+            },
+          },
         },
         labels: [],
         colors: [],
@@ -300,228 +409,243 @@ export default {
             startAngle: 0,
             expandOnClick: false,
             donut: {
-              size: '0%'
+              size: '0%',
             },
             dataLabels: {
               offset: -30,
-            }
-          }
+            },
+          },
         },
         dataLabels: {
           enabled: true,
-          formatter: function() {
-            return '✨';
+          formatter: function () {
+            return '✨'
           },
           style: {
             fontSize: '40px',
             fontFamily: 'Arial, sans-serif',
-            fontWeight: 'normal'
+            fontWeight: 'normal',
           },
           textAnchor: 'middle',
           distributed: true,
         },
         tooltip: {
-          enabled: false
+          enabled: false,
         },
         stroke: {
           width: 2,
-          colors: ['#fff']
+          colors: ['#fff'],
         },
         legend: {
-          show: false
+          show: false,
         },
-        responsive: [{
-          breakpoint: 768,
-          options: {
-            chart: {
-              height: 350
+        responsive: [
+          {
+            breakpoint: 768,
+            options: {
+              chart: {
+                height: 350,
+              },
+              dataLabels: {
+                style: {
+                  fontSize: '32px', // MODIFIÉ: Taille adaptée pour les petits écrans
+                },
+              },
             },
-            dataLabels: {
-              style: {
-                fontSize: '32px', // MODIFIÉ: Taille adaptée pour les petits écrans
-              }
-            },
-          }
-        }],
+          },
+        ],
         states: {
           hover: {
             filter: {
-              type: 'none'
-            }
+              type: 'none',
+            },
           },
           active: {
             filter: {
-              type: 'none'
-            }
-          }
-        }
+              type: 'none',
+            },
+          },
+        },
       },
       chartSeries: [], // Sera rempli avec des 1 pour chaque segment
-    };
+    }
   },
   computed: {
     // Progress percentage for the progress bar
     progressPercentage() {
-      if (this.totalSkills === 0) return 0;
-      return (this.answeredCount / this.totalSkills) * 100;
+      if (this.totalSkills === 0) return 0
+      return (this.answeredCount / this.totalSkills) * 100
     },
     // Count of answered skills
     answeredCount() {
-      return this.answeredSkills.length;
-    }
+      return this.answeredSkills.length
+    },
   },
   methods: {
     // Nouvelle méthode pour le démarrage du jeu depuis le guide central
     onGuideComplete() {
-      this.gameStarted = true;
-      this.loadSkills();
-      this.totalSkills = this.segments.length;
-      
+      this.gameStarted = true
+      this.loadSkills()
+      this.totalSkills = this.segments.length
+
       // Limiter le nombre total de compétences pour ne pas rendre le jeu trop long
       if (this.segments.length > 10) {
-        this.segments = this.getRandomSegments(10);
-        this.totalSkills = 10;
+        this.segments = this.getRandomSegments(10)
+        this.totalSkills = 10
       }
-      
+
       // Initialiser le graphique
-      this.updateChartData();
+      this.updateChartData()
     },
     // Initialize game data and state
     startGame() {
-      this.gameStarted = true;
-      this.loadSkills();
-      this.totalSkills = this.segments.length;
-      
+      this.gameStarted = true
+      this.loadSkills()
+      this.totalSkills = this.segments.length
+
       // Limiter le nombre total de compétences pour ne pas rendre le jeu trop long
       // Sélectionner aléatoirement 10 compétences si le total est supérieur à 10
       if (this.segments.length > 10) {
-        this.segments = this.getRandomSegments(10);
-        this.totalSkills = 10;
+        this.segments = this.getRandomSegments(10)
+        this.totalSkills = 10
       }
-      
+
       // Initialiser le graphique ApexCharts avec les compétences
-      this.updateChartData();
+      this.updateChartData()
     },
-    
+
     // Get N random segments
     getRandomSegments(n) {
-      let shuffled = [...this.segments];
-      let selected = [];
-      let count = Math.min(n, shuffled.length);
-      
+      let shuffled = [...this.segments]
+      let selected = []
+      let count = Math.min(n, shuffled.length)
+
       for (let i = 0; i < count; i++) {
-        const randomIndex = Math.floor(Math.random() * shuffled.length);
-        selected.push(shuffled[randomIndex]);
-        shuffled.splice(randomIndex, 1);
+        const randomIndex = Math.floor(Math.random() * shuffled.length)
+        selected.push(shuffled[randomIndex])
+        shuffled.splice(randomIndex, 1)
       }
-      
-      return selected;
+
+      return selected
     },
-    
+
     // Load skills from the skills-list.js file and create wheel segments
     loadSkills() {
       try {
-        const allSkills = getAllSkills();
+        const allSkills = getAllSkills()
         if (!allSkills) {
-          console.error("Impossible de charger les compétences");
-          this.segments = [];
-          return;
+          console.error('Impossible de charger les compétences')
+          this.segments = []
+          return
         }
-        
-        const skillsList = Object.values(allSkills);
-        
+
+        const skillsList = Object.values(allSkills)
+
         // Create segments for the wheel
-        this.segments = skillsList.map(skill => ({ skill }));
-        
+        this.segments = skillsList.map((skill) => ({ skill }))
+
         // Shuffle the segments to randomize the wheel
-        this.shuffleSegments();
-        
-        console.log("Compétences chargées:", this.segments.length);
+        this.shuffleSegments()
+
+        console.log('Compétences chargées:', this.segments.length)
       } catch (error) {
-        console.error("Erreur lors du chargement des compétences:", error);
-        this.segments = [];
+        console.error('Erreur lors du chargement des compétences:', error)
+        this.segments = []
       }
     },
-    
+
     // Fisher-Yates shuffle algorithm for segments
     shuffleSegments() {
       for (let i = this.segments.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [this.segments[i], this.segments[j]] = [this.segments[j], this.segments[i]];
+        const j = Math.floor(Math.random() * (i + 1))
+        ;[this.segments[i], this.segments[j]] = [
+          this.segments[j],
+          this.segments[i],
+        ]
       }
     },
-    
+
     // Mettre à jour les données du graphique
     updateChartData() {
       // Définir les labels (noms des compétences)
-      this.chartOptions.labels = this.segments.map(segment => 
-        segment.skill.nom.length > 12 
-          ? segment.skill.nom.slice(0, 10) + '...' 
-          : segment.skill.nom
-      );
-      
+      this.chartOptions.labels = this.segments.map((segment) =>
+        segment.skill.nom.length > 12
+          ? segment.skill.nom.slice(0, 10) + '...'
+          : segment.skill.nom,
+      )
+
       // Définir les séries (valeurs égales pour tous les segments)
-      this.chartSeries = this.segments.map(() => 1);
-      
+      this.chartSeries = this.segments.map(() => 1)
+
       // Définir les couleurs pour chaque segment
-      this.chartOptions.colors = this.segments.map((_, index) => this.getSegmentColor(index));
+      this.chartOptions.colors = this.segments.map((_, index) =>
+        this.getSegmentColor(index),
+      )
 
       this.chartOptions.dataLabels.formatter = (val, opts) => {
-        const segmentIndex = opts.seriesIndex;
+        const segmentIndex = opts.seriesIndex
         if (segmentIndex >= 0 && segmentIndex < this.segments.length) {
-          return this.getSkillIcon(this.segments[segmentIndex].skill);
+          return this.getSkillIcon(this.segments[segmentIndex].skill)
         }
-        return '✨';
-      };
+        return '✨'
+      }
     },
-    
+
     // Spin the wheel to select a random skill
     spinWheel() {
-      if (this.isSpinning) return;
-      
-      this.isSpinning = true;
-      this.showAnswerOptions = false;
-      
+      if (this.isSpinning) return
+
+      this.isSpinning = true
+      this.showAnswerOptions = false
+
       // Get a random segment that hasn't been answered yet
       const availableIndices = this.segments
         .map((_, index) => index)
-        .filter(index => !this.answeredSkills.includes(this.segments[index].skill.nom));
-      
+        .filter(
+          (index) =>
+            !this.answeredSkills.includes(this.segments[index].skill.nom),
+        )
+
       // If all skills have been answered, end the game
       if (availableIndices.length === 0) {
-        this.endGame();
-        return;
+        this.endGame()
+        return
       }
-      
+
       // Select random segment from available ones
-      const randomIndex = Math.floor(Math.random() * availableIndices.length);
-      this.currentSegmentIndex = availableIndices[randomIndex];
-      
+      const randomIndex = Math.floor(Math.random() * availableIndices.length)
+      this.currentSegmentIndex = availableIndices[randomIndex]
+
       // Préparer l'animation
-      const startTime = performance.now();
-      const targetRotation = (Math.floor(Math.random() * (this.maxSpins - this.minSpins + 1)) + this.minSpins) * 360;
-      const segmentAngle = 360 / this.segments.length;
-      const targetSegmentAngle = (this.currentSegmentIndex * segmentAngle) + (segmentAngle / 2);
-      
+      const startTime = performance.now()
+      const targetRotation =
+        (Math.floor(Math.random() * (this.maxSpins - this.minSpins + 1)) +
+          this.minSpins) *
+        360
+      const segmentAngle = 360 / this.segments.length
+      const targetSegmentAngle =
+        this.currentSegmentIndex * segmentAngle + segmentAngle / 2
+
       // Fonction d'animation utilisant requestAnimationFrame
       const animateWheel = (currentTime) => {
         // Calculer la progression (de 0 à 1)
-        let progress = (currentTime - startTime) / this.spinDuration;
-        
+        let progress = (currentTime - startTime) / this.spinDuration
+
         // Limiter la progression à 1
         if (progress >= 1) {
-          progress = 1;
+          progress = 1
         }
-        
+
         // Appliquer une fonction easing pour un mouvement plus naturel
         // Démarrage lent, accélération, puis ralentissement à la fin
-        const easeProgress = progress < 0.5 
-          ? 4 * progress * progress * progress 
-          : 1 - Math.pow(-2 * progress + 2, 3) / 2;
-        
-        const rotationForThisStep = targetRotation * easeProgress;
-        const finalRotation = rotationForThisStep + targetSegmentAngle;
-        
+        const easeProgress =
+          progress < 0.5
+            ? 4 * progress * progress * progress
+            : 1 - Math.pow(-2 * progress + 2, 3) / 2
+
+        const rotationForThisStep = targetRotation * easeProgress
+        const finalRotation = rotationForThisStep + targetSegmentAngle
+
         // Mettre à jour les options du graphique
         this.chartOptions = {
           ...this.chartOptions,
@@ -530,212 +654,217 @@ export default {
             pie: {
               ...this.chartOptions.plotOptions.pie,
               startAngle: -finalRotation,
-              endAngle: 360 - finalRotation
-            }
-          }
-        };
-        
+              endAngle: 360 - finalRotation,
+            },
+          },
+        }
+
         // Forcer le rendu
-        this.chartSeries = [...this.chartSeries];
-        
+        this.chartSeries = [...this.chartSeries]
+
         // Continuer l'animation si ce n'est pas terminé
         if (progress < 1) {
-          requestAnimationFrame(animateWheel);
+          requestAnimationFrame(animateWheel)
         } else {
           // Animation terminée
-          this.isSpinning = false;
-          this.currentSkill = this.segments[this.currentSegmentIndex].skill;
-          this.showAnswerOptions = true;
-          this.announceSkill();
-          this.highlightSelectedSegment();
+          this.isSpinning = false
+          this.currentSkill = this.segments[this.currentSegmentIndex].skill
+          this.showAnswerOptions = true
+          this.announceSkill()
+          this.highlightSelectedSegment()
         }
-      };
-      
+      }
+
       // Démarrer l'animation
-      requestAnimationFrame(animateWheel);
+      requestAnimationFrame(animateWheel)
     },
-    
+
     // Mettre en surbrillance le segment sélectionné
     highlightSelectedSegment() {
       // Créer une nouvelle palette de couleurs avec le segment sélectionné en surbrillance
       const newColors = this.segments.map((_, index) => {
         if (index === this.currentSegmentIndex) {
           // Éclaircir la couleur pour la surbrillance
-          return this.lightenColor(this.getSegmentColor(index), 30);
+          return this.lightenColor(this.getSegmentColor(index), 30)
         } else {
-          return this.getSegmentColor(index);
+          return this.getSegmentColor(index)
         }
-      });
-      
+      })
+
       // Mettre à jour les options du graphique
       this.chartOptions = {
         ...this.chartOptions,
-        colors: newColors
-      };
+        colors: newColors,
+      }
     },
-    
+
     // Éclaircir une couleur HTML
     lightenColor(color, percent) {
       // Convertir la couleur hexadécimale en RGB
-      let r = parseInt(color.substring(1, 3), 16);
-      let g = parseInt(color.substring(3, 5), 16);
-      let b = parseInt(color.substring(5, 7), 16);
-      
+      let r = parseInt(color.substring(1, 3), 16)
+      let g = parseInt(color.substring(3, 5), 16)
+      let b = parseInt(color.substring(5, 7), 16)
+
       // Éclaircir les composantes
-      r = Math.min(255, Math.floor(r + (255 - r) * (percent / 100)));
-      g = Math.min(255, Math.floor(g + (255 - g) * (percent / 100)));
-      b = Math.min(255, Math.floor(b + (255 - b) * (percent / 100)));
-      
+      r = Math.min(255, Math.floor(r + (255 - r) * (percent / 100)))
+      g = Math.min(255, Math.floor(g + (255 - g) * (percent / 100)))
+      b = Math.min(255, Math.floor(b + (255 - b) * (percent / 100)))
+
       // Reconvertir en hexadécimal
-      return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+      return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
     },
-    
+
     // Record user's answer for the current skill
     selectAnswer(answerType) {
-      if (!this.currentSkill) return;
-      
+      if (!this.currentSkill) return
+
       // Assurer que le tableau existe avant d'y ajouter des éléments
       if (!this.results[answerType]) {
-        this.results[answerType] = [];
+        this.results[answerType] = []
       }
-      
+
       // Add the skill to the appropriate result category
-      this.results[answerType].push(this.currentSkill);
-      
+      this.results[answerType].push(this.currentSkill)
+
       // Mark the skill as answered
-      this.answeredSkills.push(this.currentSkill.nom);
-      
+      this.answeredSkills.push(this.currentSkill.nom)
+
       // Envoyer la réponse au backend immédiatement
-      this.sendAnswerToBackend(this.currentSkill.nom, answerType);
-      
+      this.sendAnswerToBackend(this.currentSkill.nom, answerType)
+
       // Réinitialiser les couleurs du graphique
-      this.updateChartData();
-      
+      this.updateChartData()
+
       // Clear current skill and hide answer options
-      this.currentSkill = null;
-      this.showAnswerOptions = false;
-      
+      this.currentSkill = null
+      this.showAnswerOptions = false
+
       // Check if all skills have been answered
       if (this.answeredSkills.length >= this.totalSkills) {
         setTimeout(() => {
-          this.endGame();
-        }, 1000);
+          this.endGame()
+        }, 1000)
       }
     },
-    
+
     // Skip the current skill
     skipCurrentSkill() {
-      if (!this.currentSkill) return;
-      
+      if (!this.currentSkill) return
+
       // Assurer que le tableau skipped existe
       if (!this.results.skipped) {
-        this.results.skipped = [];
+        this.results.skipped = []
       }
-      
+
       // Add the skill to the skipped category
-      this.results.skipped.push(this.currentSkill);
-      
+      this.results.skipped.push(this.currentSkill)
+
       // Mark the skill as answered
-      this.answeredSkills.push(this.currentSkill.nom);
-      
+      this.answeredSkills.push(this.currentSkill.nom)
+
       // Envoyer l'information de saut au backend
-      this.sendAnswerToBackend(this.currentSkill.nom, 'skipped');
-      
+      this.sendAnswerToBackend(this.currentSkill.nom, 'skipped')
+
       // Réinitialiser les couleurs du graphique
-      this.updateChartData();
-      
+      this.updateChartData()
+
       // Clear current skill and hide answer options
-      this.currentSkill = null;
-      this.showAnswerOptions = false;
-      
+      this.currentSkill = null
+      this.showAnswerOptions = false
+
       // Check if all skills have been answered
       if (this.answeredSkills.length >= this.totalSkills) {
         setTimeout(() => {
-          this.endGame();
-        }, 1000);
+          this.endGame()
+        }, 1000)
       }
     },
-    
+
     closeBadgeAnimation() {
-      this.showBadgeUnlockAnimation = false;
+      this.showBadgeUnlockAnimation = false
     },
 
     // Unlock the completion badge and show animation
     unlockCompletionBadge() {
       if (!isBadgeUnlocked(this.badgeSkillWheelId)) {
-        const badgeUnlocked = unlockBadge(this.badgeSkillWheelId);
+        const badgeUnlocked = unlockBadge(this.badgeSkillWheelId)
         if (badgeUnlocked) {
           setTimeout(() => {
-            this.showBadgeUnlockAnimation = true;
-          }, 1500);
+            this.showBadgeUnlockAnimation = true
+          }, 1500)
         }
       }
     },
 
     // End the game and show results
     endGame() {
-      this.showResults = true;
+      this.showResults = true
 
       // unlock badge and show animation
-      this.unlockCompletionBadge();
-      
+      this.unlockCompletionBadge()
+
       // Save results to localStorage if needed
-      this.saveResults();
+      this.saveResults()
     },
-    
+
     // Restart the game with a fresh state
     restartGame() {
-      this.currentSegmentIndex = -1;
-      this.currentSkill = null;
-      this.showAnswerOptions = false;
-      this.showResults = false;
-      this.answeredSkills = [];
+      this.currentSegmentIndex = -1
+      this.currentSkill = null
+      this.showAnswerOptions = false
+      this.showResults = false
+      this.answeredSkills = []
       this.results = {
         strengths: [],
         toImprove: [],
         difficulties: [],
         unknown: [],
-        skipped: []
-      };
-      
+        skipped: [],
+      }
+
       // Shuffler les segments
-      this.shuffleSegments();
-      
+      this.shuffleSegments()
+
       // Limiter le nombre total de compétences pour ne pas rendre le jeu trop long
       if (this.segments.length > 10) {
-        this.segments = this.getRandomSegments(10);
-        this.totalSkills = 10;
+        this.segments = this.getRandomSegments(10)
+        this.totalSkills = 10
       }
-      
+
       // Réinitialiser le graphique
-      this.updateChartData();
+      this.updateChartData()
     },
-    
+
     // Close the results modal
     closeResults() {
-      this.showResults = false;
-      this.gameStarted = false;
+      this.showResults = false
+      this.gameStarted = false
     },
-    
+
     // Save results to localStorage
     saveResults() {
       const skillsAssessment = {
         date: new Date().toISOString(),
-        strengths: this.results.strengths.map(skill => skill.nom),
-        toImprove: this.results.toImprove.map(skill => skill.nom),
-        difficulties: this.results.difficulties.map(skill => skill.nom)
-      };
-      
+        strengths: this.results.strengths.map((skill) => skill.nom),
+        toImprove: this.results.toImprove.map((skill) => skill.nom),
+        difficulties: this.results.difficulties.map((skill) => skill.nom),
+      }
+
       // Get existing assessments or create empty array
-      const savedAssessments = JSON.parse(localStorage.getItem('skillsAssessments') || '[]');
-      
+      const savedAssessments = JSON.parse(
+        localStorage.getItem('skillsAssessments') || '[]',
+      )
+
       // Add new assessment
-      savedAssessments.push(skillsAssessment);
-      
+      savedAssessments.push(skillsAssessment)
+
       // Save to localStorage
-      localStorage.setItem('skillsAssessments', JSON.stringify(savedAssessments));
+      localStorage.setItem(
+        'skillsAssessments',
+        JSON.stringify(savedAssessments),
+      )
     },
-    
+
     // Get color for wheel segment based on index
     getSegmentColor(index) {
       // Array of vibrant, distinct colors for the wheel
@@ -751,217 +880,244 @@ export default {
         '#F9C5D5', // pink
         '#D6E2E9', // sky blue
         '#FFFFB5', // light yellow
-        '#D8E4FF'  // periwinkle
-      ];
-      
-      return colors[index % colors.length];
+        '#D8E4FF', // periwinkle
+      ]
+
+      return colors[index % colors.length]
     },
 
     sendAnswerToBackend(skillName, answerType) {
       // Mapper les types de réponse comme avant
       const answerTypeMapping = {
-        'strengths': 'Strong',
-        'toImprove': 'WantToLearn',
-        'difficulties': 'Weak',
-        'unknown': 'Unknown',
-        'skipped': 'Skipped'
-      };
+        strengths: 'Strong',
+        toImprove: 'WantToLearn',
+        difficulties: 'Weak',
+        unknown: 'Unknown',
+        skipped: 'Skipped',
+      }
 
-      const backendCategory = answerTypeMapping[answerType];
-      
+      const backendCategory = answerTypeMapping[answerType]
+
       // D'abord, récupérer les données existantes
       AuthService.request('get', '/games/skills')
-        .then(response => {
+        .then((response) => {
           // Initialiser une structure par défaut si les données sont invalides
-          let currentData = response.data && typeof response.data === 'object' 
-            ? response.data 
-            : { completion: 0, skillsAssessment: {} };
+          let currentData =
+            response.data && typeof response.data === 'object'
+              ? response.data
+              : { completion: 0, skillsAssessment: {} }
 
-          console.log('Données récupérées du backend:', currentData);
-          
+          console.log('Données récupérées du backend:', currentData)
+
           // S'assurer que la structure minimale est présente
           if (!currentData.skillsAssessment) {
-            currentData.skillsAssessment = {};
+            currentData.skillsAssessment = {}
           }
-          
+
           // Créer la catégorie si elle n'existe pas
           if (!currentData.skillsAssessment[backendCategory]) {
-            currentData.skillsAssessment[backendCategory] = {};
+            currentData.skillsAssessment[backendCategory] = {}
           }
-          
+
           // Vérifier si cette compétence a déjà été répondue dans une autre catégorie
-          Object.keys(currentData.skillsAssessment).forEach(category => {
+          Object.keys(currentData.skillsAssessment).forEach((category) => {
             if (currentData.skillsAssessment[category][skillName]) {
               // Si la compétence existe déjà dans une autre catégorie, la supprimer
               if (category !== backendCategory) {
-                delete currentData.skillsAssessment[category][skillName];
-                console.log(`Compétence "${skillName}" déplacée de ${category} vers ${backendCategory}`);
+                delete currentData.skillsAssessment[category][skillName]
+                console.log(
+                  `Compétence "${skillName}" déplacée de ${category} vers ${backendCategory}`,
+                )
               }
             }
-          });
-          
-          // Ajouter la nouvelle compétence à la catégorie
-          currentData.skillsAssessment[backendCategory][skillName] = {};
-          
-          // Calculer le nombre total de compétences répondues (unique)
-          const answeredSkillsSet = new Set();
-          Object.keys(currentData.skillsAssessment).forEach(category => {
-            Object.keys(currentData.skillsAssessment[category]).forEach(skill => {
-              answeredSkillsSet.add(skill);
-            });
-          });
-          
-          const answeredSkillsCount = answeredSkillsSet.size;
-          
-          // Calculer le pourcentage de complétion (entre 0 et 1)
-          const totalPossibleSkills = 29; // Nombre total de compétences possibles
-          const completionDecimal = totalPossibleSkills > 0 
-            ? answeredSkillsCount / totalPossibleSkills // Valeur entre 0 et 1
-            : 0;
-          
-          // S'assurer que la complétion est un nombre entre 0 et 1 arrondi au centième
-          currentData.completion = parseFloat(completionDecimal.toFixed(4));
+          })
 
-          console.log(`Complétion: ${(currentData.completion * 100).toFixed(2)}% (${answeredSkillsCount}/${totalPossibleSkills} compétences uniques)`);
-          console.log('Compétences répondues:', Array.from(answeredSkillsSet));
-          
+          // Ajouter la nouvelle compétence à la catégorie
+          currentData.skillsAssessment[backendCategory][skillName] = {}
+
+          // Calculer le nombre total de compétences répondues (unique)
+          const answeredSkillsSet = new Set()
+          Object.keys(currentData.skillsAssessment).forEach((category) => {
+            Object.keys(currentData.skillsAssessment[category]).forEach(
+              (skill) => {
+                answeredSkillsSet.add(skill)
+              },
+            )
+          })
+
+          const answeredSkillsCount = answeredSkillsSet.size
+
+          // Calculer le pourcentage de complétion (entre 0 et 1)
+          const totalPossibleSkills = 29 // Nombre total de compétences possibles
+          const completionDecimal =
+            totalPossibleSkills > 0
+              ? answeredSkillsCount / totalPossibleSkills // Valeur entre 0 et 1
+              : 0
+
+          // S'assurer que la complétion est un nombre entre 0 et 1 arrondi au centième
+          currentData.completion = parseFloat(completionDecimal.toFixed(4))
+
+          console.log(
+            `Complétion: ${(currentData.completion * 100).toFixed(2)}% (${answeredSkillsCount}/${totalPossibleSkills} compétences uniques)`,
+          )
+          console.log('Compétences répondues:', Array.from(answeredSkillsSet))
+
           // Envoyer les données mises à jour
-          console.log('Envoi des données au backend...');
-          console.log('Données envoyées:', currentData);
-          return AuthService.request('post', '/games/skills', currentData);
+          console.log('Envoi des données au backend...')
+          console.log('Données envoyées:', currentData)
+          return AuthService.request('post', '/games/skills', currentData)
         })
-        .then(response => {
-          console.log('Réponse complète du backend après mise à jour:', response);
+        .then((response) => {
+          console.log(
+            'Réponse complète du backend après mise à jour:',
+            response,
+          )
         })
-        .catch(error => {
-          console.error('Erreur lors de la mise à jour des compétences:', error);
-          
+        .catch((error) => {
+          console.error('Erreur lors de la mise à jour des compétences:', error)
+
           if (error.response) {
-            console.error('Réponse d\'erreur du serveur:', {
+            console.error("Réponse d'erreur du serveur:", {
               status: error.response.status,
               statusText: error.response.statusText,
-              data: error.response.data
-            });
+              data: error.response.data,
+            })
           }
-          
+
           // En cas d'erreur d'authentification, sauvegarder localement
-          if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-            console.warn('Problème d\'authentification. Vos réponses seront sauvegardées localement.');
-            this.saveLocallyIfNeeded(skillName, backendCategory);
+          if (
+            error.response &&
+            (error.response.status === 401 || error.response.status === 403)
+          ) {
+            console.warn(
+              "Problème d'authentification. Vos réponses seront sauvegardées localement.",
+            )
+            this.saveLocallyIfNeeded(skillName, backendCategory)
           }
-        });
+        })
     },
 
     saveLocallyIfNeeded(skillName, category) {
       // Récupérer les données existantes du localStorage
-      let localData = JSON.parse(localStorage.getItem('userskills') || '{"completion":0,"skillsAssessment":{}}');
-      
+      let localData = JSON.parse(
+        localStorage.getItem('userskills') ||
+          '{"completion":0,"skillsAssessment":{}}',
+      )
+
       // S'assurer que la structure minimale est présente
       if (!localData.skillsAssessment) {
-        localData.skillsAssessment = {};
+        localData.skillsAssessment = {}
       }
-      
+
       // Créer la catégorie si elle n'existe pas
       if (!localData.skillsAssessment[category]) {
-        localData.skillsAssessment[category] = {};
+        localData.skillsAssessment[category] = {}
       }
-      
+
       // Vérifier si cette compétence a déjà été répondue dans une autre catégorie
-      Object.keys(localData.skillsAssessment).forEach(existingCategory => {
-        if (localData.skillsAssessment[existingCategory][skillName] && existingCategory !== category) {
-          delete localData.skillsAssessment[existingCategory][skillName];
-          console.log(`Compétence "${skillName}" déplacée de ${existingCategory} vers ${category} (local)`);
+      Object.keys(localData.skillsAssessment).forEach((existingCategory) => {
+        if (
+          localData.skillsAssessment[existingCategory][skillName] &&
+          existingCategory !== category
+        ) {
+          delete localData.skillsAssessment[existingCategory][skillName]
+          console.log(
+            `Compétence "${skillName}" déplacée de ${existingCategory} vers ${category} (local)`,
+          )
         }
-      });
-      
+      })
+
       // Ajouter la compétence à la nouvelle catégorie
-      localData.skillsAssessment[category][skillName] = {};
-      
+      localData.skillsAssessment[category][skillName] = {}
+
       // Compter les compétences uniques répondues
-      const answeredSkillsSet = new Set();
-      Object.keys(localData.skillsAssessment).forEach(cat => {
-        Object.keys(localData.skillsAssessment[cat]).forEach(skill => {
-          answeredSkillsSet.add(skill);
-        });
-      });
-      
-      const answeredCount = answeredSkillsSet.size;
-      
+      const answeredSkillsSet = new Set()
+      Object.keys(localData.skillsAssessment).forEach((cat) => {
+        Object.keys(localData.skillsAssessment[cat]).forEach((skill) => {
+          answeredSkillsSet.add(skill)
+        })
+      })
+
+      const answeredCount = answeredSkillsSet.size
+
       // Calculer et mettre à jour la complétion (entre 0 et 1)
-      const totalPossible = 29; // Nombre total de compétences possibles
-      localData.completion = totalPossible > 0 
-        ? parseFloat((answeredCount / totalPossible).toFixed(4)) 
-        : 0;
-      
-      console.log(`Complétion locale: ${(localData.completion * 100).toFixed(2)}% (${answeredCount}/${totalPossible} compétences uniques)`);
-      
+      const totalPossible = 29 // Nombre total de compétences possibles
+      localData.completion =
+        totalPossible > 0
+          ? parseFloat((answeredCount / totalPossible).toFixed(4))
+          : 0
+
+      console.log(
+        `Complétion locale: ${(localData.completion * 100).toFixed(2)}% (${answeredCount}/${totalPossible} compétences uniques)`,
+      )
+
       // Sauvegarder dans localStorage
-      localStorage.setItem('userskills', JSON.stringify(localData));
-      console.log('Données sauvegardées localement:', localData);
+      localStorage.setItem('userskills', JSON.stringify(localData))
+      console.log('Données sauvegardées localement:', localData)
     },
-    
+
     // Get icon for a skill
     getSkillIcon(skill) {
-      if (!skill) return '✨';
-      
+      if (!skill) return '✨'
+
       // Créer un dictionnaire pour la correspondance directe entre les noms affichés et les icônes
       const displayNameToIcon = {
-        'Assertivité': '🗣️',
-        'Communication': '📣',
-        'Diplomatie': '🤝',
+        Assertivité: '🗣️',
+        Communication: '📣',
+        Diplomatie: '🤝',
         'Écoute active': '👂',
-        'Négociation': '🔍',
-        'Franchise': '💯',
-        'Empathie': '❤️',
-        'Esprit d\'équipe': '🤲',
-        'Soutien': '🙌',
-        'Médiation': '⚖️',
-        'Inclusion': '🌈',
-        'Coaching': '📋',
-        'Adaptabilité': '🦎',
-        'Initiative': '🚀',
+        Négociation: '🔍',
+        Franchise: '💯',
+        Empathie: '❤️',
+        "Esprit d'équipe": '🤲',
+        Soutien: '🙌',
+        Médiation: '⚖️',
+        Inclusion: '🌈',
+        Coaching: '📋',
+        Adaptabilité: '🦎',
+        Initiative: '🚀',
         'Réflexion rapide': '⚡',
         'Gestion du stress': '😌',
-        'Créativité': '💡',
-        'Responsabilité': '🛡️',
-        'Anticipation': '🔮',
-        'Observation': '👁️',
-        'Apprentissage': '📚',
+        Créativité: '💡',
+        Responsabilité: '🛡️',
+        Anticipation: '🔮',
+        Observation: '👁️',
+        Apprentissage: '📚',
         'Gestion du temps': '⏱️',
         'Prise de décision': '✅',
         'Confiance en soi': '💪',
-        'Autonomie': '🦅',
-        'Patience': '🧘',
-        'Curiosité': '🔎',
-        'Pragmatisme': '🧰',
-        'Assurance': '🏆'
-      };
-      
+        Autonomie: '🦅',
+        Patience: '🧘',
+        Curiosité: '🔎',
+        Pragmatisme: '🧰',
+        Assurance: '🏆',
+      }
+
       // Simplifier notre approche en utilisant directement le nom de la compétence
       if (skill && skill.nom && displayNameToIcon[skill.nom]) {
-        return displayNameToIcon[skill.nom];
+        return displayNameToIcon[skill.nom]
       }
-      
-      console.log("Compétence sans icône trouvée:", skill);
-      return '✨'; // Icône par défaut
+
+      console.log('Compétence sans icône trouvée:', skill)
+      return '✨' // Icône par défaut
     },
 
     // Announce the selected skill using speech synthesis
     announceSkill() {
-      if (!('speechSynthesis' in window) || !this.currentSkill) return;
-      
+      if (!('speechSynthesis' in window) || !this.currentSkill) return
+
       // Cancel any ongoing speech
-      window.speechSynthesis.cancel();
-      
+      window.speechSynthesis.cancel()
+
       // Create and play the announcement
-      const skillName = this.currentSkill.name || this.currentSkill.nom;
-      const utterance = new SpeechSynthesisUtterance(`Compétence: ${skillName}`);
-      utterance.lang = 'fr-FR';
-      
-      window.speechSynthesis.speak(utterance);
-    }
-  }
-};
+      const skillName = this.currentSkill.name || this.currentSkill.nom
+      const utterance = new SpeechSynthesisUtterance(`Compétence: ${skillName}`)
+      utterance.lang = 'fr-FR'
+
+      window.speechSynthesis.speak(utterance)
+    },
+  },
+}
 </script>
 
 <style scoped>
@@ -1019,14 +1175,14 @@ export default {
   width: 70px;
   height: 70px;
   border-radius: 50%;
-  border: 3px solid #FFC107;
+  border: 3px solid #ffc107;
   background-color: #fff;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .speech-bubble {
   position: relative;
-  background-color: #FFF;
+  background-color: #fff;
   border-radius: 15px;
   padding: 15px;
   margin-left: 15px;
@@ -1042,7 +1198,7 @@ export default {
   transform: translateY(-50%);
   border-width: 10px 10px 10px 0;
   border-style: solid;
-  border-color: transparent #FFF transparent transparent;
+  border-color: transparent #fff transparent transparent;
 }
 
 .speech-bubble p {
@@ -1083,11 +1239,11 @@ export default {
   font-size: 80px;
   margin-bottom: 20px;
   animation: pulse 2s infinite;
-  color: #FF9800; /* Couleur adaptée au thème */
+  color: #ff9800; /* Couleur adaptée au thème */
 }
 
 .badge-unlock-animation h2 {
-  color: #FF9800; /* Couleur adaptée au thème */
+  color: #ff9800; /* Couleur adaptée au thème */
   font-size: 2rem;
   margin-bottom: 10px;
 }
@@ -1104,7 +1260,7 @@ export default {
 }
 
 .close-animation-btn {
-  background-color: #FF9800; /* Couleur adaptée au thème */
+  background-color: #ff9800; /* Couleur adaptée au thème */
   color: white;
   border: none;
   padding: 12px 24px;
@@ -1116,25 +1272,41 @@ export default {
 }
 
 .close-animation-btn:hover {
-  background-color: #F57C00; /* Version plus foncée */
+  background-color: #f57c00; /* Version plus foncée */
   transform: scale(1.05);
 }
 
 /* Ces animations sont déjà définies dans votre CSS, mais je les inclus au cas où */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes scaleIn {
-  from { transform: scale(0.8); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* Welcome Screen */
@@ -1200,7 +1372,7 @@ export default {
   align-items: center;
   gap: 10px;
   padding: 15px 30px;
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   border: none;
   border-radius: 50px;
@@ -1215,7 +1387,7 @@ export default {
 }
 
 .start-button:hover {
-  background-color: #388E3C;
+  background-color: #388e3c;
   transform: translateY(-3px);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }
@@ -1269,13 +1441,13 @@ export default {
 }
 
 .progress-step.completed .step-icon {
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
-  border-color: #4CAF50;
+  border-color: #4caf50;
 }
 
 .progress-step.completed .step-label {
-  color: #4CAF50;
+  color: #4caf50;
   font-weight: bold;
 }
 
@@ -1301,7 +1473,7 @@ export default {
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #4CAF50, #8BC34A);
+  background: linear-gradient(90deg, #4caf50, #8bc34a);
   border-radius: 8px;
   transition: width 0.5s ease;
 }
@@ -1364,7 +1536,7 @@ export default {
 .spin-button {
   margin-top: 30px;
   padding: 12px 25px;
-  background-color: #FF9800;
+  background-color: #ff9800;
   color: white;
   border: none;
   border-radius: 50px;
@@ -1379,7 +1551,7 @@ export default {
 }
 
 .spin-button:hover:not(:disabled) {
-  background-color: #F57C00;
+  background-color: #f57c00;
   transform: translateY(-3px);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }
@@ -1493,35 +1665,35 @@ export default {
 }
 
 .answer-option.strength {
-  border-color: #4CAF50;
+  border-color: #4caf50;
 }
 
 .answer-option.strength:hover {
-  background-color: #E8F5E9;
+  background-color: #e8f5e9;
 }
 
 .answer-option.improve {
-  border-color: #2196F3;
+  border-color: #2196f3;
 }
 
 .answer-option.improve:hover {
-  background-color: #E3F2FD;
+  background-color: #e3f2fd;
 }
 
 .answer-option.difficulty {
-  border-color: #FF9800;
+  border-color: #ff9800;
 }
 
 .answer-option.difficulty:hover {
-  background-color: #FFF3E0;
+  background-color: #fff3e0;
 }
 
 .answer-option.unknown {
-  border-color: #9E9E9E;
+  border-color: #9e9e9e;
 }
 
 .answer-option.unknown:hover {
-  background-color: #F5F5F5;
+  background-color: #f5f5f5;
 }
 
 .skill-actions {
@@ -1554,7 +1726,7 @@ export default {
 }
 
 .skip-button {
-  background-color: #9E9E9E;
+  background-color: #9e9e9e;
   color: white;
 }
 
@@ -1568,7 +1740,7 @@ export default {
 }
 
 .end-button:hover {
-  background-color: #303F9F;
+  background-color: #303f9f;
 }
 
 /* Results Modal */
@@ -1662,27 +1834,27 @@ export default {
 }
 
 .strength-category .category-icon {
-  color: #4CAF50;
+  color: #4caf50;
 }
 
 .strength-category .category-header {
-  border-bottom-color: #4CAF50;
+  border-bottom-color: #4caf50;
 }
 
 .improve-category .category-icon {
-  color: #2196F3;
+  color: #2196f3;
 }
 
 .improve-category .category-header {
-  border-bottom-color: #2196F3;
+  border-bottom-color: #2196f3;
 }
 
 .difficulty-category .category-icon {
-  color: #FF9800;
+  color: #ff9800;
 }
 
 .difficulty-category .category-header {
-  border-bottom-color: #FF9800;
+  border-bottom-color: #ff9800;
 }
 
 .skills-list {
@@ -1747,16 +1919,16 @@ export default {
 }
 
 .restart-button {
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
 }
 
 .restart-button:hover {
-  background-color: #388E3C;
+  background-color: #388e3c;
 }
 
 .close-button {
-  background-color: #9E9E9E;
+  background-color: #9e9e9e;
   color: white;
 }
 
@@ -1766,13 +1938,23 @@ export default {
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideIn {
-  from { transform: translateY(50px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 /* Responsive Styles */
@@ -1781,11 +1963,11 @@ export default {
     width: 350px;
     height: 350px;
   }
-  
+
   .answers-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .results-grid {
     grid-template-columns: 1fr;
   }
@@ -1801,7 +1983,7 @@ export default {
     flex-direction: column;
     align-items: center;
   }
-  
+
   .game-actions .action-button {
     width: 80%; /* Rend les boutons plus larges sur mobile */
     max-width: 300px;
@@ -1822,11 +2004,11 @@ export default {
 
 /* Accessibility Enhancements */
 .skills-wheel-container:focus-within {
-  outline: 3px solid #2196F3;
+  outline: 3px solid #2196f3;
 }
 
 button:focus {
-  outline: 3px solid #2196F3;
+  outline: 3px solid #2196f3;
   outline-offset: 3px;
 }
 

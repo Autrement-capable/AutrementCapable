@@ -13,7 +13,6 @@ import ResultsPage from '@/views/ResultsPage.vue'
 
 // Hard skills mini games
 import GameSpeed from '@/views/skillGames/GameSpeed.vue'
-import GameShape from '@/views/skillGames/GameShape.vue'
 import ShapeSequenceGame from '@/views/skillGames/ShapeSequenceGame.vue'
 import TinderMetiers from '@/views/skillGames/JobsGame.vue'
 import SoudeurCard from '@/components/jobsCards/SoudeurCard.vue'
@@ -58,11 +57,6 @@ const routes = [
     path: '/game-speed',
     name: 'GameSpeed',
     component: GameSpeed,
-  },
-  {
-    path: '/game-shape',
-    name: 'GameShape',
-    component: GameShape,
   },
   {
     path: '/shape-sequence-game',
@@ -124,7 +118,7 @@ const routes = [
     path: '/debug',
     name: 'DebugPage',
     component: DebugPage,
-  }
+  },
 ]
 
 const router = createRouter({

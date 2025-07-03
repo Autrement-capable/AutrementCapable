@@ -1,4 +1,15 @@
 <template>
+  <PopUp
+    v-if="showGameModal"
+    message="Souhaites-tu découvrir un autre jeu ?"
+    :image="flamouImage"
+    :redirect="getRandomGameRoute()"
+    buttonConfirm="Changer de jeux"
+    buttonCancel="Continuer ici"
+    :visible="showGameModal"
+    @close="closeModal"
+  />
+
   <div class="speed-game-container">
     <!-- Animation de déblocage du badge -->
     <div v-if="showBadgeUnlockAnimation" class="badge-unlock-overlay">
@@ -201,12 +212,39 @@
 import { unlockBadge, isBadgeUnlocked } from '@/utils/badges';
 import GameGuide from '@/components/GameGuideComponent.vue';
 import AuthService from '@/services/AuthService';
+import PopUp from '@/components/PopUp.vue';
+import { useGameTimer } from '@/services/useGameTimer';
+import flamouImage from '@/assets/flamou/intresting.png';
 
 export default {
   name: 'GameSpeed',
   components: {
-    GameGuide
+    GameGuide,
+    PopUp  
   },
+
+  setup() {
+  const {
+    showGameModal,
+    timeRemaining,
+    startTimer,
+    stopTimer,
+    resetTimer,
+    getRandomGameRoute,
+    closeModal
+  } = useGameTimer();
+
+  return {
+    showGameModal,
+    timeRemaining,
+    startTimer,
+    stopTimer,
+    resetTimer,
+    getRandomGameRoute,
+    closeModal,
+    flamouImage
+  };
+},
 
   data() {
     return {
@@ -218,6 +256,10 @@ export default {
       timeLeft: 0,
       timer: null,
       levelTimer: null,
+      isTypingActive: false,
+    lastTypingTime: null,
+    typingInactivityTimer: null,
+    TYPING_INACTIVITY_DELAY: 3000,
       mistakes: 0,
       wpm: 0,
       accuracy: 100,
@@ -492,10 +534,14 @@ export default {
 
     // Démarrer le jeu
     startGame() {
-      this.gameStarted = true;
-      this.gameStartTime = new Date();
-      this.loadLevel();
-    },
+  this.gameStarted = true;
+  this.gameStartTime = new Date();
+  
+  // ⭐ IMPORTANT: Arrêter le timer quand le jeu commence
+  this.stopTimer();
+  
+  this.loadLevel();
+},
     
     // Charger un niveau
     loadLevel() {
@@ -571,6 +617,12 @@ export default {
     
     // Vérifier l'entrée de l'utilisateur
     checkInput() {
+  this.isTypingActive = true;
+  this.lastTypingTime = Date.now();
+  
+  this.stopTimer();
+  
+  this.scheduleInactivityCheck();
       const input = this.inputValue;
       const target = this.targetText;
       
@@ -622,8 +674,12 @@ export default {
     
     // Compléter le niveau actuel
     completeLevel() {
-      this.levelCompleted = true;
-      this.clearTimers();
+  this.levelCompleted = true;
+  this.clearTimers();
+  
+  // ⭐ IMPORTANT: Arrêter le timer à la fin du niveau
+  this.stopTimer();
+  this.stopInactivityTracking();
       
       // Enregistrer les résultats du niveau
       this.levelResults.push({
@@ -682,6 +738,9 @@ export default {
     // Terminer le jeu et afficher les résultats
     endGame() {
       this.clearTimers();
+
+      this.stopTimer();
+  this.stopInactivityTracking()
       
       // Calculer la complétion avec validation
       const levelsLength = this.levels && this.levels.length ? this.levels.length : 1;

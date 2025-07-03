@@ -1,4 +1,14 @@
 <template>
+  <PopUp
+    v-if="showGameModal && isEnvironmentFullyCompleted()"
+    message="Félicitations ! Veux-tu découvrir un autre jeu ?"
+    :image="flamouImage"
+    :redirect="getRandomGameRoute()"
+    buttonConfirm="Changer de jeux"
+    buttonCancel="Rester ici"
+    :visible="showGameModal"
+    @close="handleTimerModalClose"
+  />
   <div class="environment-container">
     <GameGuide
       v-if="!activityStarted"
@@ -18,7 +28,7 @@
             <div
               v-for="(env, index) in environments"
               :key="index"
-              @click="selectEnvironment(index), hideEnvironmentSelector()"
+              @click="(selectEnvironment(index), hideEnvironmentSelector())"
               :class="[
                 'environment-card',
                 { active: currentEnvironmentIndex === index },
@@ -49,30 +59,36 @@
           <div class="question-container">
             <h3>{{ currentQuestion.title }}</h3>
             <p>{{ currentQuestion.description }}</p>
-            
+
             <!-- Conteneur de contrôles dynamiques en fonction du type de question -->
             <div class="question-controls">
               <!-- Lumière -->
-              <div v-if="currentQuestion.type === 'light'" class="control-group">
+              <div
+                v-if="currentQuestion.type === 'light'"
+                class="control-group"
+              >
                 <div class="big-button-group">
-                  <button 
-                    @click="lightIntensity = 0.8; updateLighting()" 
+                  <button
+                    @click="((lightIntensity = 0.8), updateLighting())"
                     :class="['big-button', { active: lightIntensity <= 1.2 }]"
                   >
                     <div class="big-button-icon">🌙</div>
                     <div class="big-button-label">Douce</div>
                   </button>
-                  
-                  <button 
-                    @click="lightIntensity = 2; updateLighting()" 
-                    :class="['big-button', { active: lightIntensity > 1.2 && lightIntensity < 3 }]"
+
+                  <button
+                    @click="((lightIntensity = 2), updateLighting())"
+                    :class="[
+                      'big-button',
+                      { active: lightIntensity > 1.2 && lightIntensity < 3 },
+                    ]"
                   >
                     <div class="big-button-icon">☀️</div>
                     <div class="big-button-label">Normale</div>
                   </button>
-                  
-                  <button 
-                    @click="lightIntensity = 4; updateLighting()" 
+
+                  <button
+                    @click="((lightIntensity = 4), updateLighting())"
                     :class="['big-button', { active: lightIntensity >= 3 }]"
                   >
                     <div class="big-button-icon">🔆</div>
@@ -82,13 +98,19 @@
               </div>
 
               <!-- Couleur de lumière -->
-              <div v-if="currentQuestion.type === 'lightColor'" class="control-group">
+              <div
+                v-if="currentQuestion.type === 'lightColor'"
+                class="control-group"
+              >
                 <div class="color-buttons">
                   <button
                     v-for="(preset, idx) in lightPresets"
                     :key="idx"
                     @click="selectLightPreset(preset)"
-                    :class="['color-button', { active: lightColor === preset.color }]"
+                    :class="[
+                      'color-button',
+                      { active: lightColor === preset.color },
+                    ]"
                     :style="{ backgroundColor: preset.color }"
                   >
                     <span class="color-button-label">{{ preset.name }}</span>
@@ -97,7 +119,10 @@
               </div>
 
               <!-- Couleurs de la pièce -->
-              <div v-if="currentQuestion.type === 'colors'" class="control-group">
+              <div
+                v-if="currentQuestion.type === 'colors'"
+                class="control-group"
+              >
                 <div class="color-palettes">
                   <div
                     v-for="(palette, index) in colorPalettes"
@@ -128,13 +153,19 @@
               </div>
 
               <!-- Sons -->
-              <div v-if="currentQuestion.type === 'sounds'" class="control-group">
+              <div
+                v-if="currentQuestion.type === 'sounds'"
+                class="control-group"
+              >
                 <div class="sound-options">
                   <div
                     v-for="(sound, index) in soundOptions"
                     :key="index"
                     @click="selectSound(sound.value)"
-                    :class="['sound-option', { active: selectedAmbience === sound.value }]"
+                    :class="[
+                      'sound-option',
+                      { active: selectedAmbience === sound.value },
+                    ]"
                   >
                     <div class="sound-icon">{{ sound.icon }}</div>
                     <div class="sound-label">{{ sound.label }}</div>
@@ -154,15 +185,21 @@
               </div>
 
               <!-- Personnes -->
-              <div v-if="currentQuestion.type === 'people'" class="control-group">
+              <div
+                v-if="currentQuestion.type === 'people'"
+                class="control-group"
+              >
                 <div class="people-count-control">
                   <label>Nombre de personnes: {{ peopleCount }}</label>
                   <div class="people-selection">
-                    <button 
-                      v-for="count in peopleOptions" 
+                    <button
+                      v-for="count in peopleOptions"
                       :key="count"
-                      @click="peopleCount = count; updatePeopleCount()"
-                      :class="['people-button', { active: peopleCount === count }]"
+                      @click="((peopleCount = count), updatePeopleCount())"
+                      :class="[
+                        'people-button',
+                        { active: peopleCount === count },
+                      ]"
                     >
                       {{ count }}
                     </button>
@@ -198,23 +235,23 @@
             </div>
 
             <div class="question-navigation">
-              <button 
-                v-if="currentQuestionIndex > 0" 
-                @click="previousQuestion()" 
+              <button
+                v-if="currentQuestionIndex > 0"
+                @click="previousQuestion()"
                 class="nav-button prev-button"
               >
                 Précédent
               </button>
-              <button 
-                v-if="currentQuestionIndex < questions.length - 1" 
-                @click="nextQuestion()" 
+              <button
+                v-if="currentQuestionIndex < questions.length - 1"
+                @click="nextQuestion()"
                 class="nav-button next-button"
               >
                 Suivant
               </button>
-              <button 
-                v-if="currentQuestionIndex === questions.length - 1" 
-                @click="finishExploration()" 
+              <button
+                v-if="currentQuestionIndex === questions.length - 1"
+                @click="finishExploration()"
                 class="nav-button finish-button"
               >
                 Terminer
@@ -229,9 +266,7 @@
         <div class="guide-content">
           <h3>{{ currentGuide.title }}</h3>
           <p>{{ currentGuide.description }}</p>
-          <button @click="dismissGuide" class="guide-button">
-            Continuer
-          </button>
+          <button @click="dismissGuide" class="guide-button">Continuer</button>
         </div>
       </div>
 
@@ -299,7 +334,6 @@
 </template>
 
 <script>
-// Import our isolated RoomRenderer class
 import RoomRenderer from '../../roomRenderer/RoomRenderer.js'
 import whiteNoiseAudio from '@/assets/sounds/white_noise.mp3'
 import NatureAudio from '@/assets/sounds/nature.mp3'
@@ -307,11 +341,37 @@ import CafeAudio from '@/assets/sounds/cafe.mp3'
 import CrowdAudio from '@/assets/sounds/crowd.mp3'
 import GameGuide from '@/components/GameGuideComponent.vue'
 import AuthService from '@/services/AuthService'
+import PopUp from '@/components/PopUp.vue'
+import { useGameTimer } from '@/services/useGameTimer'
+import flamouImage from '@/assets/flamou/intresting.png'
 
 export default {
   name: 'SensoryEnvironments',
   components: {
     GameGuide,
+    PopUp,
+  },
+  setup() {
+    const {
+      showGameModal,
+      timeRemaining,
+      startTimer,
+      stopTimer,
+      resetTimer,
+      getRandomGameRoute,
+      closeModal,
+    } = useGameTimer()
+
+    return {
+      showGameModal,
+      timeRemaining,
+      startTimer,
+      stopTimer,
+      resetTimer,
+      getRandomGameRoute,
+      closeModal,
+      flamouImage,
+    }
   },
   data() {
     return {
@@ -327,38 +387,41 @@ export default {
       currentRoomName: '',
       completedRooms: new Set(),
 
+      environmentCompleted: false,
+      saveInProgress: false,
+
       // Questions séquentielles
       questions: [
-        { 
-          type: 'light', 
-          title: 'Intensité de lumière?', 
-          description: "Choisis l'intensité qui te convient le mieux." 
+        {
+          type: 'light',
+          title: 'Intensité de lumière?',
+          description: "Choisis l'intensité qui te convient le mieux.",
         },
-        { 
-          type: 'lightColor', 
-          title: 'Couleur de lumière?', 
-          description: 'Quelle teinte de lumière préfères-tu?' 
+        {
+          type: 'lightColor',
+          title: 'Couleur de lumière?',
+          description: 'Quelle teinte de lumière préfères-tu?',
         },
-        { 
-          type: 'colors', 
-          title: 'Couleurs de la pièce?', 
-          description: 'Choisis une palette de couleur qui te plaît.' 
+        {
+          type: 'colors',
+          title: 'Couleurs de la pièce?',
+          description: 'Choisis une palette de couleur qui te plaît.',
         },
-        { 
-          type: 'sounds', 
-          title: 'Ambiance sonore?', 
-          description: 'Quel type de son te met à l\'aise?' 
+        {
+          type: 'sounds',
+          title: 'Ambiance sonore?',
+          description: "Quel type de son te met à l'aise?",
         },
-        { 
-          type: 'people', 
-          title: 'Personnes présentes?', 
-          description: "Combien de personnes autour de toi peux-tu suporter?"
+        {
+          type: 'people',
+          title: 'Personnes présentes?',
+          description: 'Combien de personnes autour de toi peux-tu suporter?',
         },
-        { 
-          type: 'mood', 
-          title: 'Comment te sens-tu?', 
-          description: 'Ton ressenti dans cet environnement.' 
-        }
+        {
+          type: 'mood',
+          title: 'Comment te sens-tu?',
+          description: 'Ton ressenti dans cet environnement.',
+        },
       ],
 
       // Options de son
@@ -367,9 +430,9 @@ export default {
         { value: 'whitenoise', icon: '📻', label: 'Bruit blanc' },
         { value: 'nature', icon: '🌳', label: 'Nature' },
         { value: 'cafe', icon: '☕', label: 'Café' },
-        { value: 'crowd', icon: '👥', label: 'Bureau' }
+        { value: 'crowd', icon: '👥', label: 'Bureau' },
       ],
-  peopleOptions: [0, 1, 3, 5, 10],
+      peopleOptions: [0, 1, 3, 5, 10],
 
       // Guide
       showGuide: false,
@@ -392,7 +455,8 @@ export default {
       environments: [
         {
           name: 'Espace Polyvalent (Concentration & Détente)',
-          shortDescription: 'Environnement modulable pour travail et relaxation',
+          shortDescription:
+            'Environnement modulable pour travail et relaxation',
           description:
             'Un espace hybride offrant des zones dédiées à la concentration intellectuelle et à la détente sensorielle, avec des paramètres personnalisables.',
           previewColor: '#7986CB', // A blend color
@@ -404,18 +468,18 @@ export default {
               width: 9,
               depth: 9,
               height: 3.2,
-              wallColor: '#eaf0f5',    // Blend of '#f0f0f5' (concentration) and '#e6f0f5' (détente)
-              floorColor: '#a0a8c4',   // Blend of '#6a75a3' (concentration) and '#d1dde6' (détente)
+              wallColor: '#eaf0f5', // Blend of '#f0f0f5' (concentration) and '#e6f0f5' (détente)
+              floorColor: '#a0a8c4', // Blend of '#6a75a3' (concentration) and '#d1dde6' (détente)
               ceilingColor: '#f8fafc', // Blend of '#ffffff' (concentration) and '#f0f7fa' (détente)
             },
             lighting: {
-              color: '#f8f8ff',       // Slightly off-white, between '#ffffff' and '#f0f7fa'
-              intensity: 1.6,         // Average of 2 (concentration) and 1.2 (détente)
+              color: '#f8f8ff', // Slightly off-white, between '#ffffff' and '#f0f7fa'
+              intensity: 1.6, // Average of 2 (concentration) and 1.2 (détente)
               ambient: true,
             },
             sound: {
-              type: 'whitenoise',     // Default to 'whitenoise'
-              volume: 0.25,           // Average of 0.2 (concentration) and 0.3 (détente)
+              type: 'whitenoise', // Default to 'whitenoise'
+              volume: 0.25, // Average of 0.2 (concentration) and 0.3 (détente)
               peopleCount: 0,
             },
             clutter: 'moderate', // To accommodate items from both zones
@@ -544,7 +608,7 @@ export default {
     },
     currentQuestion() {
       return this.questions[this.currentQuestionIndex] || this.questions[0]
-    }
+    },
   },
   mounted() {
     this.initRenderer()
@@ -560,6 +624,9 @@ export default {
     if (this.$refs.ambientAudio) {
       this.$refs.ambientAudio.pause()
     }
+
+    // ✅ AJOUT: Arrêter le timer du système
+    this.stopTimer()
   },
   methods: {
     async resetAllData() {
@@ -570,52 +637,65 @@ export default {
       //     message: "Success",
       //     roomData: []
       //   }
-        
+
       //   await AuthService.request('post', '/games/room-env', emptyPayload)
       //   console.log('Données réinitialisées au backend')
       // } catch (error) {
       //   console.warn('Impossible de réinitialiser au backend, réinitialisation locale uniquement')
       // }
-      
+
       // Réinitialiser le Set des rooms complétées
       this.completedRooms.clear()
-      
+
       // Réinitialiser localStorage
       localStorage.removeItem('roomEnvironmentData')
       localStorage.removeItem('completedRooms')
-      
+
       console.log('Toutes les données ont été réinitialisées')
     },
 
     async loadSavedRoomData() {
       try {
         const response = await AuthService.request('get', '/games/room-env')
-        if (response.data && response.data.roomData && Array.isArray(response.data.roomData) && response.data.roomData.length > 0) {
-          
+        if (
+          response.data &&
+          response.data.roomData &&
+          Array.isArray(response.data.roomData) &&
+          response.data.roomData.length > 0
+        ) {
           // Restaurer le Set des rooms complétées à partir des données du backend
           this.completedRooms.clear()
-          response.data.roomData.forEach(roomData => {
+          response.data.roomData.forEach((roomData) => {
             this.completedRooms.add(roomData.room)
           })
         }
       } catch (error) {
-        console.warn('Impossible de charger depuis le backend, tentative locale...')
-        
+        console.warn(
+          'Impossible de charger depuis le backend, tentative locale...',
+        )
+
         // Charger depuis localStorage
-        const localPayload = JSON.parse(localStorage.getItem('roomEnvironmentData') || '{"roomData": []}')
-        const savedCompletedRooms = JSON.parse(localStorage.getItem('completedRooms') || '[]')
-        
-        if (localPayload.roomData && Array.isArray(localPayload.roomData) && localPayload.roomData.length > 0) {
-          
+        const localPayload = JSON.parse(
+          localStorage.getItem('roomEnvironmentData') || '{"roomData": []}',
+        )
+        const savedCompletedRooms = JSON.parse(
+          localStorage.getItem('completedRooms') || '[]',
+        )
+
+        if (
+          localPayload.roomData &&
+          Array.isArray(localPayload.roomData) &&
+          localPayload.roomData.length > 0
+        ) {
           // Restaurer le Set des rooms complétées depuis les données locales
           this.completedRooms.clear()
-          localPayload.roomData.forEach(roomData => {
+          localPayload.roomData.forEach((roomData) => {
             this.completedRooms.add(roomData.room)
           })
         } else if (savedCompletedRooms.length > 0) {
           // Fallback: utiliser l'ancien format si disponible
           this.completedRooms.clear()
-          savedCompletedRooms.forEach(roomName => {
+          savedCompletedRooms.forEach((roomName) => {
             this.completedRooms.add(roomName)
           })
         }
@@ -626,15 +706,17 @@ export default {
       const totalRooms = 2 // Focus Room et Open Room
       const completedRoomsArray = Array.from(this.completedRooms)
       const completedCount = completedRoomsArray.length
-      
+
       // Vérification spécifique des rooms attendues
       const expectedRooms = ['Focus Room', 'Open Room']
-      const hasAllExpectedRooms = expectedRooms.every(room => this.completedRooms.has(room))
-      
+      const hasAllExpectedRooms = expectedRooms.every((room) =>
+        this.completedRooms.has(room),
+      )
+
       if (completedCount === 0) return 0
       if (completedCount === 1) return 0.5
       if (completedCount >= 2 || hasAllExpectedRooms) return 1.0
-      
+
       const result = Math.min(completedCount / totalRooms, 1.0)
       return result
     },
@@ -642,14 +724,14 @@ export default {
     mapEnvironmentToRoomName(environmentName) {
       // Mapping plus strict avec trim pour éviter les problèmes d'espaces
       const cleanName = environmentName.trim()
-      
+
       const mapping = {
         'Espace Polyvalent (Concentration & Détente)': 'Focus Room',
-        'Espace social contrôlé': 'Open Room'
+        'Espace social contrôlé': 'Open Room',
       }
-      
+
       const result = mapping[cleanName] || 'Focus Room'
-      
+
       return result
     },
 
@@ -667,7 +749,7 @@ export default {
         '#ffe0b2': 'hot',
         '#b3e5fc': 'cold',
         '#f0e6ff': 'soft',
-        '#fff8e1': 'natural'
+        '#fff8e1': 'natural',
       }
       return mapping[colorHex] || 'neutral'
     },
@@ -677,16 +759,18 @@ export default {
       // Comparer avec les palettes définies
       const palettes = this.colorPalettes
       for (let palette of palettes) {
-        if (palette.wall === wallColor && 
-            palette.floor === floorColor && 
-            palette.ceiling === ceilingColor) {
+        if (
+          palette.wall === wallColor &&
+          palette.floor === floorColor &&
+          palette.ceiling === ceilingColor
+        ) {
           const mapping = {
-            'Neutre': 'neutral',
-            'Apaisant': 'chill',
-            'Chaleureux': 'hot',
-            'Naturel': 'natural',
-            'Concentration': 'focus',
-            'Sensoriel doux': 'soft'
+            Neutre: 'neutral',
+            Apaisant: 'chill',
+            Chaleureux: 'hot',
+            Naturel: 'natural',
+            Concentration: 'focus',
+            'Sensoriel doux': 'soft',
           }
           return mapping[palette.name] || 'neutral'
         }
@@ -697,11 +781,11 @@ export default {
     // Mapper le type d'ambiance sonore
     mapNoiseType(selectedAmbience) {
       const mapping = {
-        'none': 'silence',
-        'whitenoise': 'white noise',
-        'nature': 'natural',
-        'cafe': 'coffee',
-        'crowd': 'working'
+        none: 'silence',
+        whitenoise: 'white noise',
+        nature: 'natural',
+        cafe: 'coffee',
+        crowd: 'working',
       }
       return mapping[selectedAmbience] || 'silence'
     },
@@ -709,12 +793,12 @@ export default {
     // Mapper le mood utilisateur
     mapUserFeedback(mood) {
       const mapping = {
-        'veryCalm': 'very calm',
-        'focused': 'focused',
-        'comfortable': 'comfortable',
-        'neutral': 'neutral',
-        'uneasy': 'uncomfortable',
-        'overwhelmed': 'overstimulated'
+        veryCalm: 'very calm',
+        focused: 'focused',
+        comfortable: 'comfortable',
+        neutral: 'neutral',
+        uneasy: 'uncomfortable',
+        overwhelmed: 'overstimulated',
       }
       return mapping[mood] || 'neutral'
     },
@@ -722,18 +806,22 @@ export default {
     // Construire les données à envoyer au backend
     buildRoomData(roomName) {
       const feedback = this.getCurrentFeedback()
-      
+
       return {
         room: roomName,
         completion: 1.0,
         lightIntensity: this.mapLightIntensity(this.lightIntensity),
         lightColor: this.mapLightColor(this.lightColor),
-        roomColor: this.mapRoomColor(this.wallColor, this.floorColor, this.ceilingColor),
+        roomColor: this.mapRoomColor(
+          this.wallColor,
+          this.floorColor,
+          this.ceilingColor,
+        ),
         noiseType: this.mapNoiseType(this.selectedAmbience),
         noiseVolume: Math.round(this.soundVolume * 10),
         peopleInRoom: this.peopleCount,
         userFeedback: this.mapUserFeedback(feedback.mood),
-        commentary: feedback.comments || ''
+        commentary: feedback.comments || '',
       }
     },
 
@@ -741,80 +829,144 @@ export default {
     async saveRoomToBackend(roomName, roomData) {
       this.completedRooms.add(roomName)
       const globalCompletion = this.calculateCompletion()
-      
+
       try {
         // Récupérer les données existantes
         let existingRoomData = []
         try {
           const response = await AuthService.request('get', '/games/room-env')
-          if (response.data && response.data.roomData && Array.isArray(response.data.roomData)) {
+          if (
+            response.data &&
+            response.data.roomData &&
+            Array.isArray(response.data.roomData)
+          ) {
             existingRoomData = response.data.roomData
           }
         } catch (getError) {
-          console.log('Aucune donnée existante trouvée, création d\'un nouveau dataset')
+          console.log(
+            "Aucune donnée existante trouvée, création d'un nouveau dataset",
+          )
         }
-        
+
         // Supprimer l'ancienne version de cette room si elle existe
-        existingRoomData = existingRoomData.filter(room => room.room !== roomName)
-        
+        existingRoomData = existingRoomData.filter(
+          (room) => room.room !== roomName,
+        )
+
         // Ajouter la nouvelle room data (roomData.completion reste à 1.0)
         existingRoomData.push(roomData)
-        
+
         // Construire le payload final avec completion globale
         const payload = {
-          completion: globalCompletion, // Completion globale basée sur nombre de rooms
-          message: "Success",
-          roomData: existingRoomData
+          completion: globalCompletion,
+          message: 'Success',
+          roomData: existingRoomData,
         }
-        
-        const response = await AuthService.request('post', '/games/room-env', payload)
-        console.log(`Données sauvegardées avec succès pour ${roomName}:`, response.data)
-        console.log(`Progression: ${this.completedRooms.size}/2 rooms complétées (${(globalCompletion * 100)}%)`)
-        
+
+        const response = await AuthService.request(
+          'post',
+          '/games/room-env',
+          payload,
+        )
+        console.log(
+          `✅ Données sauvegardées avec succès pour ${roomName}:`,
+          response.data,
+        )
+        console.log(
+          `Progression: ${this.completedRooms.size}/2 rooms complétées (${globalCompletion * 100}%)`,
+        )
+
+        // ⭐ NOUVEAU: La sauvegarde est réussie, on peut démarrer le timer
+        return Promise.resolve(response.data)
       } catch (error) {
-        console.error(`Erreur lors de la sauvegarde pour ${roomName}:`, error)
-        
+        console.error(
+          `❌ Erreur lors de la sauvegarde pour ${roomName}:`,
+          error,
+        )
+
         if (error.response) {
-          console.error('Réponse d\'erreur du serveur:', {
+          console.error("Réponse d'erreur du serveur:", {
             status: error.response.status,
             statusText: error.response.statusText,
-            data: error.response.data
+            data: error.response.data,
           })
         }
-        
+
         // Sauvegarde locale en cas d'erreur
         this.saveRoomLocally(roomName, roomData, globalCompletion)
+
+        // ⭐ NOUVEAU: Même en cas d'erreur, on considère que c'est sauvegardé localement
+        return Promise.resolve({ local: true })
       }
+    },
+
+    // Vérifier si l'environnement est complètement terminé
+    isEnvironmentFullyCompleted() {
+      return (
+        this.environmentCompleted &&
+        this.showFeedbackMessage &&
+        !this.saveInProgress &&
+        !this.showQuestion &&
+        !this.showEnvironmentSelector
+      )
+    },
+
+    // Méthode pour gérer la fermeture de la modal timer
+    handleTimerModalClose() {
+      // Quand l'utilisateur ferme la modal, on peut redémarrer le timer
+      this.closeModal()
+
+      // Redémarrer le timer après fermeture
+      setTimeout(() => {
+        if (this.isEnvironmentFullyCompleted()) {
+          this.resetTimer()
+          this.startTimer()
+        }
+      }, 1000)
     },
 
     // Sauvegarder localement en cas d'erreur backend
     saveRoomLocally(roomName, roomData, globalCompletion) {
       try {
         // Récupérer les données locales existantes
-        let localPayload = JSON.parse(localStorage.getItem('roomEnvironmentData') || '{"completion": 0, "message": "Success", "roomData": []}')
-        
+        let localPayload = JSON.parse(
+          localStorage.getItem('roomEnvironmentData') ||
+            '{"completion": 0, "message": "Success", "roomData": []}',
+        )
+
         // S'assurer que la structure est correcte
         if (!localPayload.roomData || !Array.isArray(localPayload.roomData)) {
           localPayload.roomData = []
         }
-        
+
         // Supprimer l'ancienne version de cette room si elle existe
-        localPayload.roomData = localPayload.roomData.filter(room => room.room !== roomName)
-        
+        localPayload.roomData = localPayload.roomData.filter(
+          (room) => room.room !== roomName,
+        )
+
         // Ajouter la nouvelle room data (roomData.completion reste à 1.0)
         localPayload.roomData.push(roomData)
-        
+
         // Mettre à jour SEULEMENT la completion globale
         localPayload.completion = globalCompletion
-        
+
         // Sauvegarder
-        localStorage.setItem('roomEnvironmentData', JSON.stringify(localPayload))
-        
+        localStorage.setItem(
+          'roomEnvironmentData',
+          JSON.stringify(localPayload),
+        )
+
         // Sauvegarder aussi le Set des rooms complétées
         const completedRoomsArray = Array.from(this.completedRooms)
-        localStorage.setItem('completedRooms', JSON.stringify(completedRoomsArray))
-        
-        console.log(`Données sauvegardées localement pour ${roomName}:`, localPayload)
+        localStorage.setItem(
+          'completedRooms',
+          JSON.stringify(completedRoomsArray),
+        )
+
+        console.log(
+          `Données sauvegardées localement pour ${roomName}:`,
+          localPayload,
+        )
       } catch (error) {
         console.error('Erreur lors de la sauvegarde locale:', error)
       }
@@ -837,7 +989,7 @@ export default {
                 this.modelsLoading = false
               }, 500) // Short delay to ensure everything is rendered
             }
-          }
+          },
         )
 
         // Attendre un court délai pour s'assurer que le renderer est prêt
@@ -860,7 +1012,7 @@ export default {
           this.roomHeight,
           this.wallColor,
           this.floorColor,
-          this.ceilingColor
+          this.ceilingColor,
         )
       } catch (error) {
         console.error('Erreur lors de la création de la pièce initiale:', error)
@@ -870,6 +1022,10 @@ export default {
     // Commencer l'activité
     async startActivity() {
       this.activityStarted = true
+
+      // ⭐ IMPORTANT: Arrêter le timer quand l'utilisateur commence l'activité
+      this.stopTimer()
+
       await this.loadSavedRoomData()
 
       // Initialiser les feedbacks pour tous les environnements
@@ -898,7 +1054,7 @@ export default {
     nextQuestion() {
       // Sauvegarder les personnalisations actuelles
       this.saveCurrentCustomization(this.currentQuestion.type)
-      
+
       // Passer à la question suivante
       if (this.currentQuestionIndex < this.questions.length - 1) {
         this.currentQuestionIndex++
@@ -916,17 +1072,47 @@ export default {
     async finishExploration() {
       // Sauvegarder le feedback final
       this.saveFeedback()
-      
+
       // Vérifier que currentRoomName est bien défini
       if (!this.currentRoomName) {
         console.error('currentRoomName est vide! Recalcul...')
-        this.currentRoomName = this.mapEnvironmentToRoomName(this.currentEnvironment.name)
+        this.currentRoomName = this.mapEnvironmentToRoomName(
+          this.currentEnvironment.name,
+        )
       }
-      
-      // Construire et sauvegarder les données de la room actuelle
-      const roomData = this.buildRoomData(this.currentRoomName)
-      await this.saveRoomToBackend(this.currentRoomName, roomData)
-      
+
+      // ⭐ NOUVEAU: Marquer la sauvegarde en cours
+      this.saveInProgress = true
+
+      try {
+        // Construire et sauvegarder les données de la room actuelle
+        const roomData = this.buildRoomData(this.currentRoomName)
+        await this.saveRoomToBackend(this.currentRoomName, roomData)
+
+        // ⭐ NOUVEAU: Marquer l'environnement comme complété et sauvegardé
+        this.environmentCompleted = true
+
+        console.log(
+          '✅ Environnement terminé et sauvegardé, démarrage du timer...',
+        )
+
+        // ⭐ NOUVEAU: Démarrer le timer après sauvegarde réussie
+        setTimeout(() => {
+          this.resetTimer()
+          this.startTimer()
+        }, 2000) // Délai de 2 secondes après la sauvegarde
+      } catch (error) {
+        console.error('Erreur lors de la sauvegarde:', error)
+        // En cas d'erreur, on peut quand même démarrer le timer
+        this.environmentCompleted = true
+        setTimeout(() => {
+          this.resetTimer()
+          this.startTimer()
+        }, 2000)
+      } finally {
+        this.saveInProgress = false
+      }
+
       // Afficher le récapitulatif
       this.showFeedbackMessage = true
       this.showQuestion = false
@@ -954,7 +1140,7 @@ export default {
       this.modelsLoading = true
       this.loadingProgress = 0
       this.currentLoadingItem = 'Initialisation...'
-      
+
       // Réinitialiser l'index de question
       this.currentQuestionIndex = 0
 
@@ -977,11 +1163,11 @@ export default {
       // Mise à jour du son
       this.selectedAmbience = settings.sound.type
       this.soundVolume = settings.sound.volume
-      
+
       // S'assurer que le peopleCount est correctement réinitialisé et appliqué
       const newPeopleCount = settings.sound.peopleCount || 0
       this.peopleCount = newPeopleCount
-      
+
       // Vérifier que le renderer est prêt
       if (!this.rendererInitialized) {
         console.warn("Le renderer n'est pas encore initialisé")
@@ -998,9 +1184,10 @@ export default {
       // Afficher le guide pour le nouvel environnement
       this.showGuideMessage({
         title: 'Bienvenue dans ' + this.currentEnvironment.name,
-        description: 'Explorer cet environnement et réponds aux questions qui apparaîtront en bas de l\'écran.',
+        description:
+          "Explorer cet environnement et réponds aux questions qui apparaîtront en bas de l'écran.",
       })
-      
+
       // Afficher la première question après un délai
       setTimeout(() => {
         this.showQuestion = true
@@ -1028,11 +1215,11 @@ export default {
       } catch (error) {
         console.error(
           "Erreur lors de l'application des changements d'environnement:",
-          error
+          error,
         )
       }
     },
-    
+
     // Version de updateAmbientSound qui ne marque pas l'étape comme complétée
     updateAmbientSoundWithoutCompletion() {
       if (!this.$refs.ambientAudio) return
@@ -1073,7 +1260,7 @@ export default {
           .play()
           .catch((e) => console.log('Audio play failed:', e))
       }
-      
+
       // Mettre à jour également le nombre de personnes
       if (this.renderer && this.rendererInitialized) {
         try {
@@ -1219,7 +1406,7 @@ export default {
       } catch (error) {
         console.error(
           'Erreur lors de la mise à jour du niveau de détail:',
-          error
+          error,
         )
         this.modelsLoading = false
       }
@@ -1233,7 +1420,8 @@ export default {
       // Afficher un message de confirmation
       this.showGuideMessage({
         title: 'Ressenti enregistré',
-        description: "Votre feedback sur cet environnement a été sauvegardé. Vous pouvez voir un récapitulatif de vos préférences.",
+        description:
+          'Votre feedback sur cet environnement a été sauvegardé. Vous pouvez voir un récapitulatif de vos préférences.',
       })
     },
 
@@ -1287,7 +1475,7 @@ export default {
     // Obtenir la préférence d'éclairage pour l'affichage
     getLightPreference() {
       const feedback = this.getCurrentFeedback()
-      
+
       if (!feedback.customizations || !feedback.customizations.light) {
         return 'Non déterminé'
       }
@@ -1302,7 +1490,7 @@ export default {
     // Obtenir la préférence sonore pour l'affichage
     getSoundPreference() {
       const feedback = this.getCurrentFeedback()
-      
+
       if (!feedback.customizations || !feedback.customizations.sounds) {
         return 'Non déterminé'
       }
@@ -1360,7 +1548,7 @@ export default {
           if (feedback.customizations && feedback.customizations.people) {
             const count = feedback.customizations.people.peopleCount
             if (count === 0) {
-              return "Vous semblez préférer les environnements calmes et peu peuplés. Privilégiez des espaces de travail et de repos isolés."
+              return 'Vous semblez préférer les environnements calmes et peu peuplés. Privilégiez des espaces de travail et de repos isolés.'
             } else if (count <= 3) {
               return "Vous semblez à l'aise dans des petits groupes. Favorisez des rencontres en comité restreint plutôt que de grandes assemblées."
             } else {
@@ -1383,19 +1571,27 @@ export default {
     // Recommencer l'exploration
     restartExploration() {
       this.resetAllData()
+
+      // ⭐ IMPORTANT: Arrêter le timer pendant la nouvelle exploration
+      this.stopTimer()
+
+      // Réinitialiser les flags
+      this.environmentCompleted = false
+      this.saveInProgress = false
+
       // Réinitialiser les données
       this.showFeedbackMessage = false
       this.currentEnvironmentIndex = 0
       this.currentQuestionIndex = 0
       this.showQuestion = false
       this.currentRoomName = ''
-      
+
       // Réinitialiser les personnes à zéro
       this.peopleCount = 0
       if (this.renderer && this.rendererInitialized) {
         this.renderer.updatePeople(0)
       }
-      
+
       // Réinitialiser l'audio
       if (this.$refs.ambientAudio) {
         this.$refs.ambientAudio.pause()
@@ -1426,7 +1622,7 @@ export default {
           this.roomHeight,
           this.wallColor,
           this.floorColor,
-          this.ceilingColor
+          this.ceilingColor,
         )
 
         // Synchroniser les données
@@ -1443,7 +1639,7 @@ export default {
         this.renderer.updateRoomColors(
           this.wallColor,
           this.floorColor,
-          this.ceilingColor
+          this.ceilingColor,
         )
       } catch (error) {
         console.error('Erreur lors de la mise à jour des couleurs:', error)
@@ -1457,7 +1653,7 @@ export default {
         this.renderer.updateLighting(
           this.lightColor,
           this.lightIntensity,
-          this.ambientLight
+          this.ambientLight,
         )
 
         this.saveCurrentCustomization('light')
@@ -1735,7 +1931,8 @@ export default {
   color: #555;
 }
 
-.next-button, .finish-button {
+.next-button,
+.finish-button {
   background: #4caf50;
   color: white;
 }
@@ -2080,7 +2277,9 @@ export default {
   max-width: 500px;
   width: 90%;
   text-align: center;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(58, 87, 232, 0.1);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(58, 87, 232, 0.1);
   border-top: 4px solid #4caf50;
   position: relative;
   animation: slideDown 0.4s ease-out;
@@ -2138,7 +2337,9 @@ export default {
   cursor: pointer;
   font-size: 1rem;
   font-weight: bold;
-  transition: transform 0.2s, background 0.2s;
+  transition:
+    transform 0.2s,
+    background 0.2s;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
 }
 
@@ -2394,7 +2595,9 @@ export default {
   cursor: pointer;
   font-size: 1.2rem;
   font-weight: bold;
-  transition: transform 0.2s, background 0.2s;
+  transition:
+    transform 0.2s,
+    background 0.2s;
   margin: 15px auto 0;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
@@ -2409,25 +2612,29 @@ export default {
   .question-overlay {
     max-height: 50%;
   }
-  
-  .big-button-group, .color-buttons, .sound-options {
+
+  .big-button-group,
+  .color-buttons,
+  .sound-options {
     flex-wrap: wrap;
     gap: 10px;
   }
-  
-  .big-button, .color-button, .sound-option {
+
+  .big-button,
+  .color-button,
+  .sound-option {
     width: calc(50% - 10px);
     max-width: 120px;
   }
-  
+
   .color-palette {
     width: calc(50% - 15px);
   }
-  
+
   .mood-option {
     width: calc(50% - 15px);
   }
-  
+
   .guide-content {
     width: 95%;
     padding: 15px 20px;
@@ -2435,36 +2642,78 @@ export default {
 }
 
 @media screen and (max-width: 480px) {
-  .big-button-group, .color-buttons, .sound-options, .people-buttons {
+  .big-button-group,
+  .color-buttons,
+  .sound-options,
+  .people-buttons {
     flex-direction: column;
     align-items: center;
   }
-  
-  .big-button, .color-button, .sound-option, .people-button {
+
+  .big-button,
+  .color-button,
+  .sound-option,
+  .people-button {
     width: 80%;
     max-width: none;
   }
-  
+
   .color-palettes {
     flex-direction: column;
     align-items: center;
   }
-  
+
   .color-palette {
     width: 80%;
     max-width: none;
   }
-  
+
   .mood-option {
     width: calc(50% - 10px);
   }
-  
+
   .question-container h3 {
     font-size: 1.1rem;
   }
-  
+
   .question-container p {
     font-size: 0.9rem;
+  }
+}
+.timer-indicator {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #4caf50, #388e3c);
+  color: white;
+  padding: 10px 16px;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: bold;
+  z-index: 1000;
+  animation: timerPulse 1s infinite;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+@keyframes timerPulse {
+  0%,
+  100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .timer-indicator {
+    top: 10px;
+    right: 10px;
+    padding: 8px 12px;
+    font-size: 12px;
   }
 }
 </style>

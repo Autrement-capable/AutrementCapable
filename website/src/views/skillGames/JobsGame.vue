@@ -1,4 +1,14 @@
 <template>
+  <PopUp
+    v-if="showGameModal"
+    message="Souhaites-tu continuer à jouer ?"
+    :image="flamouImage"
+    :redirect="getRandomGameRoute()"
+    buttonConfirm="Changer de jeux"
+    buttonCancel="Rester ici"
+    :visible="showGameModal"
+    @close="closeModal"
+  />
   <div class="job-discovery-container">
     <!-- Animation badge débloqué -->
     <div v-if="showBadgeUnlockAnimation" class="badge-unlock-overlay">
@@ -7,7 +17,9 @@
         <h2>Badge débloqué !</h2>
         <h3>{{ badgeData.name }}</h3>
         <p>{{ badgeData.description }}</p>
-        <button @click="closeBadgeAnimation" class="close-animation-btn">Continuer</button>
+        <button @click="closeBadgeAnimation" class="close-animation-btn">
+          Continuer
+        </button>
       </div>
     </div>
 
@@ -72,36 +84,50 @@
       <!-- Barre de progression -->
       <div class="progress-container">
         <div class="progress-steps">
-          <div class="progress-step" :class="{ 'completed': currentIndex > 0 }">
+          <div class="progress-step" :class="{ completed: currentIndex > 0 }">
             <div class="step-icon">🎮</div>
             <div class="step-label">Démarrage</div>
           </div>
-          
+
           <div class="progress-connector"></div>
-          
-          <div class="progress-step" :class="{ 'completed': currentIndex >= Math.floor(batchSize/3) }">
+
+          <div
+            class="progress-step"
+            :class="{ completed: currentIndex >= Math.floor(batchSize / 3) }"
+          >
             <div class="step-icon">🏃</div>
             <div class="step-label">En cours</div>
           </div>
-          
+
           <div class="progress-connector"></div>
-          
-          <div class="progress-step" :class="{ 'completed': currentIndex >= Math.floor(batchSize*2/3) }">
+
+          <div
+            class="progress-step"
+            :class="{
+              completed: currentIndex >= Math.floor((batchSize * 2) / 3),
+            }"
+          >
             <div class="step-icon">🔍</div>
             <div class="step-label">Avancé</div>
           </div>
-          
+
           <div class="progress-connector"></div>
-          
-          <div class="progress-step" :class="{ 'completed': currentIndex >= batchSize || batchCompleted }">
+
+          <div
+            class="progress-step"
+            :class="{ completed: currentIndex >= batchSize || batchCompleted }"
+          >
             <div class="step-icon">🏆</div>
             <div class="step-label">Terminé</div>
           </div>
         </div>
-        
+
         <div class="progress-bar">
-          <div class="progress-fill" :style="{ width: progressPercentage + '%' }"></div>
-          <div class="progress-text">{{ currentIndex}} / {{ batchSize }}</div>
+          <div
+            class="progress-fill"
+            :style="{ width: progressPercentage + '%' }"
+          ></div>
+          <div class="progress-text">{{ currentIndex }} / {{ batchSize }}</div>
         </div>
       </div>
 
@@ -111,10 +137,10 @@
           <div v-if="currentMetier" class="job-card">
             <div class="job-card-inner">
               <h2 class="job-title">{{ currentMetier.name }}</h2>
-              
+
               <div class="job-media">
                 <div class="video-player">
-                  <video 
+                  <video
                     v-if="currentMetier.video"
                     ref="jobVideo"
                     :src="getVideoSource(currentMetier.video)"
@@ -136,41 +162,49 @@
                   </div>
                 </div>
               </div>
-              
+
               <div class="job-description">
                 <p>{{ currentMetier.description }}</p>
               </div>
-              
+
               <div class="job-skills">
-                <div v-for="(skill, index) in currentMetier.skills" :key="index" class="skill-tag">
+                <div
+                  v-for="(skill, index) in currentMetier.skills"
+                  :key="index"
+                  class="skill-tag"
+                >
                   {{ skill }}
                 </div>
               </div>
             </div>
           </div>
-          
+
           <div v-else-if="batchCompleted" class="batch-complete-card">
             <div class="card-icon large-icon">🎯</div>
             <h2>Lot terminé !</h2>
             <p>Tu as découvert {{ batchSize }} métiers.</p>
-            <p v-if="likedJobs.length > 0">Tu as aimé {{ getLikedJobsInCurrentBatch() }} métier(s).</p>
+            <p v-if="likedJobs.length > 0">
+              Tu as aimé {{ getLikedJobsInCurrentBatch() }} métier(s).
+            </p>
             <p>Souhaites-tu continuer à découvrir d'autres métiers ?</p>
           </div>
-          
+
           <div v-else-if="allJobsSeen" class="all-jobs-seen-card">
             <div class="card-icon large-icon">🏁</div>
             <h2>Bravo !</h2>
             <p>Tu as découvert tous les métiers disponibles.</p>
-            <p v-if="likedJobs.length > 0">Tu as aimé {{ likedJobs.length }} métier(s) au total.</p>
+            <p v-if="likedJobs.length > 0">
+              Tu as aimé {{ likedJobs.length }} métier(s) au total.
+            </p>
           </div>
-          
+
           <div v-else class="loading-card">
             <div class="loading-spinner"></div>
             <p>Chargement des métiers...</p>
           </div>
         </transition>
       </div>
-      
+
       <!-- Actions du jeu -->
       <div class="game-actions">
         <div v-if="currentMetier" class="card-actions">
@@ -178,32 +212,38 @@
             <span class="btn-icon">👎</span>
             <span class="btn-text">Pas pour moi</span>
           </button>
-          
+
           <button @click="showDetails" class="action-button info-button">
             <span class="btn-icon">ℹ️</span>
             <span class="btn-text">Détails</span>
           </button>
-          
+
           <button @click="likeJob" class="action-button like-button">
             <span class="btn-icon">👍</span>
             <span class="btn-text">Ça me plaît</span>
           </button>
         </div>
-        
+
         <div v-if="batchCompleted" class="batch-actions">
           <button @click="loadNextBatch" class="action-button continue-button">
             <span class="btn-icon">▶️</span>
             <span class="btn-text">Continuer</span>
           </button>
-          
-          <button @click="finishAndShowResults" class="action-button finish-button">
+
+          <button
+            @click="finishAndShowResults"
+            class="action-button finish-button"
+          >
             <span class="btn-icon">🏁</span>
             <span class="btn-text">Terminer</span>
           </button>
         </div>
-        
+
         <div v-if="allJobsSeen" class="home-action">
-          <button @click="finishAndShowResults" class="action-button like-button">
+          <button
+            @click="finishAndShowResults"
+            class="action-button like-button"
+          >
             <span class="btn-icon">❤️</span>
             <span class="btn-text">Voir mes métiers préférés</span>
           </button>
@@ -214,7 +254,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Écran des résultats -->
     <div class="results-overlay" v-if="showResults">
       <div class="results-modal">
@@ -225,11 +265,19 @@
           </div>
           <p class="results-subtitle">Voici les métiers qui t'ont intéressé</p>
         </div>
-        
+
         <div v-if="likedJobs.length > 0" class="liked-jobs-grid">
-          <div v-for="(job, index) in likedJobs" :key="index" class="liked-job-item">
+          <div
+            v-for="(job, index) in likedJobs"
+            :key="index"
+            class="liked-job-item"
+          >
             <div class="liked-job-media">
-              <img :src="job.poster || '@/assets/job-placeholder.jpg'" alt="Métier" class="liked-job-img" />
+              <img
+                :src="job.poster || '@/assets/job-placeholder.jpg'"
+                alt="Métier"
+                class="liked-job-img"
+              />
               <div class="play-overlay">▶️</div>
             </div>
             <div class="liked-job-info">
@@ -241,24 +289,24 @@
             </div>
           </div>
         </div>
-        
+
         <div v-else class="no-liked-jobs">
           <div class="card-icon large-icon">🔍</div>
           <p>Tu n'as pas encore sélectionné de métiers qui te plaisent.</p>
           <p>Continue à explorer pour découvrir des métiers intéressants !</p>
         </div>
-        
+
         <div class="results-actions">
           <button @click="restartGame" class="action-button restart-button">
             <span class="btn-icon">🔄</span>
             <span class="btn-text">Rejouer</span>
           </button>
-          
+
           <button @click="goToNextGame" class="action-button next-game-button">
             <span class="btn-icon">🎮</span>
             <span class="btn-text">Jeu suivant</span>
           </button>
-          
+
           <button @click="goToDashboard" class="action-button home-button">
             <span class="btn-icon">🏠</span>
             <span class="btn-text">Accueil</span>
@@ -270,447 +318,526 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, watch, nextTick } from 'vue';
-import { metiersData } from '@/data/metiersData.js';
-import { unlockBadge, isBadgeUnlocked } from '@/utils/badges';
-import GameGuide from '@/components/GameGuideComponent.vue';
-import AuthService from '@/services/AuthService';
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { metiersData } from '@/data/metiersData.js'
+import { unlockBadge, isBadgeUnlocked } from '@/utils/badges'
+import GameGuide from '@/components/GameGuideComponent.vue'
+import AuthService from '@/services/AuthService'
+import PopUp from '@/components/PopUp.vue'
+import { useGameTimer } from '@/services/useGameTimer'
+import flamouImage from '@/assets/flamou/intresting.png'
 
 export default {
   name: 'JobDiscoveryGame',
   components: {
-    GameGuide
+    GameGuide,
+    PopUp,
   },
   setup() {
+    const {
+      showGameModal,
+      timeRemaining,
+      startTimer,
+      stopTimer,
+      resetTimer,
+      getRandomGameRoute,
+      closeModal,
+    } = useGameTimer()
     // Variables réactives
-    const gameStarted = ref(false);
-    const showResults = ref(false);
-    const currentIndex = ref(0);
-    const currentBatch = ref([]);
-    const batchSize = ref(5);
-    const seenJobs = ref([]);
-    const likedJobs = ref([]);
-    const currentBatchIds = ref([]);
-    const batchCompleted = ref(false);
-    const allJobsSeen = ref(false);
-    const highContrastMode = ref(false);
-    const showBadgeUnlockAnimation = ref(false);
-    const badgeJobDiscoveryId = ref(7);
-    const jobVideo = ref(null);
+    const gameStarted = ref(false)
+    const showResults = ref(false)
+    const currentIndex = ref(0)
+    const currentBatch = ref([])
+    const batchSize = ref(5)
+    const seenJobs = ref([])
+    const likedJobs = ref([])
+    const currentBatchIds = ref([])
+    const batchCompleted = ref(false)
+    const allJobsSeen = ref(false)
+    const highContrastMode = ref(false)
+    const showBadgeUnlockAnimation = ref(false)
+    const badgeJobDiscoveryId = ref(7)
+    const jobVideo = ref(null)
 
     // Métier actuel
     const currentMetier = computed(() => {
-      if (currentBatch.value.length === 0 || currentIndex.value >= currentBatch.value.length) {
-        return null;
+      if (
+        currentBatch.value.length === 0 ||
+        currentIndex.value >= currentBatch.value.length
+      ) {
+        return null
       }
-      return currentBatch.value[currentIndex.value];
-    });
+      return currentBatch.value[currentIndex.value]
+    })
 
     watch(currentMetier, async (newMetier) => {
       if (newMetier && newMetier.video) {
-        await nextTick(); // Attendre que le DOM soit mis à jour
-        tryAutoplayVideo();
+        await nextTick() // Attendre que le DOM soit mis à jour
+        tryAutoplayVideo()
       }
-    });
+    })
 
     function tryAutoplayVideo() {
       if (jobVideo.value) {
-        const video = jobVideo.value;
-        
+        const video = jobVideo.value
+
         // Réinitialiser la vidéo
-        video.currentTime = 0;
-        
+        video.currentTime = 0
+
         // Essayer de lancer la vidéo
-        const playPromise = video.play();
-        
+        const playPromise = video.play()
+
         if (playPromise !== undefined) {
           playPromise
             .then(() => {
-              console.log("Autoplay réussi");
+              console.log('Autoplay réussi')
             })
             .catch((error) => {
-              console.log("Autoplay bloqué par le navigateur:", error);
+              console.log('Autoplay bloqué par le navigateur:', error)
               // Si l'autoplay échoue, on peut essayer sans le son
-              video.muted = true;
+              video.muted = true
               video.play().catch(() => {
-                console.log("Impossible de lancer la vidéo automatiquement");
-              });
-            });
+                console.log('Impossible de lancer la vidéo automatiquement')
+              })
+            })
         }
       }
     }
-    
+
     // Gestionnaire quand la vidéo est chargée
     function handleVideoLoaded() {
-      console.log("Vidéo chargée");
-      tryAutoplayVideo();
+      console.log('Vidéo chargée')
+      tryAutoplayVideo()
     }
-    
+
     // Gestionnaire quand la vidéo commence à jouer
     function handleVideoPlay() {
-      console.log("Vidéo en cours de lecture");
+      console.log('Vidéo en cours de lecture')
     }
-    
+
     // Gestionnaire d'erreur vidéo
     function handleVideoError(event) {
-      console.error("Erreur lors du chargement de la vidéo:", event);
+      console.error('Erreur lors du chargement de la vidéo:', event)
     }
-    
+
     // Modifier la fonction nextCard pour gérer l'autoplay
     function nextCard() {
-      currentIndex.value++;
-      
+      currentIndex.value++
+
       // Vérifier si tous les métiers du lot ont été vus
       if (currentIndex.value >= currentBatch.value.length) {
-        batchCompleted.value = true;
+        batchCompleted.value = true
       } else {
         // Si il y a un nouveau métier, essayer l'autoplay après un court délai
         setTimeout(() => {
-          tryAutoplayVideo();
-        }, 100);
+          tryAutoplayVideo()
+        }, 100)
       }
     }
 
     // Données pour le badge
     const badgeData = ref({
-      name: "Explorateur de Métiers",
-      description: "Tu as découvert et aimé plusieurs métiers différents !"
-    });
-    
+      name: 'Explorateur de Métiers',
+      description: 'Tu as découvert et aimé plusieurs métiers différents !',
+    })
+
     // Calcul du pourcentage de progression
     const progressPercentage = computed(() => {
-      if (batchSize.value === 0) return 0;
+      if (batchSize.value === 0) return 0
       // Faire commencer la barre à 0 et atteindre 100% au dernier élément
-      return Math.min(100, (currentIndex.value / batchSize.value) * 100);
-    });
-    
+      return Math.min(100, (currentIndex.value / batchSize.value) * 100)
+    })
+
     // Vérifier si le niveau est complété
     const isBatchComplete = computed(() => {
-      return currentIndex.value >= currentBatch.value.length;
-    });
-    
+      return currentIndex.value >= currentBatch.value.length
+    })
+
     // Métiers disponibles (non vus)
     const availableJobs = computed(() => {
-      return metiersData.filter(job => !seenJobs.value.includes(job.id));
-    });
-    
+      return metiersData.filter((job) => !seenJobs.value.includes(job.id))
+    })
+
     // Fonctions
     function startGame() {
-      gameStarted.value = true;
-      loadSavedData();
-      loadInitialBatch();
+      gameStarted.value = true
+      loadSavedData()
+      loadInitialBatch()
     }
-    
+
     function getVideoSource(videoPath) {
       if (!videoPath) {
-        return '';
+        return ''
       }
-      return videoPath;
+      return videoPath
     }
-    
+
     function loadSavedData() {
       // Charger les paramètres d'accessibilité
-      const accessibilitySettings = localStorage.getItem('accessibilitySettings');
+      const accessibilitySettings = localStorage.getItem(
+        'accessibilitySettings',
+      )
       if (accessibilitySettings) {
         try {
-          const settings = JSON.parse(accessibilitySettings);
-          highContrastMode.value = settings.highContrast || false;
+          const settings = JSON.parse(accessibilitySettings)
+          highContrastMode.value = settings.highContrast || false
         } catch (e) {
-          console.error('Erreur lors du chargement des paramètres d\'accessibilité:', e);
+          console.error(
+            "Erreur lors du chargement des paramètres d'accessibilité:",
+            e,
+          )
         }
       }
-      
+
       // Charger les métiers déjà vus
-      const seenJobsData = localStorage.getItem('seen-metiers');
+      const seenJobsData = localStorage.getItem('seen-metiers')
       if (seenJobsData) {
         try {
-          seenJobs.value = JSON.parse(seenJobsData);
+          seenJobs.value = JSON.parse(seenJobsData)
         } catch (e) {
-          console.error('Erreur lors du chargement des métiers vus:', e);
-          seenJobs.value = [];
+          console.error('Erreur lors du chargement des métiers vus:', e)
+          seenJobs.value = []
         }
       }
-      
+
       // Charger les métiers aimés
-      const likedJobsData = localStorage.getItem('liked-metiers');
+      const likedJobsData = localStorage.getItem('liked-metiers')
       if (likedJobsData) {
         try {
-          const likedIds = JSON.parse(likedJobsData);
-          likedJobs.value = metiersData.filter(job => likedIds.includes(job.id));
+          const likedIds = JSON.parse(likedJobsData)
+          likedJobs.value = metiersData.filter((job) =>
+            likedIds.includes(job.id),
+          )
         } catch (e) {
-          console.error('Erreur lors du chargement des métiers aimés:', e);
-          likedJobs.value = [];
+          console.error('Erreur lors du chargement des métiers aimés:', e)
+          likedJobs.value = []
         }
       }
     }
-    
+
     function saveData() {
       // Sauvegarder les paramètres d'accessibilité
-      localStorage.setItem('accessibilitySettings', JSON.stringify({
-        highContrast: highContrastMode.value
-      }));
-      
+      localStorage.setItem(
+        'accessibilitySettings',
+        JSON.stringify({
+          highContrast: highContrastMode.value,
+        }),
+      )
+
       // Sauvegarder les métiers vus
-      localStorage.setItem('seen-metiers', JSON.stringify(seenJobs.value));
-      
+      localStorage.setItem('seen-metiers', JSON.stringify(seenJobs.value))
+
       // Sauvegarder les métiers aimés
-      const likedIds = likedJobs.value.map(job => job.id);
-      localStorage.setItem('liked-metiers', JSON.stringify(likedIds));
+      const likedIds = likedJobs.value.map((job) => job.id)
+      localStorage.setItem('liked-metiers', JSON.stringify(likedIds))
     }
-    
+
     function getLikedJobsInCurrentBatch() {
-      return likedJobs.value.filter(job => currentBatchIds.value.includes(job.id)).length;
+      return likedJobs.value.filter((job) =>
+        currentBatchIds.value.includes(job.id),
+      ).length
     }
-    
+
     function loadInitialBatch() {
-      loadNextBatch();
+      loadNextBatch()
     }
-    
+
     function loadNextBatch() {
-      currentBatch.value = [];
-      currentIndex.value = 0;
-      currentBatchIds.value = [];
-      batchCompleted.value = false;
-      
+      currentBatch.value = []
+      currentIndex.value = 0
+      currentBatchIds.value = []
+      batchCompleted.value = false
+
       // Vérifier s'il reste des métiers à montrer
       if (availableJobs.value.length === 0) {
-        allJobsSeen.value = true;
-        return;
+        allJobsSeen.value = true
+        return
       }
-      
+
       // Sélectionner aléatoirement un batch de métiers non vus
-      const availBatchSize = Math.min(batchSize.value, availableJobs.value.length);
-      const availableIndices = Array.from({ length: availableJobs.value.length }, (_, i) => i);
-      
+      const availBatchSize = Math.min(
+        batchSize.value,
+        availableJobs.value.length,
+      )
+      const availableIndices = Array.from(
+        { length: availableJobs.value.length },
+        (_, i) => i,
+      )
+
       for (let i = 0; i < availBatchSize; i++) {
-        const randomIndex = Math.floor(Math.random() * availableIndices.length);
-        const selectedIndex = availableIndices.splice(randomIndex, 1)[0];
-        
+        const randomIndex = Math.floor(Math.random() * availableIndices.length)
+        const selectedIndex = availableIndices.splice(randomIndex, 1)[0]
+
         // Créer une vraie copie profonde du métier pour éviter les problèmes de référence
-        const originalMetier = availableJobs.value[selectedIndex];
-        const selectedMetier = JSON.parse(JSON.stringify(originalMetier));
-        
-        currentBatch.value.push(selectedMetier);
-        currentBatchIds.value.push(selectedMetier.id);
+        const originalMetier = availableJobs.value[selectedIndex]
+        const selectedMetier = JSON.parse(JSON.stringify(originalMetier))
+
+        currentBatch.value.push(selectedMetier)
+        currentBatchIds.value.push(selectedMetier.id)
       }
     }
-    
+
     function likeJob() {
-      if (!currentMetier.value) return;
-      
+      if (!currentMetier.value) return
+
       // Ajouter aux métiers vus
       if (!seenJobs.value.includes(currentMetier.value.id)) {
-        seenJobs.value.push(currentMetier.value.id);
+        seenJobs.value.push(currentMetier.value.id)
       }
-      
+
       // Ajouter aux métiers aimés s'il n'y est pas déjà
-      if (!likedJobs.value.some(job => job.id === currentMetier.value.id)) {
-        likedJobs.value.push(currentMetier.value);
+      if (!likedJobs.value.some((job) => job.id === currentMetier.value.id)) {
+        likedJobs.value.push(currentMetier.value)
       }
-      
+
       // Envoyer le choix au backend
-      sendJobChoiceToBackend(currentMetier.value.name, 'like');
-      
-      saveData();
-      checkBadges();
-      nextCard();
+      sendJobChoiceToBackend(currentMetier.value.name, 'like')
+
+      saveData()
+      checkBadges()
+      nextCard()
     }
-    
+
     function dislikeJob() {
-      if (!currentMetier.value) return;
-      
+      if (!currentMetier.value) return
+
       // Ajouter uniquement aux métiers vus
       if (!seenJobs.value.includes(currentMetier.value.id)) {
-        seenJobs.value.push(currentMetier.value.id);
+        seenJobs.value.push(currentMetier.value.id)
       }
-      
+
       // Envoyer le choix au backend
-      sendJobChoiceToBackend(currentMetier.value.name, 'dislike');
-      
-      saveData();
-      checkBadges();
-      nextCard();
+      sendJobChoiceToBackend(currentMetier.value.name, 'dislike')
+
+      saveData()
+      checkBadges()
+      nextCard()
     }
 
     function unknownJob() {
-      if (!currentMetier.value) return;
-      
+      if (!currentMetier.value) return
+
       // Ajouter aux métiers vus
       if (!seenJobs.value.includes(currentMetier.value.id)) {
-        seenJobs.value.push(currentMetier.value.id);
+        seenJobs.value.push(currentMetier.value.id)
       }
-      
+
       // Envoyer le choix au backend
-      sendJobChoiceToBackend(currentMetier.value.name, 'unknown');
-      
-      saveData();
-      nextCard();
+      sendJobChoiceToBackend(currentMetier.value.name, 'unknown')
+
+      saveData()
+      nextCard()
     }
 
     function sendJobChoiceToBackend(jobName, choiceType) {
       // Mapper les types de choix aux valeurs attendues par le backend
       const choiceTypeMapping = {
-        'like': 'like',
-        'dislike': 'dislike',
-        'unknown': 'unknown',
-        'skip': 'unknown' // Si on veut gérer les sauts, on peut les mapper à 'unknown'
-      };
+        like: 'like',
+        dislike: 'dislike',
+        unknown: 'unknown',
+        skip: 'unknown', // Si on veut gérer les sauts, on peut les mapper à 'unknown'
+      }
 
-      const backendChoice = choiceTypeMapping[choiceType];
-      
+      const backendChoice = choiceTypeMapping[choiceType]
+
       // D'abord, récupérer les données existantes
       AuthService.request('get', '/games/jobs')
-        .then(response => {
+        .then((response) => {
           // Initialiser une structure par défaut si les données sont invalides
-          let currentData = response.data && typeof response.data === 'object' 
-            ? response.data 
-            : { completion: 0, jobChoices: {} };
-          
+          let currentData =
+            response.data && typeof response.data === 'object'
+              ? response.data
+              : { completion: 0, jobChoices: {} }
+
           // S'assurer que la structure minimale est présente
           if (!currentData.jobChoices) {
-            currentData.jobChoices = {};
+            currentData.jobChoices = {}
           }
-          
+
           // Ajouter le nouveau choix de métier
-          currentData.jobChoices[jobName] = backendChoice;
-          
+          currentData.jobChoices[jobName] = backendChoice
+
           // Calculer le pourcentage de complétion
-          const totalPossibleJobs = metiersData.length;
-          const answeredJobsCount = Object.keys(currentData.jobChoices).length;
-          
+          const totalPossibleJobs = metiersData.length
+          const answeredJobsCount = Object.keys(currentData.jobChoices).length
+
           // Calculer et formater le pourcentage (0-100)
-          const completionPercentage = totalPossibleJobs > 0 
-            ? Math.min(100, Math.round((answeredJobsCount / totalPossibleJobs) * 100))
-            : 0;
-          
-          currentData.completion = completionPercentage / 100;
-          
-          console.log('Données à envoyer au backend:', currentData);
-          console.log(`Complétion: ${completionPercentage}% (${answeredJobsCount}/${totalPossibleJobs} métiers)`);
-          
+          const completionPercentage =
+            totalPossibleJobs > 0
+              ? Math.min(
+                  100,
+                  Math.round((answeredJobsCount / totalPossibleJobs) * 100),
+                )
+              : 0
+
+          currentData.completion = completionPercentage / 100
+
+          console.log('Données à envoyer au backend:', currentData)
+          console.log(
+            `Complétion: ${completionPercentage}% (${answeredJobsCount}/${totalPossibleJobs} métiers)`,
+          )
+
           // Envoyer les données mises à jour
-          return AuthService.request('post', '/games/jobs', currentData);
+          return AuthService.request('post', '/games/jobs', currentData)
         })
-        .then(response => {
-          console.log('Réponse complète du backend après mise à jour:', response);
+        .then((response) => {
+          console.log(
+            'Réponse complète du backend après mise à jour:',
+            response,
+          )
         })
-        .catch(error => {
-          console.error('Erreur lors de la mise à jour des choix de métiers:', error);
-          
+        .catch((error) => {
+          console.error(
+            'Erreur lors de la mise à jour des choix de métiers:',
+            error,
+          )
+
           if (error.response) {
-            console.error('Réponse d\'erreur du serveur:', {
+            console.error("Réponse d'erreur du serveur:", {
               status: error.response.status,
               statusText: error.response.statusText,
-              data: error.response.data
-            });
+              data: error.response.data,
+            })
           }
-          
+
           // En cas d'erreur d'authentification, sauvegarder localement
-          if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-            console.warn('Problème d\'authentification. Vos choix de métiers seront sauvegardés localement.');
-            saveJobChoicesLocally(jobName, backendChoice);
+          if (
+            error.response &&
+            (error.response.status === 401 || error.response.status === 403)
+          ) {
+            console.warn(
+              "Problème d'authentification. Vos choix de métiers seront sauvegardés localement.",
+            )
+            saveJobChoicesLocally(jobName, backendChoice)
           }
-        });
+        })
     }
 
     function saveJobChoicesLocally(jobName, choiceType) {
       // Récupérer les données existantes du localStorage
-      let localData = JSON.parse(localStorage.getItem('userJobChoices') || '{"completion":0,"jobChoices":{}}');
-      
+      let localData = JSON.parse(
+        localStorage.getItem('userJobChoices') ||
+          '{"completion":0,"jobChoices":{}}',
+      )
+
       // Mettre à jour les données locales
       if (!localData.jobChoices) {
-        localData.jobChoices = {};
+        localData.jobChoices = {}
       }
-      
+
       // Ajouter le choix de métier
-      localData.jobChoices[jobName] = choiceType;
-      
+      localData.jobChoices[jobName] = choiceType
+
       // Calculer le pourcentage de complétion
-      const totalPossibleJobs = metiersData.length;
-      const answeredJobsCount = Object.keys(localData.jobChoices).length;
-      
+      const totalPossibleJobs = metiersData.length
+      const answeredJobsCount = Object.keys(localData.jobChoices).length
+
       // Calculer et formater le pourcentage (0-100)
-      localData.completion = totalPossibleJobs > 0 
-        ? Math.min(100, Math.round((answeredJobsCount / totalPossibleJobs) * 100))
-        : 0;
-      
+      localData.completion =
+        totalPossibleJobs > 0
+          ? Math.min(
+              100,
+              Math.round((answeredJobsCount / totalPossibleJobs) * 100),
+            )
+          : 0
+
       // Sauvegarder dans localStorage
-      localStorage.setItem('userJobChoices', JSON.stringify(localData));
-      console.log('Choix de métiers sauvegardés localement:', localData);
+      localStorage.setItem('userJobChoices', JSON.stringify(localData))
+      console.log('Choix de métiers sauvegardés localement:', localData)
     }
-    
+
     function showDetails() {
       // if (!currentMetier.value) return;
-      
       // // Rediriger vers la page de détails du métier
       // window.location.href = `/metier/${currentMetier.value.id}`;
     }
-    
+
     function finishAndShowResults() {
-      showResults.value = true;
+      showResults.value = true
     }
-    
+
     function restartGame() {
-      currentIndex.value = 0;
-      seenJobs.value = [];
-      likedJobs.value = [];
-      batchCompleted.value = false;
-      allJobsSeen.value = false;
-      showResults.value = false;
-      
-      saveData();
-      loadInitialBatch();
+      currentIndex.value = 0
+      seenJobs.value = []
+      likedJobs.value = []
+      batchCompleted.value = false
+      allJobsSeen.value = false
+      showResults.value = false
+
+      saveData()
+      loadInitialBatch()
     }
-    
+
     function goToDashboard() {
-      window.location.href = '/dashboard';
+      window.location.href = '/dashboard'
     }
-    
+
     function goToNextGame() {
-      window.location.href = '/game-speed';
+      window.location.href = '/game-speed'
     }
-    
+
     function goToJobDetails() {
       // window.location.href = `/metier/${job.id}`;
     }
-    
+
     function checkBadges() {
       // Vérifier l'obtention de badges en fonction du nombre de métiers vus
       if (seenJobs.value.length >= 5 && !isBadgeUnlocked('explorer_debutant')) {
-        unlockBadge('explorer_debutant', 'Explorateur Débutant', 'Tu as découvert 5 métiers différents !');
-      } else if (seenJobs.value.length >= 20 && !isBadgeUnlocked('explorer_avance')) {
-        unlockBadge('explorer_avance', 'Explorateur Avancé', 'Tu as découvert 20 métiers différents !');
-      } else if (seenJobs.value.length >= 40 && !isBadgeUnlocked('explorer_expert')) {
-        unlockBadge('explorer_expert', 'Explorateur Expert', 'Tu as découvert 40 métiers différents !');
+        unlockBadge(
+          'explorer_debutant',
+          'Explorateur Débutant',
+          'Tu as découvert 5 métiers différents !',
+        )
+      } else if (
+        seenJobs.value.length >= 20 &&
+        !isBadgeUnlocked('explorer_avance')
+      ) {
+        unlockBadge(
+          'explorer_avance',
+          'Explorateur Avancé',
+          'Tu as découvert 20 métiers différents !',
+        )
+      } else if (
+        seenJobs.value.length >= 40 &&
+        !isBadgeUnlocked('explorer_expert')
+      ) {
+        unlockBadge(
+          'explorer_expert',
+          'Explorateur Expert',
+          'Tu as découvert 40 métiers différents !',
+        )
       }
-      
+
       // Vérifier les badges pour les métiers aimés
-      if (likedJobs.value.length >= 5 && !isBadgeUnlocked(badgeJobDiscoveryId.value)) {
-        unlockJobDiscoveryBadge();
+      if (
+        likedJobs.value.length >= 5 &&
+        !isBadgeUnlocked(badgeJobDiscoveryId.value)
+      ) {
+        unlockJobDiscoveryBadge()
       }
     }
-    
+
     function unlockJobDiscoveryBadge() {
       if (!isBadgeUnlocked(badgeJobDiscoveryId.value)) {
-        const badgeUnlocked = unlockBadge(badgeJobDiscoveryId.value);
+        const badgeUnlocked = unlockBadge(badgeJobDiscoveryId.value)
         if (badgeUnlocked) {
           setTimeout(() => {
-            showBadgeUnlockAnimation.value = true;
-          }, 1500);
+            showBadgeUnlockAnimation.value = true
+          }, 1500)
         }
       }
     }
-    
+
     function closeBadgeAnimation() {
-      showBadgeUnlockAnimation.value = false;
+      showBadgeUnlockAnimation.value = false
     }
-    
+
     // Initialisation
     onMounted(() => {
       // Vérifier que metiersData est correctement importé
-      console.log("Nombre de métiers disponibles:", metiersData.length);
-    });
-    
+      console.log('Nombre de métiers disponibles:', metiersData.length)
+    })
+
     return {
       // État du jeu
       gameStarted,
@@ -724,18 +851,18 @@ export default {
       batchCompleted,
       allJobsSeen,
       highContrastMode,
-      
+
       // Données calculées
       progressPercentage,
       currentMetier,
       availableJobs,
-      
+
       // Animation du badge
       showBadgeUnlockAnimation,
       badgeData,
       isBatchComplete,
       badgeJobDiscoveryId,
-      
+
       // Méthodes
       startGame,
       getVideoSource,
@@ -763,9 +890,17 @@ export default {
       handleVideoPlay,
       handleVideoError,
       tryAutoplayVideo,
-    };
-  }
-};
+      showGameModal,
+      timeRemaining,
+      startTimer,
+      stopTimer,
+      resetTimer,
+      getRandomGameRoute,
+      closeModal,
+      flamouImage,
+    }
+  },
+}
 </script>
 
 <style scoped>
@@ -823,14 +958,14 @@ export default {
   width: 70px;
   height: 70px;
   border-radius: 50%;
-  border: 3px solid #FFC107;
+  border: 3px solid #ffc107;
   background-color: #fff;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .speech-bubble {
   position: relative;
-  background-color: #FFF;
+  background-color: #fff;
   border-radius: 15px;
   padding: 15px;
   margin-left: 15px;
@@ -846,7 +981,7 @@ export default {
   transform: translateY(-50%);
   border-width: 10px 10px 10px 0;
   border-style: solid;
-  border-color: transparent #FFF transparent transparent;
+  border-color: transparent #fff transparent transparent;
 }
 
 .speech-bubble p {
@@ -1002,7 +1137,7 @@ export default {
   align-items: center;
   gap: 10px;
   padding: 15px 30px;
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   border: none;
   border-radius: 50px;
@@ -1015,7 +1150,7 @@ export default {
 }
 
 .start-button:hover {
-  background-color: #388E3C;
+  background-color: #388e3c;
   transform: translateY(-3px);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }
@@ -1178,7 +1313,7 @@ export default {
 
 /* Indicateur de lecture automatique */
 .video-player::after {
-  content: "▶️ Lecture automatique";
+  content: '▶️ Lecture automatique';
   position: absolute;
   top: 10px;
   right: 10px;
@@ -1192,8 +1327,14 @@ export default {
 }
 
 @keyframes showAutoplayIndicator {
-  0%, 100% { opacity: 0; }
-  20%, 80% { opacity: 1; }
+  0%,
+  100% {
+    opacity: 0;
+  }
+  20%,
+  80% {
+    opacity: 1;
+  }
 }
 
 .video-placeholder {
@@ -1215,7 +1356,7 @@ export default {
 }
 
 /* Style pour les vidéos en cours de chargement */
-.video-element[data-loading="true"] {
+.video-element[data-loading='true'] {
   opacity: 0.7;
 }
 
@@ -1280,30 +1421,30 @@ export default {
 }
 
 .like-button {
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
 }
 
 .like-button:hover {
-  background-color: #388E3C;
+  background-color: #388e3c;
 }
 
 .dislike-button {
-  background-color: #F44336;
+  background-color: #f44336;
   color: white;
 }
 
 .dislike-button:hover {
-  background-color: #D32F2F;
+  background-color: #d32f2f;
 }
 
 .info-button {
-  background-color: #2196F3;
+  background-color: #2196f3;
   color: white;
 }
 
 .info-button:hover {
-  background-color: #1976D2;
+  background-color: #1976d2;
 }
 
 /* Batch complete et All jobs seen cards */
@@ -1344,30 +1485,30 @@ export default {
 }
 
 .continue-button {
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
 }
 
 .continue-button:hover {
-  background-color: #388E3C;
+  background-color: #388e3c;
 }
 
 .finish-button {
-  background-color: #FF9800;
+  background-color: #ff9800;
   color: white;
 }
 
 .finish-button:hover {
-  background-color: #F57C00;
+  background-color: #f57c00;
 }
 
 .dashboard-button {
-  background-color: #607D8B;
+  background-color: #607d8b;
   color: white;
 }
 
 .dashboard-button:hover {
-  background-color: #455A64;
+  background-color: #455a64;
 }
 
 /* Loading animation */
@@ -1390,8 +1531,12 @@ export default {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Card Transition */
@@ -1476,7 +1621,9 @@ export default {
   border-radius: 15px;
   overflow: hidden;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .liked-job-item:hover {
@@ -1505,7 +1652,9 @@ export default {
   color: white;
   text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   opacity: 0.8;
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
 }
 
 .liked-job-item:hover .play-overlay {
@@ -1568,47 +1717,63 @@ export default {
 }
 
 .restart-button {
-  background-color: #FF9800;
+  background-color: #ff9800;
   color: white;
 }
 
 .restart-button:hover {
-  background-color: #F57C00;
+  background-color: #f57c00;
 }
 
 .next-game-button {
-  background-color: #9C27B0;
+  background-color: #9c27b0;
   color: white;
 }
 
 .next-game-button:hover {
-  background-color: #7B1FA2;
+  background-color: #7b1fa2;
 }
 
 .home-button {
-  background-color: #607D8B;
+  background-color: #607d8b;
   color: white;
 }
 
 .home-button:hover {
-  background-color: #455A64;
+  background-color: #455a64;
 }
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes scaleIn {
-  from { transform: scale(0.8); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* Responsive styles */
@@ -1616,28 +1781,28 @@ export default {
   .card-actions {
     flex-wrap: wrap;
   }
-  
+
   .action-button {
     width: 100%;
   }
-  
+
   .video-player {
     padding-top: 75%; /* Ajuster le ratio pour les petits écrans */
   }
-  
+
   .instructions-list li {
     align-items: flex-start;
   }
-  
+
   .instruction-step {
     margin-top: 2px;
   }
-  
+
   .results-modal {
     width: 95%;
     padding: 20px;
   }
-  
+
   .liked-jobs-grid {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   }
@@ -1647,32 +1812,32 @@ export default {
   .main-title {
     font-size: 2rem;
   }
-  
+
   .subtitle {
     font-size: 1rem;
   }
-  
+
   .guide-character {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .guide-avatar {
     margin-bottom: 15px;
   }
-  
+
   .speech-bubble {
     margin-left: 0;
   }
-  
+
   .speech-bubble:before {
     display: none;
   }
-  
+
   .progress-steps {
     display: none; /* Cacher les étapes sur très petit écran */
   }
-  
+
   .liked-jobs-grid {
     grid-template-columns: 1fr;
   }

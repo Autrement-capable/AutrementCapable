@@ -157,9 +157,9 @@
       </div>
 
       <div class="current-level-badge">
-        <img 
-          :src="getCurrentBadgeImage()" 
-          :alt="`Badge niveau ${calculateLevel()}`" 
+        <img
+          :src="getCurrentBadgeImage()"
+          :alt="`Badge niveau ${calculateLevel()}`"
           class="current-badge-image"
           @click="handleBadgeClick"
         />
@@ -310,9 +310,10 @@ export default {
         'Esprit Créatif',
       ],
       guideContext: 'dashboard',
-      guideMessage: "Salut ! Je suis Flamou, ton guide. Bienvenue sur ton tableau de bord personnel ! C'est ici que tu pourras suivre ta progression, accéder à ton profil et commencer les jeux.",
+      guideMessage:
+        "Salut ! Je suis Flamou, ton guide. Bienvenue sur ton tableau de bord personnel ! C'est ici que tu pourras suivre ta progression, accéder à ton profil et commencer les jeux.",
       guideOptions: [
-        { text: "Comment utiliser le dashboard ?", action: "explainDashboard" },
+        { text: 'Comment utiliser le dashboard ?', action: 'explainDashboard' },
       ],
       guideForceShow: true,
       highlightAvatar: false,
@@ -321,53 +322,56 @@ export default {
         position: 'fixed',
         top: '20px',
         left: '20px',
-        zIndex: 2000
+        zIndex: 2000,
       },
       guideTourStep: 0,
       highlightedElement: null,
       showGuideArrow: false,
       levelBadges: [
-        { 
-          level: 1, 
-          name: "Apprenti",
-          description: "Tu as fait tes premiers pas dans ton parcours !",
-          image: () => require('@/assets/badges/badge1.png') 
+        {
+          level: 1,
+          name: 'Apprenti',
+          description: 'Tu as fait tes premiers pas dans ton parcours !',
+          image: () => require('@/assets/badges/badge1.png'),
         },
-        { 
-          level: 2, 
-          name: "Explorateur",
-          description: "Tu commences à explorer les différentes activités disponibles.",
-          image: () => require('@/assets/badges/badge2.png') 
+        {
+          level: 2,
+          name: 'Explorateur',
+          description:
+            'Tu commences à explorer les différentes activités disponibles.',
+          image: () => require('@/assets/badges/badge2.png'),
         },
-        { 
-          level: 3, 
-          name: "Aventurier",
-          description: "Tu progresses rapidement dans ton parcours d'apprentissage !",
-          image: () => require('@/assets/badges/badge3.png') 
+        {
+          level: 3,
+          name: 'Aventurier',
+          description:
+            "Tu progresses rapidement dans ton parcours d'apprentissage !",
+          image: () => require('@/assets/badges/badge3.png'),
         },
-        { 
-          level: 4, 
-          name: "Champion",
-          description: "Tu as atteint un niveau impressionnant, continue ainsi !",
-          image: () => require('@/assets/badges/badge4.png') 
+        {
+          level: 4,
+          name: 'Champion',
+          description:
+            'Tu as atteint un niveau impressionnant, continue ainsi !',
+          image: () => require('@/assets/badges/badge4.png'),
         },
-        { 
-          level: 5, 
-          name: "Maître",
-          description: "Tu es devenu un véritable maître dans ton parcours !",
-          image: () => require('@/assets/badges/badge5.png') 
+        {
+          level: 5,
+          name: 'Maître',
+          description: 'Tu es devenu un véritable maître dans ton parcours !',
+          image: () => require('@/assets/badges/badge5.png'),
         },
-        { 
-          level: 6, 
-          name: "Légende",
-          description: "Tu es maintenant une légende !",
-          image: () => require('@/assets/badges/badge6.png') 
+        {
+          level: 6,
+          name: 'Légende',
+          description: 'Tu es maintenant une légende !',
+          image: () => require('@/assets/badges/badge6.png'),
         },
       ],
       activeBadgeTooltip: null,
       tooltipStyle: {
         top: '0px',
-        left: '0px'
+        left: '0px',
       },
       badgeClickCount: 0,
       badgeNeedsEvolution: false,
@@ -381,294 +385,336 @@ export default {
     // });
   },
   beforeUnmount() {
-    eventBus.off('hide-dashboard-guide');
-    window.removeEventListener('resize', this.updateGuidePosition);
-    this.removeAllHighlights();
+    eventBus.off('hide-dashboard-guide')
+    window.removeEventListener('resize', this.updateGuidePosition)
+    this.removeAllHighlights()
   },
   watch: {
     isFirstVisit(newVal) {
       if (newVal && !this.showRewardsModal) {
-        this.guideForceShow = true;
+        this.guideForceShow = true
         this.$nextTick(() => {
-          this.updateGuidePosition();
-        });
+          this.updateGuidePosition()
+        })
       }
     },
 
     showRewardsModal(newVal) {
       if (!newVal && this.isFirstVisit) {
-        this.guideForceShow = true;
+        this.guideForceShow = true
         this.$nextTick(() => {
-          this.updateGuidePosition();
-        });
+          this.updateGuidePosition()
+        })
       }
-    }
+    },
   },
   methods: {
     getCurrentBadgeImage() {
       // Obtenir le niveau actuel
-      const currentLevel = this.calculateLevel();
-      
+      const currentLevel = this.calculateLevel()
+
       // Vérifier si le badge doit évoluer (seulement à partir du niveau 2)
-      if (currentLevel > this.lastEvolvedLevel && !this.badgeNeedsEvolution && currentLevel > 1) {
-        this.badgeNeedsEvolution = true;
-        this.badgeClickCount = 0;
+      if (
+        currentLevel > this.lastEvolvedLevel &&
+        !this.badgeNeedsEvolution &&
+        currentLevel > 1
+      ) {
+        this.badgeNeedsEvolution = true
+        this.badgeClickCount = 0
       }
-      
+
       // Trouver le badge le plus élevé débloqué
       const highestUnlockedBadge = this.levelBadges
-        .filter(badge => badge.level <= (this.badgeNeedsEvolution ? this.lastEvolvedLevel : currentLevel))
-        .sort((a, b) => b.level - a.level)[0];
-      
+        .filter(
+          (badge) =>
+            badge.level <=
+            (this.badgeNeedsEvolution ? this.lastEvolvedLevel : currentLevel),
+        )
+        .sort((a, b) => b.level - a.level)[0]
+
       if (highestUnlockedBadge) {
-        return highestUnlockedBadge.image(true);
+        return highestUnlockedBadge.image(true)
       }
-      
+
       // Badge par défaut si aucun badge n'est débloqué
-      return this.levelBadges[0].image(false);
+      return this.levelBadges[0].image(false)
     },
 
     handleBadgeClick() {
       if (this.badgeNeedsEvolution) {
-        this.badgeClickCount++;
-        
+        this.badgeClickCount++
+
         // Animer le badge lors du clic
-        const badgeElement = document.querySelector('.current-badge-image');
+        const badgeElement = document.querySelector('.current-badge-image')
         if (badgeElement) {
-          badgeElement.classList.add('badge-click-animation');
+          badgeElement.classList.add('badge-click-animation')
           setTimeout(() => {
-            badgeElement.classList.remove('badge-click-animation');
-          }, 300);
+            badgeElement.classList.remove('badge-click-animation')
+          }, 300)
         }
-        
+
         // Si 10 clics atteints, faire évoluer le badge
         if (this.badgeClickCount >= 10) {
-          this.evolveBadge();
+          this.evolveBadge()
         }
       }
     },
 
     evolveBadge() {
       // Mettre à jour le dernier niveau évolué
-      this.lastEvolvedLevel = this.calculateLevel();
-      this.badgeNeedsEvolution = false;
-      
+      this.lastEvolvedLevel = this.calculateLevel()
+      this.badgeNeedsEvolution = false
+
       // Animation spéciale pour l'évolution
-      const badgeElement = document.querySelector('.current-badge-image');
+      const badgeElement = document.querySelector('.current-badge-image')
       if (badgeElement) {
-        badgeElement.classList.add('badge-evolve-animation');
+        badgeElement.classList.add('badge-evolve-animation')
         setTimeout(() => {
-          badgeElement.classList.remove('badge-evolve-animation');
-        }, 1000);
+          badgeElement.classList.remove('badge-evolve-animation')
+        }, 1000)
       }
     },
 
     // Méthode pour fermer le guide
     dismissGuide() {
-      this.guideForceShow = false;
-      
+      this.guideForceShow = false
+
       // Réinitialiser l'étape du tutoriel à 0
-      this.guideTourStep = 0;
-      
+      this.guideTourStep = 0
+
       // Préparer le guide avec un message pour redécouvrir le dashboard
-      this.guideMessage = "Salut ! Je suis Flamou, ton guide. Clique sur moi si tu veux redécouvrir le dashboard !";
+      this.guideMessage =
+        'Salut ! Je suis Flamou, ton guide. Clique sur moi si tu veux redécouvrir le dashboard !'
       this.guideOptions = [
-        { text: "Comment utiliser le dashboard ?", action: "explainDashboard" },
-      ];
-      
+        { text: 'Comment utiliser le dashboard ?', action: 'explainDashboard' },
+      ]
+
       // Gérer les surbrillances comme avant
-      const profileTourCompleted = localStorage.getItem('profile-tour-completed') === 'true';
-      const isInProfileStep = this.guideTourStep === 6;
-      
+      const profileTourCompleted =
+        localStorage.getItem('profile-tour-completed') === 'true'
+      const isInProfileStep = this.guideTourStep === 6
+
       if (!isInProfileStep || profileTourCompleted) {
-        this.highlightAvatar = false;
-        this.removeAllHighlights();
+        this.highlightAvatar = false
+        this.removeAllHighlights()
       }
     },
 
     prepareGuideForRediscovery() {
-      const profileTourCompleted = localStorage.getItem('profile-tour-completed') === 'true';
-      
+      const profileTourCompleted =
+        localStorage.getItem('profile-tour-completed') === 'true'
+
       if (profileTourCompleted) {
         // Message adapté pour proposer de redécouvrir le dashboard
-        this.guideMessage = "Salut ! Souhaites-tu redécouvrir les fonctionnalités du dashboard ?";
+        this.guideMessage =
+          'Salut ! Souhaites-tu redécouvrir les fonctionnalités du dashboard ?'
         this.guideOptions = [
-          { text: "Oui, montre-moi tout !", action: "restartDashboardTour", keepOpen: true },
-          { text: "Non merci", action: "dismissGuide" }
-        ];
-        this.guideForceShow = true;
+          {
+            text: 'Oui, montre-moi tout !',
+            action: 'restartDashboardTour',
+            keepOpen: true,
+          },
+          { text: 'Non merci', action: 'dismissGuide' },
+        ]
+        this.guideForceShow = true
       }
     },
 
     resetGuideState() {
-      this.guideTourStep = 0;
-      this.guideMessage = "Salut ! Je suis Flamou, ton guide. Clique sur moi si tu veux redécouvrir le dashboard !";
+      this.guideTourStep = 0
+      this.guideMessage =
+        'Salut ! Je suis Flamou, ton guide. Clique sur moi si tu veux redécouvrir le dashboard !'
       this.guideOptions = [
-        { text: "Comment utiliser le dashboard ?", action: "explainDashboard" },
-      ];
-      this.guideForceShow = false;
-      this.removeAllHighlights();
+        { text: 'Comment utiliser le dashboard ?', action: 'explainDashboard' },
+      ]
+      this.guideForceShow = false
+      this.removeAllHighlights()
     },
 
     restartDashboardTour() {
       // Réinitialiser l'étape du tutoriel
-      this.guideTourStep = 0;
-      
+      this.guideTourStep = 0
+
       // Réactiver le guide et commencer le tutoriel
-      this.guideForceShow = true;
-      this.explainDashboard();
-      
+      this.guideForceShow = true
+      this.explainDashboard()
+
       // Mettre à jour la position du guide si nécessaire
       this.$nextTick(() => {
-        this.updateGuidePosition();
-      });
+        this.updateGuidePosition()
+      })
     },
 
     advanceTutorial() {
       // Incrémenter l'étape du tutoriel
-      this.guideTourStep++;
+      this.guideTourStep++
 
       // Retirer les surlignages précédents
-      this.removeAllHighlights();
+      this.removeAllHighlights()
 
       // Définir le contenu en fonction de l'étape actuelle
       switch (this.guideTourStep) {
         case 1: // Explications sur l'anneau de progression autour de l'avatar
-          this.guideMessage = "L'avatar au centre représente ton personnage. L'anneau autour montre ta progression globale, et le niveau affiché augmente au fur et à mesure que tu gagnes des badges !";
-          this.guideOptions = [{ text: "Suivant", action: "advanceTutorial", keepOpen: true }];
-          this.highlightElement('.progress-ring-container', true);
-          break;
+          this.guideMessage =
+            "L'avatar au centre représente ton personnage. L'anneau autour montre ta progression globale, et le niveau affiché augmente au fur et à mesure que tu gagnes des badges !"
+          this.guideOptions = [
+            { text: 'Suivant', action: 'advanceTutorial', keepOpen: true },
+          ]
+          this.highlightElement('.progress-ring-container', true)
+          break
 
         case 2: // Explications sur le bouton des thèmes
-          this.guideMessage = "Ce bouton te permet de changer le thème visuel de ton tableau de bord. Tu peux choisir parmi plusieurs ambiances selon tes préférences mais aussi désactiver les animations.";
-          this.guideOptions = [{ text: "Suivant", action: "advanceTutorial", keepOpen: true }];
-          this.highlightElement('.theme-tab');
-          break;
+          this.guideMessage =
+            'Ce bouton te permet de changer le thème visuel de ton tableau de bord. Tu peux choisir parmi plusieurs ambiances selon tes préférences mais aussi désactiver les animations.'
+          this.guideOptions = [
+            { text: 'Suivant', action: 'advanceTutorial', keepOpen: true },
+          ]
+          this.highlightElement('.theme-tab')
+          break
 
         case 3: // Explications sur le bouton d'accessibilité
-          this.guideMessage = "Le bouton d'accessibilité te permet d'adapter l'interface à tes besoins spécifiques, comme modifier la taille du texte ou les contrastes de couleurs.";
-          this.guideOptions = [{ text: "Suivant", action: "advanceTutorial", keepOpen: true }];
-          this.highlightElement('.accessibility-widget');
-          break;
+          this.guideMessage =
+            "Le bouton d'accessibilité te permet d'adapter l'interface à tes besoins spécifiques, comme modifier la taille du texte ou les contrastes de couleurs."
+          this.guideOptions = [
+            { text: 'Suivant', action: 'advanceTutorial', keepOpen: true },
+          ]
+          this.highlightElement('.accessibility-widget')
+          break
 
         case 4: // Explications sur le bouton plein écran
-          this.guideMessage = "Ce bouton te permet de passer en mode plein écran pour une expérience plus immersive, sans distractions.";
-          this.guideOptions = [{ text: "Suivant", action: "advanceTutorial", keepOpen: true }];
-          this.highlightElement('.fullscreen-button');
-          break;
+          this.guideMessage =
+            'Ce bouton te permet de passer en mode plein écran pour une expérience plus immersive, sans distractions.'
+          this.guideOptions = [
+            { text: 'Suivant', action: 'advanceTutorial', keepOpen: true },
+          ]
+          this.highlightElement('.fullscreen-button')
+          break
 
         case 5: // Explications sur le bouton "Commencer à jouer"
-          this.guideMessage = "Le bouton \"Commencer à jouer\" sera ton point de départ pour accéder aux différentes activités et jeux disponibles.";
-          this.guideOptions = [{ text: "Suivant", action: "advanceTutorial", keepOpen: true }];
-          this.highlightElement('.play-button');
-          break;
+          this.guideMessage =
+            'Le bouton "Commencer à jouer" sera ton point de départ pour accéder aux différentes activités et jeux disponibles.'
+          this.guideOptions = [
+            { text: 'Suivant', action: 'advanceTutorial', keepOpen: true },
+          ]
+          this.highlightElement('.play-button')
+          break
 
         case 6: // Invitation à débloquer le premier badge
-          this.guideMessage = "Maintenant que tu connais les bases, découvre ton profil pour débloquer ton premier badge !";
-          this.guideOptions = [{ text: "Comment accéder à mon profil ?", action: "showProfileHelp", keepOpen: true }];
-          break;
+          this.guideMessage =
+            'Maintenant que tu connais les bases, découvre ton profil pour débloquer ton premier badge !'
+          this.guideOptions = [
+            {
+              text: 'Comment accéder à mon profil ?',
+              action: 'showProfileHelp',
+              keepOpen: true,
+            },
+          ]
+          break
 
         default:
-          this.dismissGuide();
-          break;
+          this.dismissGuide()
+          break
       }
     },
 
     highlightElement(selector, isSpecial = false) {
-      const element = document.querySelector(selector);
+      const element = document.querySelector(selector)
       if (element) {
         // Retirer les surlignages précédents
-        this.removeAllHighlights();
-        
+        this.removeAllHighlights()
+
         // Obtenir les coordonnées de l'élément
-        const rect = element.getBoundingClientRect();
-        
+        const rect = element.getBoundingClientRect()
+
         // Créer un élément de surbrillance
-        const highlight = document.createElement('div');
-        highlight.className = 'guide-highlight';
-        
+        const highlight = document.createElement('div')
+        highlight.className = 'guide-highlight'
+
         // Détecter si l'élément est rond (avatar, boutons ronds)
-        const isRound = selector.includes('avatar-container') || 
-                       selector.includes('progress-ring-container') || 
-                       selector.includes('theme-tab') || 
-                       selector.includes('theme-icon') ||
-                       selector.includes('fullscreen-button') ||
-                       selector.includes('accessibility-widget');
-        
+        const isRound =
+          selector.includes('avatar-container') ||
+          selector.includes('progress-ring-container') ||
+          selector.includes('theme-tab') ||
+          selector.includes('theme-icon') ||
+          selector.includes('fullscreen-button') ||
+          selector.includes('accessibility-widget')
+
         // Positionner la surbrillance
-        highlight.style.position = 'fixed';
-        highlight.style.top = `${rect.top - 5}px`;
-        highlight.style.left = `${rect.left - 5}px`;
-        highlight.style.width = `${rect.width + 10}px`;
-        highlight.style.height = `${rect.height + 10}px`;
-        highlight.style.border = '3px solid #76ff03';
-        
+        highlight.style.position = 'fixed'
+        highlight.style.top = `${rect.top - 5}px`
+        highlight.style.left = `${rect.left - 5}px`
+        highlight.style.width = `${rect.width + 10}px`
+        highlight.style.height = `${rect.height + 10}px`
+        highlight.style.border = '3px solid #76ff03'
+
         // Appliquer un rayon de bordure approprié selon la forme de l'élément
         if (isRound) {
           // Pour les éléments ronds comme l'avatar, utiliser 50%
-          highlight.style.borderRadius = '50%';
+          highlight.style.borderRadius = '50%'
         } else if (selector.includes('play-button')) {
           // Pour le bouton jouer qui a un rayon précis
-          highlight.style.borderRadius = '30px';
+          highlight.style.borderRadius = '30px'
         } else {
           // Pour les autres éléments, conserver un rayon par défaut
-          highlight.style.borderRadius = '12px';
+          highlight.style.borderRadius = '12px'
         }
-        
-        highlight.style.boxShadow = '0 0 15px rgba(118, 255, 3, 0.7)';
-        highlight.style.pointerEvents = 'none';
-        highlight.style.zIndex = '1050';
-        
+
+        highlight.style.boxShadow = '0 0 15px rgba(118, 255, 3, 0.7)'
+        highlight.style.pointerEvents = 'none'
+        highlight.style.zIndex = '1050'
+
         // Ajouter une animation si c'est l'élément spécial (avatar)
         if (isSpecial) {
-          highlight.style.animation = 'highlight-pulse 2s ease-out infinite';
-          
+          highlight.style.animation = 'highlight-pulse 2s ease-out infinite'
+
           // Ajouter une flèche si nécessaire
           if (this.showGuideArrow) {
-            const arrow = document.createElement('div');
-            arrow.className = 'guide-arrow';
-            arrow.textContent = '↓';
-            arrow.style.position = 'fixed';
-            arrow.style.top = `${rect.top - 40}px`;
-            arrow.style.left = `${rect.left + rect.width/2}px`;
-            arrow.style.transform = 'translateX(-50%)';
-            arrow.style.color = '#76ff03';
-            arrow.style.fontSize = '36px';
-            arrow.style.fontWeight = 'bold';
-            arrow.style.textShadow = '0 0 10px rgba(118, 255, 3, 0.7)';
-            arrow.style.animation = 'bounce 2s ease infinite';
-            arrow.style.zIndex = '1051';
-            
-            document.body.appendChild(arrow);
+            const arrow = document.createElement('div')
+            arrow.className = 'guide-arrow'
+            arrow.textContent = '↓'
+            arrow.style.position = 'fixed'
+            arrow.style.top = `${rect.top - 40}px`
+            arrow.style.left = `${rect.left + rect.width / 2}px`
+            arrow.style.transform = 'translateX(-50%)'
+            arrow.style.color = '#76ff03'
+            arrow.style.fontSize = '36px'
+            arrow.style.fontWeight = 'bold'
+            arrow.style.textShadow = '0 0 10px rgba(118, 255, 3, 0.7)'
+            arrow.style.animation = 'bounce 2s ease infinite'
+            arrow.style.zIndex = '1051'
+
+            document.body.appendChild(arrow)
           }
         }
-        
+
         // Ajouter au DOM
-        document.body.appendChild(highlight);
-        
+        document.body.appendChild(highlight)
+
         // Stocker l'élément surligné
-        this.highlightedElement = selector;
-        
+        this.highlightedElement = selector
+
         // Ne pas utiliser scrollIntoView pour les éléments déjà visibles
         // ou pour les éléments en bas de l'écran (thème, bouton accessibilité, etc.)
-        const isBottomElement = selector.includes('theme') || 
-                               selector.includes('fullscreen') || 
-                               selector.includes('accessibility') ||
-                               selector.includes('play-button');
-                               
+        const isBottomElement =
+          selector.includes('theme') ||
+          selector.includes('fullscreen') ||
+          selector.includes('accessibility') ||
+          selector.includes('play-button')
+
         // Vérifier si l'élément est déjà visible dans la fenêtre
-        const isVisible = rect.top >= 0 && 
-                         rect.bottom <= window.innerHeight &&
-                         rect.left >= 0 && 
-                         rect.right <= window.innerWidth;
-                         
+        const isVisible =
+          rect.top >= 0 &&
+          rect.bottom <= window.innerHeight &&
+          rect.left >= 0 &&
+          rect.right <= window.innerWidth
+
         // Faire défiler uniquement si nécessaire et pas pour les éléments du bas
         if (!isBottomElement && !isVisible) {
           // Défilement plus doux avec une marge
           window.scrollTo({
             top: window.scrollY + rect.top - 200, // 200px de marge en haut
-            behavior: 'smooth'
-          });
+            behavior: 'smooth',
+          })
         }
       }
     },
@@ -676,77 +722,83 @@ export default {
     // Méthode pour retirer tous les surlignages
     removeAllHighlights() {
       // Retirer les surlignages
-      const highlights = document.querySelectorAll('.guide-highlight');
-      highlights.forEach(el => el.remove());
+      const highlights = document.querySelectorAll('.guide-highlight')
+      highlights.forEach((el) => el.remove())
 
       // Retirer les flèches
-      const arrows = document.querySelectorAll('.guide-arrow');
-      arrows.forEach(el => el.remove());
+      const arrows = document.querySelectorAll('.guide-arrow')
+      arrows.forEach((el) => el.remove())
 
       // Réinitialiser l'état
-      this.highlightedElement = null;
-      this.showGuideArrow = false;
+      this.highlightedElement = null
+      this.showGuideArrow = false
     },
 
     // Méthode pour expliquer le bouton de jeu
     explainPlayButton() {
-      this.guideMessage = "Pour commencer à jouer et gagner des badges, clique sur le bouton 'Commencer à jouer' en bas de l'écran.";
+      this.guideMessage =
+        "Pour commencer à jouer et gagner des badges, clique sur le bouton 'Commencer à jouer' en bas de l'écran."
       this.guideOptions = [
-        { text: "Je comprends !", action: "dismissGuide", keepOpen: true }
-      ];
+        { text: 'Je comprends !', action: 'dismissGuide', keepOpen: true },
+      ]
       // Désactiver la mise en évidence de l'avatar
-      this.highlightAvatar = false;
+      this.highlightAvatar = false
 
       // Scroll automatique vers le bouton de jeu si nécessaire
       this.$nextTick(() => {
-        const playButton = document.querySelector('.play-button');
+        const playButton = document.querySelector('.play-button')
         if (playButton) {
-          playButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          playButton.scrollIntoView({ behavior: 'smooth', block: 'center' })
         }
-      });
+      })
     },
 
     showProfileHelp() {
-      this.guideMessage = "Pour accéder à ton profil et voir tes badges, clique sur ton avatar au centre de l'écran. C'est là que tu pourras découvrir tes réalisations !";
+      this.guideMessage =
+        "Pour accéder à ton profil et voir tes badges, clique sur ton avatar au centre de l'écran. C'est là que tu pourras découvrir tes réalisations !"
       this.guideOptions = [
-        { text: "D'accord, je vais essayer !", action: "dismissGuide", keepOpen: true }
-      ];
+        {
+          text: "D'accord, je vais essayer !",
+          action: 'dismissGuide',
+          keepOpen: true,
+        },
+      ]
       // Conserver la mise en évidence de l'avatar
-      this.highlightAvatar = true;
-      this.showGuideArrow = true;
-      this.highlightElement('.avatar-container', true);
+      this.highlightAvatar = true
+      this.showGuideArrow = true
+      this.highlightElement('.avatar-container', true)
 
       // Scroll automatique vers l'avatar si nécessaire
       this.$nextTick(() => {
-        const avatarElement = document.querySelector('.avatar-container');
+        const avatarElement = document.querySelector('.avatar-container')
         if (avatarElement) {
-          avatarElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          avatarElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
         }
-      });
+      })
     },
 
     finalizeHelp() {
       // Fermer la bulle du guide
-      this.guideForceShow = false;
-      
+      this.guideForceShow = false
+
       // Conserver la mise en évidence et la flèche pour guider l'utilisateur
       // vers l'avatar (ne pas les supprimer)
-      this.highlightAvatar = true;
-      this.showGuideArrow = true;
-      
+      this.highlightAvatar = true
+      this.showGuideArrow = true
+
       // Réappliquer la mise en évidence pour s'assurer qu'elle est visible
       this.$nextTick(() => {
-        this.highlightElement('.avatar-container', true);
-      });
+        this.highlightElement('.avatar-container', true)
+      })
     },
 
     forceGuideDisplay() {
       if (this.isFirstVisit && !this.showRewardsModal) {
-        this.guideForceShow = true;
-        this.updateGuidePosition();
+        this.guideForceShow = true
+        this.updateGuidePosition()
 
         // Émettre un événement via eventBus pour informer le guide qu'il doit s'afficher
-        eventBus.emit('force-guide-display');
+        eventBus.emit('force-guide-display')
       }
     },
     updateGuidePosition() {
@@ -754,83 +806,96 @@ export default {
       if (this.guideForceShow && this.isFirstVisit) {
         // Attendre que le DOM soit rendu
         this.$nextTick(() => {
-          const avatarElement = document.querySelector('.avatar-container');
+          const avatarElement = document.querySelector('.avatar-container')
           if (avatarElement) {
-            const rect = avatarElement.getBoundingClientRect();
-            
+            const rect = avatarElement.getBoundingClientRect()
+
             // Positionner le guide à droite de l'avatar et centré verticalement
             this.guidePosition = {
               position: 'fixed',
-              top: `${rect.top + (rect.height / 2) - 30}px`,
+              top: `${rect.top + rect.height / 2 - 30}px`,
               left: `${rect.right + 20}px`,
-              zIndex: 2000
-            };
+              zIndex: 2000,
+            }
           }
-        });
+        })
       } else {
         // Position par défaut quand la bulle n'est pas affichée
         this.guidePosition = {
           position: 'fixed',
           top: '20px',
           left: '20px',
-          zIndex: 2000
-        };
+          zIndex: 2000,
+        }
       }
     },
     // Nouvelle méthode pour expliquer le dashboard
     explainDashboard() {
       // Réinitialiser le compteur d'étapes si l'utilisateur a terminé le tour
-      const profileTourCompleted = localStorage.getItem('profile-tour-completed') === 'true';
-      
+      const profileTourCompleted =
+        localStorage.getItem('profile-tour-completed') === 'true'
+
       if (profileTourCompleted) {
         // Réinitialiser les options pour qu'elles soient disponibles après
-        this.guideTourStep = 0;
-        
+        this.guideTourStep = 0
+
         // Définir un message d'introduction plus court pour les utilisateurs expérimentés
-        this.guideMessage = "Le dashboard est ton espace personnel. Tu peux y voir ton avatar, ta progression, changer le thème et accéder aux jeux.";
+        this.guideMessage =
+          'Le dashboard est ton espace personnel. Tu peux y voir ton avatar, ta progression, changer le thème et accéder aux jeux.'
         this.guideOptions = [
-          { text: "Montrer les fonctionnalités", action: "advanceTutorial", keepOpen: true },
-          { text: "Commencer à jouer", action: "startPlaying", keepOpen: true },
-          { text: "Merci, j'ai compris !", action: "dismissGuide", keepOpen: true }
-        ];
+          {
+            text: 'Montrer les fonctionnalités',
+            action: 'advanceTutorial',
+            keepOpen: true,
+          },
+          { text: 'Commencer à jouer', action: 'startPlaying', keepOpen: true },
+          {
+            text: "Merci, j'ai compris !",
+            action: 'dismissGuide',
+            keepOpen: true,
+          },
+        ]
       } else {
         // Comportement standard pour les nouveaux utilisateurs
-        this.guideTourStep = 0;
-        this.advanceTutorial();
+        this.guideTourStep = 0
+        this.advanceTutorial()
       }
     },
 
     // Vérifier si c'est la première visite de l'utilisateur
     checkFirstVisit() {
-      const hasVisitedBefore = localStorage.getItem('hasVisitedDashboard');
-      this.isFirstVisit = !hasVisitedBefore;
+      const hasVisitedBefore = localStorage.getItem('hasVisitedDashboard')
+      this.isFirstVisit = !hasVisitedBefore
 
       // Vérifier si le tour du profil a été complété
-      this.profileTourCompleted = localStorage.getItem('profile-tour-completed') === 'true';
+      this.profileTourCompleted =
+        localStorage.getItem('profile-tour-completed') === 'true'
 
       if (!hasVisitedBefore) {
-        localStorage.setItem('hasVisitedDashboard', 'true');
+        localStorage.setItem('hasVisitedDashboard', 'true')
 
         // Mettre à jour l'étape dans le service de parcours utilisateur
         if (typeof UserJourneyService !== 'undefined') {
-          UserJourneyService.updateStep(UserJourneyService.STEPS.DASHBOARD_INTRO);
+          UserJourneyService.updateStep(
+            UserJourneyService.STEPS.DASHBOARD_INTRO,
+          )
         }
       }
     },
 
     // Méthode pour gérer les options sélectionnées dans le guide
     handleGuideOptionSelected(option) {
-      if (option.action === "finalizeHelp") {
+      if (option.action === 'finalizeHelp') {
         // Action spéciale pour finaliser l'aide et garder les effets visuels
-        this.finalizeHelp();
-        return;
+        this.finalizeHelp()
+        return
       }
 
       // Pour toutes les autres actions
       if (option.action && typeof this[option.action] === 'function') {
-        this[option.action]();
+        this[option.action]()
       } else {
-        console.warn(`L'action "${option.action}" n'est pas définie.`);
+        console.warn(`L'action "${option.action}" n'est pas définie.`)
       }
     },
 
@@ -901,54 +966,57 @@ export default {
     },
 
     interactWithAvatar() {
-      this.avatarAnimating = true;
-      this.showRewardsModal = true;
+      this.avatarAnimating = true
+      this.showRewardsModal = true
 
       // Animation plus longue pour un meilleur effet
       setTimeout(() => {
-        this.avatarAnimating = false;
-      }, 1000);
+        this.avatarAnimating = false
+      }, 1000)
 
       // Mettre à jour l'étape dans le service de parcours utilisateur
       try {
         if (typeof UserJourneyService !== 'undefined') {
-          UserJourneyService.updateStep(UserJourneyService.STEPS.PROFILE_INTRO);
+          UserJourneyService.updateStep(UserJourneyService.STEPS.PROFILE_INTRO)
         }
       } catch (error) {
-        console.error("Erreur lors de la mise à jour de l'étape du parcours:", error);
+        console.error(
+          "Erreur lors de la mise à jour de l'étape du parcours:",
+          error,
+        )
       }
 
       // Mettre à jour la position du guide si nécessaire
       if (this.isFirstVisit && !this.showRewardsModal) {
-        this.updateGuidePosition();
+        this.updateGuidePosition()
       }
 
       // Envoyer un événement via eventBus
-      eventBus.emit('profile-opened');
+      eventBus.emit('profile-opened')
 
       // Masquer le guide du dashboard quand on ouvre la modal du profil
-      this.guideForceShow = false;
-      eventBus.emit('hide-dashboard-guide');
+      this.guideForceShow = false
+      eventBus.emit('hide-dashboard-guide')
 
       // Propriété pour suivre si la modal a été ouverte
-      localStorage.setItem('hasOpenedProfile', 'true');
+      localStorage.setItem('hasOpenedProfile', 'true')
     },
 
     // Nouvelle méthode pour fermer le modal de récompenses
     closeRewardsModal() {
       this.showRewardsModal = false
       if (this.isFirstVisit) {
-        this.guideForceShow = true;
+        this.guideForceShow = true
       }
     },
 
     handleGenerateCV() {
       // Déclenche un accomplissement et ferme le modal
-      this.closeRewardsModal();
+      this.closeRewardsModal()
     },
 
     handleViewProfile() {
-      this.closeRewardsModal();
+      this.closeRewardsModal()
     },
 
     // Voir les réalisations
@@ -1022,6 +1090,23 @@ export default {
 
       // Trigger achievement
       this.triggerAchievement('Premier Pas')
+
+      // Liste des jeux disponibles
+      const gameRoutes = [
+        //  '/roue-des-competences',
+        //  '/scenarios',
+        '/environment',
+        //  '/metiers',
+        //  '/shape-sequence-game',
+        //  '/game-speed',
+      ]
+
+      // Sélectionner un jeu au hasard
+      const randomIndex = Math.floor(Math.random() * gameRoutes.length)
+      const selectedGame = gameRoutes[randomIndex]
+
+      // Rediriger vers le jeu sélectionné
+      this.$router.push(selectedGame)
     },
   },
   mounted() {
@@ -1049,32 +1134,33 @@ export default {
       this.animationsEnabled = savedAnimationPref === 'true'
     }
 
-    this.themeChangeAchieved = false;
-    this.profileTourCompleted = localStorage.getItem('profile-tour-completed') === 'true';
+    this.themeChangeAchieved = false
+    this.profileTourCompleted =
+      localStorage.getItem('profile-tour-completed') === 'true'
 
     // Vérifier si c'est la première visite
-    this.checkFirstVisit();
+    this.checkFirstVisit()
 
     // Mettre à jour la position du guide
-    this.updateGuidePosition();
+    this.updateGuidePosition()
 
     // Recalculer la position lors du redimensionnement de la fenêtre
-    window.addEventListener('resize', this.updateGuidePosition);
+    window.addEventListener('resize', this.updateGuidePosition)
 
     if (this.isFirstVisit && !this.showRewardsModal) {
       // S'assurer que guideForceShow est bien à true
-      this.guideForceShow = true;
+      this.guideForceShow = true
 
       // Attendre un peu pour s'assurer que le composant est bien monté
       setTimeout(() => {
         // Déclencher à nouveau la mise à jour du message pour forcer l'affichage
-        this.guideMessage = this.guideMessage + " "; // Ajouter un espace pour forcer le changement
-        this.guideForceShow = true;
-      }, 300);
+        this.guideMessage = this.guideMessage + ' ' // Ajouter un espace pour forcer le changement
+        this.guideForceShow = true
+      }, 300)
     }
 
     // Ajouter ces styles pour les animations du guide
-    const style = document.createElement('style');
+    const style = document.createElement('style')
     style.textContent = `
       @keyframes highlight-pulse {
         0% {
@@ -1105,9 +1191,9 @@ export default {
           transform: translateX(-50%) translateY(-7px);
         }
       }
-    `;
-    document.head.appendChild(style);
-  }
+    `
+    document.head.appendChild(style)
+  },
 }
 </script>
 
@@ -1532,9 +1618,15 @@ export default {
 }
 
 @keyframes pulse-text {
-  0% { opacity: 0.7; }
-  50% { opacity: 1; }
-  100% { opacity: 0.7; }
+  0% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.7;
+  }
 }
 
 .badge-click-animation {
@@ -1542,9 +1634,15 @@ export default {
 }
 
 @keyframes badge-click {
-  0% { transform: scale(1); }
-  50% { transform: scale(0.9); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .badge-evolve-animation {
@@ -1552,9 +1650,18 @@ export default {
 }
 
 @keyframes badge-evolve {
-  0% { transform: scale(1); filter: brightness(1); }
-  50% { transform: scale(1.3); filter: brightness(1.5); }
-  100% { transform: scale(1); filter: brightness(1); }
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.3);
+    filter: brightness(1.5);
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
 }
 
 /* Bouton pour accéder au parcours */
@@ -1812,7 +1919,11 @@ export default {
 }
 
 @keyframes bounce {
-  0%, 20%, 50%, 80%, 100% {
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
     transform: translateX(-50%) translateY(0);
   }
   40% {
