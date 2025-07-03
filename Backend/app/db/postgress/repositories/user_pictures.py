@@ -5,7 +5,6 @@ import io
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import exists
 from fastapi import UploadFile, HTTPException, status
 
 from ..models import User, UserPicture
@@ -18,17 +17,6 @@ async def get_user_picture(session: AsyncSession, user_id: int, picture_type: st
     )
     result = await session.execute(statement)
     return result.scalars().first()
-
-async def does_picture_exists(
-    session: AsyncSession, user_id: int, picture_type: str = "avatar"
-) -> bool:
-    """Check if a user's picture exists by type."""
-    statement = select(exists().where(
-        UserPicture.user_id == user_id,
-        UserPicture.type == picture_type
-    ))
-    result = await session.execute(statement)
-    return result.scalar()
 
 async def save_picture_chunk(
     session: AsyncSession,

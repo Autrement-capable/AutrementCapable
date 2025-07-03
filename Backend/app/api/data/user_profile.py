@@ -15,25 +15,26 @@ from ...db.postgress.repositories.user_passions import get_user_passions, create
 from ...db.postgress.repositories.user import store_avatar_info, get_avatar_info, AvatarInfo
 
 class UserProfileResponse(BaseModel):
-    username: Optional[str] = None
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    email: Optional[str] = None
-    age: Optional[int] = None
-    phone_number: Optional[str] = None
-    address: Optional[str] = None
-    passions: Optional[List[Dict[str, Any]]] = []
+    username: Optional[str]
+    first_name: Optional[str]
+    last_name: Optional[str]
+    email: Optional[str]
+    age: Optional[int]
+    phone_number: Optional[str]
+    address: Optional[str]
+    passions: List[Dict[str, Any]]
     has_picture: bool
     onboarding_complete: bool
 
 class ProfileUpdate(BaseModel):
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    email: Optional[str] = None
-    age: Optional[int] = None
-    phone_number: Optional[str] = None
-    address: Optional[str] = None
-    onboarding_complete: Optional[bool] = None
+    username: Optional[str]
+    first_name: Optional[str]
+    last_name: Optional[str]
+    email: Optional[str]
+    age: Optional[int]
+    phone_number: Optional[str]
+    address: Optional[str]
+    onboarding_complete: Optional[bool]
 
 profile_router = APIRouter(prefix="/user/profile", tags=["User Profile"])
 
@@ -113,9 +114,8 @@ async def update_my_profile(
             session.add(user_detail)
 
         # Update user fields
-        # Note: Username is typically immutable in many systems, so this is commented out.
-        # if profile_data.username is not None:
-        #     user.username = profile_data.username
+        if profile_data.username is not None:
+            user.username = profile_data.username
 
         if profile_data.onboarding_complete is not None:
             user.onboarding_complete = profile_data.onboarding_complete
