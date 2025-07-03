@@ -393,9 +393,44 @@ async registerWithPasskey(userData = {}) {
     }
   },
 
-  // Check if user is authenticated
-  isAuthenticated() {
-    return !!this.getAccessToken();
+  // By default the auth service will handle authentication status but
+  // with this method you can check if the user is authenticated manually.
+  // can be used to check if user is already logged in and redirect accordingly
+  async isAuthenticated() {
+    if (!this.getAccessToken()) {
+      return {
+        authenticated: false,
+        userId: null,
+        role: null,
+        message: 'No access token found'
+      };
+    }
+    try {
+    // Call the status endpoint
+    const response = await this.request('get', '/auth/status');
+    
+    return {
+      authenticated: true,
+      userId: response.data.user_id,
+      role: response.data.role,
+      message: response.data.msg
+    };
+  } catch (error) {
+    // If we get a 401, the token is invalid
+    if (error.response?.status === 401) {
+      // Clear invalid tokens
+      this.clearTokens();
+    } else {
+      console.error("server shit the pants")
+    }
+    
+    return {
+      authenticated: false,
+      userId: null,
+      role: null,
+      message: error.response?.data?.detail || 'Not authenticated'
+    };
+  }
   },
 };
 
