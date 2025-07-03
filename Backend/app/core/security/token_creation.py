@@ -147,6 +147,15 @@ def clear_refresh_cookie(response: Response):
     """
     response.delete_cookie(key="refresh_token", path="/auth")
 
+    # Also clear from root path to be thorough
+    response.delete_cookie(
+        key="refresh_token",
+        path="/",
+        secure=True,
+        httponly=True,
+        samesite="lax"
+    )
+
 async def decode_token(session: AsyncSession, token_source: Union[Request, str], is_refresh: bool = False, required_fresh: bool = False) -> dict:
     """ Extract, decode, and verify JWT token from request header or JWT string
 
