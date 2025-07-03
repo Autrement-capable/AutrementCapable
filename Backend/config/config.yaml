@@ -42,3 +42,16 @@ picture:
     - image/avif
     - image/webp
   avif_quality: 70  # Quality setting for AVIF conversion (0-100)
+
+openai:
+  base_url: null  # Optional: for Azure OpenAI or custom endpoints
+  model: "gpt-4.1-mini"  # Language model that supports image generation tool
+  # max_retries: 3 # not used yet
+  # timeout: 120  # not used yet
+
+  # Image generation tool configuration
+  image_generation:
+    size: "1024x1024"
+    quality: "low"  # low, medium, high, auto
+    format: "jpeg"  # png, jpeg, webp
+    background: "transparent"  # opaque, transparent, auto

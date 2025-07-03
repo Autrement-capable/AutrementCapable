@@ -25,8 +25,8 @@ export default class RoomRenderer {
       this.onLoadingProgressCallback = null;
 
       this.objectCategories = {
-        polyvalent: ['desk', 'chair', 'bookshelf', 'computer', 'filing', 'lamp1', 'notebook', 'tv', 'tvstand', 'whiteboard', 'sofa', 'coffeetable', 'rug', 'beanbag', 'plant', 'toi', 'painting1', 'painting2', 'painting3'],
-        social: ['coffeetable', 'plant', 'speakers', 'ceilingFan', 'meetingTable', 'moi', 'painting1', 'painting2', 'painting3', 'tvstand'],
+        polyvalent: ['desk', 'chair', 'bookshelf', 'computer', 'filing', 'lamp1', 'notebook', 'tv', 'tvstand', 'whiteboard', 'sofa', 'rug', 'beanbag', 'plant', 'toi', 'painting1', 'painting2', 'painting3', 'window', 'door'],
+        social: ['coffeetable', 'plant', 'speakers', 'ceilingFan', 'meetingTable', 'moi', 'painting1', 'painting2', 'painting3', 'tvstand', 'window', 'door'],
       };
       
       this.categoryConfigurations = {
@@ -35,39 +35,42 @@ export default class RoomRenderer {
           coffeetable: { position: [6, 1.4, 0.3], scale: 0.25, rotation: [0, 0, 0] },
           plant: { position: [9, 0.25, 1], scale: 0.005, rotation: [0, 0, 0] },
           speakers: { position: [7, 0.8, 2], scale: 0.4, rotation: [0, -Math.PI/6, 0] },
-          ceilingFan: { position: [5.5, 1, 5.5], scale: 0.3, rotation: [0, Math.PI/2, 0] },
-          meetingTable: { position: [5.5, 0.35, 7], scale: 0.75, rotation: [0, Math.PI, 0] },
+          ceilingFan: { position: [5, 1, 5], scale: 0.3, rotation: [0, Math.PI/2, 0] },
+          meetingTable: { position: [5.5, 0.35, 5.5], scale: 0.75, rotation: [0, Math.PI, 0] },
           moi: { position: [9, 0.25, 1], scale: 0.10, rotation: [0, Math.PI/2, 0] },
           painting1: { position: [0, 1.5, 3], scale: 1.7, rotation: [0, Math.PI/2, 0] },
           painting2: { position: [0, 1.5, 10], scale: 1.7, rotation: [0, Math.PI, 0] },
           painting3: { position: [3, 1.5, 0.05], scale: 1.7, rotation: [0, 0, 0] },
           tvstand: { position: [5, 0, 0.5], scale: 0.021, rotation: [0, 0, 0] },
+          window: { position: [9.975, 1.8, 3.5], scale: 0.0010, rotation: [Math.PI/2, 0, Math.PI/2] },
+          door: { position: [7, 0, 10], scale: 0.022, rotation: [0, 0, 0] },
         },
         polyvalent: {
           // Work zone (left side)
-          desk: { position: [2.5, 0, 3], scale: 0.02, rotation: [0, 0, 0] },
-          chair: { position: [2.1, 0, 4], scale: 0.001, rotation: [0, Math.PI, 0] },
-          computer: { position: [2.15, 1.28, 3.2], scale: 0.5, rotation: [0, Math.PI, 0] },
-          notebook: { position: [3, 0, 2.6], scale: 0.1, rotation: [0, Math.PI/3, 0] },
-          whiteboard: { position: [1.5, 1.35, 1.1], scale: 0.2, rotation: [0, 0, 0] },
-          filing: { position: [0.5, 0, 2], scale: 0.4, rotation: [0, Math.PI/2, 0] },
+          desk: { position: [4, 0, 1], scale: 0.2, rotation: [0, 0, 0] },
+          chair: { position: [3.6, 0, 2], scale: 0.015, rotation: [0, Math.PI, 0] },
+          computer: { position: [3.65, 1.28, 1.2], scale: 1, rotation: [0, Math.PI, 0] },
+          notebook: { position: [5, 0, 1.8], scale: 0.1, rotation: [0, Math.PI/3, 0] },
+          whiteboard: { position: [4, 1.35, 0.1], scale: 2.6, rotation: [0, 0, 0] },
+          filing: { position: [9.4, 0, 2], scale: 1.3, rotation: [0, -Math.PI/2, 0] },
           
           // Relaxation zone (right side)
-          sofa: { position: [7, -0.1, 6], scale: 0.017, rotation: [0, -Math.PI/2, 0] },
-          coffeetable: { position: [5.5, 0.5, 6], scale: 0.3, rotation: [0, 0, 0] },
-          rug: { position: [6, 0, 6], scale: 1.5, rotation: [0, Math.PI/2, 0] },
-          beanbag: { position: [8, 0, 8], scale: 1, rotation: [0, Math.PI - 45, 0] },
-          tv: { position: [8, 1, 5], scale: 0.8, rotation: [0, -Math.PI/2, 0] },
-          tvstand: { position: [8, 0, 5], scale: 0.021, rotation: [0, -Math.PI/2, 0] },
+          sofa: { position: [7.5, -0.1, 6], scale: 0.017, rotation: [0, -Math.PI/2, 0] },
+          rug: { position: [5, 0, 6], scale: 4.3, rotation: [0, Math.PI/2, 0] },
+          beanbag: { position: [1, 0, 9], scale: 16, rotation: [0, Math.PI - 45, 0] },
+          tv: { position: [2.5, 1, 6], scale: 1.5, rotation: [0, -Math.PI/2, 0] },
+          tvstand: { position: [2.5, 0, 6], scale: 0.021, rotation: [0, -Math.PI/2, 0] },
           
           // Shared elements
           bookshelf: { position: [0.3, 0, 5], scale: 0.9, rotation: [0, Math.PI/2, 0] },
-          lamp1: { position: [4.5, 2.4, 4.5], scale: 1.2, rotation: [0, Math.PI/4, 0] },
-          plant: { position: [8.5, 0.25, 2], scale: 0.005, rotation: [0, 0, 0] },
-          painting1: { position: [4.5, 1.5, 0.1], scale: 0.7, rotation: [0, 0, 0] },
-          painting2: { position: [8, 1.5, 2], scale: 0.7, rotation: [0, -Math.PI/2, 0] },
-          painting3: { position: [0.1, 1.5, 7], scale: 0.7, rotation: [0, Math.PI/2, 0] },
-          toi: { position: [7, 0.284, 8], scale: 0.027, rotation: [0, -Math.PI/2, 0] },
+          lamp1: { position: [5, 2.4, 5], scale: 1.2, rotation: [0, Math.PI/4, 0] },
+          plant: { position: [9, 0.25, 9], scale: 0.005, rotation: [0, 0, 0] },
+          painting1: { position: [0, 1.5, 3], scale: 1.7, rotation: [0, Math.PI/2, 0] },
+          painting2: { position: [0, 1.5, 10], scale: 1.7, rotation: [0, Math.PI, 0] },
+          painting3: { position: [7, 1.5, 0.05], scale: 1.7, rotation: [0, 0, 0] },
+          toi: { position: [2.5, 0.143, 7], scale: 0.015, rotation: [0, -Math.PI/2, 0] },
+          window: { position: [9.975, 1.8, 5.5], scale: 0.0010, rotation: [Math.PI/2, 0, Math.PI/2] },
+          door: { position: [7, 0, 10], scale: 0.022, rotation: [0, 0, 0] },
         },
       };
 
@@ -133,10 +136,6 @@ export default class RoomRenderer {
         1000
       );
       
-      const { width, height, depth } = this.room;
-      this.camera.position.set(width, height/2 + 3, depth * 1.5);
-      this.camera.lookAt(width/2, height/2, depth/2);
-      
       // Create renderer
       this.renderer = new THREE.WebGLRenderer({ antialias: true });
       this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
@@ -153,6 +152,12 @@ export default class RoomRenderer {
       this.controls = new OrbitControls(this.camera, this.renderer.domElement);
       this.controls.enableDamping = true;
       this.controls.dampingFactor = 0.05;
+
+      // Set camera to view the center of the room
+      const { width, height, depth } = this.room;
+      this.camera.position.set(width / 2, height / 2, depth * 1.5);
+      this.controls.target.set(width / 2, height / 2, depth / 2);
+      this.controls.update();
       
       // Add lighting
       this.setupLighting();
@@ -273,6 +278,7 @@ export default class RoomRenderer {
         lightbulb2: '/light_bulb/scene.gltf',
         lamp1: '/lamp1/scene.gltf',
         meetingTable: '/conference_table/thomas.gltf',
+        door: 'door/scene.gltf',
         
         beanbag: '/beanbag/scene.gltf',
         plant: '/plant/scene.gltf',
@@ -294,6 +300,7 @@ export default class RoomRenderer {
         coffeemaker: '/coffeemaker/scene.gltf',
         moi: '/conference_table/moi.glb',
         toi: '/conference_table/toi.glb',
+        window: '/window/scene.gltf',
       };
       
       // Si le modèle n'est pas dans notre mapping, utiliser un modèle par défaut
@@ -482,6 +489,15 @@ export default class RoomRenderer {
       rightWall.receiveShadow = true;
       this.roomMeshes.rightWall = rightWall;
       this.scene.add(rightWall);
+
+      // Front wall
+      const frontWallGeometry = new this.THREE.PlaneGeometry(width, height);
+      const frontWall = new this.THREE.Mesh(frontWallGeometry, wallMaterial);
+      frontWall.position.set(width / 2, height / 2, depth);
+      frontWall.rotation.y = Math.PI;
+      frontWall.receiveShadow = true;
+      this.roomMeshes.frontWall = frontWall;
+      this.scene.add(frontWall);
     }
     
     updateRoom(width, depth, height, wallColor, floorColor, ceilingColor) {
@@ -502,8 +518,9 @@ export default class RoomRenderer {
       this.createRoom();
       
       // Update camera and lights
-      this.camera.position.set(width, height/2 + 3, depth * 1.5);
-      this.camera.lookAt(width/2, height/2, depth/2);
+      this.camera.position.set(width / 2, height / 2, depth * 1.5);
+      this.controls.target.set(width / 2, height / 2, depth / 2);
+      this.controls.update();
             
       // Update furniture positions
       this.updateFurniturePositions();
@@ -534,6 +551,10 @@ export default class RoomRenderer {
       
       if (this.roomMeshes.rightWall) {
         this.roomMeshes.rightWall.material.color.set(wallColor);
+      }
+
+      if (this.roomMeshes.frontWall) {
+        this.roomMeshes.frontWall.material.color.set(wallColor);
       }
     }
     

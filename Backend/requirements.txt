@@ -33,3 +33,5 @@ cryptography
 # WebAuthn/Passkeys support
 webauthn
 cbor2
+# Avatag gen
+openai

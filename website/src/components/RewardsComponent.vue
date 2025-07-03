@@ -86,6 +86,13 @@
               {{ badge.unlocked ? 'Obtenu ✅' : 'À débloquer' }}
             </span>
           </div>
+          <!-- Affichage du pourcentage de complétion si disponible -->
+          <div v-if="badge.completion !== undefined" class="badge-completion">
+            <div class="badge-completion-bar">
+              <div class="badge-completion-fill" :style="{ width: Math.round((badge.completion || 0) * 100) + '%' }"></div>
+            </div>
+            <span class="badge-completion-text">{{ Math.round((badge.completion || 0) * 100) }}%</span>
+          </div>
         </div>
       </div>
     </div>
@@ -192,7 +199,6 @@
         </div>
       </div>
         
-      <!-- Reste inchangé -->
       <div class="main-path">
         <div class="main-path-container">
           <!-- Profil -->
@@ -218,8 +224,7 @@
             </div>
           </div>
           
-          <!-- Reste inchangé -->
-          <div class="main-connection horizontal" :class="{'connection-active': getNodeCompletion(0)}"></div>
+          <div class="main-connection horizontal" :class="{'connection-active': getNodeCompletion(9)}"></div>
           
           <div class="main-node cv-node">
             <div class="main-node-icon" :class="{'node-complete': getNodeCompletion(6)}">
@@ -376,6 +381,7 @@
 import UserJourneyService from '@/services/UserJourneyService.js'
 import { eventBus } from '@/utils/eventBus'
 import GuideAvatar from '@/components/GuideComponent.vue'
+import AuthService from '@/services/AuthService.js'
 
 export default {
   name: 'RewardsComponent',
@@ -434,7 +440,8 @@ export default {
           game: 'Jeu de Vitesse',
           gameRoute: '/game-speed',
           shareable: true,
-          hint: 'Badge déjà obtenu'
+          hint: 'Termine le jeu de vitesse le mieux que tu peux !',
+          completion: 0,
         },
         {
           id: 2,
@@ -443,12 +450,13 @@ export default {
             'Tu as brillamment résolu ton premier scénario social !',
           icon: '🎭',
           iconColor: '#9C27B0',
-          unlocked: false,
+          unlocked: true,
           dateUnlocked: '2023-06-18',
           game: 'Jeu des Scénarios',
           gameRoute: '/scenarios',
           shareable: true,
-          hint: 'Badge déjà obtenu'
+          hint: 'Termine tous les scénarios !',
+          completion: 0,
         },
         {
           id: 3,
@@ -457,11 +465,12 @@ export default {
             'Tu as reconnu toutes les séquences de formes correctement !',
           icon: '🔷',
           iconColor: '#2196F3',
-          unlocked: false,
+          unlocked: true,
           hint: 'Termine le jeu des formes avec un score parfait',
           game: 'Jeu des Formes',
           gameRoute: '/shape-sequence-game',
           shareable: true,
+          completion: 0,
         },
         {
           id: 4,
@@ -470,11 +479,12 @@ export default {
             'Tu as exploré et identifié tes points forts !',
           icon: '🎯',
           iconColor: '#3F51B5',
-          unlocked: false,
+          unlocked: true,
           hint: 'Termine la Roulette des Compétences et découvre tes talents',
           game: 'Roulette des Compétences',
           gameRoute: '/roue-des-competences',
           shareable: true,
+          completion: 0,
         },
         {
           id: 5,
@@ -482,11 +492,12 @@ export default {
           description: 'Tu as exploré tous les environnements disponibles',
           icon: '🏠',
           iconColor: '#795548',
-          unlocked: false,
+          unlocked: true,
           hint: "Essaie tous les préréglages dans l'environnement de personnalisation",
           game: 'Environnement',
           gameRoute: '/environment',
-          shareable: false,
+          shareable: true,
+          completion: 0,
         },
         {
           id: 6,
@@ -508,11 +519,12 @@ export default {
           description: 'Tu as découvert 5 métiers différents',
           icon: '👷',
           iconColor: '#FF9800',
-          unlocked: false,
+          unlocked: true,
           hint: 'Explore au moins 5 fiches métier',
           game: 'Découverte des métiers',
           gameRoute: '/metiers',
           shareable: false,
+          completion: 0,
         },
         {
           id: 8,
@@ -524,6 +536,17 @@ export default {
           hint: 'Inscris-toi à une formation pour débloquer ce badge',
           game: 'Formations',
           gameRoute: '/formation',
+          shareable: true,
+        },
+        {
+          id: 9,
+          title: 'Tous les jeux finis',
+          description: 'Bravo ! Tu as terminé tous les jeux disponibles !',
+          icon: '🏆',
+          iconColor: '#4CAF50',
+          unlocked: false,
+          hint: 'Termine tous les jeux pour débloquer ce badge',
+          game: 'Tous les jeux',
           shareable: true,
         },
       ],
@@ -622,8 +645,8 @@ export default {
       return this.unlockedBadgesCount > 0
     },
     nextBadge() {
-      // Trouve le premier badge non débloqué
-      const nextBadge = this.badges.find(badge => !badge.unlocked);
+      // Trouve le premier badge non débloqué (en excluant le badge "Tous les jeux finis" qui se débloque automatiquement)
+      const nextBadge = this.badges.find(badge => !badge.unlocked && badge.id !== 9);
       return nextBadge || this.badges[0];
     }
   },
@@ -657,6 +680,9 @@ export default {
 
     // Vérifier si c'est la première fois que l'utilisateur accède au profil
     this.checkFirstProfileVisit();
+
+    // Charger la progression des jeux pour les badges
+    this.fetchGamesProgress();
   },
   mounted() {
     // Vérifier si c'est la première visite du profil
@@ -708,6 +734,33 @@ export default {
     }
   },
   methods: {
+    checkAllGamesCompleted() {
+      // Vérifier si tous les jeux sont terminés pour débloquer le badge "Tous les jeux finis"
+      if (this.canUnlockAllGamesCompleted()) {
+        const allGamesCompletedBadge = this.badges.find((badge) => badge.id === 9)
+        if (allGamesCompletedBadge && !allGamesCompletedBadge.unlocked) {
+          allGamesCompletedBadge.unlocked = true
+          allGamesCompletedBadge.dateUnlocked = new Date().toISOString().split('T')[0]
+          this.saveBadges()
+        }
+      }
+    },
+
+    /**
+     * Vérifie si tous les jeux sont débloqués pour activer le badge "Tous les jeux finis"
+     * @returns {boolean} - true si tous les jeux sont débloqués
+     */
+    canUnlockAllGamesCompleted() {
+      // IDs des badges de jeux (excluant le profil, CV, formation et le badge "Tous les jeux finis")
+      const gameIds = [1, 2, 3, 4, 5, 7];
+      
+      // Vérifie si tous les badges de jeux sont débloqués
+      return gameIds.every(id => {
+        const badge = this.badges.find(badge => badge.id === id);
+        return badge && badge.unlocked;
+      });
+    },
+
     calculateGameToProfileConnections() {
       // Attendre que le DOM soit chargé
       this.$nextTick(() => {
@@ -817,6 +870,24 @@ export default {
      * À appeler après avoir débloqué un badge
      */
     updateProgressPath() {
+      // Vérifier si tous les jeux sont terminés pour débloquer le badge "Tous les jeux finis"
+      if (this.canUnlockAllGamesCompleted()) {
+        const allGamesCompletedBadge = this.badges.find(badge => badge.id === 9);
+        if (allGamesCompletedBadge && !allGamesCompletedBadge.unlocked) {
+          // Marquer le badge "Tous les jeux finis" comme débloqué
+          allGamesCompletedBadge.unlocked = true;
+          allGamesCompletedBadge.dateUnlocked = new Date().toISOString().split('T')[0];
+          
+          // Sauvegarder l'état des badges
+          this.saveBadges();
+          
+          // Animation de déblocage de badge
+          this.newlyUnlockedBadge = allGamesCompletedBadge;
+          setTimeout(() => {
+            this.showBadgeUnlockAnimation = true;
+          }, 500);
+        }
+      }
       // Vérifier si tous les jeux sont terminés pour débloquer le CV
       if (this.canUnlockCV()) {
         // Trouver le badge du CV
@@ -1565,6 +1636,7 @@ export default {
       }
 
       this.checkBadgeCollector()
+      this.checkAllGamesCompleted()
 
       // Recalculer les connexions après le chargement des badges
       this.$nextTick(() => {
@@ -1690,6 +1762,48 @@ export default {
       )
       if (this.textSizeLevel > 0) {
         document.body.classList.add(`text-size-${this.textSizeLevel}`)
+      }
+    },
+
+    async fetchGamesProgress() {
+      // Map des endpoints et des indices de badge associés
+      const gameEndpoints = [
+        { endpoint: '/games/scenarios', badgeId: 2 },
+        //{ endpoint: '/games/shape-sequence', badgeId: 3 },
+        { endpoint: '/games/jobs', badgeId: 7 },
+        { endpoint: '/games/speed', badgeId: 1 },
+        { endpoint: '/games/abilities', badgeId: 4 },
+        { endpoint: '/games/skills', badgeId: 3 },
+        { endpoint: '/games/room-env', badgeId: 5 },
+      ];
+      const updatedBadges = [...this.badges];
+      let anyChange = false;
+      for (const { endpoint, badgeId } of gameEndpoints) {
+        try {
+          const response = await AuthService.fetchWithAuth({
+            method: 'get',
+            url: endpoint,
+          });
+          // On considère le badge débloqué si completion === 1
+          const completion = response.data.completion || 0;
+          const badge = updatedBadges.find(b => b.id === badgeId);
+          if (badge) {
+            badge.completion = completion;
+            if (completion >= 1 && !badge.unlocked) {
+              badge.unlocked = true;
+              badge.dateUnlocked = new Date().toISOString().split('T')[0];
+              anyChange = true;
+            }
+          }
+        } catch (error) {
+          // L'utilisateur n'a peut-être pas encore joué à ce jeu
+          // On ignore l'erreur pour garder l'expérience fluide
+        }
+      }
+      this.badges = updatedBadges;
+      if (anyChange) {
+        this.saveBadges();
+        this.updateProgressPath();
       }
     },
   },
@@ -2194,6 +2308,7 @@ export default {
 }
 
 .main-node {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2259,6 +2374,10 @@ export default {
 }
 
 .node-label {
+  position: absolute;
+  top: 100%;
+  left: 50% + translateX(-50%);
+  white-space: nowrap;
   margin-top: 10px;
   font-weight: bold;
   color: #fff;
@@ -3096,5 +3215,32 @@ export default {
   .badge-detail-emoji {
     font-size: 40px;
   }
+}
+
+/* Styles pour la barre de complétion des badges */
+.badge-completion {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.badge-completion-bar {
+  width: 48px;
+  height: 6px;
+  background: #e0e0e0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.badge-completion-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4caf50, #8bc34a);
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+.badge-completion-text {
+  font-size: 0.85em;
+  color: #555;
+  min-width: 28px;
+  text-align: right;
 }
 </style>

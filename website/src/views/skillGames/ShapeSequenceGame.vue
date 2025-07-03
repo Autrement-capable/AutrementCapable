@@ -274,8 +274,15 @@ export default {
     // Configuration des niveaux
     const levels = [
       {
-        sequence: ['rectangle', 'circle', 'triangle', '?', 'rectangle'],
-        answer: 'circle',
+        sequence: [
+          'rectangle',
+          'circle',
+          'triangle',
+          'rectangle',
+          'circle',
+          '?',
+        ],
+        answer: 'triangle',
       },
       {
         sequence: [
@@ -283,48 +290,41 @@ export default {
           'rectangle',
           'triangle',
           'circle',
-          '?',
+          'rectangle',
           'rectangle',
           'triangle',
-          'circle',
+          '?',
         ],
-        answer: 'rectangle',
+        answer: 'circle',
       },
       { sequence: ['triangle', 'circle', 'triangle', '?'], answer: 'circle' },
-      { sequence: ['circle', 'rectangle', '?', 'rectangle'], answer: 'circle' },
+      { sequence: ['circle', 'rectangle', 'circle', '?'], answer: 'rectangle' },
       {
-        sequence: ['square', 'triangle', 'square', '?', 'square'],
-        answer: 'triangle',
+        sequence: ['square', 'triangle', 'square', 'triangle', '?'],
+        answer: 'square',
       },
       {
         sequence: ['triangle', 'triangle', 'triangle', '?'],
         answer: 'triangle',
       },
       {
-        sequence: ['circle', 'square', 'triangle', '?', 'square', 'triangle'],
-        answer: 'circle',
-      },
-      { sequence: ['circle', 'circle', 'circle', '?'], answer: 'circle' },
-      {
-        sequence: ['square', 'circle', 'triangle', '?', 'circle', 'triangle'],
-        answer: 'square',
-      },
-      { sequence: ['square', 'square', 'square', '?'], answer: 'square' },
-      {
-        sequence: ['triangle', 'square', 'circle', '?', 'square', 'circle'],
+        sequence: ['circle', 'square', 'triangle', 'circle', 'square', '?'],
         answer: 'triangle',
       },
       {
-        sequence: [
-          'circle',
-          'triangle',
-          'triangle',
-          '?',
-          'triangle',
-          'triangle',
-        ],
+        sequence: ['square', 'circle', 'triangle', 'square', 'circle', '?'],
+        answer: 'triangle',
+      },
+      { sequence: ['square', 'square', 'square', '?'], answer: 'square' },
+      {
+        sequence: ['triangle', 'square', 'circle', 'triangle', 'square', '?'],
         answer: 'circle',
       },
+      {
+        sequence: ['circle', 'triangle', 'triangle', 'circle', 'triangle', '?'],
+        answer: 'triangle',
+      },
+      { sequence: ['circle', 'square', 'triangle', '?'], answer: 'rectangle' },
     ]
 
     // Calcul du pourcentage de progression

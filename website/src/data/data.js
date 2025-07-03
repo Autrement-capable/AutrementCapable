@@ -450,7 +450,7 @@ export const scenarios = [
         id: 1,
         titre: "Un inconnu en difficulté",
         urlName: "inconnu-en-difficulte",
-        contexteIntro: "Tu rentres tranquillement chez toi après une longue journée. Soudain, tu remarques qu'une personne âgée trébuche et tombe sur le trottoir. Quelques passants hésitent à intervenir.",
+        contexteIntro: "Tu rentres tranquillement chez toi après une longue journée. Soudain, tu remarques qu'une personne âgée perd l'équilibre et tombe sur le trottoir. Quelques passants (personnes présentent dans la rue) hésitent à intervenir.",
         contexte: [
           { personnage: "Passant 1", avatar: "femme-daffaires.png", texte: "Oh… Elle est tombée !" },
           { personnage: "Passant 2", avatar: "passant2.png", texte: "Quelqu'un devrait faire quelque chose..." },
@@ -468,16 +468,16 @@ export const scenarios = [
         id: 2,
         titre: "Conflit au supermarché",
         urlName: "conflit-au-supermarche",
-        contexteIntro: "Tu fais des courses dans un supermarché bondé. Après plusieurs minutes dans la file d'attente, quelqu'un passe devant toi. D'autres clients semblent mécontents, mais personne n'ose parler.",
+        contexteIntro: "Tu fais des courses dans un supermarché rempli de monde. Après plusieurs minutes dans la file d'attente, quelqu'un passe devant toi. D'autres clients semblent mécontents, mais personne n'ose parler.",
         contexte: [
           { personnage: "Client derrière", avatar: "femme.png", texte: "Vous avez vu ? Il passe devant tout le monde !" },
           { personnage: "Caissier", avatar: "femme-caissiere.png", texte: "Veuillez respecter la file, s'il vous plaît." }
         ],
         question: "Comment réagis-tu ?",
         reponses: [
-          { id: "A", texte: "Tu fais remarquer calmement la file d'attente.", skills: { assertivite: 5, diplomatie: 4 } },
+          { id: "A", texte: "Tu fais remarquer calmement qu'il y a une file d'attente.", skills: { assertivite: 5, diplomatie: 4 } },
           { id: "B", texte: "Tu attends que quelqu'un d'autre réagisse.", skills: { patience: 4 }, penalties: { assertivite: 3, espritEquipe: 2 } },
-          { id: "C", texte: "Tu fais une remarque sèche.", skills: { assertivite: 4 }, penalties: { diplomatie: 3 } },
+          { id: "C", texte: "Tu fais une remarque un peu énervé.", skills: { assertivite: 4 }, penalties: { diplomatie: 3 } },
           { id: "D", texte: "Tu ignores la situation.", skills: { patience: 3 }, penalties: { assertivite: 4, espritEquipe: 2 } }
         ]
     },
@@ -503,18 +503,18 @@ export const scenarios = [
         id: 4,
         titre: "Erreur au restaurant",
         urlName: "erreur-au-restaurant",
-        contexteIntro: "Tu es au restaurant avec des amis. Après avoir attendu longtemps, tu reçois un plat qui ne correspond pas à ta commande. Le serveur semble pressé.",
+        contexteIntro: "Tu es au restaurant. Après avoir attendu longtemps, tu reçois un plat qui ne correspond pas à ta commande. Le serveur semble pressé.",
         contexte: [
           { personnage: "Serveur", avatar: "serveur.png", texte: "Voici votre commande !" },
-          { personnage: "Toi", avatar: "toi.png", texte: "Hmm… Ce n'est pas ce que j'avais demandé." },
+          { personnage: "Toi", avatar: "toi.png", texte: "Ce n'est pas ce que j'avais demandé." },
           { personnage: "Serveur", avatar: "serveur.png", texte: "Oh, vraiment ? Désolé ! Vous voulez que je change ?" }
         ],
         question: "Comment réagis-tu ?",
         reponses: [
           { id: "A", texte: "Tu demandes calmement à recevoir le bon plat.", skills: { assertivite: 5, communication: 4 } },
           { id: "B", texte: "Tu ne dis rien et manges quand même.", skills: { patience: 3 }, penalties: { assertivite: 4, confianceEnSoi: 2 } },
-          { id: "C", texte: "Tu fais une remarque sèche : C'est pas sérieux !'", skills: { assertivite: 4 }, penalties: { diplomatie: 3 } },
-          { id: "D", texte: "Tu demandes si un geste commercial est possible.", skills: { negociation: 5, confianceEnSoi: 4 } }
+          { id: "C", texte: "Tu fais une remarque, énervé : Ce n'est pas sérieux !'", skills: { assertivite: 4 }, penalties: { diplomatie: 3 } },
+          { id: "D", texte: "Tu demandes si un geste commercial (payer moins cher) est possible.", skills: { negociation: 5, confianceEnSoi: 4 } }
         ]
     },
     {
@@ -529,7 +529,7 @@ export const scenarios = [
         ],
         question: "Que fais-tu ?",
         reponses: [
-          { id: "A", texte: "Tu regardes sur ton téléphone une alternative rapide.", skills: { reflexionRapide: 5, adaptabilite: 4 } },
+          { id: "A", texte: "Tu regardes sur ton téléphone une alternative (autre solution) rapide.", skills: { reflexionRapide: 5, adaptabilite: 4 } },
           { id: "B", texte: "Tu appelles ton recruteur pour prévenir de ton retard.", skills: { communication: 5, anticipation: 4 } },
           { id: "C", texte: "Tu demandes à un passager de partager un taxi.", skills: { initiative: 4, espritEquipe: 4 } },
           { id: "D", texte: "Tu attends que la situation se règle toute seule.", skills: { patience: 4 }, penalties: { initiative: 4, anticipation: 3 } }
@@ -590,11 +590,11 @@ export const scenarios = [
         id: 9,
         titre: "Réunion d'équipe difficile",
         urlName: "reunion-equipe-difficile",
-        contexteIntro: "Tu participes à une réunion d'équipe importante. L'un de tes collègues présente une idée que tu sais être problématique, mais qui semble enthousiasmer le reste de l'équipe. Tu as des informations qui pourraient remettre en question cette proposition.",
+        contexteIntro: "Tu participes à une réunion d'équipe importante. L'un de tes collègues présente une idée que tu sais être problématique, mais qui semble plaire au reste de l'équipe. Tu as des informations qui pourraient remettre en question cette proposition.",
         contexte: [
             { personnage: "Collègue", avatar: "homme-daffaire.png", texte: "Je suis sûr que cette approche va doubler notre efficacité !" },
-            { personnage: "Chef d'équipe", avatar: "femme-daffaires.png", texte: "Cela semble prometteur. Quelqu'un a-t-il des questions ou remarques ?" },
-            { personnage: "Toi", avatar: "toi.png", texte: "(Je sais que ce projet pourrait poser des problèmes techniques majeurs...)" }
+            { personnage: "Chef d'équipe", avatar: "femme-daffaires.png", texte: "Cela semble intéressant. Quelqu'un a-t-il des questions ou remarques ?" },
+            { personnage: "Toi", avatar: "toi.png", texte: "(Je sais que ce projet pourrait poser des problèmes techniques importants...)" }
         ],
         question: "Comment réagis-tu ?",
         reponses: [
@@ -608,7 +608,7 @@ export const scenarios = [
         id: 10,
         titre: "Formation d'un nouveau collègue",
         urlName: "formation-nouveau-collegue",
-        contexteIntro: "Tu es chargé de former un nouveau collègue qui rejoint votre équipe. Cette personne semble avoir du mal à comprendre certains aspects du travail et commence à se décourager après plusieurs tentatives infructueuses.",
+        contexteIntro: "Tu es chargé de former un nouveau collègue qui rejoint votre équipe. Cette personne semble avoir du mal à comprendre certains aspects du travail et commence à se décourager après plusieurs tentatives inefficaces.",
         contexte: [
             { personnage: "Nouveau collègue", avatar: "passant2.png", texte: "Je n'y arrive vraiment pas... Je ne suis peut-être pas fait pour ce poste." },
             { personnage: "Toi", avatar: "toi.png", texte: "Je vois que tu rencontres des difficultés." },
@@ -617,7 +617,7 @@ export const scenarios = [
         question: "Comment poursuis-tu la formation ?",
         reponses: [
             { id: "A", texte: "Tu proposes une approche différente, plus adaptée à son style d'apprentissage.", skills: { adaptabilite: 5, coaching: 5, empathie: 4 } },
-            { id: "B", texte: "Tu lui montres pas à pas comment réaliser la tâche, en expliquant chaque étape.", skills: { patience: 4, communication: 5, soutien: 4 } },
+            { id: "B", texte: "Tu lui montres étape par étape comment réaliser la tâche, en expliquant chaque étape.", skills: { patience: 4, communication: 5, soutien: 4 } },
             { id: "C", texte: "Tu lui rappelles que tout le monde passe par des difficultés au début et partages ta propre expérience.", skills: { empathie: 5, soutien: 4, communication: 3 } },
             { id: "D", texte: "Tu divises les tâches en étapes plus petites et facilement réalisables pour créer des succès rapides.", skills: { coaching: 4, creativite: 3, pragmatisme: 5 } }
         ]
