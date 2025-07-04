@@ -18,25 +18,55 @@
 
     <!-- Header - Profil simplifié -->
     <div class="profile-header">
-      <div class="avatar-section">
-        <img :src="require('@/assets/pdp.png')" alt="Avatar" class="user-avatar" />
-        <div class="level-badge">Niveau {{ calculateLevel() }}</div>
+      <!-- Indicateur de chargement -->
+      <div v-if="isLoadingUserProfile" class="loading-profile">
+        <div class="loading-spinner"></div>
+        <p>Chargement du profil...</p>
       </div>
-      <div class="user-info">
-        <h1 class="welcome-title">Bonjour {{ userProfile.firstName }} ! 👋</h1>
-        <p class="welcome-subtitle">Content de te revoir aujourd'hui !</p>
-        <div class="user-details">
-          <div class="user-detail-item">
-            <span class="detail-label">Âge:</span>
-            <span class="detail-value">{{ userProfile.age }} ans</span>
+      
+      <!-- Profil utilisateur -->
+      <div v-else class="profile-content">
+        <div class="avatar-section">
+          <img :src="userAvatarSrc" alt="Avatar" class="user-avatar" @error="handleAvatarError" />
+          <div class="level-badge">Niveau {{ calculateLevel() }}</div>
+        </div>
+        
+        <div class="user-info">
+          <h1 class="welcome-title">Bonjour {{ userProfile.firstName }} ! 👋</h1>
+          <p class="welcome-subtitle">Content de te revoir aujourd'hui !</p>
+          
+          <!-- Affichage conditionnel des détails utilisateur -->
+          <div class="user-details" v-if="formattedUserInfo.length > 0">
+            <div 
+              v-for="(info, index) in formattedUserInfo" 
+              :key="index"
+              class="user-detail-item"
+            >
+              <span class="detail-label" v-if="index === 0 && userProfile.age">Âge:</span>
+              <span class="detail-label" v-else-if="index === 1 || (index === 0 && userProfile.city)">Ville:</span>
+              <span class="detail-value">{{ info }}</span>
+            </div>
           </div>
-          <div class="user-detail-item">
-            <span class="detail-label">Ville:</span>
-            <span class="detail-value">{{ userProfile.city }}</span>
-          </div>
+          
+          <!-- Bouton pour actualiser le profil -->
+          <button 
+            v-if="userProfileError" 
+            @click="refreshUserProfile" 
+            class="refresh-profile-btn"
+            :disabled="isLoadingUserProfile"
+          >
+            <span class="refresh-icon">🔄</span>
+            Actualiser le profil
+          </button>
         </div>
       </div>
+      
+      <!-- Message d'erreur -->
+      <div v-if="userProfileError" class="profile-error">
+        <p class="error-message">{{ userProfileError }}</p>
+      </div>
     </div>
+
 
     <div class="next-activity" v-if="hasUnlockedBadges || nextBadge" ref="nextActivitySection">
       <h2 class="section-title">Ma prochaine activité</h2>
@@ -408,11 +438,16 @@ export default {
   },
   data() {
     return {
+      isLoadingUserProfile: true,
+      userProfileError: null,
       userProfile: {
-        firstName: 'Lucas',
-        lastName: 'Martin',
-        age: 16,
-        city: 'Lyon',
+        firstName: 'Utilisateur',
+        lastName: '',
+        age: null,
+        city: '',
+        email: '',
+        username: '',
+        avatar: null,
       },
       badges: [
         {
@@ -450,7 +485,7 @@ export default {
             'Tu as brillamment résolu ton premier scénario social !',
           icon: '🎭',
           iconColor: '#9C27B0',
-          unlocked: true,
+          unlocked: false,
           dateUnlocked: '2023-06-18',
           game: 'Jeu des Scénarios',
           gameRoute: '/scenarios',
@@ -465,7 +500,7 @@ export default {
             'Tu as reconnu toutes les séquences de formes correctement !',
           icon: '🔷',
           iconColor: '#2196F3',
-          unlocked: true,
+          unlocked: false,
           hint: 'Termine le jeu des formes avec un score parfait',
           game: 'Jeu des Formes',
           gameRoute: '/shape-sequence-game',
@@ -479,7 +514,7 @@ export default {
             'Tu as exploré et identifié tes points forts !',
           icon: '🎯',
           iconColor: '#3F51B5',
-          unlocked: true,
+          unlocked: false,
           hint: 'Termine la Roulette des Compétences et découvre tes talents',
           game: 'Roulette des Compétences',
           gameRoute: '/roue-des-competences',
@@ -519,7 +554,7 @@ export default {
           description: 'Tu as découvert 5 métiers différents',
           icon: '👷',
           iconColor: '#FF9800',
-          unlocked: true,
+          unlocked: false,
           hint: 'Explore au moins 5 fiches métier',
           game: 'Découverte des métiers',
           gameRoute: '/metiers',
@@ -629,6 +664,45 @@ export default {
     }
   },
   computed: {
+
+    displayName() {
+      if (this.userProfile.firstName && this.userProfile.lastName) {
+        return `${this.userProfile.firstName} ${this.userProfile.lastName}`;
+      } else if (this.userProfile.firstName) {
+        return this.userProfile.firstName;
+      } else if (this.userProfile.username) {
+        return this.userProfile.username;
+      }
+      return 'Utilisateur';
+    },
+
+    userAvatarSrc() {
+      if (this.userProfile.avatar) {
+        // Si l'avatar est une URL complète
+        if (this.userProfile.avatar.startsWith('http')) {
+          return this.userProfile.avatar;
+        }
+        // Si c'est un chemin relatif vers votre serveur
+        return `${process.env.VUE_APP_SERVER_URL || 'http://localhost:5000'}${this.userProfile.avatar}`;
+      }
+      // Avatar par défaut
+      return require('@/assets/pdp.png');
+    },
+
+    formattedUserInfo() {
+      const info = [];
+      
+      if (this.userProfile.age) {
+        info.push(`${this.userProfile.age} ans`);
+      }
+      
+      if (this.userProfile.city) {
+        info.push(this.userProfile.city);
+      }
+      
+      return info;
+    },
+
     progressPercentage() {
       return (this.unlockedBadgesCount / this.totalBadgesCount) * 100;
     },
@@ -668,7 +742,25 @@ export default {
       }
     }
   },
-  created() {
+  async created() {
+
+    if (!this.checkAuthenticationStatus()) {
+      return;
+    }
+
+    // Configurer les écouteurs d'événements
+    this.setupAuthEventListeners();
+
+    // Charger le profil depuis le cache en premier (pour un affichage rapide)
+    const hasCachedProfile = this.loadCachedUserProfile();
+    
+    if (hasCachedProfile) {
+      this.isLoadingUserProfile = false;
+    }
+    
+    // Récupération du profil utilisateur
+    await this.fetchUserProfile();
+
     // Chargement des préférences d'accessibilité
     this.loadAccessibilitySettings()
 
@@ -732,6 +824,7 @@ export default {
     if (this.bubbleObserver) {
       this.bubbleObserver.disconnect();
     }
+    this.cleanup();
   },
   methods: {
     checkAllGamesCompleted() {
@@ -745,6 +838,124 @@ export default {
         }
       }
     },
+
+    async fetchUserProfile() {
+      try {
+        this.isLoadingUserProfile = true;
+        this.userProfileError = null;
+        
+        // Appel API pour récupérer le profil utilisateur
+        const response = await AuthService.request('get', '/user/profile');
+        
+        // Mise à jour des données utilisateur
+        this.userProfile = {
+          firstName: response.data.first_name || 'Utilisateur',
+          lastName: response.data.last_name || '',
+          age: response.data.age || null,
+          city: response.data.city || response.data.address || '',
+          email: response.data.email || '',
+          username: response.data.username || '',
+          avatar: response.data.avatar || null,
+          // Ajoutez d'autres champs selon votre structure API
+        };
+        
+        console.log('Profil utilisateur chargé:', this.userProfile);
+        
+      } catch (error) {
+        console.error('Erreur lors du chargement du profil utilisateur:', error);
+        this.userProfileError = error.response?.data?.detail || 'Erreur lors du chargement du profil';
+        
+        // Garder les valeurs par défaut en cas d'erreur
+        this.userProfile = {
+          firstName: 'Utilisateur',
+          lastName: '',
+          age: null,
+          city: '',
+          email: '',
+          username: '',
+          avatar: null,
+        };
+      } finally {
+        this.isLoadingUserProfile = false;
+      }
+    },
+
+    async refreshUserProfile() {
+      await this.fetchUserProfile();
+    },
+
+    handleAvatarError(event) {
+      console.warn('Erreur de chargement de l\'avatar, utilisation de l\'avatar par défaut');
+      event.target.src = require('@/assets/pdp.png');
+    },
+
+    updateUserProfile(newProfileData) {
+      this.userProfile = {
+        ...this.userProfile,
+        ...newProfileData
+      };
+      
+      // Optionnel : sauvegarder dans localStorage pour le cache
+      localStorage.setItem('userProfile', JSON.stringify(this.userProfile));
+    },
+
+    loadCachedUserProfile() {
+      try {
+        const cachedProfile = localStorage.getItem('userProfile');
+        if (cachedProfile) {
+          const parsedProfile = JSON.parse(cachedProfile);
+          this.userProfile = { ...this.userProfile, ...parsedProfile };
+          return true;
+        }
+      } catch (error) {
+        console.warn('Erreur lors du chargement du cache utilisateur:', error);
+      }
+      return false;
+    },
+
+    clearUserProfileCache() {
+      localStorage.removeItem('userProfile');
+    },
+
+    checkAuthenticationStatus() {
+      if (!AuthService.isAuthenticated()) {
+        console.warn('Utilisateur non authentifié');
+        this.$router.push('/login');
+        return false;
+      }
+      return true;
+    },
+
+    setupAuthEventListeners() {
+      // Écouter l'événement auth:required émis par AuthService
+      window.addEventListener('auth:required', this.handleAuthRequired);
+    },
+
+    handleAuthRequired(event) {
+      console.log('Authentification requise:', event.detail.message);
+      
+      // Effacer les données utilisateur
+      this.userProfile = {
+        firstName: 'Utilisateur',
+        lastName: '',
+        age: null,
+        city: '',
+        email: '',
+        username: '',
+        avatar: null,
+      };
+      
+      // Vider le cache
+      this.clearUserProfileCache();
+      
+      // Rediriger vers la page de connexion
+      this.$router.push('/login');
+    },
+
+    cleanup() {
+      window.removeEventListener('auth:required', this.handleAuthRequired);
+    },
+
 
     /**
      * Vérifie si tous les jeux sont débloqués pour activer le badge "Tous les jeux finis"
@@ -1896,7 +2107,13 @@ export default {
   border: 4px solid #ffd700;
   object-fit: cover;
   background-color: #333;
+  transition: all 0.3s ease;
 }
+
+.user-avatar:hover {
+  transform: scale(1.05);
+}
+
 
 .level-badge {
   position: absolute;
@@ -2911,6 +3128,73 @@ export default {
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
 }
 
+.loading-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top: 4px solid #4fc3f7;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.profile-error {
+  background-color: rgba(244, 67, 54, 0.1);
+  border: 1px solid rgba(244, 67, 54, 0.3);
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 16px;
+}
+
+.error-message {
+  color: #f44336;
+  margin: 0;
+  font-size: 14px;
+}
+
+.refresh-profile-btn {
+  background-color: rgba(79, 195, 247, 0.2);
+  border: 1px solid rgba(79, 195, 247, 0.5);
+  color: #4fc3f7;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.refresh-profile-btn:hover:not(:disabled) {
+  background-color: rgba(79, 195, 247, 0.3);
+  transform: translateY(-2px);
+}
+
+.refresh-profile-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.refresh-icon {
+  font-size: 16px;
+}
+
 /* Mode contraste élevé */
 .high-contrast {
   color: white;
@@ -3214,6 +3498,20 @@ export default {
   
   .badge-detail-emoji {
     font-size: 40px;
+  }
+
+  .loading-profile {
+    padding: 20px;
+  }
+  
+  .loading-spinner {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .refresh-profile-btn {
+    font-size: 12px;
+    padding: 6px 12px;
   }
 }
 
