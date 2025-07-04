@@ -46,30 +46,28 @@ async def get_my_profile(
     """Get the current user's profile information"""
     user_id = jwt["sub"]
 
-    # Get the user with its detail
-    async with session.begin():
-        user = await session.get(User, user_id)
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found"
-            )
+    user = await session.get(User, user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
 
-        # Get user detail
-        stmt = select(UserDetail).where(UserDetail.user_id == user_id)
-        result = await session.execute(stmt)
-        user_detail = result.scalars().first()
+    # Get user detail
+    stmt = select(UserDetail).where(UserDetail.user_id == user_id)
+    result = await session.execute(stmt)
+    user_detail = result.scalars().first()
 
-        # Get user passions
-        passions = await get_user_passions(session, user_id)
+    # Get user passions
+    passions = await get_user_passions(session, user_id)
 
-        # Check if user has a picture
-        stmt = select(UserPicture).where(UserPicture.user_id == user_id)
-        result = await session.execute(stmt)
-        user_picture = result.scalars().first()
+    # Check if user has a picture
+    stmt = select(UserPicture).where(UserPicture.user_id == user_id)
+    result = await session.execute(stmt)
+    user_picture = result.scalars().first()
 
     return {
-        "username": user.username,
+        "username": user.username if user.name else None,
         "first_name": user_detail.first_name if user_detail else None,
         "last_name": user_detail.last_name if user_detail else None,
         "email": user_detail.email if user_detail else None,

@@ -125,6 +125,6 @@ async def is_authenticated(
     # if not user:
     #     raise HTTPException(status_code=404, detail="User not found")
 
-    return {"msg": "User is authenticated", "user_id": user_id, "role" : jwt.get("role")}
+    return {"msg": "User is authenticated", "user_id": user_id, "role" : str(jwt.get("role"))}
 
 AddRouter(router)
