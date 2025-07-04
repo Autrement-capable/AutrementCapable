@@ -1,14 +1,4 @@
 <template>
-  <PopUp
-    v-if="showGameModal && isEnvironmentFullyCompleted()"
-    message="Félicitations ! Veux-tu découvrir un autre jeu ?"
-    :image="flamouImage"
-    :redirect="getRandomGameRoute()"
-    buttonConfirm="Changer de jeux"
-    buttonCancel="Rester ici"
-    :visible="showGameModal"
-    @close="handleTimerModalClose"
-  />
   <div class="environment-container">
     <GameGuide
       v-if="!activityStarted"
@@ -334,6 +324,7 @@
 </template>
 
 <script>
+// Import our isolated RoomRenderer class
 import RoomRenderer from '../../roomRenderer/RoomRenderer.js'
 import whiteNoiseAudio from '@/assets/sounds/white_noise.mp3'
 import NatureAudio from '@/assets/sounds/nature.mp3'
@@ -341,37 +332,11 @@ import CafeAudio from '@/assets/sounds/cafe.mp3'
 import CrowdAudio from '@/assets/sounds/crowd.mp3'
 import GameGuide from '@/components/GameGuideComponent.vue'
 import AuthService from '@/services/AuthService'
-import PopUp from '@/components/PopUp.vue'
-import { useGameTimer } from '@/services/useGameTimer'
-import flamouImage from '@/assets/flamou/intresting.png'
 
 export default {
   name: 'SensoryEnvironments',
   components: {
     GameGuide,
-    PopUp,
-  },
-  setup() {
-    const {
-      showGameModal,
-      timeRemaining,
-      startTimer,
-      stopTimer,
-      resetTimer,
-      getRandomGameRoute,
-      closeModal,
-    } = useGameTimer()
-
-    return {
-      showGameModal,
-      timeRemaining,
-      startTimer,
-      stopTimer,
-      resetTimer,
-      getRandomGameRoute,
-      closeModal,
-      flamouImage,
-    }
   },
   data() {
     return {
@@ -386,9 +351,6 @@ export default {
       currentQuestionIndex: 0,
       currentRoomName: '',
       completedRooms: new Set(),
-
-      environmentCompleted: false,
-      saveInProgress: false,
 
       // Questions séquentielles
       questions: [
@@ -416,6 +378,11 @@ export default {
           type: 'people',
           title: 'Personnes présentes?',
           description: 'Combien de personnes autour de toi peux-tu suporter?',
+        },
+        {
+          type: 'mood',
+          title: 'Comment te sens-tu?',
+          description: 'Ton ressenti dans cet environnement.',
         },
       ],
 
@@ -619,9 +586,6 @@ export default {
     if (this.$refs.ambientAudio) {
       this.$refs.ambientAudio.pause()
     }
-
-    // ✅ AJOUT: Arrêter le timer du système
-    this.stopTimer()
   },
   methods: {
     async resetAllData() {
@@ -853,7 +817,7 @@ export default {
 
         // Construire le payload final avec completion globale
         const payload = {
-          completion: globalCompletion,
+          completion: globalCompletion, // Completion globale basée sur nombre de rooms
           message: 'Success',
           roomData: existingRoomData,
         }
@@ -864,20 +828,14 @@ export default {
           payload,
         )
         console.log(
-          `✅ Données sauvegardées avec succès pour ${roomName}:`,
+          `Données sauvegardées avec succès pour ${roomName}:`,
           response.data,
         )
         console.log(
           `Progression: ${this.completedRooms.size}/2 rooms complétées (${globalCompletion * 100}%)`,
         )
-
-        // ⭐ NOUVEAU: La sauvegarde est réussie, on peut démarrer le timer
-        return Promise.resolve(response.data)
       } catch (error) {
-        console.error(
-          `❌ Erreur lors de la sauvegarde pour ${roomName}:`,
-          error,
-        )
+        console.error(`Erreur lors de la sauvegarde pour ${roomName}:`, error)
 
         if (error.response) {
           console.error("Réponse d'erreur du serveur:", {
@@ -889,35 +847,7 @@ export default {
 
         // Sauvegarde locale en cas d'erreur
         this.saveRoomLocally(roomName, roomData, globalCompletion)
-
-        // ⭐ NOUVEAU: Même en cas d'erreur, on considère que c'est sauvegardé localement
-        return Promise.resolve({ local: true })
       }
-    },
-
-    // Vérifier si l'environnement est complètement terminé
-    isEnvironmentFullyCompleted() {
-      return (
-        this.environmentCompleted &&
-        this.showFeedbackMessage &&
-        !this.saveInProgress &&
-        !this.showQuestion &&
-        !this.showEnvironmentSelector
-      )
-    },
-
-    // Méthode pour gérer la fermeture de la modal timer
-    handleTimerModalClose() {
-      // Quand l'utilisateur ferme la modal, on peut redémarrer le timer
-      this.closeModal()
-
-      // Redémarrer le timer après fermeture
-      setTimeout(() => {
-        if (this.isEnvironmentFullyCompleted()) {
-          this.resetTimer()
-          this.startTimer()
-        }
-      }, 1000)
     },
 
     // Sauvegarder localement en cas d'erreur backend
@@ -1017,10 +947,6 @@ export default {
     // Commencer l'activité
     async startActivity() {
       this.activityStarted = true
-
-      // ⭐ IMPORTANT: Arrêter le timer quand l'utilisateur commence l'activité
-      this.stopTimer()
-
       await this.loadSavedRoomData()
 
       // Initialiser les feedbacks pour tous les environnements
@@ -1076,37 +1002,9 @@ export default {
         )
       }
 
-      // ⭐ NOUVEAU: Marquer la sauvegarde en cours
-      this.saveInProgress = true
-
-      try {
-        // Construire et sauvegarder les données de la room actuelle
-        const roomData = this.buildRoomData(this.currentRoomName)
-        await this.saveRoomToBackend(this.currentRoomName, roomData)
-
-        // ⭐ NOUVEAU: Marquer l'environnement comme complété et sauvegardé
-        this.environmentCompleted = true
-
-        console.log(
-          '✅ Environnement terminé et sauvegardé, démarrage du timer...',
-        )
-
-        // ⭐ NOUVEAU: Démarrer le timer après sauvegarde réussie
-        setTimeout(() => {
-          this.resetTimer()
-          this.startTimer()
-        }, 2000) // Délai de 2 secondes après la sauvegarde
-      } catch (error) {
-        console.error('Erreur lors de la sauvegarde:', error)
-        // En cas d'erreur, on peut quand même démarrer le timer
-        this.environmentCompleted = true
-        setTimeout(() => {
-          this.resetTimer()
-          this.startTimer()
-        }, 2000)
-      } finally {
-        this.saveInProgress = false
-      }
+      // Construire et sauvegarder les données de la room actuelle
+      const roomData = this.buildRoomData(this.currentRoomName)
+      await this.saveRoomToBackend(this.currentRoomName, roomData)
 
       // Afficher le récapitulatif
       this.showFeedbackMessage = true
@@ -1559,14 +1457,6 @@ export default {
     // Recommencer l'exploration
     restartExploration() {
       this.resetAllData()
-
-      // ⭐ IMPORTANT: Arrêter le timer pendant la nouvelle exploration
-      this.stopTimer()
-
-      // Réinitialiser les flags
-      this.environmentCompleted = false
-      this.saveInProgress = false
-
       // Réinitialiser les données
       this.showFeedbackMessage = false
       this.currentEnvironmentIndex = 0
@@ -2666,42 +2556,6 @@ export default {
 
   .question-container p {
     font-size: 0.9rem;
-  }
-}
-.timer-indicator {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background: linear-gradient(135deg, #4caf50, #388e3c);
-  color: white;
-  padding: 10px 16px;
-  border-radius: 25px;
-  font-size: 14px;
-  font-weight: bold;
-  z-index: 1000;
-  animation: timerPulse 1s infinite;
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-}
-
-@keyframes timerPulse {
-  0%,
-  100% {
-    opacity: 0.8;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.05);
-  }
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .timer-indicator {
-    top: 10px;
-    right: 10px;
-    padding: 8px 12px;
-    font-size: 12px;
   }
 }
 </style>

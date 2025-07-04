@@ -1,11 +1,11 @@
 <template>
   <PopUp
     v-if="showGameModal"
-    message="Souhaites-tu continuer à jouer ?"
+    message="Souhaites-tu continuer à jouer à ce jeu ?"
     :image="flamouImage"
     :redirect="getRandomGameRoute()"
-    buttonConfirm="Changer de jeux"
-    buttonCancel="Rester ici"
+    buttonConfirm="Non"
+    buttonCancel="Oui"
     :visible="showGameModal"
     @close="closeModal"
   />

@@ -5,11 +5,11 @@
       <img v-if="image" :src="image" alt="Popup Image" class="popup-image" />
       <p>{{ message }}</p>
       <div class="buttons">
-        <button @click="confirmAction" class="confirm-btn">
-          {{ buttonConfirm }}
-        </button>
         <button @click="cancelAction" class="cancel-btn">
           {{ buttonCancel }}
+        </button>
+        <button @click="confirmAction" class="confirm-btn">
+          {{ buttonConfirm }}
         </button>
       </div>
     </div>
@@ -98,7 +98,7 @@ function closePopup() {
   background-color: white;
   padding: 2rem;
   max-width: 90%;
-  width: 400px;
+  width: 500px;
   border-radius: 1.5rem;
   text-align: center;
   display: flex;
@@ -180,23 +180,23 @@ button {
 }
 
 .confirm-btn {
-  background: linear-gradient(135deg, #4caf50, #45a049);
+  background: linear-gradient(135deg, #f44336, #d32f2f);
   color: white;
 }
 
 .confirm-btn:hover {
-  background: linear-gradient(135deg, #45a049, #3d8b40);
+  background: linear-gradient(135deg, #d32f2f, #c62828);
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
 }
 
 .cancel-btn {
-  background: linear-gradient(135deg, #f44336, #d32f2f);
+  background: linear-gradient(135deg, #4caf50, #45a049);
   color: white;
 }
 
 .cancel-btn:hover {
-  background: linear-gradient(135deg, #d32f2f, #c62828);
+  background: linear-gradient(135deg, #45a049, #3d8b40);
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(244, 67, 54, 0.4);
 }

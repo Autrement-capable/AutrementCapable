@@ -4,7 +4,7 @@
     message="Souhaites-tu découvrir un autre jeu ?"
     :image="flamouImage"
     :redirect="getRandomGameRoute()"
-    buttonConfirm="Changer de jeux"
+    buttonConfirm="Non"
     buttonCancel="Continuer ici"
     :visible="showGameModal"
     @close="closeModal"
@@ -18,7 +18,9 @@
         <h2>Badge débloqué !</h2>
         <h3>{{ badgeData.name }}</h3>
         <p>{{ badgeData.description }}</p>
-        <button @click="closeBadgeAnimation" class="close-animation-btn">Continuer</button>
+        <button @click="closeBadgeAnimation" class="close-animation-btn">
+          Continuer
+        </button>
       </div>
     </div>
 
@@ -29,83 +31,110 @@
       @start-game="startGame"
       @skip-intro="startGame"
     />
-    
+
     <!-- Zone de jeu principale -->
     <div class="game-playground" v-if="gameStarted && !showResults">
       <!-- Barre de progression -->
       <div class="progress-container">
         <div class="progress-steps">
-          <div class="progress-step" :class="{ 'completed': currentLevel > 0 }">
+          <div class="progress-step" :class="{ completed: currentLevel > 0 }">
             <div class="step-icon">🎮</div>
             <div class="step-label">Démarrage</div>
           </div>
-          
+
           <div class="progress-connector"></div>
-          
-          <div class="progress-step" :class="{ 'completed': currentLevel >= Math.floor(levels.length/3) }">
+
+          <div
+            class="progress-step"
+            :class="{
+              completed: currentLevel >= Math.floor(levels.length / 3),
+            }"
+          >
             <div class="step-icon">🏃</div>
             <div class="step-label">En cours</div>
           </div>
-          
+
           <div class="progress-connector"></div>
-          
-          <div class="progress-step" :class="{ 'completed': currentLevel >= Math.floor(levels.length*2/3) }">
+
+          <div
+            class="progress-step"
+            :class="{
+              completed: currentLevel >= Math.floor((levels.length * 2) / 3),
+            }"
+          >
             <div class="step-icon">🔍</div>
             <div class="step-label">Avancé</div>
           </div>
-          
+
           <div class="progress-connector"></div>
-          
-          <div class="progress-step" :class="{ 'completed': currentLevel >= levels.length }">
+
+          <div
+            class="progress-step"
+            :class="{ completed: currentLevel >= levels.length }"
+          >
             <div class="step-icon">🏆</div>
             <div class="step-label">Terminé</div>
           </div>
         </div>
-        
+
         <div class="progress-bar">
-          <div class="progress-fill" :style="{ width: progressPercentage + '%' }"></div>
-          <div class="progress-text">{{ currentLevel + 1 }} / {{ levels.length }}</div>
+          <div
+            class="progress-fill"
+            :style="{ width: progressPercentage + '%' }"
+          ></div>
+          <div class="progress-text">
+            {{ currentLevel + 1 }} / {{ levels.length }}
+          </div>
         </div>
       </div>
 
       <div class="level-indicator">
-        <div class="level-badge">Niveau {{ currentLevel + 1 }}: {{ levels[currentLevel].type }}</div>
-        <div class="timer-badge" :class="{ 'warning': timeLeft <= 10, 'danger': timeLeft <= 5 }">
+        <div class="level-badge">
+          Niveau {{ currentLevel + 1 }}: {{ levels[currentLevel].type }}
+        </div>
+        <div
+          class="timer-badge"
+          :class="{ warning: timeLeft <= 10, danger: timeLeft <= 5 }"
+        >
           Temps: {{ timeLeft }}s
         </div>
       </div>
-      
-              <!-- Contenu du jeu -->
+
+      <!-- Contenu du jeu -->
       <div class="game-content">
         <!-- Compte à rebours avant le niveau -->
         <div v-if="countdownActive" class="countdown-overlay">
           <div class="countdown-value">{{ countdownValue }}</div>
         </div>
-        
+
         <div class="typing-section">
           <div class="typing-challenge">
             <div class="typing-target">
               <div class="target-text">
-                <span 
-                  v-for="(char, index) in targetText" 
+                <span
+                  v-for="(char, index) in targetText"
                   :key="index"
                   :class="{
-                    'correct-char': index < inputValue.length && char === inputValue[index],
-                    'incorrect-char': index < inputValue.length && char !== inputValue[index],
+                    'correct-char':
+                      index < inputValue.length && char === inputValue[index],
+                    'incorrect-char':
+                      index < inputValue.length && char !== inputValue[index],
                     'current-char': index === inputValue.length,
-                    'pending-char': index > inputValue.length
+                    'pending-char': index > inputValue.length,
                   }"
-                >{{ char }}</span>
+                >
+                  {{ char }}
+                </span>
               </div>
             </div>
 
             <div class="typing-input-container">
-              <input 
-                ref="inputField" 
-                type="text" 
-                class="typing-input" 
-                v-model="inputValue" 
-                @input="checkInput" 
+              <input
+                ref="inputField"
+                type="text"
+                class="typing-input"
+                v-model="inputValue"
+                @input="checkInput"
                 :disabled="levelCompleted || countdownActive"
                 placeholder="Tape ici..."
                 autocomplete="off"
@@ -115,13 +144,13 @@
               />
             </div>
           </div>
-          
+
           <div class="feedback-message" :class="feedbackClass" v-if="feedback">
             {{ feedback }}
           </div>
         </div>
       </div>
-      
+
       <!-- Stats du jeu -->
       <div class="stats-container">
         <div class="stat-item">
@@ -137,26 +166,34 @@
           <div class="stat-value">{{ mistakes }}</div>
         </div>
       </div>
-      
+
       <!-- Boutons d'action -->
       <div class="game-actions">
-        <button v-if="levelCompleted" @click="nextLevel" class="action-button next-button">
+        <button
+          v-if="levelCompleted"
+          @click="nextLevel"
+          class="action-button next-button"
+        >
           <span class="btn-icon">▶️</span>
           <span class="btn-text">Niveau suivant</span>
         </button>
-        
-        <button @click="restartLevel" class="action-button restart-button" v-if="!levelCompleted">
+
+        <button
+          @click="restartLevel"
+          class="action-button restart-button"
+          v-if="!levelCompleted"
+        >
           <span class="btn-icon">🔄</span>
           <span class="btn-text">Recommencer</span>
         </button>
-        
+
         <button @click="endGame" class="action-button end-button">
           <span class="btn-icon">🏁</span>
           <span class="btn-text">Terminer</span>
         </button>
       </div>
     </div>
-    
+
     <!-- Écran des résultats -->
     <div class="results-overlay" v-if="showResults">
       <div class="results-modal">
@@ -167,28 +204,28 @@
           </div>
           <p class="results-subtitle">Voici un résumé de ta performance</p>
         </div>
-        
+
         <div class="results-statistics">
           <div class="stat-item">
             <div class="stat-value">{{ finalScore }}</div>
             <div class="stat-label">Score Total</div>
           </div>
-          
+
           <div class="stat-item">
             <div class="stat-value">{{ averageWpm }}</div>
             <div class="stat-label">WPM Moyen</div>
           </div>
-          
+
           <div class="stat-item">
             <div class="stat-value">{{ totalAccuracy }}%</div>
             <div class="stat-label">Précision</div>
           </div>
         </div>
-        
+
         <p class="result-message">
           {{ getResultMessage() }}
         </p>
-        
+
         <div class="results-actions">
           <button @click="restartGame" class="action-button restart-button">
             <span class="btn-icon">🔄</span>
@@ -209,42 +246,42 @@
 </template>
 
 <script>
-import { unlockBadge, isBadgeUnlocked } from '@/utils/badges';
-import GameGuide from '@/components/GameGuideComponent.vue';
-import AuthService from '@/services/AuthService';
-import PopUp from '@/components/PopUp.vue';
-import { useGameTimer } from '@/services/useGameTimer';
-import flamouImage from '@/assets/flamou/intresting.png';
+import { unlockBadge, isBadgeUnlocked } from '@/utils/badges'
+import GameGuide from '@/components/GameGuideComponent.vue'
+import AuthService from '@/services/AuthService'
+import PopUp from '@/components/PopUp.vue'
+import { useGameTimer } from '@/services/useGameTimer'
+import flamouImage from '@/assets/flamou/intresting.png'
 
 export default {
   name: 'GameSpeed',
   components: {
     GameGuide,
-    PopUp  
+    PopUp,
   },
 
   setup() {
-  const {
-    showGameModal,
-    timeRemaining,
-    startTimer,
-    stopTimer,
-    resetTimer,
-    getRandomGameRoute,
-    closeModal
-  } = useGameTimer();
+    const {
+      showGameModal,
+      timeRemaining,
+      startTimer,
+      stopTimer,
+      resetTimer,
+      getRandomGameRoute,
+      closeModal,
+    } = useGameTimer()
 
-  return {
-    showGameModal,
-    timeRemaining,
-    startTimer,
-    stopTimer,
-    resetTimer,
-    getRandomGameRoute,
-    closeModal,
-    flamouImage
-  };
-},
+    return {
+      showGameModal,
+      timeRemaining,
+      startTimer,
+      stopTimer,
+      resetTimer,
+      getRandomGameRoute,
+      closeModal,
+      flamouImage,
+    }
+  },
 
   data() {
     return {
@@ -257,9 +294,9 @@ export default {
       timer: null,
       levelTimer: null,
       isTypingActive: false,
-    lastTypingTime: null,
-    typingInactivityTimer: null,
-    TYPING_INACTIVITY_DELAY: 3000,
+      lastTypingTime: null,
+      typingInactivityTimer: null,
+      TYPING_INACTIVITY_DELAY: 3000,
       mistakes: 0,
       wpm: 0,
       accuracy: 100,
@@ -275,497 +312,544 @@ export default {
       totalErrorsTracked: 0,
       errorPositions: new Set(),
       badgeData: {
-        name: "Maître de la vitesse",
-        description: "Tu as terminé le jeu de vitesse avec une excellente performance !"
+        name: 'Maître de la vitesse',
+        description:
+          'Tu as terminé le jeu de vitesse avec une excellente performance !',
       },
       countdownActive: false,
       countdownValue: 3,
       // Structure des niveaux avec une difficulté progressive
       levels: [
         // Un mot court unique pour commencer facilement
-        { 
-          type: 'Mot court', 
+        {
+          type: 'Mot court',
           text: 'chat',
-          timeLimit: 5
+          timeLimit: 5,
         },
         // Un mot long unique
-        { 
-          type: 'Mot long', 
+        {
+          type: 'Mot long',
           text: 'informatique',
-          timeLimit: 10
+          timeLimit: 10,
         },
         // Une phrase très courte
-        { 
-          type: 'Phrase courte', 
+        {
+          type: 'Phrase courte',
           text: 'Le chat dort.',
-          timeLimit: 10
+          timeLimit: 10,
         },
         // Une phrase un peu plus longue
-        { 
-          type: 'Phrase moyenne', 
-          text: 'Il fait beau aujourd\'hui.',
-          timeLimit: 12
+        {
+          type: 'Phrase moyenne',
+          text: "Il fait beau aujourd'hui.",
+          timeLimit: 12,
         },
         // Quelques mots courts
-        { 
-          type: 'Mots courts', 
+        {
+          type: 'Mots courts',
           text: 'chat chien arbre pomme soleil',
-          timeLimit: 15
+          timeLimit: 15,
         },
         // Quelques mots longs
-        { 
-          type: 'Mots longs', 
+        {
+          type: 'Mots longs',
           text: 'développement technologie communication',
-          timeLimit: 20
+          timeLimit: 20,
         },
         // Phrase plus complexe
-        { 
-          type: 'Phrase complexe', 
+        {
+          type: 'Phrase complexe',
           text: 'Les nouvelles technologies évoluent rapidement dans notre monde.',
-          timeLimit: 25
+          timeLimit: 25,
         },
         // Un petit paragraphe pour finir
-        { 
-          type: 'Paragraphe', 
-          text: 'La vitesse de frappe est une compétence utile. Elle permet de gagner du temps et d\'être plus efficace. Avec de la pratique, on peut tous s\'améliorer.',
-          timeLimit: 30
-        }
-      ]
-    };
+        {
+          type: 'Paragraphe',
+          text: "La vitesse de frappe est une compétence utile. Elle permet de gagner du temps et d'être plus efficace. Avec de la pratique, on peut tous s'améliorer.",
+          timeLimit: 30,
+        },
+      ],
+    }
   },
   computed: {
     // Calcul du pourcentage de progression dans les niveaux
     progressPercentage() {
-      return (this.currentLevel / this.levels.length) * 100;
+      return (this.currentLevel / this.levels.length) * 100
     },
-    
+
     // Mise en forme du texte cible avec coloration des caractères tapés
     formattedTargetText() {
-      if (!this.targetText) return '';
-      
-      const typedLength = this.inputValue.length;
-      let result = '';
-      
+      if (!this.targetText) return ''
+
+      const typedLength = this.inputValue.length
+      let result = ''
+
       for (let i = 0; i < this.targetText.length; i++) {
         if (i < typedLength) {
           // Caractère déjà tapé
           if (this.inputValue[i] === this.targetText[i]) {
             // Caractère correct - vert
-            result += `<span class="correct-char">${this.targetText[i]}</span>`;
+            result += `<span class="correct-char">${this.targetText[i]}</span>`
           } else {
             // Caractère incorrect - rouge
-            result += `<span class="incorrect-char">${this.targetText[i]}</span>`;
+            result += `<span class="incorrect-char">${this.targetText[i]}</span>`
           }
         } else if (i === typedLength) {
           // Position actuelle du curseur - souligné et en surbrillance
-          result += `<span class="current-char">${this.targetText[i]}</span>`;
+          result += `<span class="current-char">${this.targetText[i]}</span>`
         } else {
           // Caractère pas encore tapé - normal
-          result += `<span class="pending-char">${this.targetText[i]}</span>`;
+          result += `<span class="pending-char">${this.targetText[i]}</span>`
         }
       }
-      
-      return result;
+
+      return result
     },
-    
+
     // Résultats finaux pour l'écran de résultat
     finalScore() {
       // Calcul du score total en fonction du WPM moyen et de la précision
-      return Math.round(this.averageWpm * (this.totalAccuracy / 100));
+      return Math.round(this.averageWpm * (this.totalAccuracy / 100))
     },
-    
+
     averageWpm() {
-      if (this.levelResults.length === 0) return 0;
-      
-      const totalWpm = this.levelResults.reduce((sum, result) => sum + result.wpm, 0);
-      return Math.round(totalWpm / this.levelResults.length);
+      if (this.levelResults.length === 0) return 0
+
+      const totalWpm = this.levelResults.reduce(
+        (sum, result) => sum + result.wpm,
+        0,
+      )
+      return Math.round(totalWpm / this.levelResults.length)
     },
-    
+
     totalAccuracy() {
-      if (this.levelResults.length === 0) return 100;
-      
-      const totalAccuracy = this.levelResults.reduce((sum, result) => sum + result.accuracy, 0);
-      return Math.round(totalAccuracy / this.levelResults.length);
-    }
+      if (this.levelResults.length === 0) return 100
+
+      const totalAccuracy = this.levelResults.reduce(
+        (sum, result) => sum + result.accuracy,
+        0,
+      )
+      return Math.round(totalAccuracy / this.levelResults.length)
+    },
   },
   beforeUnmount() {
     // Nettoyer les timers avant de quitter la page
-    this.clearTimers();
+    this.clearTimers()
   },
   methods: {
     saveCurrentLevelStats(isSuccess) {
       // D'abord, récupérer les données existantes
       AuthService.request('get', '/games/speed')
-        .then(response => {
+        .then((response) => {
           // Initialiser la structure si les données sont invalides
-          let currentData = response.data && typeof response.data === 'object' 
-            ? response.data 
-            : { currentLevel: 0, completion: 0, levelStats: {} };
-          
+          let currentData =
+            response.data && typeof response.data === 'object'
+              ? response.data
+              : { currentLevel: 0, completion: 0, levelStats: {} }
+
           // S'assurer que la structure minimale est présente et que les valeurs sont valides
           if (!currentData.levelStats) {
-            currentData.levelStats = {};
+            currentData.levelStats = {}
           }
-          
+
           // Harmoniser les noms de propriétés - utiliser currentLevel du backend s'il existe
           if (currentData.current_level !== undefined) {
-            currentData.currentLevel = currentData.current_level;
-            delete currentData.current_level; // Supprimer l'ancienne propriété
+            currentData.currentLevel = currentData.current_level
+            delete currentData.current_level // Supprimer l'ancienne propriété
           }
-          
+
           // S'assurer que currentLevel est un nombre valide
-          if (typeof currentData.currentLevel !== 'number' || isNaN(currentData.currentLevel)) {
-            currentData.currentLevel = 0;
+          if (
+            typeof currentData.currentLevel !== 'number' ||
+            isNaN(currentData.currentLevel)
+          ) {
+            currentData.currentLevel = 0
           }
-          
+
           // Mettre à jour le niveau actuel si le niveau complété est plus élevé
-          const newLevel = this.currentLevel + 1;
+          const newLevel = this.currentLevel + 1
           if (newLevel > currentData.currentLevel) {
-            currentData.currentLevel = newLevel;
+            currentData.currentLevel = newLevel
           }
-          
+
           // Calculer le pourcentage de complétion avec validation
-          const levelsLength = this.levels && this.levels.length ? this.levels.length : 1;
-          const currentLevel = currentData.currentLevel || 0;
-          const completionPercentage = (currentLevel / levelsLength) * 100;
-          
+          const levelsLength =
+            this.levels && this.levels.length ? this.levels.length : 1
+          const currentLevel = currentData.currentLevel || 0
+          const completionPercentage = (currentLevel / levelsLength) * 100
+
           // S'assurer que le résultat est un nombre valide
-          currentData.completion = isNaN(completionPercentage) ? 0 : (parseFloat(completionPercentage.toFixed(1)) / 100);
-          
+          currentData.completion = isNaN(completionPercentage)
+            ? 0
+            : parseFloat(completionPercentage.toFixed(1)) / 100
+
           // Ajouter les statistiques du niveau actuel
-          const levelKey = String(this.currentLevel + 1); // Les niveaux commencent à 1 dans le JSON
-          
+          const levelKey = String(this.currentLevel + 1) // Les niveaux commencent à 1 dans le JSON
+
           currentData.levelStats[levelKey] = {
             success: isSuccess,
             wpm: this.wpm || 0,
             accuracy: this.accuracy || 0,
-            errors: this.mistakes || 0
-          };
-          
+            errors: this.mistakes || 0,
+          }
+
           // Nettoyer l'objet pour n'envoyer que les propriétés nécessaires
           const dataToSend = {
             currentLevel: currentData.currentLevel,
             completion: currentData.completion,
-            levelStats: currentData.levelStats
-          };
-          
-          console.log('Données à envoyer au backend:', dataToSend);
-          
+            levelStats: currentData.levelStats,
+          }
+
+          console.log('Données à envoyer au backend:', dataToSend)
+
           // Envoyer les données mises à jour
-          return AuthService.request('post', '/games/speed', dataToSend);
+          return AuthService.request('post', '/games/speed', dataToSend)
         })
-        .then(response => {
-          console.log('Réponse complète du backend après mise à jour:', response);
+        .then((response) => {
+          console.log(
+            'Réponse complète du backend après mise à jour:',
+            response,
+          )
         })
-        .catch(error => {
-          console.error('Erreur lors de la mise à jour des statistiques:', error);
-          
+        .catch((error) => {
+          console.error(
+            'Erreur lors de la mise à jour des statistiques:',
+            error,
+          )
+
           if (error.response) {
-            console.error('Réponse d\'erreur du serveur:', {
+            console.error("Réponse d'erreur du serveur:", {
               status: error.response.status,
               statusText: error.response.statusText,
-              data: error.response.data
-            });
+              data: error.response.data,
+            })
           }
-          
+
           // En cas d'erreur d'authentification, sauvegarder localement
-          if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-            console.warn('Problème d\'authentification. Vos statistiques seront sauvegardées localement.');
-            this.saveStatsLocally(isSuccess);
+          if (
+            error.response &&
+            (error.response.status === 401 || error.response.status === 403)
+          ) {
+            console.warn(
+              "Problème d'authentification. Vos statistiques seront sauvegardées localement.",
+            )
+            this.saveStatsLocally(isSuccess)
           }
-        });
+        })
     },
 
     saveStatsLocally(isSuccess) {
       // Récupérer les données existantes du localStorage
-      let localData = JSON.parse(localStorage.getItem('speedGameStats') || '{"currentLevel":0,"completion":0,"levelStats":{}}');
-      
+      let localData = JSON.parse(
+        localStorage.getItem('speedGameStats') ||
+          '{"currentLevel":0,"completion":0,"levelStats":{}}',
+      )
+
       // S'assurer que la structure minimale est présente
       if (!localData.levelStats) {
-        localData.levelStats = {};
+        localData.levelStats = {}
       }
-      
+
       // Harmoniser les noms de propriétés si nécessaire
       if (localData.current_level !== undefined) {
-        localData.currentLevel = localData.current_level;
-        delete localData.current_level;
+        localData.currentLevel = localData.current_level
+        delete localData.current_level
       }
-      
+
       // S'assurer que currentLevel est un nombre valide
-      if (typeof localData.currentLevel !== 'number' || isNaN(localData.currentLevel)) {
-        localData.currentLevel = 0;
+      if (
+        typeof localData.currentLevel !== 'number' ||
+        isNaN(localData.currentLevel)
+      ) {
+        localData.currentLevel = 0
       }
-      
+
       // Mettre à jour le niveau actuel si le niveau complété est plus élevé
-      const newLevel = this.currentLevel + 1;
+      const newLevel = this.currentLevel + 1
       if (newLevel > localData.currentLevel) {
-        localData.currentLevel = newLevel;
+        localData.currentLevel = newLevel
       }
-      
+
       // Calculer le pourcentage de complétion avec validation
-      const levelsLength = this.levels && this.levels.length ? this.levels.length : 1;
-      const currentLevel = localData.currentLevel || 0;
-      const completionPercentage = (currentLevel / levelsLength) * 100;
-      
+      const levelsLength =
+        this.levels && this.levels.length ? this.levels.length : 1
+      const currentLevel = localData.currentLevel || 0
+      const completionPercentage = (currentLevel / levelsLength) * 100
+
       // S'assurer que le résultat est un nombre valide
-      localData.completion = isNaN(completionPercentage) ? 0 : parseFloat(completionPercentage.toFixed(1));
-      
+      localData.completion = isNaN(completionPercentage)
+        ? 0
+        : parseFloat(completionPercentage.toFixed(1))
+
       // Ajouter les statistiques du niveau actuel
-      const levelKey = String(this.currentLevel + 1); // Les niveaux commencent à 1 dans le JSON
-      
+      const levelKey = String(this.currentLevel + 1) // Les niveaux commencent à 1 dans le JSON
+
       localData.levelStats[levelKey] = {
         success: isSuccess,
         wpm: this.wpm || 0,
         accuracy: this.accuracy || 0,
-        errors: this.mistakes || 0
-      };
-      
+        errors: this.mistakes || 0,
+      }
+
       // Nettoyer l'objet pour ne garder que les propriétés nécessaires
       const dataToSave = {
         currentLevel: localData.currentLevel,
         completion: localData.completion,
-        levelStats: localData.levelStats
-      };
-      
+        levelStats: localData.levelStats,
+      }
+
       // Sauvegarder dans localStorage
-      localStorage.setItem('speedGameStats', JSON.stringify(dataToSave));
-      console.log('Statistiques sauvegardées localement:', dataToSave);
+      localStorage.setItem('speedGameStats', JSON.stringify(dataToSave))
+      console.log('Statistiques sauvegardées localement:', dataToSave)
     },
 
     // Démarrer le jeu
     startGame() {
-  this.gameStarted = true;
-  this.gameStartTime = new Date();
-  
-  // ⭐ IMPORTANT: Arrêter le timer quand le jeu commence
-  this.stopTimer();
-  
-  this.loadLevel();
-},
-    
+      this.gameStarted = true
+      this.gameStartTime = new Date()
+
+      // ⭐ IMPORTANT: Arrêter le timer quand le jeu commence
+      this.stopTimer()
+
+      this.loadLevel()
+    },
+
     // Charger un niveau
     loadLevel() {
       if (this.currentLevel >= this.levels.length) {
-        this.endGame();
-        return;
+        this.endGame()
+        return
       }
-      
-      this.targetText = this.levels[this.currentLevel].text;
-      this.timeLeft = this.levels[this.currentLevel].timeLimit;
-      this.inputValue = '';
-      this.mistakes = 0;
-      this.totalErrorsTracked = 0;  // Réinitialiser le compteur total d'erreurs
-      this.errorPositions = new Set(); // Réinitialiser les positions d'erreurs
-      this.wpm = 0;
-      this.accuracy = 100;
-      this.feedback = '';
-      this.feedbackClass = '';
-      this.levelCompleted = false;
-      
+
+      this.targetText = this.levels[this.currentLevel].text
+      this.timeLeft = this.levels[this.currentLevel].timeLimit
+      this.inputValue = ''
+      this.mistakes = 0
+      this.totalErrorsTracked = 0 // Réinitialiser le compteur total d'erreurs
+      this.errorPositions = new Set() // Réinitialiser les positions d'erreurs
+      this.wpm = 0
+      this.accuracy = 100
+      this.feedback = ''
+      this.feedbackClass = ''
+      this.levelCompleted = false
+
       // Démarrer le compte à rebours avant de commencer le niveau
-      this.startCountdown();
+      this.startCountdown()
     },
-    
+
     // Démarrer le compte à rebours de 3 secondes
     startCountdown() {
-      this.countdownActive = true;
-      this.countdownValue = 3;
-      
+      this.countdownActive = true
+      this.countdownValue = 3
+
       // Nettoyer un éventuel intervalle existant
       if (this.countdownInterval) {
-        clearInterval(this.countdownInterval);
+        clearInterval(this.countdownInterval)
       }
-      
+
       this.countdownInterval = setInterval(() => {
-        this.countdownValue--;
-        
+        this.countdownValue--
+
         if (this.countdownValue <= 0) {
-          clearInterval(this.countdownInterval);
-          this.countdownInterval = null;
-          this.countdownActive = false;
-          
+          clearInterval(this.countdownInterval)
+          this.countdownInterval = null
+          this.countdownActive = false
+
           // Une fois le compte à rebours terminé, ALORS démarrer le niveau et le timer
-          this.levelStartTime = new Date();
-          this.startLevelTimer();
-          
+          this.levelStartTime = new Date()
+          this.startLevelTimer()
+
           // Mettre le focus sur le champ de saisie
           this.$nextTick(() => {
             if (this.$refs.inputField) {
-              this.$refs.inputField.focus();
+              this.$refs.inputField.focus()
             }
-          });
+          })
         }
-      }, 1000);
+      }, 1000)
     },
-    
+
     // Démarrer le timer du niveau
     startLevelTimer() {
-      this.clearTimers();
-      
+      this.clearTimers()
+
       this.timer = setInterval(() => {
         if (this.timeLeft > 0) {
-          this.timeLeft--;
+          this.timeLeft--
         } else {
           // Le temps est écoulé
-          this.clearTimers();
+          this.clearTimers()
           if (!this.levelCompleted) {
-            this.showTimesUpFeedback();
+            this.showTimesUpFeedback()
           }
         }
-      }, 1000);
+      }, 1000)
     },
-    
+
     // Vérifier l'entrée de l'utilisateur
     checkInput() {
-  this.isTypingActive = true;
-  this.lastTypingTime = Date.now();
-  
-  this.stopTimer();
-  
-  this.scheduleInactivityCheck();
-      const input = this.inputValue;
-      const target = this.targetText;
-      
+      this.isTypingActive = true
+      this.lastTypingTime = Date.now()
+
+      this.stopTimer()
+
+      const input = this.inputValue
+      const target = this.targetText
+
       // Vérifier si le niveau est déjà complété
-      if (this.levelCompleted) return;
-      
+      if (this.levelCompleted) return
+
       // Pour suivre les nouvelles erreurs découvertes dans cette frappe
-      let newErrorsFound = 0;
-      
+      let newErrorsFound = 0
+
       // Vérifier chaque caractère tapé
       for (let i = 0; i < input.length; i++) {
         if (i >= target.length || input[i] !== target[i]) {
           // Si cette position n'a pas déjà été marquée comme erreur
           if (!this.errorPositions.has(i)) {
-            this.errorPositions.add(i);
-            newErrorsFound++;
+            this.errorPositions.add(i)
+            newErrorsFound++
           }
         }
       }
-      
+
       // Mettre à jour le nombre total d'erreurs de frappe
-      this.totalErrorsTracked += newErrorsFound;
-      
+      this.totalErrorsTracked += newErrorsFound
+
       // Utiliser le total des erreurs détectées pour les statistiques
-      this.mistakes = this.totalErrorsTracked;
-      
+      this.mistakes = this.totalErrorsTracked
+
       // Calculer la précision basée sur le nombre total d'erreurs par rapport aux caractères tapés
-      const totalCharactersAttempted = Math.max(input.length, this.errorPositions.size);
-      const accuracy = totalCharactersAttempted > 0
-        ? Math.max(0, Math.round(((totalCharactersAttempted - this.totalErrorsTracked) / totalCharactersAttempted) * 100))
-        : 100;
-      this.accuracy = accuracy;
-      
+      const totalCharactersAttempted = Math.max(
+        input.length,
+        this.errorPositions.size,
+      )
+      const accuracy =
+        totalCharactersAttempted > 0
+          ? Math.max(
+              0,
+              Math.round(
+                ((totalCharactersAttempted - this.totalErrorsTracked) /
+                  totalCharactersAttempted) *
+                  100,
+              ),
+            )
+          : 100
+      this.accuracy = accuracy
+
       // Calculer le WPM (mots par minute)
-      const timeElapsed = (new Date() - this.levelStartTime) / 1000 / 60;
-      const wordsTyped = input.length / 5; // Considère qu'un mot est en moyenne 5 caractères
-      this.wpm = timeElapsed > 0 ? Math.round(wordsTyped / timeElapsed) : 0;
-      
+      const timeElapsed = (new Date() - this.levelStartTime) / 1000 / 60
+      const wordsTyped = input.length / 5 // Considère qu'un mot est en moyenne 5 caractères
+      this.wpm = timeElapsed > 0 ? Math.round(wordsTyped / timeElapsed) : 0
+
       // Forcer la mise à jour de la vue
       this.$nextTick(() => {
-        this.inputValue = this.inputValue.slice();
-      });
-      
+        this.inputValue = this.inputValue.slice()
+      })
+
       // Vérifier si le niveau est complété
       if (input === target) {
-        this.completeLevel();
+        this.completeLevel()
       }
     },
-    
+
     // Compléter le niveau actuel
     completeLevel() {
-  this.levelCompleted = true;
-  this.clearTimers();
-  
-  // ⭐ IMPORTANT: Arrêter le timer à la fin du niveau
-  this.stopTimer();
-  this.stopInactivityTracking();
-      
+      this.levelCompleted = true
+      this.clearTimers()
+
+      // ⭐ IMPORTANT: Arrêter le timer à la fin du niveau
+      this.stopTimer()
+      // this.stopInactivityTracking()
+
       // Enregistrer les résultats du niveau
       this.levelResults.push({
         level: this.currentLevel + 1,
         wpm: this.wpm,
         accuracy: this.accuracy,
         mistakes: this.mistakes,
-        time: this.levels[this.currentLevel].timeLimit - this.timeLeft // temps utilisé
-      });
-      
+        time: this.levels[this.currentLevel].timeLimit - this.timeLeft, // temps utilisé
+      })
+
       // Afficher un feedback positif
-      this.feedback = "Excellent ! Niveau complété !";
-      this.feedbackClass = "feedback-correct";
-      
+      this.feedback = 'Excellent ! Niveau complété !'
+      this.feedbackClass = 'feedback-correct'
+
       // Sauvegarder les statistiques avec succès
-      this.saveCurrentLevelStats(true);
-      
+      this.saveCurrentLevelStats(true)
+
       // Débloquer le badge si c'est le dernier niveau et si la performance est bonne
       if (this.currentLevel === this.levels.length - 1 && this.accuracy >= 90) {
-        this.unlockSpeedMasterBadge();
+        this.unlockSpeedMasterBadge()
       }
     },
-    
+
     // Afficher un message quand le temps est écoulé
     showTimesUpFeedback() {
-      this.feedback = "Temps écoulé !";
-      this.feedbackClass = "feedback-incorrect";
-      
+      this.feedback = 'Temps écoulé !'
+      this.feedbackClass = 'feedback-incorrect'
+
       // Enregistrer les résultats incomplets
       this.levelResults.push({
         level: this.currentLevel + 1,
         wpm: this.wpm,
         accuracy: this.accuracy,
         mistakes: this.mistakes,
-        time: this.levels[this.currentLevel].timeLimit // temps maximal utilisé
-      });
-      
+        time: this.levels[this.currentLevel].timeLimit, // temps maximal utilisé
+      })
+
       // Sauvegarder les statistiques avec échec
-      this.saveCurrentLevelStats(false);
-      
+      this.saveCurrentLevelStats(false)
+
       // Permettre de passer au niveau suivant même si celui-ci n'est pas complété
-      this.levelCompleted = true;
+      this.levelCompleted = true
     },
-    
+
     // Passer au niveau suivant
     nextLevel() {
-      this.currentLevel++;
-      this.loadLevel();
+      this.currentLevel++
+      this.loadLevel()
     },
-    
+
     // Recommencer le niveau actuel
     restartLevel() {
-      this.loadLevel();
+      this.loadLevel()
     },
-    
+
     // Terminer le jeu et afficher les résultats
     endGame() {
-      this.clearTimers();
+      this.clearTimers()
 
-      this.stopTimer();
-  this.stopInactivityTracking()
-      
+      this.stopTimer()
+      // this.stopInactivityTracking()
+
       // Calculer la complétion avec validation
-      const levelsLength = this.levels && this.levels.length ? this.levels.length : 1;
-      const currentLevel = this.currentLevel + 1;
-      const completionPercentage = (currentLevel / levelsLength) * 100;
-      
+      const levelsLength =
+        this.levels && this.levels.length ? this.levels.length : 1
+      const currentLevel = this.currentLevel + 1
+      const completionPercentage = (currentLevel / levelsLength) * 100
+
       // Sauvegarder les statistiques finales du jeu complet
       const finalStats = {
         currentLevel: currentLevel,
-        completion: isNaN(completionPercentage) ? 0 : parseFloat(completionPercentage.toFixed(1)),
-        levelStats: {}
-      };
-      
+        completion: isNaN(completionPercentage)
+          ? 0
+          : parseFloat(completionPercentage.toFixed(1)),
+        levelStats: {},
+      }
+
       // Convertir les résultats des niveaux en statistiques finales
-      this.levelResults.forEach(result => {
+      this.levelResults.forEach((result) => {
         finalStats.levelStats[result.level] = {
           success: result.accuracy >= 70, // Considéré comme réussi si précision >= 70%
           wpm: result.wpm || 0,
           accuracy: result.accuracy || 0,
-          errors: result.mistakes || 0
-        };
-      });
-      
-      console.log('Statistiques finales à envoyer:', finalStats);
-      
+          errors: result.mistakes || 0,
+        }
+      })
+
+      console.log('Statistiques finales à envoyer:', finalStats)
+
       // Envoyer les statistiques finales
       // AuthService.request('post', '/games/speed', finalStats)
       //   .catch(error => {
@@ -773,81 +857,81 @@ export default {
       //     // En cas d'erreur, sauvegarder localement
       //     localStorage.setItem('speedGameStats', JSON.stringify(finalStats));
       //   });
-      
-      this.showResults = true;
+
+      this.showResults = true
     },
-    
+
     // Redémarrer tout le jeu
     restartGame() {
-      this.currentLevel = 0;
-      this.levelResults = [];
-      this.showResults = false;
-      this.gameStartTime = new Date();
-      this.loadLevel();
+      this.currentLevel = 0
+      this.levelResults = []
+      this.showResults = false
+      this.gameStartTime = new Date()
+      this.loadLevel()
     },
-    
+
     // Nettoyer les timers
     clearTimers() {
       if (this.timer) {
-        clearInterval(this.timer);
-        this.timer = null;
+        clearInterval(this.timer)
+        this.timer = null
       }
       if (this.levelTimer) {
-        clearInterval(this.levelTimer);
-        this.levelTimer = null;
+        clearInterval(this.levelTimer)
+        this.levelTimer = null
       }
       if (this.countdownInterval) {
-        clearInterval(this.countdownInterval);
-        this.countdownInterval = null;
+        clearInterval(this.countdownInterval)
+        this.countdownInterval = null
       }
     },
-    
+
     // Aller au jeu suivant (GameShape)
     goToNextGame() {
-      this.$router.push('/game-shape');
+      this.$router.push('/game-shape')
     },
-    
+
     // Retourner au tableau de bord
     goToDashboard() {
-      this.$router.push('/dashboard');
+      this.$router.push('/dashboard')
     },
-    
+
     // Débloquer le badge de maître de la vitesse
     unlockSpeedMasterBadge() {
       if (!isBadgeUnlocked(this.badgeSpeedMasterId)) {
-        const badgeUnlocked = unlockBadge(this.badgeSpeedMasterId);
+        const badgeUnlocked = unlockBadge(this.badgeSpeedMasterId)
         if (badgeUnlocked) {
           setTimeout(() => {
-            this.showBadgeUnlockAnimation = true;
-          }, 1500);
+            this.showBadgeUnlockAnimation = true
+          }, 1500)
         }
       }
     },
-    
+
     // Fermer l'animation du badge
     closeBadgeAnimation() {
-      this.showBadgeUnlockAnimation = false;
+      this.showBadgeUnlockAnimation = false
     },
-    
+
     // Obtenir un message personnalisé selon la performance
     getResultMessage() {
-      const accuracy = this.totalAccuracy;
-      const wpm = this.averageWpm;
-      
+      const accuracy = this.totalAccuracy
+      const wpm = this.averageWpm
+
       if (accuracy >= 95 && wpm >= 40) {
-        return "Impressionnant ! Ta vitesse et ta précision sont exceptionnelles. Tu as un vrai talent pour la frappe rapide !";
+        return 'Impressionnant ! Ta vitesse et ta précision sont exceptionnelles. Tu as un vrai talent pour la frappe rapide !'
       } else if (accuracy >= 90 && wpm >= 30) {
-        return "Très bonne performance ! Tu as une excellente combinaison de vitesse et de précision.";
+        return 'Très bonne performance ! Tu as une excellente combinaison de vitesse et de précision.'
       } else if (accuracy >= 80 && wpm >= 20) {
-        return "Bon travail ! Avec un peu plus de pratique, tu pourras encore améliorer ta vitesse tout en maintenant une bonne précision.";
+        return 'Bon travail ! Avec un peu plus de pratique, tu pourras encore améliorer ta vitesse tout en maintenant une bonne précision.'
       } else if (accuracy >= 70) {
-        return "Tu te débrouilles bien ! Continue à t'entraîner pour améliorer ta vitesse et ta précision.";
+        return "Tu te débrouilles bien ! Continue à t'entraîner pour améliorer ta vitesse et ta précision."
       } else {
-        return "C'est un bon début ! La vitesse de frappe s'améliore avec la pratique régulière. N'hésite pas à réessayer !";
+        return "C'est un bon début ! La vitesse de frappe s'améliore avec la pratique régulière. N'hésite pas à réessayer !"
       }
-    }
-  }
-};
+    },
+  },
+}
 </script>
 
 <style scoped>
@@ -869,7 +953,7 @@ export default {
 
 .main-title {
   font-size: 2.5rem;
-  color: #2196F3; /* Bleu pour le thème du jeu de vitesse */
+  color: #2196f3; /* Bleu pour le thème du jeu de vitesse */
   margin-bottom: 10px;
   text-align: center;
   position: relative;
@@ -884,7 +968,7 @@ export default {
   transform: translateX(-50%);
   width: 100px;
   height: 4px;
-  background-color: #FF9800;
+  background-color: #ff9800;
   border-radius: 2px;
 }
 
@@ -905,14 +989,14 @@ export default {
   width: 70px;
   height: 70px;
   border-radius: 50%;
-  border: 3px solid #FFC107;
+  border: 3px solid #ffc107;
   background-color: #fff;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .speech-bubble {
   position: relative;
-  background-color: #FFF;
+  background-color: #fff;
   border-radius: 15px;
   padding: 15px;
   margin-left: 15px;
@@ -928,7 +1012,7 @@ export default {
   transform: translateY(-50%);
   border-width: 10px 10px 10px 0;
   border-style: solid;
-  border-color: transparent #FFF transparent transparent;
+  border-color: transparent #fff transparent transparent;
 }
 
 .speech-bubble p {
@@ -967,11 +1051,11 @@ export default {
   font-size: 80px;
   margin-bottom: 20px;
   animation: pulse 2s infinite;
-  color: #2196F3; /* Bleu pour le thème du jeu */
+  color: #2196f3; /* Bleu pour le thème du jeu */
 }
 
 .badge-unlock-animation h2 {
-  color: #2196F3;
+  color: #2196f3;
   font-size: 2rem;
   margin-bottom: 10px;
 }
@@ -988,7 +1072,7 @@ export default {
 }
 
 .close-animation-btn {
-  background-color: #2196F3;
+  background-color: #2196f3;
   color: white;
   border: none;
   padding: 12px 24px;
@@ -1000,7 +1084,7 @@ export default {
 }
 
 .close-animation-btn:hover {
-  background-color: #1976D2;
+  background-color: #1976d2;
   transform: scale(1.05);
 }
 
@@ -1026,7 +1110,7 @@ export default {
 .card-icon {
   font-size: 3rem;
   margin-bottom: 20px;
-  color: #2196F3;
+  color: #2196f3;
 }
 
 .welcome-card h2 {
@@ -1055,7 +1139,7 @@ export default {
   justify-content: center;
   width: 30px;
   height: 30px;
-  background-color: #2196F3;
+  background-color: #2196f3;
   color: white;
   border-radius: 50%;
   flex-shrink: 0;
@@ -1066,7 +1150,7 @@ export default {
   align-items: center;
   gap: 10px;
   padding: 15px 30px;
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   border: none;
   border-radius: 50px;
@@ -1081,7 +1165,7 @@ export default {
 }
 
 .start-button:hover {
-  background-color: #388E3C;
+  background-color: #388e3c;
   transform: translateY(-3px);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }
@@ -1140,13 +1224,13 @@ export default {
 }
 
 .progress-step.completed .step-icon {
-  background-color: #2196F3;
+  background-color: #2196f3;
   color: white;
-  border-color: #2196F3;
+  border-color: #2196f3;
 }
 
 .progress-step.completed .step-label {
-  color: #2196F3;
+  color: #2196f3;
 }
 
 .progress-connector {
@@ -1171,7 +1255,7 @@ export default {
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #2196F3, #03A9F4);
+  background: linear-gradient(90deg, #2196f3, #03a9f4);
   border-radius: 8px;
   transition: width 0.5s ease;
 }
@@ -1199,8 +1283,9 @@ export default {
   margin-bottom: 20px;
 }
 
-.level-badge, .timer-badge {
-  background-color: #2196F3;
+.level-badge,
+.timer-badge {
+  background-color: #2196f3;
   color: white;
   padding: 8px 16px;
   border-radius: 50px;
@@ -1210,17 +1295,17 @@ export default {
 }
 
 .timer-badge {
-  background-color: #4CAF50;
+  background-color: #4caf50;
   transition: background-color 0.3s ease;
 }
 
 .timer-badge.warning {
-  background-color: #FFC107;
+  background-color: #ffc107;
   animation: pulse 1s infinite;
 }
 
 .timer-badge.danger {
-  background-color: #F44336;
+  background-color: #f44336;
   animation: pulse 0.5s infinite;
 }
 
@@ -1248,9 +1333,18 @@ export default {
 }
 
 @keyframes pulseCountdown {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.2); opacity: 0.8; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* Game Content */
@@ -1307,7 +1401,7 @@ export default {
 
 .typing-input:focus {
   outline: none;
-  border-color: #2196F3;
+  border-color: #2196f3;
   box-shadow: 0 0 10px rgba(33, 150, 243, 0.3);
 }
 
@@ -1318,7 +1412,7 @@ export default {
 
 /* Characters styling */
 .correct-char {
-  color: #4CAF50;
+  color: #4caf50;
   font-weight: bold;
   background-color: rgba(76, 175, 80, 0.1);
   border-radius: 2px;
@@ -1326,17 +1420,17 @@ export default {
 }
 
 .incorrect-char {
-  color: #F44336;
+  color: #f44336;
   font-weight: bold;
   background-color: rgba(244, 67, 54, 0.1);
-  text-decoration: underline wavy #F44336;
+  text-decoration: underline wavy #f44336;
   border-radius: 2px;
   padding: 0 2px;
 }
 
 .current-char {
-  background-color: #E3F2FD;
-  border-bottom: 2px solid #2196F3;
+  background-color: #e3f2fd;
+  border-bottom: 2px solid #2196f3;
   animation: blink 1s infinite;
   padding: 0 2px;
   border-radius: 2px;
@@ -1349,8 +1443,13 @@ export default {
 }
 
 @keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 /* Feedback Message */
@@ -1363,13 +1462,13 @@ export default {
 }
 
 .feedback-correct {
-  background-color: #E8F5E9;
-  color: #4CAF50;
+  background-color: #e8f5e9;
+  color: #4caf50;
 }
 
 .feedback-incorrect {
-  background-color: #FFEBEE;
-  color: #F44336;
+  background-color: #ffebee;
+  color: #f44336;
 }
 
 /* Stats Container */
@@ -1399,7 +1498,7 @@ export default {
 .stat-value {
   font-size: 1.3rem;
   font-weight: bold;
-  color: #2196F3;
+  color: #2196f3;
 }
 
 /* Game Actions */
@@ -1416,7 +1515,7 @@ export default {
   justify-content: center;
   gap: 10px;
   padding: 12px 25px;
-  background-color: #2196F3;
+  background-color: #2196f3;
   color: white;
   border: none;
   border-radius: 50px;
@@ -1433,27 +1532,27 @@ export default {
 }
 
 .next-button {
-  background-color: #4CAF50;
+  background-color: #4caf50;
 }
 
 .next-button:hover {
-  background-color: #388E3C;
+  background-color: #388e3c;
 }
 
 .restart-button {
-  background-color: #FF9800;
+  background-color: #ff9800;
 }
 
 .restart-button:hover {
-  background-color: #F57C00;
+  background-color: #f57c00;
 }
 
 .end-button {
-  background-color: #F44336;
+  background-color: #f44336;
 }
 
 .end-button:hover {
-  background-color: #D32F2F;
+  background-color: #d32f2f;
 }
 
 /* Results Overlay */
@@ -1498,7 +1597,7 @@ export default {
 
 .results-title-icon {
   font-size: 2.5rem;
-  color: #2196F3;
+  color: #2196f3;
 }
 
 .results-title {
@@ -1549,36 +1648,52 @@ export default {
 }
 
 .next-game-button {
-  background-color: #9C27B0;
+  background-color: #9c27b0;
 }
 
 .next-game-button:hover {
-  background-color: #7B1FA2;
+  background-color: #7b1fa2;
 }
 
 .home-button {
-  background-color: #607D8B;
+  background-color: #607d8b;
 }
 
 .home-button:hover {
-  background-color: #455A64;
+  background-color: #455a64;
 }
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes scaleIn {
-  from { transform: scale(0.8); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* Responsive Design */
@@ -1586,36 +1701,36 @@ export default {
   .main-title {
     font-size: 2rem;
   }
-  
+
   .game-content {
     padding: 15px;
   }
-  
+
   .typing-target {
     font-size: 1rem;
     padding: 15px;
   }
-  
+
   .typing-input {
     font-size: 1rem;
     padding: 12px;
   }
-  
+
   .results-statistics {
     flex-direction: column;
     gap: 15px;
     align-items: center;
   }
-  
+
   .results-statistics .stat-item {
     width: 80%;
   }
-  
+
   .game-actions {
     flex-direction: column;
     align-items: center;
   }
-  
+
   .action-button {
     width: 100%;
     max-width: 300px;
@@ -1628,32 +1743,32 @@ export default {
     gap: 10px;
     align-items: center;
   }
-  
+
   .stats-container {
     flex-direction: column;
     gap: 10px;
     align-items: center;
   }
-  
+
   .stat-item {
     width: 80%;
   }
-  
+
   .progress-steps {
     display: none;
   }
-  
+
   .guide-character {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .speech-bubble {
     margin-left: 0;
     margin-top: 15px;
     max-width: 100%;
   }
-  
+
   .speech-bubble:before {
     display: none;
   }
