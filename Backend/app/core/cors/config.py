@@ -21,7 +21,9 @@ def init_cors(app):
         "http://127.0.0.1:8080",
         "http://127.0.0.1:8081",
         "http://127.0.0.1:5000",
-        "http://127.0.0.1:3000"
+        "http://127.0.0.1:3000",
+        "https://api.autrement-cap.fr",
+        "https://pgadmin.autrement-cap.fr",
     ]
     
     # Log the allowed origins
