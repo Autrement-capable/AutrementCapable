@@ -9,6 +9,17 @@
     :visible="showGameModal"
     @close="closeModal"
   />
+  
+  <!-- Félicitations de Flamou -->
+  <div v-if="showFlamouCongratulations" class="flamou-congratulations-overlay">
+    <div class="flamou-congratulations-container">
+      <img :src="flamouCongratulationsImage" alt="Flamou" class="flamou-congratulations-image" />
+      <div class="flamou-speech-bubble">
+        <p>{{ flamouCongratulationsMessage }}</p>
+      </div>
+    </div>
+  </div>
+  
   <div class="job-discovery-container">
     <!-- Animation badge débloqué -->
     <div v-if="showBadgeUnlockAnimation" class="badge-unlock-overlay">
@@ -326,6 +337,10 @@ import AuthService from '@/services/AuthService'
 import PopUp from '@/components/PopUp.vue'
 import { useGameTimer } from '@/services/useGameTimer'
 import flamouImage from '@/assets/flamou/intresting.png'
+import flamouHappy from '@/assets/flamou/happy.png'
+import flamouHappy2 from '@/assets/flamou/happy2.png'
+import flamouNormal from '@/assets/flamou/normal.png'
+import flamouHey from '@/assets/flamou/hey.png'
 
 export default {
   name: 'JobDiscoveryGame',
@@ -358,6 +373,11 @@ export default {
     const showBadgeUnlockAnimation = ref(false)
     const badgeJobDiscoveryId = ref(7)
     const jobVideo = ref(null)
+
+    // Variables pour les félicitations de Flamou
+    const showFlamouCongratulations = ref(false)
+    const flamouCongratulationsImage = ref(flamouNormal)
+    const flamouCongratulationsMessage = ref('')
 
     // Métier actuel
     const currentMetier = computed(() => {
@@ -593,6 +613,9 @@ export default {
       // Envoyer le choix au backend
       sendJobChoiceToBackend(currentMetier.value.name, 'like')
 
+      // Afficher les félicitations de Flamou
+      displayFlamouCongratulations('like')
+
       saveData()
       checkBadges()
       nextCard()
@@ -608,6 +631,9 @@ export default {
 
       // Envoyer le choix au backend
       sendJobChoiceToBackend(currentMetier.value.name, 'dislike')
+
+      // Afficher les félicitations de Flamou
+      displayFlamouCongratulations('dislike')
 
       saveData()
       checkBadges()
@@ -832,6 +858,49 @@ export default {
       showBadgeUnlockAnimation.value = false
     }
 
+    // Fonction pour afficher les félicitations de Flamou
+    function displayFlamouCongratulations(responseType) {
+      let messages = []
+      let image = flamouNormal
+      
+      if (responseType === 'like') {
+        messages = [
+          "Super choix ! Ce métier a l'air génial !",
+          "J'adore ta passion pour ce métier !",
+          "Excellent ! Tu as l'air d'avoir trouvé quelque chose qui te plaît !",
+          "Bravo ! Ce métier pourrait vraiment te correspondre !",
+          "Fantastique ! Tu explores bien tes intérêts !",
+          "Génial ! Continue à explorer tes passions !",
+          "Parfait ! Tu as du goût pour les bons métiers !",
+          "Waouh ! Ce métier semble fait pour toi !"
+        ]
+        image = Math.random() > 0.5 ? flamouHappy : flamouHappy2
+      } else if (responseType === 'dislike') {
+        messages = [
+          "Pas de souci ! Il faut savoir ce qu'on ne veut pas !",
+          "C'est bien de connaître ses préférences !",
+          "Très bien ! Continue à explorer d'autres options !",
+          "Parfait ! Tu affines tes choix !",
+          "Excellent ! Tu sais ce qui ne te convient pas !",
+          "Bien joué ! Continue à chercher ton métier idéal !",
+          "Super ! Tu apprends à mieux te connaître !",
+          "Bravo ! Chaque non t'approche de ton oui !"
+        ]
+        image = Math.random() > 0.5 ? flamouNormal : flamouHey
+      }
+      
+      const randomMessage = messages[Math.floor(Math.random() * messages.length)]
+      
+      flamouCongratulationsMessage.value = randomMessage
+      flamouCongratulationsImage.value = image
+      showFlamouCongratulations.value = true
+      
+      // Cacher automatiquement après 2.5 secondes
+      setTimeout(() => {
+        showFlamouCongratulations.value = false
+      }, 3500)
+    }
+
     // Initialisation
     onMounted(() => {
       // Vérifier que metiersData est correctement importé
@@ -898,6 +967,12 @@ export default {
       getRandomGameRoute,
       closeModal,
       flamouImage,
+
+      // Variables pour les félicitations de Flamou
+      showFlamouCongratulations,
+      flamouCongratulationsImage,
+      flamouCongratulationsMessage,
+      displayFlamouCongratulations,
     }
   },
 }
@@ -1776,6 +1851,91 @@ export default {
   }
 }
 
+/* Félicitations de Flamou */
+.flamou-congratulations-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1500;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.flamou-congratulations-container {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  animation: scaleIn 0.4s ease-out;
+}
+
+.flamou-congratulations-image {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 4px solid #ff6b6b;
+  background-color: #fff;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  animation: bounce 0.6s ease-out;
+}
+
+.flamou-speech-bubble {
+  position: relative;
+  background-color: #fff;
+  border-radius: 20px;
+  padding: 20px 25px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  max-width: 320px;
+  border: 3px solid #ff6b6b;
+}
+
+.flamou-speech-bubble:before {
+  content: '';
+  position: absolute;
+  left: -15px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 15px 15px 15px 0;
+  border-style: solid;
+  border-color: transparent #ff6b6b transparent transparent;
+}
+
+.flamou-speech-bubble:after {
+  content: '';
+  position: absolute;
+  left: -9px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 12px 12px 12px 0;
+  border-style: solid;
+  border-color: transparent #fff transparent transparent;
+}
+
+.flamou-speech-bubble p {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #333;
+  line-height: 1.4;
+  font-weight: bold;
+  text-align: center;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-10px);
+  }
+  75% {
+    transform: translateY(-5px);
+  }
+}
+
 /* Responsive styles */
 @media (max-width: 768px) {
   .card-actions {
@@ -1805,6 +1965,42 @@ export default {
 
   .liked-jobs-grid {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+
+  /* Félicitations de Flamou sur mobile */
+  .flamou-congratulations-container {
+    flex-direction: column;
+    padding: 20px;
+  }
+
+  .flamou-congratulations-image {
+    width: 100px;
+    height: 100px;
+  }
+
+  .flamou-speech-bubble {
+    max-width: 280px;
+    padding: 15px 20px;
+  }
+
+  .flamou-speech-bubble:before {
+    left: 50%;
+    top: -15px;
+    transform: translateX(-50%);
+    border-width: 0 15px 15px 15px;
+    border-color: transparent transparent #ff6b6b transparent;
+  }
+
+  .flamou-speech-bubble:after {
+    left: 50%;
+    top: -9px;
+    transform: translateX(-50%);
+    border-width: 0 12px 12px 12px;
+    border-color: transparent transparent #fff transparent;
+  }
+
+  .flamou-speech-bubble p {
+    font-size: 1.1rem;
   }
 }
 
@@ -1840,6 +2036,21 @@ export default {
 
   .liked-jobs-grid {
     grid-template-columns: 1fr;
+  }
+
+  /* Félicitations de Flamou sur très petits écrans */
+  .flamou-congratulations-image {
+    width: 80px;
+    height: 80px;
+  }
+
+  .flamou-speech-bubble {
+    max-width: 250px;
+    padding: 12px 16px;
+  }
+
+  .flamou-speech-bubble p {
+    font-size: 1rem;
   }
 }
 </style>
