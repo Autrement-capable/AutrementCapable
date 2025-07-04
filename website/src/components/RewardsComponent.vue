@@ -1835,7 +1835,7 @@ export default {
 /* Bouton de fermeture */
 .close-modal-btn {
   position: absolute;
-  width: 24px;
+  width: 56px;
   height: 56px;
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.3);
