@@ -107,7 +107,7 @@ async def update_my_profile(
 
     if not user_detail:
         user_detail = UserDetail(user_id=user_id)
-        session.add(user_detail)
+        await session.add(user_detail)
 
     # Update user fields
     # Note: Username is typically immutable in many systems, so this is commented out.
@@ -138,6 +138,7 @@ async def update_my_profile(
 
     session.add(user)
     session.add(user_detail)
+    await session.commit()
 
     return {"message": "Profile updated successfully"}
 

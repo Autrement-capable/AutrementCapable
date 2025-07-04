@@ -123,7 +123,7 @@ async def start_passkey_registration(
             session.add(user_detail)
             await session.flush()  # Ensure user_detail is created
         # Generate registration options with appropriate display name
-        display_name = "New User"
+        display_name = "Autrement Capable"
         if data.first_name:
             display_name = f"{data.first_name}"
             if data.last_name:

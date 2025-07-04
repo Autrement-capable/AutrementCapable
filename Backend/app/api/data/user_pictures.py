@@ -31,7 +31,8 @@ pictures_router = APIRouter(prefix="/user/picture", tags=["User Pictures"])
 @secured_endpoint()
 async def get_my_picture(
     jwt: dict,
-    picture_type: str = "profile"
+    picture_type: str = "profile",
+    session: AsyncSession = Depends(getSession)
 ):
     """
     Get the current user's picture with memory-efficient streaming
@@ -43,15 +44,11 @@ async def get_my_picture(
 
     try:
         # Create streaming response using core pool
-        async with getSession() as session:
-            if not await does_picture_exists(session, user_id, picture_type):
-                await session.close()  # Ensure session is closed
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"No picture found for type '{picture_type}'"
-                )
-            else:
-                await session.close()  # Ensure session is closed
+        if not await does_picture_exists(session, user_id, picture_type):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"No picture found for type '{picture_type}'"
+            )
         return await get_streaming_response_for_image(user_id, picture_type)
     except HTTPException:
         # Re-raise HTTP exceptions
