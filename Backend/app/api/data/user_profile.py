@@ -67,7 +67,7 @@ async def get_my_profile(
     user_picture = result.scalars().first()
 
     return {
-        "username": user.username if user.name else None,
+        "username": user.username if user.username else None,
         "first_name": user_detail.first_name if user_detail else None,
         "last_name": user_detail.last_name if user_detail else None,
         "email": user_detail.email if user_detail else None,
