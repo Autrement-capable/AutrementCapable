@@ -1,9 +1,9 @@
 <script setup>
-import { ref } from 'vue';
-import PopUp from '@/components/PopUp.vue';
-import flamou from '@/assets/flamou/intresting.png';
+import { ref } from 'vue'
+import PopUp from '@/components/PopUp.vue'
+import flamou from '@/assets/flamou/intresting.png'
 
-const showPopup = ref(true);
+const showPopup = ref(true)
 </script>
 
 <template>
@@ -12,13 +12,11 @@ const showPopup = ref(true);
     message="Wow, bien joué ! Est ce que tu veux changer de jeux ?"
     :image="flamou"
     redirect="/"
-    buttonConfirm="Changer de jeux"
-    buttonCancel="Rester ici"
+    buttonConfirm="Non"
+    buttonCancel="Oui"
     :visible="showPopup"
     @close="showPopup = false"
   />
 </template>
-  
-<style scoped>
 
-</style>
+<style scoped></style>

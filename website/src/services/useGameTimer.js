@@ -2,7 +2,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 
 export function useGameTimer() {
   const showGameModal = ref(false)
-  const timeRemaining = ref(10)
+  const timeRemaining = ref(60) // Changer ici pour définir la durée du timer en secondes
   const timer = ref(null)
 
   const gameRoutes = [
@@ -34,7 +34,7 @@ export function useGameTimer() {
 
   const resetTimer = () => {
     stopTimer()
-    timeRemaining.value = 10
+    timeRemaining.value = 60 // Changer ici pour définir la durée du timer en secondes
     showGameModal.value = false
   }
 
@@ -45,7 +45,7 @@ export function useGameTimer() {
 
   const closeModal = () => {
     showGameModal.value = false
-    // Redémarrer le timer pour 10 secondes supplémentaires
+    // Redémarrer le timer
     resetTimer()
     startTimer()
   }
