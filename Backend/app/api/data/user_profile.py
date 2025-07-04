@@ -92,53 +92,52 @@ async def update_my_profile(
     """Update the current user's profile information"""
     user_id = jwt["sub"]
 
-    async with session.begin():
-        # Get user
-        user = await session.get(User, user_id)
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found"
-            )
+    # Get user
+    user = await session.get(User, user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
 
-        # Get or create user detail
-        stmt = select(UserDetail).where(UserDetail.user_id == user_id)
-        result = await session.execute(stmt)
-        user_detail = result.scalars().first()
+    # Get or create user detail
+    stmt = select(UserDetail).where(UserDetail.user_id == user_id)
+    result = await session.execute(stmt)
+    user_detail = result.scalars().first()
 
-        if not user_detail:
-            user_detail = UserDetail(user_id=user_id)
-            session.add(user_detail)
-
-        # Update user fields
-        # Note: Username is typically immutable in many systems, so this is commented out.
-        # if profile_data.username is not None:
-        #     user.username = profile_data.username
-
-        if profile_data.onboarding_complete is not None:
-            user.onboarding_complete = profile_data.onboarding_complete
-
-        # Update user detail fields
-        if profile_data.first_name is not None:
-            user_detail.first_name = profile_data.first_name
-
-        if profile_data.last_name is not None:
-            user_detail.last_name = profile_data.last_name
-
-        if profile_data.email is not None:
-            user_detail.email = profile_data.email
-
-        if profile_data.age is not None:
-            user_detail.age = profile_data.age
-
-        if profile_data.phone_number is not None:
-            user_detail.phone_number = profile_data.phone_number
-
-        if profile_data.address is not None:
-            user_detail.address = profile_data.address
-
-        session.add(user)
+    if not user_detail:
+        user_detail = UserDetail(user_id=user_id)
         session.add(user_detail)
+
+    # Update user fields
+    # Note: Username is typically immutable in many systems, so this is commented out.
+    # if profile_data.username is not None:
+    #     user.username = profile_data.username
+
+    if profile_data.onboarding_complete is not None:
+        user.onboarding_complete = profile_data.onboarding_complete
+
+    # Update user detail fields
+    if profile_data.first_name is not None:
+        user_detail.first_name = profile_data.first_name
+
+    if profile_data.last_name is not None:
+        user_detail.last_name = profile_data.last_name
+
+    if profile_data.email is not None:
+        user_detail.email = profile_data.email
+
+    if profile_data.age is not None:
+        user_detail.age = profile_data.age
+
+    if profile_data.phone_number is not None:
+        user_detail.phone_number = profile_data.phone_number
+
+    if profile_data.address is not None:
+        user_detail.address = profile_data.address
+
+    session.add(user)
+    session.add(user_detail)
 
     return {"message": "Profile updated successfully"}
 
