@@ -19,6 +19,19 @@ from ....services.scheduler.base_cron import register_cron_job, BaseCronJob
 from ....utils.config_helpers import get_property
 from ....core.config import Config
 
+
+class DuplicateUserError(Exception):
+    """Custom exception for when a user with the same username or email already exists."""
+    pass
+
+class RoleNotFoundError(Exception):
+    """Custom exception for when a specified role is not found."""
+    pass
+
+class UserCreationError(Exception):
+    """Custom exception for general errors during user creation."""
+    pass
+
 try:
     email_verification_code_duration = Config.get_property(None, "verify", ["email_verification_code_duration"])["email_verification_code_duration"]
 except Exception as e: # if the config file is not found
@@ -57,7 +70,7 @@ class UnverifiedUserPurgeCron(BaseCronJob):
 async def create_user(session: AsyncSession, username: str, email: str, password: str,
                      first_name: str = None, last_name: str = None,
                      role_name: str = "Young Person", phone_number: str = None,
-                     address: str = None, hashed=False, commit=True, fresh=True) -> tuple[User, UnverifiedDetails] | None:
+                     address: str = None, hashed=False, commit=True, fresh=True) -> tuple[User, UnverifiedDetails]:
     """Create a user with traditional login in the database asynchronously
 
     Args:
@@ -75,7 +88,12 @@ async def create_user(session: AsyncSession, username: str, email: str, password
         fresh (bool, optional): Whether to return a fresh object. Defaults to True.
 
     Returns:
-        tuple[User, UnverifiedDetails] | None: A tuple containing the created user and unverified details if successful, None otherwise
+        tuple[User, UnverifiedDetails]: A tuple containing the created user and unverified details if successful.
+
+    Raises:
+        DuplicateUserError: If a user with the same username or email already exists.
+        RoleNotFoundError: If the specified role is not found.
+        UserCreationError: For other errors during user creation.
     """
     try:
         if not hashed:
@@ -83,8 +101,7 @@ async def create_user(session: AsyncSession, username: str, email: str, password
 
         role = await get_role_by_name(session, role_name)
         if not role:
-            print("Role not found")
-            return None
+            raise RoleNotFoundError(f"Role '{role_name}' not found")
 
         # Create base user
         user = User(
@@ -133,14 +150,17 @@ async def create_user(session: AsyncSession, username: str, email: str, password
             )
 
         return user, unverified_details
-    except IntegrityError:
+    except IntegrityError as e:
         await session.rollback()
-        print("A user with this email or username already exists.")
-        return None
+        if "email" in str(e) or "username" in str(e):
+            raise DuplicateUserError("User with this email or username already exists.") from e
+        else:
+            raise UserCreationError(f"Database integrity error: {e}") from e
+    except RoleNotFoundError:
+        raise # Re-raise RoleNotFoundError
     except Exception as e:
         await session.rollback()
-        print(f"Error creating user: {e}")
-        return None
+        raise UserCreationError(f"Error creating user: {e}") from e
 
 async def get_user_by_email(session: AsyncSession, email: str, load_type: Literal["lazy", "eager"] = "lazy") -> User | None:
     """ Get a user by their email asynchronously
@@ -285,6 +305,16 @@ async def login_user(session: AsyncSession, password: str, username_or_email: st
             select(User)
             .join(UserDetail, User.id == UserDetail.user_id)
             .where(UserDetail.email == username_or_email)
+            .options(joinedload(User.verification_details))
+        )
+        result = await session.execute(statement)
+        user = result.scalars().first()
+    else:
+        # If user found by username, load verification_details
+        statement = (
+            select(User)
+            .where(User.id == user.id)
+            .options(joinedload(User.verification_details))
         )
         result = await session.execute(statement)
         user = result.scalars().first()
@@ -457,4 +487,3 @@ async def get_avatar_info(session: AsyncSession, user_id: int) -> UserAvatarInfo
         print("Avatar info not found")
         return None
     return avatar_info
-
