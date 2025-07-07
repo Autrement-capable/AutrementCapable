@@ -1,3 +1,5 @@
+## !! likey has race condtion bugs with await and session.rollback() needs to be checked in the future
+
 import os
 
 from fastapi import APIRouter, HTTPException, Depends, status, Response

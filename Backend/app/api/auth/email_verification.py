@@ -1,5 +1,8 @@
+## !!! like has race condition bugs needs to be check in the future
+
 import os
 from datetime import datetime
+from os import getenv
 
 from fastapi import APIRouter, Depends, Request, HTTPException, Response, Cookie, status, Query
 from fastapi.responses import RedirectResponse
@@ -14,6 +17,7 @@ from ...db.postgress.repositories.user import get_user_by_email, verify_user, up
 from ...db.postgress.repositories.revoked_jwt_tokens import revoke_token, get_revoked_token_by_jti
 from ...db.postgress.repositories.acc_recovery import get_acc_recovery_by_token, create_acc_recovery, del_acc_recovery
 from ...services.mail.repositories.reset_password import send_reset_password_email
+from ...services.mail.repositories.verify_account import send_verification_email
 
 class ResetRequestForm(BaseModel):
     email: EmailStr

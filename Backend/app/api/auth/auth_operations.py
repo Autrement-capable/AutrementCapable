@@ -83,6 +83,7 @@ async def logout(
     # Revoke the access token
     is_ok = await revoke_token(session, jti_access, expires_access, "access", commit=False)
     if not is_ok:
+        await session.rollback()  # Rollback the session if revocation fails
         raise HTTPException(status_code=401, detail="Invalid access token (Already Revoked)")
 
     # Clear the refresh cookie
@@ -99,7 +100,7 @@ async def logout(
             # If token is invalid, we just continue as we already cleared the cookie
             pass
     else:
-        session.rollback()
+        await session.rollback()
         raise HTTPException(status_code=401, detail="Invalid refresh token")
 
     return {"msg": "Successfully logged out"}
