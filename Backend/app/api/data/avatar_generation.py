@@ -106,6 +106,7 @@ Aucun objet, décor, texte ou palette de couleurs autour du personnage.
 Personnage : de genre {gender_fr}, {accessories_text}, {color_text}, {passion_text}, {expression_text}.
 Vue de face, position debout, le modèle est coupé à la taille, au niveau de la ceinture, proportions naturelles,
 cadré et centré dans l'image, bien éclairé, détails soignés sur vêtements et accessoires.
+ne coupez jamais la tête de la personne sur la photo.
 
 Objectif : obtenir un avatar haut de gamme, isolé sur fond blanc, prêt pour un détourage automatique et une utilisation professionnelle ou commerciale.
 {variation_suffix}
