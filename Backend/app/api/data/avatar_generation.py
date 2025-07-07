@@ -194,7 +194,6 @@ async def generate_single_avatar(prompt: str, avatar_id: str) -> Dict[str, Any]:
 async def generate_avatars(
     request: AvatarGenerationRequest,
     jwt: dict,
-    session: AsyncSession = Depends(getSession)
 ):
     """
     Generate 3 avatar variations based on user preferences.

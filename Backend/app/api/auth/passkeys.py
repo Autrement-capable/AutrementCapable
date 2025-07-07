@@ -91,37 +91,36 @@ async def start_passkey_registration(
     """
     try:
         # Transaction for creating user and related data
-        async with session.begin():
-            # 1. Create the base user with default role
-            role = await get_role_by_name(session, "Young Person")
-            if not role:
-                raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail="Default role not found"
-                )
-
-            # Generate a random username as placeholder
-            random_suffix = secrets.token_hex(8)
-            temp_username = f"user_{random_suffix}"
-
-            user = User(
-                username=temp_username,
-                is_passkey=True,
-                role_id=role.id,
-                onboarding_complete=False
+        # 1. Create the base user with default role
+        role = await get_role_by_name(session, "Young Person")
+        if not role:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Default role not found"
             )
-            session.add(user)
-            await session.flush()  # Get the user ID
 
-            # 2. Create the user detail entry (all fields optional)
-            user_detail = UserDetail(
-                user_id=user.id,
-                first_name=data.first_name,
-                last_name=data.last_name,
-                age=data.age
-            )
-            session.add(user_detail)
-            await session.flush()  # Ensure user_detail is created
+        # Generate a random username as placeholder
+        random_suffix = secrets.token_hex(8)
+        temp_username = f"user_{random_suffix}"
+
+        user = User(
+            username=temp_username,
+            is_passkey=True,
+            role_id=role.id,
+            onboarding_complete=False
+        )
+        session.add(user)
+        await session.flush()  # Get the user ID
+
+        # 2. Create the user detail entry (all fields optional)
+        user_detail = UserDetail(
+            user_id=user.id,
+            first_name=data.first_name,
+            last_name=data.last_name,
+            age=data.age
+        )
+        session.add(user_detail)
+        await session.flush()  # Ensure user_detail is created
         # Generate registration options with appropriate display name
         display_name = "Autrement Capable"
         if data.first_name:
@@ -131,6 +130,7 @@ async def start_passkey_registration(
                 
         options = generate_passkey_registration_options(user.id, display_name)
 
+        await session.commit()  # Commit the transaction
         return {
             "options": options,
             "user_id": user.id

@@ -1,4 +1,3 @@
-from .ability_skills_user  import *
 from .acc_recovery import *
 from .passkey import *
 from .revoked_jwt_tokens import *

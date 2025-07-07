@@ -109,7 +109,6 @@ async def logout(
 @secured_endpoint(security_type=SecurityRequirement.ACCESS_TOKEN)
 async def is_authenticated(
     jwt: dict,
-    session: AsyncSession = Depends(getSession)
 ):
     """
     Check if the user is authenticated.
@@ -120,11 +119,6 @@ async def is_authenticated(
     
     if not user_id:
         raise HTTPException(status_code=401, detail="Invalid access token")
-
-    # Optionally, you can check if the user exists in the database
-    # user = await session.get("User", user_id)
-    # if not user:
-    #     raise HTTPException(status_code=404, detail="User not found")
 
     return {"msg": "User is authenticated", "user_id": user_id, "role" : str(jwt.get("role"))}
 
