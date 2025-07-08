@@ -172,7 +172,7 @@
             :class="{ selected: responses.avatarGender === 'neutral' }"
             @click="responses.avatarGender = 'neutral'"
           >
-            <div class="gender-image neutral-image">🤖</div>
+            <div class="gender-image neutral-image">😌</div>
             <p>Je ne veux pas choisir</p>
           </div>
         </div>
@@ -298,21 +298,47 @@
           />
           <div class="flamou-speech-bubble">
             <p>
-              Choisis ce que tu aimes le plus. Il n'y a pas de mauvaise réponse.
+              Choisis toutes les activités que tu aimes. Tu peux en sélectionner plusieurs !
             </p>
+            <div v-if="responses.avatarPassions.length > 0" class="selected-passions-indicator">
+              {{ responses.avatarPassions.length }} passion{{ responses.avatarPassions.length > 1 ? 's' : '' }} sélectionnée{{ responses.avatarPassions.length > 1 ? 's' : '' }}
+            </div>
           </div>
         </div>
         <div class="passions-container">
           <div
-            v-for="passion in availablePassions"
+            v-for="passion in currentPassions"
             :key="passion.id"
             class="passion-option"
-            :class="{ selected: responses.avatarPassion === passion.name }"
-            @click="responses.avatarPassion = passion.name"
+            :class="{ selected: responses.avatarPassions.includes(passion.name) }"
+            @click="togglePassion(passion.name)"
           >
             <div class="passion-image">{{ passion.emoji }}</div>
             <p>{{ passion.name }}</p>
           </div>
+        </div>
+        
+        <!-- Pagination controls -->
+        <div class="passion-pagination">
+          <button 
+            class="pagination-button"
+            @click="previousPassionPage"
+            :disabled="!canGoToPreviousPassionPage"
+          >
+            ← Précédent
+          </button>
+          
+          <div class="pagination-info">
+            Page {{ currentPassionPage + 1 }} sur {{ totalPassionPages }}
+          </div>
+          
+          <button 
+            class="pagination-button"
+            @click="nextPassionPage"
+            :disabled="!canGoToNextPassionPage"
+          >
+            Suivant →
+          </button>
         </div>
         <div class="navigation-buttons">
           <button class="back-button" @click="previousStep">Retour</button>
@@ -527,12 +553,10 @@
 
             <div
               class="summary-item"
-              v-if="
-                responses.avatarPassion && responses.avatarPassion !== 'none'
-              "
+              v-if="responses.avatarPassions && responses.avatarPassions.length > 0"
             >
-              <span class="summary-label">Passion:</span>
-              <span class="summary-value">{{ responses.avatarPassion }}</span>
+              <span class="summary-label">Passions:</span>
+              <span class="summary-value">{{ responses.avatarPassions.join(', ') }}</span>
             </div>
 
             <div class="summary-item" v-if="responses.avatarExpression">
@@ -618,6 +642,19 @@ export default {
         { id: 'music', name: 'musique', emoji: '🎵' },
         { id: 'space', name: 'espace', emoji: '🚀' },
         { id: 'animals', name: 'animaux', emoji: '🐶' },
+        { id: 'sports', name: 'sport', emoji: '⚽' },
+        { id: 'reading', name: 'lecture', emoji: '📚' },
+        { id: 'cooking', name: 'cuisine', emoji: '🍳' },
+        { id: 'technology', name: 'technologie', emoji: '💻' },
+        { id: 'dance', name: 'danse', emoji: '💃' },
+        { id: 'photography', name: 'photographie', emoji: '📸' },
+        { id: 'science', name: 'sciences', emoji: '🔬' },
+        { id: 'travel', name: 'voyages', emoji: '✈️' },
+        { id: 'nature', name: 'nature', emoji: '🌿' },
+        { id: 'movies', name: 'films et séries', emoji: '🎬' },
+        { id: 'fashion', name: 'mode', emoji: '👗' },
+        { id: 'gardening', name: 'jardinage', emoji: '🌱' },
+        { id: 'crafts', name: 'bricolage', emoji: '🔨' },
       ],
       availableExpressions: [
         { id: 'happy', name: 'souriant', emoji: '😀' },
@@ -631,10 +668,14 @@ export default {
         avatarGender: null,
         avatarAccessories: null,
         avatarColor: null,
-        avatarPassion: null,
+        avatarPassions: [],
         avatarExpression: null,
       },
       totalSteps: 12, // Updated total steps
+      
+      // Pagination for passions
+      currentPassionPage: 0,
+      passionsPerPage: 9,
     }
   },
   computed: {
@@ -649,6 +690,25 @@ export default {
         return this.generatedAvatars[this.selectedAvatarIndex].data_url
       }
       return null
+    },
+    
+    // Pagination for passions
+    currentPassions() {
+      const start = this.currentPassionPage * this.passionsPerPage
+      const end = start + this.passionsPerPage
+      return this.availablePassions.slice(start, end)
+    },
+    
+    totalPassionPages() {
+      return Math.ceil(this.availablePassions.length / this.passionsPerPage)
+    },
+    
+    canGoToPreviousPassionPage() {
+      return this.currentPassionPage > 0
+    },
+    
+    canGoToNextPassionPage() {
+      return this.currentPassionPage < this.totalPassionPages - 1
     },
   },
   methods: {
@@ -684,6 +744,11 @@ export default {
       // Move to next step
       this.currentStep++
 
+      // Reset passion pagination when entering passion step
+      if (this.currentStep === 7) {
+        this.currentPassionPage = 0
+      }
+
       // WTF vlad what black magic control flow is this took me 2 hours to figure out
 
       // Handle different steps
@@ -698,6 +763,11 @@ export default {
     previousStep() {
       if (this.currentStep > 1) {
         this.currentStep--
+        
+        // Reset passion pagination when entering passion step
+        if (this.currentStep === 7) {
+          this.currentPassionPage = 0
+        }
       }
     },
     skipStep() {
@@ -712,12 +782,42 @@ export default {
       this.nextStep()
     },
     skipPassionStep() {
-      this.responses.avatarPassion = 'none'
+      this.responses.avatarPassions = []
       this.nextStep()
     },
     skipExpressionStep() {
       this.responses.avatarExpression = null
       this.nextStep()
+    },
+    
+    // Pagination methods for passions
+    previousPassionPage() {
+      if (this.canGoToPreviousPassionPage) {
+        this.currentPassionPage--
+      }
+    },
+    
+    nextPassionPage() {
+      if (this.canGoToNextPassionPage) {
+        this.currentPassionPage++
+      }
+    },
+    
+    goToPassionPage(pageIndex) {
+      if (pageIndex >= 0 && pageIndex < this.totalPassionPages) {
+        this.currentPassionPage = pageIndex
+      }
+    },
+    
+    togglePassion(passionName) {
+      const index = this.responses.avatarPassions.indexOf(passionName)
+      if (index === -1) {
+        // Add passion if not already selected
+        this.responses.avatarPassions.push(passionName)
+      } else {
+        // Remove passion if already selected
+        this.responses.avatarPassions.splice(index, 1)
+      }
     },
 
     async createAccount() {
@@ -764,7 +864,7 @@ export default {
           avatarGender: this.responses.avatarGender,
           avatarAccessories: this.responses.avatarAccessories,
           avatarColor: this.responses.avatarColor,
-          avatarPassions: this.responses.avatarPassion,
+          avatarPassions: this.responses.avatarPassions,
           avatarExpression: this.responses.avatarExpression,
         }
           // no need to await this call because we dont need its result either
@@ -798,7 +898,7 @@ export default {
           gender: this.responses.avatarGender || 'neutral',
           accessories: this.responses.avatarAccessories,
           color: this.responses.avatarColor,
-          passion: this.responses.avatarPassion,
+          passions: this.responses.avatarPassions,
           expression: this.responses.avatarExpression,
         }
 
@@ -862,16 +962,25 @@ export default {
         const response = await fetch(selectedAvatar.data_url)
         const blob = await response.blob()
 
-        // Try to convert to AVIF if supported
+        // Create a proper File object with correct mime type
+        const avatarFile = new File([blob], 'avatar.png', { 
+          type: 'image/png',
+          lastModified: Date.now()
+        })
+
+        // Upload avatar using PictureService
         const { uploadPicture } = usePicture()
         
         try {
-          await uploadPicture(blob, 'profile')
-          console.log('Avatar uploaded successfully')
+          const uploadResult = await uploadPicture(avatarFile, 'avatar')
+          console.log('Avatar uploaded successfully:', uploadResult)
+          
+          // Store the upload result for future reference
+          localStorage.setItem('avatar_upload_result', JSON.stringify(uploadResult))
         } catch (uploadError) {
           console.error('Error uploading avatar:', uploadError)
           // Non-critical error, but inform user
-          this.finalizationError = 'Avatar sauvegardé mais problème lors du téléchargement'
+          this.finalizationError = 'Avatar sauvegardé localement mais problème lors du téléchargement sur le serveur'
         }
 
         // Save user profile data in localStorage for potential future use
@@ -885,7 +994,7 @@ export default {
             avatarGender: this.responses.avatarGender,
             avatarAccessories: this.responses.avatarAccessories,
             avatarColor: this.responses.avatarColor,
-            avatarPassion: this.responses.avatarPassion,
+            avatarPassions: this.responses.avatarPassions,
             avatarExpression: this.responses.avatarExpression,
           }),
         )
@@ -1279,18 +1388,23 @@ export default {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 20px;
-  margin: 30px 0;
+  gap: 15px;
+  margin: 20px 0;
 }
 
 .passion-option {
   background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 15px;
+  border-radius: 10px;
+  padding: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
   border: 2px solid transparent;
-  width: 140px;
+  width: 120px;
+  min-height: 90px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .passion-option.selected {
@@ -1303,8 +1417,62 @@ export default {
 }
 
 .passion-image {
-  font-size: 3.5rem;
-  margin-bottom: 10px;
+  font-size: 2.5rem;
+  margin-bottom: 5px;
+}
+
+.passion-option p {
+  margin: 0;
+  font-size: 0.85rem;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Passion Pagination Styles */
+.passion-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin: 20px 0;
+  padding: 15px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+}
+
+.pagination-button {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 100px;
+}
+
+.pagination-button:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.pagination-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.pagination-info {
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 8px 16px;
+  background-color: rgba(66, 133, 244, 0.2);
+  border-radius: 8px;
+  border: 1px solid rgba(66, 133, 244, 0.3);
 }
 
 /* Expression Selection Styles */
@@ -1536,6 +1704,18 @@ export default {
   color: white;
 }
 
+.selected-passions-indicator {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background-color: rgba(66, 133, 244, 0.3);
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #a0c4ff;
+  text-align: center;
+  border: 1px solid rgba(66, 133, 244, 0.4);
+}
+
 /* Animations */
 .animated-bounce {
   animation: bounce 1.5s infinite alternate;
@@ -1608,6 +1788,24 @@ export default {
     margin-right: 0;
     margin-bottom: 20px;
     text-align: center;
+  }
+  
+  /* Responsive pagination */
+  .passion-pagination {
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+  }
+  
+  .pagination-button {
+    width: 100%;
+    max-width: 200px;
+    margin: 0 auto;
+  }
+  
+  .pagination-info {
+    text-align: center;
+    order: -1;
   }
 }
 </style>

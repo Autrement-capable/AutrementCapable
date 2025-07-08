@@ -31,7 +31,7 @@ class AvatarGenerationRequest(BaseModel):
     gender: str = Field(..., description="Avatar gender: 'boy', 'girl', or 'neutral'")
     accessories: Optional[str] = Field(None, description="Comma-separated accessories or 'none'")
     color: Optional[str] = Field(None, description="Preferred color")
-    passion: Optional[str] = Field(None, description="User's passion/interest")
+    passions: Optional[List[str]] = Field(None, description="List of user's passions/interests")
     expression: Optional[str] = Field(None, description="Avatar expression")
 
 class AvatarData(BaseModel):
@@ -51,7 +51,7 @@ class AvatarGenerationResponse(BaseModel):
 avatar_router = APIRouter(prefix="/avatars", tags=["Avatar Generation"])
 
 def build_avatar_prompt(gender: str, accessories: Optional[str] = None, 
-                       color: Optional[str] = None, passion: Optional[str] = None, 
+                       color: Optional[str] = None, passions: Optional[List[str]] = None, 
                        expression: Optional[str] = None, variation_suffix: str = "") -> str:
     """
     Build the avatar generation prompt based on user preferences.
@@ -60,7 +60,7 @@ def build_avatar_prompt(gender: str, accessories: Optional[str] = None,
         gender: Avatar gender ('boy', 'girl', 'neutral')
         accessories: Accessories string
         color: Preferred color
-        passion: User's passion
+        passions: List of user's passions/interests
         expression: Avatar expression
         variation_suffix: Additional text to create variation
         
@@ -85,11 +85,14 @@ def build_avatar_prompt(gender: str, accessories: Optional[str] = None,
     if color:
         color_text = f"avec des tons dominants de {color}"
     
-    # Build passion text
-    passion_text = ""
-    if passion and passion != 'none':
-        passion_text = f"reflétant la passion pour : {passion}"
-    
+    # Build passions text
+    passions_text = ""
+    if passions and len(passions) > 0:
+        if len(passions) == 1:
+            passions_text = f"reflétant la passion pour {passions[0]}"
+        else:
+            passions_text = f"reflétant la passion pour {', '.join(passions[:-1])} et {passions[-1]}"
+
     # Build expression text
     expression_text = ""
     if expression:
@@ -103,7 +106,7 @@ palette de couleurs naturelle et harmonieuse, rendu propre et professionnel.
 Fond : blanc uni pur (#FFFFFF), sans motif, sans dégradé, sans ombre.
 Aucun objet, décor, texte ou palette de couleurs autour du personnage.
 
-Personnage : de genre {gender_fr}, {accessories_text}, {color_text}, {passion_text}, {expression_text}.
+Personnage : de genre {gender_fr}, {accessories_text}, {color_text}, {passions_text}, {expression_text}.
 Vue de face, position debout, le modèle est coupé à la taille, au niveau de la ceinture, proportions naturelles,
 cadré et centré dans l'image, bien éclairé, détails soignés sur vêtements et accessoires.
 ne coupez jamais la tête de la personne sur la photo.
@@ -221,7 +224,7 @@ async def generate_avatars(
                 gender=request.gender,
                 accessories=request.accessories,
                 color=request.color,
-                passion=request.passion,
+                passions=request.passions,
                 expression=request.expression,
                 variation_suffix=variation
             )

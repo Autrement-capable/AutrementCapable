@@ -162,7 +162,12 @@
         </div>
 
         <div class="avatar-image-container">
-          <img src="@/assets/pdp.png" alt="Avatar" class="avatar-image" />
+          <AvatarDisplay 
+            size="large" 
+            custom-class="avatar-image"
+            alt-text="Avatar utilisateur"
+            picture-type="avatar"
+          />
           <div class="level-badge">Niveau {{ calculateLevel() }}</div>
           <div class="avatar-glow" :class="{ pulse: avatarAnimating }"></div>
         </div>
@@ -279,6 +284,7 @@ import SpaceBackground from '@/components/SpaceBackground.vue'
 import StaticBackgrounds from '@/components/StaticBackgrounds.vue'
 import RewardsComponent from '@/components/RewardsComponent.vue'
 import GuideAvatar from '@/components/GuideComponent.vue'
+import AvatarDisplay from '@/components/AvatarDisplay.vue'
 import UserJourneyService from '@/services/UserJourneyService.js'
 import { eventBus } from '@/utils/eventBus'
 
@@ -289,6 +295,7 @@ export default {
     StaticBackgrounds,
     RewardsComponent,
     GuideAvatar,
+    AvatarDisplay,
   },
   data() {
     return {

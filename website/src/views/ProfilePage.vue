@@ -44,7 +44,12 @@
           <div class="personal-info-container">
             <div class="avatar-section">
               <div class="avatar-container">
-                <img :src="userProfile.avatar || defaultAvatar" alt="Avatar" class="user-avatar" />
+                <AvatarDisplay 
+                  size="large" 
+                  custom-class="user-avatar"
+                  alt-text="Avatar utilisateur"
+                  picture-type="avatar"
+                />
               </div>
               <div class="level-indicator">
                 <div class="level-badge">Niveau {{ calculateLevel() }}</div>
@@ -396,9 +401,13 @@
   import { ref, onMounted, computed, nextTick } from 'vue';
   import html2pdf from 'html2pdf.js';
   import defaultAvatar from '@/assets/pdp.png';
+  import AvatarDisplay from '@/components/AvatarDisplay.vue';
   
   export default {
     name: 'UserProfile',
+    components: {
+      AvatarDisplay,
+    },
     setup() {
       // État du profil
       const userProfile = ref({

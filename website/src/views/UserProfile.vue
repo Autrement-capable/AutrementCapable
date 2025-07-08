@@ -7,7 +7,12 @@
     <!-- En-tête avec avatar et message de bienvenue -->
     <div class="profile-header">
       <div class="avatar-container">
-        <img :src="userProfile.avatar" alt="Avatar" class="user-avatar" />
+        <AvatarDisplay 
+          size="medium" 
+          custom-class="user-avatar"
+          alt-text="Avatar utilisateur"
+          picture-type="avatar"
+        />
         <div class="level-badge">Niveau {{ userProfile.level }}</div>
       </div>
       <div class="welcome-message">
@@ -181,6 +186,7 @@
 <script>
 import SpaceBackground from '@/components/SpaceBackground.vue'
 import StaticBackgrounds from '@/components/StaticBackgrounds.vue'
+import AvatarDisplay from '@/components/AvatarDisplay.vue'
 import { BackgroundManager } from '@/utils/BackgroundManager'
 import { BackgroundMixin } from '@/utils/BackgroundMixin'
 
@@ -190,6 +196,7 @@ export default {
   components: {
     SpaceBackground,
     StaticBackgrounds,
+    AvatarDisplay,
   },
   data() {
     return {

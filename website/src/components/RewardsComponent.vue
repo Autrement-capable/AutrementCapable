@@ -27,7 +27,12 @@
       <!-- Profil utilisateur -->
       <div v-else class="profile-content">
         <div class="avatar-section">
-          <img :src="userAvatarSrc" alt="Avatar" class="user-avatar" @error="handleAvatarError" />
+          <AvatarDisplay 
+            size="medium" 
+            custom-class="user-avatar"
+            alt-text="Avatar utilisateur"
+            picture-type="avatar"
+          />
           <div class="level-badge">Niveau {{ calculateLevel() }}</div>
         </div>
         
@@ -316,15 +321,6 @@
 
     <!-- Boutons d'action -->
     <div class="action-buttons">
-      <button 
-        class="action-button generate-cv-button" 
-        @click="generateCV"
-        :class="{ 'locked-button': !cvUnlocked }"
-      >
-        <span class="button-icon">📄</span>
-        Créer mon CV
-        <span v-if="!cvUnlocked" class="lock-icon">🔒</span>
-      </button>
       <button class="action-button profile-button" @click="viewProfile">
         <span class="button-icon">👤</span>
         Mon profil
@@ -411,12 +407,14 @@
 import UserJourneyService from '@/services/UserJourneyService.js'
 import { eventBus } from '@/utils/eventBus'
 import GuideAvatar from '@/components/GuideComponent.vue'
+import AvatarDisplay from '@/components/AvatarDisplay.vue'
 import AuthService from '@/services/AuthService.js'
 
 export default {
   name: 'RewardsComponent',
   components: {
     GuideAvatar,
+    AvatarDisplay,
   },
   props: {
     currentTheme: {
@@ -527,7 +525,7 @@ export default {
           description: 'Tu as exploré tous les environnements disponibles',
           icon: '🏠',
           iconColor: '#795548',
-          unlocked: true,
+          unlocked: false,
           hint: "Essaie tous les préréglages dans l'environnement de personnalisation",
           game: 'Environnement',
           gameRoute: '/environment',
@@ -676,18 +674,7 @@ export default {
       return 'Utilisateur';
     },
 
-    userAvatarSrc() {
-      if (this.userProfile.avatar) {
-        // Si l'avatar est une URL complète
-        if (this.userProfile.avatar.startsWith('http')) {
-          return this.userProfile.avatar;
-        }
-        // Si c'est un chemin relatif vers votre serveur
-        return `${process.env.VUE_APP_SERVER_URL || 'http://localhost:5000'}${this.userProfile.avatar}`;
-      }
-      // Avatar par défaut
-      return require('@/assets/pdp.png');
-    },
+
 
     formattedUserInfo() {
       const info = [];
@@ -884,10 +871,7 @@ export default {
       await this.fetchUserProfile();
     },
 
-    handleAvatarError(event) {
-      console.warn('Erreur de chargement de l\'avatar, utilisation de l\'avatar par défaut');
-      event.target.src = require('@/assets/pdp.png');
-    },
+
 
     updateUserProfile(newProfileData) {
       this.userProfile = {
@@ -1913,17 +1897,6 @@ export default {
       alert(
         `Partage du badge "${badge.title}" sur les réseaux sociaux`
       )
-    },
-    
-    generateCV() {
-      if (!this.cvUnlocked) {
-        return
-      }
-      // Dans un cas réel, on redirigerait vers la page de génération de CV
-      this.$router.push('/cv-preview')
-      
-      // Fermer la modal
-      this.$emit('close')
     },
     
     viewProfile() {
