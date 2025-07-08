@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
 jobs:
   deploy:
@@ -16,18 +13,34 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
+    - name: Check for [DEPLOY] in commit messages
+      id: check_deploy
+      run: |
+        echo "🔍 Checking commit messages..."
+        if git log -1 --pretty=%B | grep -q "\[DEPLOY\]"; then
+          echo "🚀 Found [DEPLOY] in commit message"
+          echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "⚠️ No [DEPLOY] tag found, skipping deploy"
+          echo "should_deploy=false" >> "$GITHUB_OUTPUT"
+        fi
+
     - name: Set up SSH
+      if: steps.check_deploy.outputs.should_deploy == 'true'
       uses: webfactory/ssh-agent@v0.7.0
       with:
         ssh-private-key: ${{ secrets.DEV_SERVER_SSH_KEY }}
-        
+
     - name: Deploy to server
+      if: steps.check_deploy.outputs.should_deploy == 'true'
       env:
-        HOST: "20.8.172.229"
-        USER: "azureuser"
+        HOST: "13.51.63.18"
+        USER: "ubuntu"
       run: |
         ssh -o StrictHostKeyChecking=no $USER@$HOST << 'EOF'
           cd /projects/AutrementCapable
           git pull origin main
-          # Restart services or run other deployment commands here
+          cd Backend
+          docker compose down
+          docker compose up -d --build
         EOF
