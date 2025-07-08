@@ -37,6 +37,7 @@ jobs:
         HOST: "13.51.63.18"
         USER: "ubuntu"
       run: |
+        set -e
         echo "Connecting to $USER@$HOST..."
         ssh -v -o StrictHostKeyChecking=no $USER@$HOST << 'EOF'
           echo "Connected to server ✅"
