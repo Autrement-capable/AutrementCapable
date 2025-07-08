@@ -149,30 +149,8 @@
             Simplifie l'interface et réduit les distractions
           </span>
         </div>
-        <div class="option-item">
-          <button
-            @click="toggleReducedMotion"
-            :class="{ 'active-option': isReducedMotion }"
-          >
-            <span class="option-icon">⏸️</span>
-            <span class="option-text">Réduire les animations</span>
-          </button>
-          <span class="option-description">
-            Désactive les animations qui peuvent être distrayantes
-          </span>
-        </div>
-        <div class="option-item">
-          <button
-            @click="togglePredictableLayout"
-            :class="{ 'active-option': isPredictableLayout }"
-          >
-            <span class="option-icon">📏</span>
-            <span class="option-text">Mise en page prévisible</span>
-          </button>
-          <span class="option-description">
-            Maintient une structure constante et prévisible
-          </span>
-        </div>
+
+
         <div class="option-item">
           <button
             @click="toggleHighContrast"
