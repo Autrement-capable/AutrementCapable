@@ -35,8 +35,8 @@ jobs:
         POSTGRES_SERVER: ${{ secrets.POSTGRES_SERVER }}
         VERSION: ${{ secrets.VERSION }}
         DEBUG_PORT: ${{ secrets.DEBUG_PORT }}
-        MAIL_SSL: ${{ secrets.MAIL_SSL }}
-        MAIL_TLS: ${{ secrets.MAIL_TLS }}
+        MAIL_SSL_TLS: ${{ secrets.MAIL_SSL_TLS }}
+        MAIL_STARTTLS: ${{ secrets.MAIL_STARTTLS }}
         MAIL_SERVER: ${{ secrets.MAIL_SERVER }}
         MAIL_PORT: ${{ secrets.MAIL_PORT }}
         MAIL_FROM: ${{ secrets.MAIL_FROM }}
