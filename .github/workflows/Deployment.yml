@@ -12,41 +12,37 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
-      with:
-        fetch-depth: 0  # Fetch full history for change detection
 
-    - name: Check for changes in Backend folder
-      id: check_changes
+    - name: Check for [DEPLOY] in commit messages
+      id: check_deploy
       run: |
-        echo "🔍 Checking for changes in Backend folder..."
-        # Get the list of changed files
-        if git diff --name-only ${{ github.event.before }}..${{ github.sha }} | grep -q "^Backend/"; then
-          echo "🚀 Changes found in Backend folder"
+        echo "🔍 Checking commit messages..."
+        if git log -1 --pretty=%B | grep -q "\[DEPLOY\]"; then
+          echo "🚀 Found [DEPLOY] in commit message"
           echo "should_deploy=true" >> "$GITHUB_OUTPUT"
         else
-          echo "⚠️ No changes in Backend folder, skipping deploy"
+          echo "⚠️ No [DEPLOY] tag found, skipping deploy"
           echo "should_deploy=false" >> "$GITHUB_OUTPUT"
         fi
-
     - name: Set up SSH
-      if: steps.check_changes.outputs.should_deploy == 'true'
+      if: steps.check_deploy.outputs.should_deploy == 'true'
       uses: webfactory/ssh-agent@v0.7.0
       with:
         ssh-private-key: ${{ secrets.DEV_SERVER_SSH_KEY }}
 
     - name: Deploy to server
-      if: steps.check_changes.outputs.should_deploy == 'true'
+      if: steps.check_deploy.outputs.should_deploy == 'true'
       env:
-        HOST: "13.1.63.18"
+        HOST: "13.51.63.18"
         USER: "ubuntu"
       run: |
         set -e
         echo "Connecting to $USER@$HOST..."
         ssh -v -o StrictHostKeyChecking=no $USER@$HOST << 'EOF'
           echo "Connected to server ✅"
-          cd /projects/AutrementCapable || { echo "❌ Failed to cd"; exit 1; }
+          cd /code/AutrementCapable || { echo "❌ Failed to cd"; exit 1; }
           git pull origin main || { echo "❌ git pull failed"; exit 1; }
           cd Backend || { echo "❌ Failed to cd to Backend"; exit 1; }
           docker compose down || { echo "❌ docker down failed"; exit 1; }
-          docker compose up -d --build || { echo "❌ ckr up failed"; exit 1; }
+          docker compose up -d --build || { echo "❌ docker up failed"; exit 1; }
         EOF
