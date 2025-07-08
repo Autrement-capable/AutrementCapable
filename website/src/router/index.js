@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import AuthService from '@/services/AuthService'
 import LoginPage from '@/views/LoginPage.vue'
 import Onboarding from '@/views/Onboarding.vue'
 import FormationPage from '@/views/FormationPage.vue'
@@ -21,6 +22,26 @@ import CoiffeurCard from '@/components/jobsCards/CoiffeurCard.vue'
 import SkillsWheelPage from '@/views/skillGames/SkillsWheelGame.vue'
 import Environment from '@/views/skillGames/EnvironmentGame.vue'
 import ProfilePage from '@/views/ProfilePage.vue'
+
+// Routes qui nécessitent une authentification
+const protectedRoutes = [
+  'Dashboard',
+  'UserProfile',
+  'ProfilePage',
+  'GameSpeed',
+  'ShapeSequenceGame',
+  'TinderMetiers',
+  'SoudeurCard',
+  'JardinerCard',
+  'CoiffeurCard',
+  'Environment',
+  'ScenarioList',
+  'ScenarioPage',
+  'ResultsPage',
+  'FormationPage',
+  'SkillsWheelPage',
+  'DebugPage'
+]
 
 const routes = [
   {
@@ -124,6 +145,39 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes,
+})
+
+// Navigation guard global pour vérifier l'authentification
+router.beforeEach(async (to, from, next) => {
+  // Vérifier si la route nécessite une authentification
+  if (protectedRoutes.includes(to.name)) {
+    try {
+      // Vérifier si l'utilisateur est authentifié
+      const authStatus = await AuthService.isAuthenticated()
+      
+      if (authStatus.authenticated) {
+        // Utilisateur authentifié, laisser passer
+        next()
+      } else {
+        // Utilisateur non authentifié, rediriger vers la page de connexion
+        console.log('Accès refusé - Utilisateur non authentifié')
+        next({
+          name: 'Login',
+          query: { redirect: to.fullPath } // Sauvegarder la destination pour rediriger après connexion
+        })
+      }
+    } catch (error) {
+      console.error('Erreur lors de la vérification de l\'authentification:', error)
+      // En cas d'erreur, rediriger vers la page de connexion pour sécurité
+      next({
+        name: 'Login',
+        query: { redirect: to.fullPath }
+      })
+    }
+  } else {
+    // Route publique, laisser passer
+    next()
+  }
 })
 
 export default router

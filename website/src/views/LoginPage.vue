@@ -112,8 +112,9 @@ export default {
           localStorage.removeItem('remembered_username');
         }
         
-        // Redirect to dashboard
-        this.$router.push('/dashboard');
+        // Redirect to the original destination or dashboard
+        const redirectTo = this.$route.query.redirect || '/dashboard';
+        this.$router.push(redirectTo);
       } catch (error) {
         console.error('Login error:', error);
         this.errorMessage = error.response?.data?.detail || 'Invalid username or password';
@@ -132,8 +133,9 @@ export default {
         // Use passkey authentication
         await AuthService.authenticateWithPasskey();
         
-        // Redirect to dashboard
-        this.$router.push('/dashboard');
+        // Redirect to the original destination or dashboard
+        const redirectTo = this.$route.query.redirect || '/dashboard';
+        this.$router.push(redirectTo);
       } catch (error) {
         console.error('Passkey login error:', error);
         this.errorMessage = 'Passkey authentication failed. Please try again or use password.';
