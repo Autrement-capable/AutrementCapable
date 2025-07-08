@@ -15,7 +15,7 @@
     </div>
 
     <div
-      v-if="!isDashboardPage"
+      v-if="!isDashboardPage && !isLoginPage"
       class="dashboard-button"
       @click="goToDashboard"
       aria-label="Retour au tableau de bord"
@@ -367,6 +367,7 @@ export default {
       audioFeedbackEnabled: false,
 
       isDashboardPage: false,
+      isLoginPage: false,
     }
   },
 
@@ -557,7 +558,14 @@ export default {
         route.path === '/dashboard' ||
         route.path === '/'
 
+      const isLogin =
+        route.name === 'Login' ||
+        route.name === 'LoginPage' ||
+        route.path === '/login' ||
+        route.path === '/se-connecter'
+
       this.isDashboardPage = isDashboard
+      this.isLoginPage = isLogin
     },
 
     goToDashboard() {
