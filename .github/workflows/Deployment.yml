@@ -17,7 +17,7 @@ jobs:
       id: check_deploy
       run: |
         echo "🔍 Checking commit messages..."
-        if git log -1 --pretty=%B | grep -q "\[DEPLOY\]"; then
+        if git log --pretty=%B ${{ github.event.before }}..${{ github.sha }} | grep -q "\[DEPLOY\]"; then
           echo "🚀 Found [DEPLOY] in commit message"
           echo "should_deploy=true" >> "$GITHUB_OUTPUT"
         else
