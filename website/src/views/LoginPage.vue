@@ -117,11 +117,17 @@
         <!-- Formulaire simplifié avec seulement 2 options -->
         <div class="simplified-options">
           <button
-            @click="goToLogin"
+            v-if="supportsPasskeys"
+            type="button"
+            @click="loginWithPasskey"
             class="login-btn primary-btn"
             :disabled="isLoading"
+            :class="{ loading: isPasskeyLoading }"
           >
-            <span class="btn-text">
+            <span v-if="isPasskeyLoading" class="loading-spinner">
+              <i class="mdi mdi-loading mdi-spin"></i>
+            </span>
+            <span v-else class="btn-text">
               <i class="mdi mdi-login"></i>
               Se connecter
             </span>
@@ -314,12 +320,6 @@ export default {
 
     goToPasswordReset() {
       this.$router.push('/password-reset')
-    },
-
-    goToLogin() {
-      // Afficher le formulaire de connexion complet
-      // Ou rediriger vers une page de connexion séparée
-      console.log('Afficher le formulaire de connexion')
     },
 
     goToRegister() {
