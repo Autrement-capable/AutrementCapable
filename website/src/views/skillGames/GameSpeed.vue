@@ -92,12 +92,6 @@
         <div class="level-badge">
           Niveau {{ currentLevel + 1 }}: {{ levels[currentLevel].type }}
         </div>
-        <div
-          class="timer-badge"
-          :class="{ warning: timeLeft <= 10, danger: timeLeft <= 5 }"
-        >
-          Temps: {{ timeLeft }}s
-        </div>
       </div>
 
       <!-- Contenu du jeu -->
@@ -107,46 +101,97 @@
           <div class="countdown-value">{{ countdownValue }}</div>
         </div>
 
-        <div class="typing-section">
-          <div class="typing-challenge">
-            <div class="typing-target">
-              <div class="target-text">
-                <span
-                  v-for="(char, index) in targetText"
-                  :key="index"
-                  :class="{
-                    'correct-char':
-                      index < inputValue.length && char === inputValue[index],
-                    'incorrect-char':
-                      index < inputValue.length && char !== inputValue[index],
-                    'current-char': index === inputValue.length,
-                    'pending-char': index > inputValue.length,
-                  }"
-                >
-                  {{ char }}
-                </span>
+        <div class="typing-section-with-sidebars">
+          <!-- Timer à gauche -->
+          <div class="timer-sidebar">
+            <div class="timer-container">
+              <div
+                class="circular-timer"
+                :class="{ warning: timeLeft <= 10, danger: timeLeft <= 5 }"
+              >
+                <svg class="timer-svg" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="45" class="timer-background" />
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="45"
+                    class="timer-progress"
+                    :style="{
+                      strokeDasharray: `${2 * Math.PI * 45}`,
+                      strokeDashoffset: `${2 * Math.PI * 45 * (1 - timeLeft / levels[currentLevel].timeLimit)}`,
+                    }"
+                  />
+                </svg>
+                <div class="timer-text">
+                  <div class="timer-value">{{ timeLeft }}</div>
+                  <div class="timer-label">sec</div>
+                </div>
               </div>
-            </div>
-
-            <div class="typing-input-container">
-              <input
-                ref="inputField"
-                type="text"
-                class="typing-input"
-                v-model="inputValue"
-                @input="checkInput"
-                :disabled="levelCompleted || countdownActive"
-                placeholder="Tape ici..."
-                autocomplete="off"
-                autocorrect="off"
-                autocapitalize="off"
-                spellcheck="false"
-              />
             </div>
           </div>
 
-          <div class="feedback-message" :class="feedbackClass" v-if="feedback">
-            {{ feedback }}
+          <!-- Zone de frappe au centre -->
+          <div class="typing-section">
+            <div class="typing-challenge">
+              <div class="typing-target">
+                <div class="target-text">
+                  <span
+                    v-for="(char, index) in targetText"
+                    :key="index"
+                    :class="{
+                      'correct-char':
+                        index < inputValue.length && char === inputValue[index],
+                      'incorrect-char':
+                        index < inputValue.length && char !== inputValue[index],
+                      'current-char': index === inputValue.length,
+                      'pending-char': index > inputValue.length,
+                    }"
+                  >
+                    {{ char }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="typing-input-container">
+                <input
+                  ref="inputField"
+                  type="text"
+                  class="typing-input"
+                  v-model="inputValue"
+                  @input="checkInput"
+                  :disabled="levelCompleted || countdownActive"
+                  placeholder="Tape ici..."
+                  autocomplete="off"
+                  autocorrect="off"
+                  autocapitalize="off"
+                  spellcheck="false"
+                />
+              </div>
+            </div>
+
+            <div
+              class="feedback-message"
+              :class="feedbackClass"
+              v-if="feedback"
+            >
+              {{ feedback }}
+            </div>
+          </div>
+
+          <!-- Flamou à droite -->
+          <div class="flamou-sidebar">
+            <div class="flamou-container" v-if="showFlamous">
+              <div class="flamou-character">
+                <div class="flamou-bubble">
+                  <p>{{ currentFlamouMessage }}</p>
+                </div>
+                <img
+                  :src="currentFlamouImage"
+                  alt="Flamou"
+                  class="flamou-image"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -167,6 +212,14 @@
         </div>
       </div>
 
+      <!-- Bouton "Arrêter de jouer" en haut à droite -->
+      <!-- <div class="stop-game-container">
+        <button @click="endGame" class="stop-game-button">
+          <span class="btn-icon">🛑</span>
+          <span class="btn-text">Arrêter de jouer</span>
+        </button>
+      </div> -->
+
       <!-- Boutons d'action -->
       <div class="game-actions">
         <button
@@ -185,11 +238,6 @@
         >
           <span class="btn-icon">🔄</span>
           <span class="btn-text">Recommencer</span>
-        </button>
-
-        <button @click="endGame" class="action-button end-button">
-          <span class="btn-icon">🏁</span>
-          <span class="btn-text">Terminer</span>
         </button>
       </div>
     </div>
@@ -252,6 +300,9 @@ import AuthService from '@/services/AuthService'
 import PopUp from '@/components/PopUp.vue'
 import { useGameTimer } from '@/services/useGameTimer'
 import flamouImage from '@/assets/flamou/intresting.png'
+import flamouThumbsUp from '@/assets/flamou/happy2.png'
+import flamouNeutral from '@/assets/flamou/happy.png'
+import flamouSad from '@/assets/flamou/sad.png'
 
 export default {
   name: 'GameSpeed',
@@ -280,6 +331,9 @@ export default {
       getRandomGameRoute,
       closeModal,
       flamouImage,
+      flamouThumbsUp,
+      flamouNeutral,
+      flamouSad,
     }
   },
 
@@ -318,6 +372,30 @@ export default {
       },
       countdownActive: false,
       countdownValue: 3,
+      showFlamous: false,
+      currentFlamouImage: flamouNeutral,
+      currentFlamouMessage: '',
+      autoAdvanceTimer: null,
+      flamouMessages: {
+        encouragement: [
+          'Tu te débrouilles très bien !',
+          'Continue comme ça !',
+          'Je crois en toi !',
+          'Tu peux y arriver !',
+        ],
+        success: [
+          'Excellent travail !',
+          "Bravo, c'est parfait !",
+          'Tu es vraiment doué !',
+          'Fantastique !',
+        ],
+        struggle: [
+          'Prends ton temps, pas de pression !',
+          'Tu y es presque !',
+          "N'abandonne pas !",
+          'Chaque erreur est une leçon !',
+        ],
+      },
       // Structure des niveaux avec une difficulté progressive
       levels: [
         // Un mot court unique pour commencer facilement
@@ -742,6 +820,19 @@ export default {
       const wordsTyped = input.length / 5 // Considère qu'un mot est en moyenne 5 caractères
       this.wpm = timeElapsed > 0 ? Math.round(wordsTyped / timeElapsed) : 0
 
+      // Afficher Flamou selon la performance
+      if (this.mistakes > 5 && this.accuracy < 80) {
+        // Si beaucoup d'erreurs, montrer Flamou triste
+        if (!this.showFlamous) {
+          this.showFlamouStruggle()
+        }
+      } else if (input.length > target.length * 0.7 && this.accuracy > 90) {
+        // Si près de la fin avec bonne précision, montrer encouragement
+        if (!this.showFlamous) {
+          this.showFlamouEncouragement()
+        }
+      }
+
       // Forcer la mise à jour de la vue
       this.$nextTick(() => {
         this.inputValue = this.inputValue.slice()
@@ -775,8 +866,14 @@ export default {
       this.feedback = 'Excellent ! Niveau complété !'
       this.feedbackClass = 'feedback-correct'
 
+      // Afficher Flamou avec message de succès
+      this.showFlamouSuccess()
+
       // Sauvegarder les statistiques avec succès
       this.saveCurrentLevelStats(true)
+
+      // Auto-advance après 3 secondes
+      this.startAutoAdvance()
 
       // Débloquer le badge si c'est le dernier niveau et si la performance est bonne
       if (this.currentLevel === this.levels.length - 1 && this.accuracy >= 90) {
@@ -807,6 +904,12 @@ export default {
 
     // Passer au niveau suivant
     nextLevel() {
+      // Annuler l'auto-advance si l'utilisateur clique manuellement
+      if (this.autoAdvanceTimer) {
+        clearTimeout(this.autoAdvanceTimer)
+        this.autoAdvanceTimer = null
+      }
+
       this.currentLevel++
       this.loadLevel()
     },
@@ -884,6 +987,64 @@ export default {
         clearInterval(this.countdownInterval)
         this.countdownInterval = null
       }
+      if (this.autoAdvanceTimer) {
+        clearTimeout(this.autoAdvanceTimer)
+        this.autoAdvanceTimer = null
+      }
+    },
+
+    // Démarrer l'auto-advance après 3 secondes
+    startAutoAdvance() {
+      if (this.currentLevel < this.levels.length - 1) {
+        this.autoAdvanceTimer = setTimeout(() => {
+          this.nextLevel()
+        }, 3000)
+      }
+    },
+
+    // Afficher Flamou avec message de succès
+    showFlamouSuccess() {
+      this.currentFlamouImage = flamouThumbsUp
+      this.currentFlamouMessage =
+        this.flamouMessages.success[
+          Math.floor(Math.random() * this.flamouMessages.success.length)
+        ]
+      this.showFlamous = true
+
+      // Cacher Flamou après 4 secondes
+      setTimeout(() => {
+        this.showFlamous = false
+      }, 4000)
+    },
+
+    // Afficher Flamou avec message d'encouragement
+    showFlamouEncouragement() {
+      this.currentFlamouImage = flamouNeutral
+      this.currentFlamouMessage =
+        this.flamouMessages.encouragement[
+          Math.floor(Math.random() * this.flamouMessages.encouragement.length)
+        ]
+      this.showFlamous = true
+
+      // Cacher Flamou après 3 secondes
+      setTimeout(() => {
+        this.showFlamous = false
+      }, 3000)
+    },
+
+    // Afficher Flamou avec message d'aide
+    showFlamouStruggle() {
+      this.currentFlamouImage = flamouSad
+      this.currentFlamouMessage =
+        this.flamouMessages.struggle[
+          Math.floor(Math.random() * this.flamouMessages.struggle.length)
+        ]
+      this.showFlamous = true
+
+      // Cacher Flamou après 3 secondes
+      setTimeout(() => {
+        this.showFlamous = false
+      }, 3000)
     },
 
     // Aller au jeu suivant (GameShape)
@@ -1180,6 +1341,7 @@ export default {
   flex-direction: column;
   align-items: center;
   padding: 20px 0;
+  position: relative;
 }
 
 /* Progress Steps */
@@ -1277,14 +1439,13 @@ export default {
 /* Level Indicator */
 .level-indicator {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   width: 100%;
-  max-width: 800px;
+  max-width: 1000px;
   margin-bottom: 20px;
 }
 
-.level-badge,
-.timer-badge {
+.level-badge {
   background-color: #2196f3;
   color: white;
   padding: 8px 16px;
@@ -1292,21 +1453,6 @@ export default {
   font-weight: bold;
   font-size: 1rem;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
-
-.timer-badge {
-  background-color: #4caf50;
-  transition: background-color 0.3s ease;
-}
-
-.timer-badge.warning {
-  background-color: #ffc107;
-  animation: pulse 1s infinite;
-}
-
-.timer-badge.danger {
-  background-color: #f44336;
-  animation: pulse 0.5s infinite;
 }
 
 /* Countdown Overlay */
@@ -1351,7 +1497,7 @@ export default {
 .game-content {
   position: relative;
   width: 100%;
-  max-width: 800px;
+  max-width: 1000px;
   background-color: white;
   border-radius: 20px;
   padding: 20px;
@@ -1359,10 +1505,34 @@ export default {
   margin-bottom: 20px;
 }
 
+.typing-section-with-sidebars {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  min-height: 200px;
+}
+
+.timer-sidebar {
+  flex: 0 0 120px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 20px;
+}
+
 .typing-section {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+
+.flamou-sidebar {
+  flex: 0 0 120px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 20px;
 }
 
 .typing-challenge {
@@ -1555,6 +1725,214 @@ export default {
   background-color: #d32f2f;
 }
 
+/* Circular Timer */
+.timer-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.circular-timer {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timer-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.timer-background {
+  fill: none;
+  stroke: #e0e0e0;
+  stroke-width: 6;
+}
+
+.timer-progress {
+  fill: none;
+  stroke: #4caf50;
+  stroke-width: 6;
+  stroke-linecap: round;
+  transition:
+    stroke-dashoffset 0.5s ease,
+    stroke 0.3s ease;
+}
+
+.circular-timer.warning .timer-progress {
+  stroke: #ffc107;
+}
+
+.circular-timer.danger .timer-progress {
+  stroke: #f44336;
+}
+
+.timer-text {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #333;
+  font-weight: bold;
+}
+
+.timer-value {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.timer-label {
+  font-size: 0.7rem;
+  color: #666;
+}
+
+.circular-timer.warning .timer-text {
+  color: #ffc107;
+}
+
+.circular-timer.danger .timer-text {
+  color: #f44336;
+}
+
+/* Stop Game Button */
+.stop-game-container {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 100;
+}
+
+.stop-game-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.stop-game-button:hover {
+  background-color: #d32f2f;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.stop-game-button .btn-icon {
+  font-size: 1rem;
+}
+
+.stop-game-button .btn-text {
+  font-size: 0.9rem;
+}
+
+/* Flamou Character */
+.flamou-container {
+  position: relative;
+  z-index: 200;
+  animation: bounceIn 0.5s ease;
+}
+
+.flamou-character {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.flamou-image {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  border: 3px solid #ffc107;
+  background-color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  animation: floatUp 2s ease-in-out infinite;
+}
+
+.flamou-bubble {
+  position: relative;
+  background-color: #fff;
+  border-radius: 20px;
+  padding: 10px 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 2px solid #ffc107;
+  max-width: 150px;
+  margin-bottom: 10px;
+}
+
+.flamou-bubble::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 10px solid #ffc107;
+}
+
+.flamou-bubble::before {
+  content: '';
+  position: absolute;
+  top: 98%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-top: 9px solid #fff;
+}
+
+.flamou-bubble p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #333;
+  font-weight: bold;
+  line-height: 1.3;
+  text-align: center;
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.3) translateY(100px);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1) translateY(-10px);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes floatUp {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
 /* Results Overlay */
 .results-overlay {
   position: fixed;
@@ -1706,6 +2084,17 @@ export default {
     padding: 15px;
   }
 
+  .typing-section-with-sidebars {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .timer-sidebar,
+  .flamou-sidebar {
+    flex: none;
+    padding-top: 0;
+  }
+
   .typing-target {
     font-size: 1rem;
     padding: 15px;
@@ -1744,6 +2133,32 @@ export default {
     align-items: center;
   }
 
+  .stop-game-container {
+    position: static;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .stop-game-button {
+    width: 200px;
+  }
+
+  .flamou-container {
+    position: relative;
+  }
+
+  .flamou-image {
+    width: 60px;
+    height: 60px;
+  }
+
+  .flamou-bubble {
+    max-width: 150px;
+    font-size: 0.8rem;
+  }
+
   .stats-container {
     flex-direction: column;
     gap: 10px;
@@ -1771,6 +2186,44 @@ export default {
 
   .speech-bubble:before {
     display: none;
+  }
+
+  .circular-timer {
+    width: 60px;
+    height: 60px;
+  }
+
+  .timer-value {
+    font-size: 1.2rem;
+  }
+
+  .flamou-container {
+    position: relative;
+  }
+
+  .flamou-image {
+    width: 50px;
+    height: 50px;
+  }
+
+  .flamou-bubble {
+    max-width: 120px;
+    padding: 8px 12px;
+  }
+
+  .flamou-bubble p {
+    font-size: 0.75rem;
+  }
+
+  .typing-section-with-sidebars {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .timer-sidebar,
+  .flamou-sidebar {
+    flex: none;
+    padding-top: 0;
   }
 }
 </style>
