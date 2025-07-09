@@ -1,78 +1,75 @@
-import axios from 'axios';
-import {
-  startRegistration,
-  startAuthentication
-} from '@simplewebauthn/browser';
+import axios from 'axios'
+import { startRegistration, startAuthentication } from '@simplewebauthn/browser'
 
 // Get the server URL from environment variables
-const API_URL = process.env.VUE_APP_SERVER_URL || 'http://localhost:5000';
+const API_URL = process.env.VUE_APP_SERVER_URL || 'https://api.autrement-cap.fr'
 
 // Create axios instance for authenticated requests
 const authAxios = axios.create({
   baseURL: API_URL,
   withCredentials: true, // Important: This ensures cookies are sent with requests
-});
+})
 
 // Authentication state
-let isRefreshing = false;
-let failedQueue = [];
-let authMode = 'passkey'; // Default authentication mode: 'passkey' or 'password'
+let isRefreshing = false
+let failedQueue = []
+let authMode = 'passkey' // Default authentication mode: 'passkey' or 'password'
 
 // Helper function to process queue of failed requests after token refresh
 const processQueue = (error, token = null) => {
-  failedQueue.forEach(prom => {
+  failedQueue.forEach((prom) => {
     if (error) {
-      prom.reject(error);
+      prom.reject(error)
     } else {
-      prom.resolve(token);
+      prom.resolve(token)
     }
-  });
-  
-  failedQueue = [];
-};
+  })
+
+  failedQueue = []
+}
 
 const AuthService = {
   // Set the preferred authentication method
   setAuthMode(mode) {
     if (mode === 'passkey' || mode === 'password') {
-      authMode = mode;
+      authMode = mode
     } else {
-      console.warn('Invalid auth mode. Using default:', authMode);
+      console.warn('Invalid auth mode. Using default:', authMode)
     }
   },
 
   // Get current auth mode
   getAuthMode() {
-    return authMode;
+    return authMode
   },
 
   // Store access token
   setAccessToken(token) {
     if (token) {
-      localStorage.setItem('accessToken', token);
-      authAxios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      localStorage.setItem('accessToken', token)
+      authAxios.defaults.headers.common['Authorization'] = `Bearer ${token}`
     }
   },
 
   // Get the current access token
   getAccessToken() {
-    return localStorage.getItem('accessToken');
+    return localStorage.getItem('accessToken')
   },
 
   // Clear tokens on logout
   clearTokens() {
-    localStorage.removeItem('accessToken');
-    delete authAxios.defaults.headers.common['Authorization'];
+    localStorage.removeItem('accessToken')
+    delete authAxios.defaults.headers.common['Authorization']
   },
 
   // Register with username/password
   async register(userData) {
     try {
-      const response = await axios.post(`${API_URL}/auth/register`, userData);
-      return response.data;
+      const response = await axios.post(`${API_URL}/auth/register`, userData)
+      return response.data
     } catch (error) {
-      console.error('Registration error:', error);
-      throw error;
+      console.error('Registration error:', error)
+      throw error
     }
   },
 
@@ -81,15 +78,15 @@ const AuthService = {
     try {
       const response = await axios.post(`${API_URL}/auth/login`, credentials, {
         withCredentials: true, // Important: This ensures the refresh token cookie is saved
-      });
-      
+      })
+
       // Store access token
-      this.setAccessToken(response.data.access_token);
-      
-      return response.data;
+      this.setAccessToken(response.data.access_token)
+
+      return response.data
     } catch (error) {
-      console.error('Login error:', error);
-      throw error;
+      console.error('Login error:', error)
+      throw error
     }
   },
 
@@ -97,120 +94,125 @@ const AuthService = {
   async logout() {
     try {
       // Call logout endpoint which will clear the refresh token cookie
-      await authAxios.post(`${API_URL}/auth/logout`);
-      
+      await authAxios.post(`${API_URL}/auth/logout`)
+
       // Clear local storage
-      this.clearTokens();
-      
-      return { success: true };
+      this.clearTokens()
+
+      return { success: true }
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('Logout error:', error)
       // Even if server-side logout fails, clear local storage
-      this.clearTokens();
-      throw error;
+      this.clearTokens()
+      throw error
     }
   },
 
   // Refresh access token using HTTP-only refresh token cookie
   async refreshAccessToken() {
     try {
-      const response = await axios.post(`${API_URL}/auth/refresh`, {}, {
-        withCredentials: true, // Important: Send cookies with the request
-      });
-      
+      const response = await axios.post(
+        `${API_URL}/auth/refresh`,
+        {},
+        {
+          withCredentials: true, // Important: Send cookies with the request
+        },
+      )
+
       // Update the access token
-      this.setAccessToken(response.data.access_token);
-      
-      return response.data.access_token;
+      this.setAccessToken(response.data.access_token)
+
+      return response.data.access_token
     } catch (error) {
-      console.error('Token refresh error:', error);
-      this.clearTokens();
-      throw error;
+      console.error('Token refresh error:', error)
+      this.clearTokens()
+      throw error
     }
   },
 
   // Handle authentication failure
   async handleAuthFailure() {
-    this.clearTokens();
-    
+    this.clearTokens()
+
     // Attempt re-authentication based on preferred mode
     if (authMode === 'passkey') {
-      return this.authenticateWithPasskey()
-        .catch(() => {
-          // If passkey auth fails, emit an event or notify the app
-          // This is where you'd typically redirect to login page
-          const event = new CustomEvent('auth:required', { 
-            detail: { message: 'Authentication required' } 
-          });
-          window.dispatchEvent(event);
-          throw new Error('Authentication required');
-        });
+      return this.authenticateWithPasskey().catch(() => {
+        // If passkey auth fails, emit an event or notify the app
+        // This is where you'd typically redirect to login page
+        const event = new CustomEvent('auth:required', {
+          detail: { message: 'Authentication required' },
+        })
+        window.dispatchEvent(event)
+        throw new Error('Authentication required')
+      })
     } else {
       // Emit auth required event for password login
-      const event = new CustomEvent('auth:required', { 
-        detail: { message: 'Authentication required' } 
-      });
-      window.dispatchEvent(event);
-      throw new Error('Authentication required');
+      const event = new CustomEvent('auth:required', {
+        detail: { message: 'Authentication required' },
+      })
+      window.dispatchEvent(event)
+      throw new Error('Authentication required')
     }
   },
 
   // API request with automatic token refresh
   async fetchWithAuth(config) {
     // Ensure Authorization header is set if we have a token
-    const token = this.getAccessToken();
+    const token = this.getAccessToken()
     if (token) {
-      config.headers = { 
+      config.headers = {
         ...config.headers,
-        Authorization: `Bearer ${token}`
-      };
+        Authorization: `Bearer ${token}`,
+      }
     }
 
     try {
-      return await authAxios(config);
+      return await authAxios(config)
     } catch (error) {
       // If error is not 401 or refreshing is in progress, throw the error
       if (error.response?.status !== 401 || isRefreshing) {
-        throw error;
+        throw error
       }
 
       // If refreshing is not in progress, start refreshing
       if (!isRefreshing) {
-        isRefreshing = true;
+        isRefreshing = true
 
         try {
           // Try to refresh the token
-          const newToken = await this.refreshAccessToken();
+          const newToken = await this.refreshAccessToken()
 
           // Update config with new token
           config.headers = {
             ...config.headers,
-            Authorization: `Bearer ${newToken}`
-          };
+            Authorization: `Bearer ${newToken}`,
+          }
 
           // Retry the original request with new token
-          isRefreshing = false;
-          processQueue(null, newToken);
-          return await authAxios(config);
+          isRefreshing = false
+          processQueue(null, newToken)
+          return await authAxios(config)
         } catch (refreshError) {
           // If refresh fails, try re-authentication
-          isRefreshing = false;
-          processQueue(refreshError, null);
-          return this.handleAuthFailure();
+          isRefreshing = false
+          processQueue(refreshError, null)
+          return this.handleAuthFailure()
         }
       } else {
         // If refreshing is in progress, queue this request
         return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        }).then(newToken => {
-          config.headers = {
-            ...config.headers,
-            Authorization: `Bearer ${newToken}`
-          };
-          return authAxios(config);
-        }).catch(err => {
-          throw err;
-        });
+          failedQueue.push({ resolve, reject })
+        })
+          .then((newToken) => {
+            config.headers = {
+              ...config.headers,
+              Authorization: `Bearer ${newToken}`,
+            }
+            return authAxios(config)
+          })
+          .catch((err) => {
+            throw err
+          })
       }
     }
   },
@@ -221,97 +223,110 @@ const AuthService = {
       method,
       url,
       data,
-      ...options
-    });
+      ...options,
+    })
   },
 
   // Start passkey registration for new user
   // Start passkey registration for new user
-async registerWithPasskey(userData = {}) {
-  try {
-    // Step 1: Send basic user data as JSON to server and get registration options
-    const { data } = await axios.post(
-      `${API_URL}/auth/passkey/registration/start`, 
-      {
-        // Only send the minimal fields that the backend expects
-        first_name: userData?.first_name || null,
-        last_name: userData?.last_name || null,
-        age: userData?.age || null
-      },
-      {
-        headers: { 'Content-Type': 'application/json' }
-      }
-    );
+  async registerWithPasskey(userData = {}) {
+    try {
+      // Step 1: Send basic user data as JSON to server and get registration options
+      const { data } = await axios.post(
+        `${API_URL}/auth/passkey/registration/start`,
+        {
+          // Only send the minimal fields that the backend expects
+          first_name: userData?.first_name || null,
+          last_name: userData?.last_name || null,
+          age: userData?.age || null,
+        },
+        {
+          headers: { 'Content-Type': 'application/json' },
+        },
+      )
 
-    // Step 2: Use SimpleWebAuthn to create the passkey
-    const registrationResponse = await startRegistration(data.options);
+      // Step 2: Use SimpleWebAuthn to create the passkey
+      const registrationResponse = await startRegistration(data.options)
 
-    // Step 3: Send the response to server to complete registration
-    const completeResponse = await axios.post(`${API_URL}/auth/passkey/registration/complete`, {
-      user_id: data.user_id,
-      registration_data: registrationResponse,
-      challenge: data.options.challenge
-    }, {
-      withCredentials: true, // Important: This ensures cookies are saved
-    });
+      // Step 3: Send the response to server to complete registration
+      const completeResponse = await axios.post(
+        `${API_URL}/auth/passkey/registration/complete`,
+        {
+          user_id: data.user_id,
+          registration_data: registrationResponse,
+          challenge: data.options.challenge,
+        },
+        {
+          withCredentials: true, // Important: This ensures cookies are saved
+        },
+      )
 
-    // Store access token (refresh token is in HTTP-only cookie)
-    this.setAccessToken(completeResponse.data.access_token);
+      // Store access token (refresh token is in HTTP-only cookie)
+      this.setAccessToken(completeResponse.data.access_token)
 
-    return completeResponse.data;
-  } catch (error) {
-    console.error('Registration error:', error);
-    throw error;
-  }
-},
+      return completeResponse.data
+    } catch (error) {
+      console.error('Registration error:', error)
+      throw error
+    }
+  },
   // Authenticate with passkey
   async authenticateWithPasskey() {
     try {
       // Step 1: Get authentication options from server
-      const { data } = await axios.post(`${API_URL}/auth/passkey/authentication/start`);
+      const { data } = await axios.post(
+        `${API_URL}/auth/passkey/authentication/start`,
+      )
 
       // Step 2: Format options for SimpleWebAuthn
       const options = {
         challenge: data.options.challenge,
         timeout: data.options.timeout,
         rpId: data.options.rpId || window.location.hostname,
-        allowCredentials: (data.options.allowCredentials || []).map(cred => ({
+        allowCredentials: (data.options.allowCredentials || []).map((cred) => ({
           id: cred.id,
           type: cred.type,
-          transports: cred.transports
+          transports: cred.transports,
         })),
-        userVerification: data.options.userVerification
-      };
+        userVerification: data.options.userVerification,
+      }
 
       // Step 3: Use SimpleWebAuthn to authenticate
-      const authenticationResponse = await startAuthentication(options);
+      const authenticationResponse = await startAuthentication(options)
 
       // Step 4: Send the response to server to complete authentication
-      const completeResponse = await axios.post(`${API_URL}/auth/passkey/authentication/complete`, {
-        authentication_data: authenticationResponse,
-        challenge: data.options.challenge
-      }, {
-        withCredentials: true, // Important: This ensures cookies are saved
-      });
+      const completeResponse = await axios.post(
+        `${API_URL}/auth/passkey/authentication/complete`,
+        {
+          authentication_data: authenticationResponse,
+          challenge: data.options.challenge,
+        },
+        {
+          withCredentials: true, // Important: This ensures cookies are saved
+        },
+      )
 
       // Store access token (refresh token is in HTTP-only cookie)
-      this.setAccessToken(completeResponse.data.access_token);
+      this.setAccessToken(completeResponse.data.access_token)
 
-      return completeResponse.data;
+      return completeResponse.data
     } catch (error) {
-      console.error('Authentication error:', error);
-      throw error;
+      console.error('Authentication error:', error)
+      throw error
     }
   },
 
   // Create a recovery code for the authenticated user
   async createRecoveryCode() {
     try {
-      const response = await this.request('get', '/auth/recovery/create-account-recovery');
-      return response.data;
+      const response = await this.request(
+        'get',
+        '/auth/recovery/create-account-recovery',
+      )
+      return response.data
     } catch (error) {
-      console.error('Recovery code generation error:', error);
-      throw error;
+      console.error('Recovery code generation error:', error)
+      throw error
     }
   },
 
@@ -319,77 +334,95 @@ async registerWithPasskey(userData = {}) {
   async registerWithRecoveryCode(code) {
     try {
       // Step 1: Get registration options using recovery code
-      const { data } = await axios.post(`${API_URL}/auth/passkey/rec-acc-passkey`, { code });
+      const { data } = await axios.post(
+        `${API_URL}/auth/passkey/rec-acc-passkey`,
+        { code },
+      )
 
       // Step 2: Use SimpleWebAuthn to create the passkey
-      const registrationResponse = await startRegistration(data.options);
+      const registrationResponse = await startRegistration(data.options)
 
       // Step 3: Send the response to server to complete registration
-      const completeResponse = await axios.post(`${API_URL}/auth/passkey/registration/complete`, {
-        user_id: data.user_id,
-        registration_data: registrationResponse,
-        challenge: data.options.challenge
-      }, {
-        withCredentials: true, // Important: This ensures cookies are saved
-      });
+      const completeResponse = await axios.post(
+        `${API_URL}/auth/passkey/registration/complete`,
+        {
+          user_id: data.user_id,
+          registration_data: registrationResponse,
+          challenge: data.options.challenge,
+        },
+        {
+          withCredentials: true, // Important: This ensures cookies are saved
+        },
+      )
 
       // Store access token (refresh token is in HTTP-only cookie)
-      this.setAccessToken(completeResponse.data.access_token);
+      this.setAccessToken(completeResponse.data.access_token)
 
-      return completeResponse.data;
+      return completeResponse.data
     } catch (error) {
-      console.error('Recovery registration error:', error);
-      throw error;
+      console.error('Recovery registration error:', error)
+      throw error
     }
   },
 
   // Verify email address. Untested requires changes in env file backend
   async verifyEmail(code) {
     try {
-      const response = await axios.post(`${API_URL}/auth/verify-code?code=${code}`, {}, {
-        withCredentials: true // Important: This ensures cookies are saved
-      });
+      const response = await axios.post(
+        `${API_URL}/auth/verify-code?code=${code}`,
+        {},
+        {
+          withCredentials: true, // Important: This ensures cookies are saved
+        },
+      )
 
       if (response.data.access_token) {
-        this.setAccessToken(response.data.access_token);
+        this.setAccessToken(response.data.access_token)
       }
 
-      return response.data;
+      return response.data
     } catch (error) {
-      console.error('Email verification error:', error);
-      throw error;
+      console.error('Email verification error:', error)
+      throw error
     }
   },
 
   // Request password reset. Untested
   async requestPasswordReset(email) {
     try {
-      const response = await axios.post(`${API_URL}/recovery/request-password-reset`, { email });
-      return response.data;
+      const response = await axios.post(
+        `${API_URL}/recovery/request-password-reset`,
+        { email },
+      )
+      return response.data
     } catch (error) {
-      console.error('Password reset request error:', error);
-      throw error;
+      console.error('Password reset request error:', error)
+      throw error
     }
   },
 
   // Reset password with token. Untested
   async resetPassword(password, token) {
     try {
-      const response = await axios.post(`${API_URL}/recovery/reset-password`, {
-        password,
-        token
-      }, {
-        withCredentials: true // Important: This ensures cookies are saved
-      });
+      const response = await axios.post(
+        `${API_URL}/recovery/reset-password`,
+        {
+          password,
+          token,
+        },
+        {
+          withCredentials: true, // Important: This ensures cookies are saved
+        },
+      )
 
       if (response.data.access_token) {
-        this.setAccessToken(response.data.access_token);
+        this.setAccessToken(response.data.access_token)
       }
 
-      return response.data;
+      return response.data
     } catch (error) {
-      console.error('Password reset error:', error);
-      throw error;
+      console.error('Password reset error:', error)
+      throw error
     }
   },
 
@@ -402,45 +435,45 @@ async registerWithPasskey(userData = {}) {
         authenticated: false,
         userId: null,
         role: null,
-        message: 'No access token found'
-      };
+        message: 'No access token found',
+      }
     }
     try {
-    // Call the status endpoint
-    const response = await this.request('get', '/auth/status');
-    
-    return {
-      authenticated: true,
-      userId: response.data.user_id,
-      role: response.data.role,
-      message: response.data.msg
-    };
-  } catch (error) {
-    // If we get a 401, the token is invalid
-    if (error.response?.status === 401) {
-      // Clear invalid tokens
-      this.clearTokens();
-    } else {
-      console.error("server shit the pants")
-    }
-    
-    return {
-      authenticated: false,
-      userId: null,
-      role: null,
-      message: error.response?.data?.detail || 'Not authenticated'
-    };
-  }
-  },
-};
+      // Call the status endpoint
+      const response = await this.request('get', '/auth/status')
 
-// Set auth header for initial load if token exists
-const token = AuthService.getAccessToken();
-if (token) {
-  authAxios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      return {
+        authenticated: true,
+        userId: response.data.user_id,
+        role: response.data.role,
+        message: response.data.msg,
+      }
+    } catch (error) {
+      // If we get a 401, the token is invalid
+      if (error.response?.status === 401) {
+        // Clear invalid tokens
+        this.clearTokens()
+      } else {
+        console.error('server shit the pants')
+      }
+
+      return {
+        authenticated: false,
+        userId: null,
+        role: null,
+        message: error.response?.data?.detail || 'Not authenticated',
+      }
+    }
+  },
 }
 
-export default AuthService;
+// Set auth header for initial load if token exists
+const token = AuthService.getAccessToken()
+if (token) {
+  authAxios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+}
+
+export default AuthService
 
 // Usage example:
 /*
