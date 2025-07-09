@@ -53,19 +53,20 @@ async def init_terms():
         # print("Skipping terms initialization in DEV mode.")
         # return
         pass
-    session = await getSession()
-    try:
-        # Create first version
-        terms = await create_terms_version(
-            session, 
-            version="v1.0", 
-            content=INITIAL_TERMS_CONTENT,
-            is_active=True
-        )
-        if terms:
-            print(f"Terms created: Version {terms.version}")
-        else:
-            print("Failed to create terms")
-    finally:
-        await session.close()
+    async for session in getSession():
+        try:
+            # Create first version
+            terms = await create_terms_version(
+                session, 
+                version="v1.0", 
+                content=INITIAL_TERMS_CONTENT,
+                is_active=True
+            )
+            if terms:
+                print(f"Terms created: Version {terms.version}")
+            else:
+                print("Failed to create terms")
+        finally:
+            await session.close()
+        break
 
