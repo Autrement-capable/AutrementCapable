@@ -309,6 +309,7 @@ export default {
         { value: 'snow', label: 'Neige' },
       ],
       progress: 0,
+      gamesProgress: {},
       activeSection: null,
       avatarAnimating: false,
       showAvatarInteraction: false,
@@ -409,6 +410,8 @@ export default {
   beforeUnmount() {
     eventBus.off('hide-dashboard-guide')
     window.removeEventListener('resize', this.updateGuidePosition)
+    document.removeEventListener('visibilitychange', this.refreshProgressOnFocus)
+    window.removeEventListener('focus', this.refreshProgressOnFocus)
     this.removeAllHighlights()
   },
   watch: {
@@ -436,21 +439,46 @@ export default {
      */
     async checkAllGamesCompleted() {
       try {
+        // Vérifier la progression des jeux depuis le backend
+        const gameEndpoints = [
+          '/games/scenario',
+          '/games/shape-sequence', 
+          '/games/jobs',
+          '/games/speed',
+          '/games/skills',
+          '/games/room-env',
+        ];
+
+        let allGamesCompleted = true;
+        
+        // Vérifier chaque jeu
+        const AuthService = (await import('@/services/AuthService.js')).default;
+        
+        for (const endpoint of gameEndpoints) {
+          try {
+            const response = await AuthService.fetchWithAuth({
+              method: 'get',
+              url: endpoint,
+            });
+            
+            const completion = response.data.completion || 0;
+            if (completion < 1) {
+              allGamesCompleted = false;
+              break;
+            }
+          } catch (error) {
+            // Jeu non commencé
+            allGamesCompleted = false;
+            break;
+          }
+        }
+
         // Charger les badges depuis localStorage
         const savedBadges = localStorage.getItem('userBadges');
         if (!savedBadges) return;
 
         this.userBadges = JSON.parse(savedBadges);
         
-        // IDs des badges de jeux (excluant le profil, CV et formation)
-        const gameIds = [1, 2, 3, 4, 5, 7];
-        
-        // Vérifier si tous les jeux sont terminés
-        const allGamesCompleted = gameIds.every(id => {
-          const badge = this.userBadges.find(badge => badge.id === id);
-          return badge && badge.unlocked;
-        });
-
         // Trouver le badge "Tous les jeux finis"
         const allGamesCompletedBadge = this.userBadges.find(badge => badge.id === 9);
         
@@ -479,12 +507,9 @@ export default {
     /**
      * Met à jour la progression basée sur les badges débloqués
      */
-    updateProgress() {
-      if (this.userBadges && this.userBadges.length > 0) {
-        const unlockedCount = this.userBadges.filter(badge => badge.unlocked).length;
-        const totalCount = this.userBadges.length;
-        this.progress = Math.round((unlockedCount / totalCount) * 100);
-      }
+    async updateProgress() {
+      // Utiliser la nouvelle méthode de calcul de progression
+      await this.calculateRealProgress();
     },
 
     /**
@@ -530,6 +555,9 @@ export default {
       if (this.badgeNeedsEvolution) {
         this.badgeClickCount++
 
+        // Sauvegarder le compteur de clics
+        localStorage.setItem('badgeClickCount', this.badgeClickCount.toString())
+
         // Animer le badge lors du clic
         const badgeElement = document.querySelector('.current-badge-image')
         if (badgeElement) {
@@ -550,6 +578,14 @@ export default {
       // Mettre à jour le dernier niveau évolué
       this.lastEvolvedLevel = this.calculateLevel()
       this.badgeNeedsEvolution = false
+      this.badgeClickCount = 0
+
+      // Sauvegarder dans localStorage
+      localStorage.setItem('lastEvolvedLevel', this.lastEvolvedLevel.toString())
+      
+      // Nettoyer les données temporaires
+      localStorage.removeItem('badgeNeedsEvolution')
+      localStorage.removeItem('badgeClickCount')
 
       // Animation spéciale pour l'évolution
       const badgeElement = document.querySelector('.current-badge-image')
@@ -1022,6 +1058,107 @@ export default {
       return Math.floor(this.progress / 10) + 1
     },
 
+    /**
+     * Calcule la progression totale basée sur les données réelles des jeux
+     */
+    async calculateRealProgress() {
+      try {
+        // Endpoints des jeux avec leurs valeurs de complétion
+        const gameEndpoints = [
+          { endpoint: '/games/scenario', weight: 1 },
+          { endpoint: '/games/shape-sequence', weight: 1 },
+          { endpoint: '/games/jobs', weight: 1 },
+          { endpoint: '/games/speed', weight: 1 },
+          { endpoint: '/games/skills', weight: 1 },
+          { endpoint: '/games/room-env', weight: 1 },
+        ];
+
+        let totalProgress = 0;
+        let totalWeight = 0;
+        const progressData = {};
+
+        // Récupérer la progression de chaque jeu
+        const AuthService = (await import('@/services/AuthService.js')).default;
+        
+        for (const { endpoint, weight } of gameEndpoints) {
+          try {
+            const response = await AuthService.fetchWithAuth({
+              method: 'get',
+              url: endpoint,
+            });
+            
+            const completion = response.data.completion || 0;
+            progressData[endpoint] = completion;
+            totalProgress += completion * weight;
+            totalWeight += weight;
+          } catch (error) {
+            // Jeu non commencé, contribution de 0
+            progressData[endpoint] = 0;
+            totalWeight += weight;
+          }
+        }
+
+        // Récupérer les badges du localStorage
+        const savedBadges = localStorage.getItem('userBadges');
+        let profileBadgeProgress = 0;
+        
+        if (savedBadges) {
+          try {
+            const badges = JSON.parse(savedBadges);
+            const profileBadge = badges.find(b => b.id === 0);
+            if (profileBadge && profileBadge.unlocked) {
+              profileBadgeProgress = 1;
+            }
+          } catch (error) {
+            console.error('Erreur lors du chargement des badges:', error);
+          }
+        }
+
+        // Ajouter la progression du badge profil
+        totalProgress += profileBadgeProgress;
+        totalWeight += 1;
+
+        // Calculer le pourcentage final
+        const finalProgress = totalWeight > 0 ? (totalProgress / totalWeight) * 100 : 0;
+        
+        this.progress = Math.round(finalProgress);
+        this.gamesProgress = progressData;
+        
+        // Vérifier si le badge a besoin d'évoluer
+        this.checkBadgeEvolution();
+        
+        // Synchroniser avec le RewardsComponent
+        this.syncWithRewardsComponent();
+        
+        return this.progress;
+      } catch (error) {
+        console.error('Erreur lors du calcul de la progression:', error);
+        return this.progress;
+      }
+    },
+
+    /**
+     * Vérifie si le badge doit évoluer
+     */
+    checkBadgeEvolution() {
+      const currentLevel = this.calculateLevel();
+      
+      // S'assurer que lastEvolvedLevel est bien défini
+      if (this.lastEvolvedLevel === undefined || this.lastEvolvedLevel === null) {
+        this.lastEvolvedLevel = 0;
+      }
+      
+      // Vérifier si le badge doit évoluer (seulement à partir du niveau 2)
+      if (currentLevel > this.lastEvolvedLevel && !this.badgeNeedsEvolution && currentLevel > 1) {
+        this.badgeNeedsEvolution = true;
+        this.badgeClickCount = 0;
+        
+        // Sauvegarder immédiatement pour éviter les doublons
+        localStorage.setItem('badgeNeedsEvolution', 'true');
+        localStorage.setItem('badgeClickCount', '0');
+      }
+    },
+
     generateParticleStyle() {
       const duration = 1 + Math.random() * 1.5
       const delay = Math.random() * 0.5
@@ -1194,8 +1331,53 @@ export default {
       // Rediriger vers le jeu sélectionné
       this.$router.push(selectedGame)
     },
+
+    /**
+     * Actualise la progression quand l'utilisateur revient sur le dashboard
+     */
+    async refreshProgressOnFocus() {
+      if (document.visibilityState === 'visible') {
+        await this.calculateRealProgress();
+      }
+    },
+
+    /**
+     * Synchronise la progression avec le RewardsComponent
+     */
+    syncWithRewardsComponent() {
+      // Émettre un événement pour notifier le RewardsComponent
+      eventBus.emit('dashboard-progress-updated', {
+        progress: this.progress,
+        level: this.calculateLevel(),
+        gamesProgress: this.gamesProgress
+      });
+    },
+
+    /**
+     * Charge le niveau d'évolution depuis localStorage
+     */
+    loadBadgeEvolutionState() {
+      // Charger le dernier niveau évolué
+      const savedLevel = localStorage.getItem('lastEvolvedLevel');
+      if (savedLevel) {
+        this.lastEvolvedLevel = parseInt(savedLevel, 10);
+      } else {
+        this.lastEvolvedLevel = 0;
+      }
+
+      // Charger l'état d'évolution en cours
+      const needsEvolution = localStorage.getItem('badgeNeedsEvolution');
+      if (needsEvolution === 'true') {
+        this.badgeNeedsEvolution = true;
+        const savedClickCount = localStorage.getItem('badgeClickCount');
+        this.badgeClickCount = savedClickCount ? parseInt(savedClickCount, 10) : 0;
+      }
+    },
   },
-  mounted() {
+  async mounted() {
+    // Charger l'état d'évolution du badge
+    this.loadBadgeEvolutionState();
+
     this.checkAllGamesCompleted();
 
     // Check if the showBadges query parameter exists
@@ -1208,6 +1390,9 @@ export default {
       delete newQuery.showBadges
       this.$router.replace({ query: newQuery })
     }
+
+    // Calculer la progression réelle des jeux
+    await this.calculateRealProgress();
 
     const savedTheme = localStorage.getItem('dashboard-theme')
     if (
@@ -1234,6 +1419,12 @@ export default {
 
     // Recalculer la position lors du redimensionnement de la fenêtre
     window.addEventListener('resize', this.updateGuidePosition)
+
+    // Écouter la visibilité de la page pour actualiser la progression
+    document.addEventListener('visibilitychange', this.refreshProgressOnFocus)
+
+    // Écouter les événements de focus sur la fenêtre
+    window.addEventListener('focus', this.refreshProgressOnFocus)
 
     if (this.isFirstVisit && !this.showRewardsModal) {
       // S'assurer que guideForceShow est bien à true

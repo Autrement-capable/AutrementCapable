@@ -20,8 +20,22 @@ DATABASE_URL_SYNC = (
 @singleton
 class Postgress:
     def __init__(self):
-        self.engine = create_async_engine(DATABASE_URL_ASYNC, echo=True if getenv("MODE") == "DEV" else False, future=True)
-        self.sync_engine = create_engine(DATABASE_URL_SYNC, echo=True if getenv("MODE") == "DEV" else False, future=True)
+        # Configure connection pool settings to prevent exhaustion
+        engine_kwargs = {
+            "echo": True if getenv("MODE") == "DEV" else False,
+            "future": True,
+            "pool_size": 10,  # Base pool size
+            "max_overflow": 20,  # Additional connections beyond pool_size
+            "pool_timeout": 30,  # Timeout to get connection from pool
+            "pool_recycle": 3600,  # Recycle connections every hour
+            "pool_pre_ping": True,  # Validate connections before use
+        }
+        
+        self.engine = create_async_engine(DATABASE_URL_ASYNC, **engine_kwargs)
+        
+        # Sync engine with similar settings
+        sync_engine_kwargs = engine_kwargs.copy()
+        self.sync_engine = create_engine(DATABASE_URL_SYNC, **sync_engine_kwargs)
 
         self.Session = sessionmaker(self.engine, class_=AsyncSession, expire_on_commit=False)
         self.SyncSession = sessionmaker(self.sync_engine, expire_on_commit=False)
@@ -48,39 +62,43 @@ class Postgress:
     async def getSession(self) -> AsyncSession:
         return self.Session()
 
-    async def check_all_models_exist(self) -> tuple[bool, dict]:
-        """
-        Check if all models exist in the database.
-
-        Use 
-        Returns:
-            - A tuple containing a boolean indicating if all models exist,
-              and a dictionary with table names as keys and their existence as values.
-        """
-        result = {}
-        defined_tables = self.Base.metadata.tables.keys()
-
+    async def check_all_models_exist(self) -> tuple[bool, list[str]]:
+        """Check if all models exist in the database"""
         async with self.engine.begin() as conn:
-            insp = await conn.run_sync(inspect)
-            existing_tables = await conn.run_sync(lambda sync_conn: insp.get_table_names())
-
-            for table in defined_tables:
-                result[table] = table in existing_tables
-
-        # if all tables exist, return True, dict otherwise return False, dict
-        return all(result.values()), result
+            # Perform the entire inspection operation within run_sync
+            def get_table_info(sync_conn):
+                inspector = inspect(sync_conn)
+                return inspector.get_table_names()
+            
+            existing_tables = await conn.run_sync(get_table_info)
+            
+            # Get all table names from metadata
+            expected_tables = [table.name for table in self.Base.metadata.tables.values()]
+            
+            # Check if all expected tables exist
+            missing_tables = [table for table in expected_tables if table not in existing_tables]
+            all_exist = len(missing_tables) == 0
+            
+            return all_exist, missing_tables
 
 postgress = Postgress()
 
+# Proper session dependency with automatic cleanup
 async def getSession() -> AsyncSession:
-    return await postgress.getSession()
-
-# async def getSession() -> AsyncSession:
-#     async with postgress.Session() as session:
-#        try:
-#           yield session
-#        finally:
-#           await session.close()
+    """
+    FastAPI dependency that provides a database session with automatic cleanup.
+    
+    This ensures that database sessions are properly closed after each request,
+    preventing connection pool exhaustion.
+    """
+    async with postgress.Session() as session:
+        try:
+            yield session
+        except Exception:
+            await session.rollback()
+            raise
+        finally:
+            await session.close()
 
 Base = postgress.Base
 
