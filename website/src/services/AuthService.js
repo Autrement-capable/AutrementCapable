@@ -1,8 +1,8 @@
 import axios from 'axios'
 import { startRegistration, startAuthentication } from '@simplewebauthn/browser'
 
-// Get the server URL from environment variables
-const API_URL = process.env.VUE_APP_SERVER_URL || 'https://api.autrement-cap.fr'
+// Change here the API URL to the backend server
+const API_URL = process.env.VUE_APP_SERVER_URL || 'http://localhost:5000' // 'https://api.autrement-cap.fr'
 
 // Create axios instance for authenticated requests
 const authAxios = axios.create({

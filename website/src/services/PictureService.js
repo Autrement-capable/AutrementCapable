@@ -15,8 +15,8 @@ const DEFAULT_CONFIG = {
   chunkSize: 512 * 1024, // Chunk size (not used client-side but for reference)
 }
 
-// Get the API URL from environment variables or default to localhost with protocol
-const API_URL = process.env.VUE_APP_SERVER_URL || 'https://api.autrement-cap.fr'
+// Change here the API URL to the backend server
+const API_URL = process.env.VUE_APP_SERVER_URL || 'http://localhost:5000' // 'https://api.autrement-cap.fr'
 
 // API endpoint for pictures - using relative path since we'll use AuthService for requests
 const PICTURE_ENDPOINT = 'user/picture'

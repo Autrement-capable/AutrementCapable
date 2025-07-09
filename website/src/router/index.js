@@ -46,7 +46,8 @@ const protectedRoutes = [
 const routes = [
   {
     path: '/',
-    name: 'login',
+    redirect: { name: 'Login' },
+    name: 'Home',
     component: Onboarding,
   },
   {
