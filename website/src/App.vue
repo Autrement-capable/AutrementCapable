@@ -150,7 +150,6 @@
           </span>
         </div>
 
-
         <div class="option-item">
           <button
             @click="toggleHighContrast"
@@ -534,6 +533,7 @@ export default {
         route.name === 'Dashboard' ||
         route.name === 'ImmersiveDashboard' ||
         route.path === '/dashboard' ||
+        route.path === '/onboarding' ||
         route.path === '/'
 
       const isLogin =

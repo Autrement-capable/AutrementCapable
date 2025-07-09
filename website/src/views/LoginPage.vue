@@ -116,6 +116,12 @@
 
         <!-- Formulaire simplifié avec seulement 2 options -->
         <div class="simplified-options">
+          <!-- Message d'erreur -->
+          <div class="error-message" v-if="errorMessage">
+            <i class="mdi mdi-alert-circle"></i>
+            <span>{{ errorMessage }}</span>
+          </div>
+
           <button
             v-if="supportsPasskeys"
             type="button"
