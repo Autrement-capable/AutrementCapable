@@ -41,7 +41,27 @@
             Mes Informations
           </h2>
           
-          <div class="personal-info-container">
+          <!-- Indicateur de chargement -->
+          <div v-if="isLoadingUserProfile" class="loading-profile">
+            <div class="loading-spinner"></div>
+            <p>Chargement du profil...</p>
+          </div>
+          
+          <!-- Message d'erreur -->
+          <div v-if="userProfileError" class="profile-error">
+            <p class="error-message">{{ userProfileError }}</p>
+            <button 
+              @click="refreshUserProfile" 
+              class="refresh-profile-btn"
+              :disabled="isLoadingUserProfile"
+            >
+              <span class="refresh-icon">🔄</span>
+              Actualiser le profil
+            </button>
+          </div>
+
+          <!-- Contenu du profil -->
+          <div v-else class="personal-info-container">
             <div class="avatar-section">
               <div class="avatar-container">
                 <AvatarDisplay 
@@ -65,14 +85,9 @@
                 <div class="field-value">{{ userProfile.firstName }}</div>
               </div>
               
-              <div class="info-field">
+              <div class="info-field" v-if="userProfile.age">
                 <label>Âge</label>
                 <div class="field-value">{{ userProfile.age }} ans</div>
-              </div>
-              
-              <div class="info-field">
-                <label>Ville</label>
-                <div class="field-value">{{ userProfile.city }}</div>
               </div>
               
               <div class="info-field">
@@ -214,7 +229,7 @@
             <div class="cv-preview" :class="'cv-style-' + currentCVStyle" :style="{ '--cv-color': currentCVColor }">
 							<div class="cv-header">
 								<h3 class="cv-name">{{ userProfile.firstName }} {{ userProfile.lastName }}</h3>
-								<div class="cv-contact">{{ userProfile.age }} ans | {{ userProfile.city }}</div>
+								<div class="cv-contact" v-if="userProfile.age">{{ userProfile.age }} ans</div>
 							</div>
               
               <div class="cv-section">
@@ -402,6 +417,7 @@
   import html2pdf from 'html2pdf.js';
   import defaultAvatar from '@/assets/pdp.png';
   import AvatarDisplay from '@/components/AvatarDisplay.vue';
+  import AuthService from '@/services/AuthService.js';
   
   export default {
     name: 'UserProfile',
@@ -410,11 +426,15 @@
     },
     setup() {
       // État du profil
+      const isLoadingUserProfile = ref(true);
+      const userProfileError = ref(null);
       const userProfile = ref({
-        firstName: 'Lucas',
-        lastName: 'Martin',
-        age: 16,
-        city: 'Lyon',
+        firstName: 'Utilisateur',
+        lastName: '',
+        age: null,
+        city: '',
+        email: '',
+        username: '',
         avatar: defaultAvatar,
         bio: "Je suis quelqu'un de curieux et j'aime découvrir de nouvelles choses. Je m'intéresse particulièrement aux jeux vidéo et à la musique.",
         hobbies: ['Jeux vidéo', 'Musique', 'Dessin', 'Natation'],
@@ -889,9 +909,7 @@
         localStorage.setItem('userProfile', JSON.stringify(userProfile.value));
       };
   
-      // Charger le profil utilisateur
-      const loadUserProfile = () => {
-      };
+
   
       // Sauvegarder les paramètres d'accessibilité
       const saveAccessibilitySettings = () => {
@@ -934,10 +952,100 @@
         if (!ctx) return;   
       };
   
+      // --- Méthodes de récupération des données utilisateur ---
+      const fetchUserProfile = async () => {
+        try {
+          isLoadingUserProfile.value = true;
+          userProfileError.value = null;
+          
+          // Appel API pour récupérer le profil utilisateur
+          const response = await AuthService.request('get', '/user/profile');
+          
+          // Mise à jour des données utilisateur
+          userProfile.value = {
+            ...userProfile.value,
+            firstName: response.data.first_name || 'Utilisateur',
+            lastName: response.data.last_name || '',
+            age: response.data.age || null,
+            city: response.data.city || response.data.address || '',
+            email: response.data.email || '',
+            username: response.data.username || '',
+            avatar: response.data.avatar || defaultAvatar,
+          };
+          
+          console.log('Profil utilisateur chargé:', userProfile.value);
+          
+          // Sauvegarder dans le cache
+          saveUserProfileCache();
+          
+        } catch (error) {
+          console.error('Erreur lors du chargement du profil utilisateur:', error);
+          userProfileError.value = error.response?.data?.detail || 'Erreur lors du chargement du profil';
+          
+          // Garder les valeurs par défaut en cas d'erreur
+          // mais essayer de charger depuis le cache
+          loadCachedUserProfile();
+        } finally {
+          isLoadingUserProfile.value = false;
+        }
+      };
+
+      const loadCachedUserProfile = () => {
+        try {
+          const cachedProfile = localStorage.getItem('userProfile');
+          if (cachedProfile) {
+            const parsedProfile = JSON.parse(cachedProfile);
+            userProfile.value = { 
+              ...userProfile.value, 
+              ...parsedProfile,
+              avatar: parsedProfile.avatar || defaultAvatar
+            };
+            return true;
+          }
+        } catch (error) {
+          console.warn('Erreur lors du chargement du cache utilisateur:', error);
+        }
+        return false;
+      };
+
+      const saveUserProfileCache = () => {
+        try {
+          localStorage.setItem('userProfile', JSON.stringify(userProfile.value));
+        } catch (error) {
+          console.warn('Erreur lors de la sauvegarde du cache utilisateur:', error);
+        }
+      };
+
+      const refreshUserProfile = async () => {
+        await fetchUserProfile();
+      };
+
+      const checkAuthenticationStatus = () => {
+        if (!AuthService.isAuthenticated()) {
+          console.warn('Utilisateur non authentifié');
+          return false;
+        }
+        return true;
+      };
+
       // --- Hooks du cycle de vie ---
-      onMounted(() => {
-        // Charger les données
-        loadUserProfile();
+      onMounted(async () => {
+        // Vérifier l'authentification
+        if (!checkAuthenticationStatus()) {
+          return;
+        }
+
+        // Charger le profil depuis le cache en premier (pour un affichage rapide)
+        const hasCachedProfile = loadCachedUserProfile();
+        
+        if (hasCachedProfile) {
+          isLoadingUserProfile.value = false;
+        }
+        
+        // Récupération du profil utilisateur depuis l'API
+        await fetchUserProfile();
+
+        // Charger les paramètres d'accessibilité
         loadAccessibilitySettings();
         
         // Vérifier si le guide a déjà été affiché
@@ -1087,6 +1195,8 @@
       return {
         // Données d'état
         userProfile,
+        isLoadingUserProfile,
+        userProfileError,
         defaultAvatar,
         currentTab,
         tabs,
@@ -1144,6 +1254,8 @@
         closeBadgeAnimation,
         dismissGuide,
         watchTabChanges,
+        fetchUserProfile,
+        refreshUserProfile,
       };
     }
   };
@@ -1447,9 +1559,9 @@
   
   .avatar-container {
     position: relative;
-    width: 160px;
-    height: 160px;
-    margin-bottom: 15px;
+    width: 220px;
+    height: 120px;
+    margin-bottom: 100px;
   }
   
   .user-avatar {
@@ -3078,6 +3190,75 @@
     100% { transform: scale(1); }
   }
   
+  /* Indicateur de chargement et erreurs */
+  .loading-profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    text-align: center;
+  }
+
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(63, 81, 181, 0.3);
+    border-top: 4px solid #3f51b5;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .profile-error {
+    background-color: rgba(244, 67, 54, 0.1);
+    border: 1px solid rgba(244, 67, 54, 0.3);
+    border-radius: 15px;
+    padding: 20px;
+    margin: 20px 0;
+    text-align: center;
+  }
+
+  .error-message {
+    color: #f44336;
+    margin: 0 0 15px 0;
+    font-size: 1rem;
+  }
+
+  .refresh-profile-btn {
+    background-color: rgba(63, 81, 181, 0.2);
+    border: 1px solid rgba(63, 81, 181, 0.5);
+    color: #3f51b5;
+    padding: 10px 20px;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1rem;
+    margin: 0 auto;
+  }
+
+  .refresh-profile-btn:hover:not(:disabled) {
+    background-color: rgba(63, 81, 181, 0.3);
+    transform: translateY(-2px);
+  }
+
+  .refresh-profile-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .refresh-icon {
+    font-size: 1.2rem;
+  }
+
   /* Responsive Design */
   @media (max-width: 768px) {
     .personal-info-container {
