@@ -17,8 +17,8 @@
           </p>
         </div>
 
+        <!-- 
         <form @submit.prevent="handleLogin" class="login-form">
-          <!-- Champ nom d'utilisateur -->
           <div class="input-group">
             <div class="input-box">
               <input
@@ -35,7 +35,6 @@
             </div>
           </div>
 
-          <!-- Champ mot de passe -->
           <div class="input-group">
             <div class="input-box">
               <input
@@ -52,13 +51,11 @@
             </div>
           </div>
 
-          <!-- Message d'erreur -->
           <div class="error-message" v-if="errorMessage">
             <i class="mdi mdi-alert-circle"></i>
             <span>{{ errorMessage }}</span>
           </div>
 
-          <!-- Options Remember me / Forgot password -->
           <div class="form-options">
             <label class="checkbox-label">
               <input
@@ -74,7 +71,6 @@
             </a>
           </div>
 
-          <!-- Bouton de connexion principal -->
           <button
             type="submit"
             class="login-btn primary-btn"
@@ -90,7 +86,6 @@
             </span>
           </button>
 
-          <!-- Bouton passkey -->
           <button
             v-if="supportsPasskeys"
             type="button"
@@ -108,7 +103,6 @@
             </span>
           </button>
 
-          <!-- Lien vers inscription -->
           <div class="register-prompt">
             <p>
               Pas encore de compte?
@@ -118,6 +112,32 @@
             </p>
           </div>
         </form>
+        -->
+
+        <!-- Formulaire simplifié avec seulement 2 options -->
+        <div class="simplified-options">
+          <button
+            @click="goToLogin"
+            class="login-btn primary-btn"
+            :disabled="isLoading"
+          >
+            <span class="btn-text">
+              <i class="mdi mdi-login"></i>
+              Se connecter
+            </span>
+          </button>
+
+          <button
+            @click="goToRegister"
+            class="login-btn register-btn"
+            :disabled="isLoading"
+          >
+            <span class="btn-text">
+              <i class="mdi mdi-account-plus"></i>
+              Créer son compte
+            </span>
+          </button>
+        </div>
       </div>
 
       <!-- Onglet de contrôle du thème -->
@@ -294,6 +314,12 @@ export default {
 
     goToPasswordReset() {
       this.$router.push('/password-reset')
+    },
+
+    goToLogin() {
+      // Afficher le formulaire de connexion complet
+      // Ou rediriger vers une page de connexion séparée
+      console.log('Afficher le formulaire de connexion')
     },
 
     goToRegister() {
@@ -655,6 +681,31 @@ export default {
   color: #6c3ce0;
   transform: translateY(-1px);
   box-shadow: 0 6px 20px rgba(124, 77, 255, 0.2);
+}
+
+.register-btn {
+  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.register-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+  background: linear-gradient(135deg, #388e3c 0%, #4caf50 100%);
+}
+
+.register-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.5);
+}
+
+.simplified-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
 }
 
 .login-btn:disabled {
