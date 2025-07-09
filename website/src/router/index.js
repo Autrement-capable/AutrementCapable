@@ -40,13 +40,13 @@ const protectedRoutes = [
   'ResultsPage',
   'FormationPage',
   'SkillsWheelPage',
-  'DebugPage'
+  'DebugPage',
 ]
 
 const routes = [
   {
     path: '/',
-    name: 'onboarding',
+    name: 'login',
     component: Onboarding,
   },
   {
@@ -154,7 +154,7 @@ router.beforeEach(async (to, from, next) => {
     try {
       // Vérifier si l'utilisateur est authentifié
       const authStatus = await AuthService.isAuthenticated()
-      
+
       if (authStatus.authenticated) {
         // Utilisateur authentifié, laisser passer
         next()
@@ -163,15 +163,18 @@ router.beforeEach(async (to, from, next) => {
         console.log('Accès refusé - Utilisateur non authentifié')
         next({
           name: 'Login',
-          query: { redirect: to.fullPath } // Sauvegarder la destination pour rediriger après connexion
+          query: { redirect: to.fullPath }, // Sauvegarder la destination pour rediriger après connexion
         })
       }
     } catch (error) {
-      console.error('Erreur lors de la vérification de l\'authentification:', error)
+      console.error(
+        "Erreur lors de la vérification de l'authentification:",
+        error,
+      )
       // En cas d'erreur, rediriger vers la page de connexion pour sécurité
       next({
         name: 'Login',
-        query: { redirect: to.fullPath }
+        query: { redirect: to.fullPath },
       })
     }
   } else {

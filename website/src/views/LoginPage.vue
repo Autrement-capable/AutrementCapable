@@ -1,83 +1,85 @@
 <template>
   <div class="login-page" :class="{ 'animations-unlocked': hasNewAchievement }">
-    
     <!-- Arrière-plans dynamiques -->
     <space-background v-if="animationsEnabled" :theme="currentTheme" />
     <static-backgrounds v-else :theme="currentTheme" />
 
     <!-- Container principal -->
     <div class="login-container">
-
-
       <!-- Formulaire de connexion -->
       <div class="login-form-container">
         <!-- Titre dans le container -->
         <div class="form-header">
           <h2 class="form-title">Bienvenue</h2>
           <h3 class="form-subtitle">de retour</h3>
-          <p class="form-description">Connectez-vous pour continuer votre aventure</p>
+          <p class="form-description">
+            Connectez-vous pour continuer votre aventure
+          </p>
         </div>
-        
+
         <form @submit.prevent="handleLogin" class="login-form">
-          
           <!-- Champ nom d'utilisateur -->
           <div class="input-group">
-      <div class="input-box">
-        <input 
-          type="text" 
-                placeholder="Nom d'utilisateur ou email" 
-          v-model="credentials.username_or_email" 
-          required 
-          :disabled="isLoading" 
+            <div class="input-box">
+              <input
+                type="text"
+                placeholder="Nom d'utilisateur ou email"
+                v-model="credentials.username_or_email"
+                required
+                :disabled="isLoading"
                 class="form-input"
-        />
+              />
               <div class="input-icon">
-        <i class="mdi mdi-account"></i>
+                <i class="mdi mdi-account"></i>
               </div>
             </div>
-      </div>
-      
+          </div>
+
           <!-- Champ mot de passe -->
           <div class="input-group">
-      <div class="input-box">
-        <input 
-          type="password" 
-                placeholder="Mot de passe" 
-          v-model="credentials.password" 
-          required 
-          :disabled="isLoading" 
+            <div class="input-box">
+              <input
+                type="password"
+                placeholder="Mot de passe"
+                v-model="credentials.password"
+                required
+                :disabled="isLoading"
                 class="form-input"
-        />
+              />
               <div class="input-icon">
-        <i class="mdi mdi-lock"></i>
+                <i class="mdi mdi-lock"></i>
               </div>
             </div>
-      </div>
-      
+          </div>
+
           <!-- Message d'erreur -->
-      <div class="error-message" v-if="errorMessage">
+          <div class="error-message" v-if="errorMessage">
             <i class="mdi mdi-alert-circle"></i>
             <span>{{ errorMessage }}</span>
-      </div>
-      
+          </div>
+
           <!-- Options Remember me / Forgot password -->
           <div class="form-options">
             <label class="checkbox-label">
-              <input type="checkbox" v-model="rememberMe" class="checkbox-input" />
+              <input
+                type="checkbox"
+                v-model="rememberMe"
+                class="checkbox-input"
+              />
               <span class="checkbox-custom"></span>
               <span class="checkbox-text">Se souvenir de moi</span>
-        </label>
+            </label>
             <a href="#" @click.prevent="goToPasswordReset" class="forgot-link">
               Mot de passe oublié?
             </a>
-      </div>
-      
+          </div>
+
           <!-- Bouton de connexion principal -->
-          <button 
-            type="submit" 
-            class="login-btn primary-btn" 
+          <button
+            type="submit"
+            class="login-btn primary-btn"
             :disabled="isLoading"
-            :class="{ 'loading': isLoading }"
+            :class="{ loading: isLoading }"
           >
             <span v-if="isLoading" class="loading-spinner">
               <i class="mdi mdi-loading mdi-spin"></i>
@@ -86,17 +88,17 @@
               <i class="mdi mdi-login"></i>
               Se connecter
             </span>
-      </button>
-      
+          </button>
+
           <!-- Bouton passkey -->
-      <button 
-        v-if="supportsPasskeys" 
-        type="button" 
-        @click="loginWithPasskey" 
-            class="login-btn passkey-btn" 
-        :disabled="isLoading"
-            :class="{ 'loading': isPasskeyLoading }"
-      >
+          <button
+            v-if="supportsPasskeys"
+            type="button"
+            @click="loginWithPasskey"
+            class="login-btn passkey-btn"
+            :disabled="isLoading"
+            :class="{ loading: isPasskeyLoading }"
+          >
             <span v-if="isPasskeyLoading" class="loading-spinner">
               <i class="mdi mdi-loading mdi-spin"></i>
             </span>
@@ -104,12 +106,12 @@
               <i class="mdi mdi-fingerprint"></i>
               Connexion avec passkey
             </span>
-      </button>
-      
+          </button>
+
           <!-- Lien vers inscription -->
           <div class="register-prompt">
             <p>
-              Pas encore de compte? 
+              Pas encore de compte?
               <a href="#" @click.prevent="goToRegister" class="register-link">
                 Créer un compte
               </a>
@@ -178,29 +180,29 @@
 </template>
 
 <script>
-import AuthService from '@/services/AuthService';
-import { browserSupportsWebAuthn } from '@simplewebauthn/browser';
-import SpaceBackground from '@/components/SpaceBackground.vue';
-import StaticBackgrounds from '@/components/StaticBackgrounds.vue';
+import AuthService from '@/services/AuthService'
+import { browserSupportsWebAuthn } from '@simplewebauthn/browser'
+import SpaceBackground from '@/components/SpaceBackground.vue'
+import StaticBackgrounds from '@/components/StaticBackgrounds.vue'
 
 export default {
   name: 'LoginPage',
   components: {
     SpaceBackground,
-    StaticBackgrounds
+    StaticBackgrounds,
   },
   data() {
     return {
       credentials: {
         username_or_email: '',
-        password: ''
+        password: '',
       },
       rememberMe: false,
       isLoading: false,
       isPasskeyLoading: false,
       errorMessage: '',
       supportsPasskeys: false,
-      
+
       // Thèmes et arrière-plans
       themeMenuVisible: false,
       currentTheme: 'cosmic',
@@ -212,114 +214,126 @@ export default {
         { value: 'snow', label: 'Neige' },
       ],
       animationsEnabled: true,
-      hasNewAchievement: false
+      hasNewAchievement: false,
     }
   },
   mounted() {
     // Check if browser supports WebAuthn/passkeys
     try {
-      this.supportsPasskeys = browserSupportsWebAuthn();
+      this.supportsPasskeys = browserSupportsWebAuthn()
     } catch (error) {
-      console.error('Error checking WebAuthn support:', error);
-      this.supportsPasskeys = false;
+      console.error('Error checking WebAuthn support:', error)
+      this.supportsPasskeys = false
     }
-    
+
     // Pre-fill username if remembered
-    const rememberedUsername = localStorage.getItem('remembered_username');
+    const rememberedUsername = localStorage.getItem('remembered_username')
     if (rememberedUsername) {
-      this.credentials.username_or_email = rememberedUsername;
-      this.rememberMe = true;
+      this.credentials.username_or_email = rememberedUsername
+      this.rememberMe = true
     }
 
     // Charger les préférences de thème
-    this.loadThemeSettings();
+    this.loadThemeSettings()
   },
   methods: {
     async handleLogin() {
-      if (this.isLoading) return;
-      
-      this.isLoading = true;
-      this.errorMessage = '';
-      
+      if (this.isLoading) return
+
+      this.isLoading = true
+      this.errorMessage = ''
+
       try {
         // Call login method from AuthService
-        await AuthService.login(this.credentials);
-        
+        await AuthService.login(this.credentials)
+
         // Save username if remember me is checked
         if (this.rememberMe) {
-          localStorage.setItem('remembered_username', this.credentials.username_or_email);
+          localStorage.setItem(
+            'remembered_username',
+            this.credentials.username_or_email,
+          )
         } else {
-          localStorage.removeItem('remembered_username');
+          localStorage.removeItem('remembered_username')
         }
-        
+
         // Redirect to the original destination or dashboard
-        const redirectTo = this.$route.query.redirect || '/dashboard';
-        this.$router.push(redirectTo);
+        const redirectTo = this.$route.query.redirect || '/dashboard'
+        this.$router.push(redirectTo)
       } catch (error) {
-        console.error('Login error:', error);
-        this.errorMessage = error.response?.data?.detail || 'Nom d\'utilisateur ou mot de passe invalide';
+        console.error('Login error:', error)
+        this.errorMessage =
+          error.response?.data?.detail ||
+          "Nom d'utilisateur ou mot de passe invalide"
       } finally {
-        this.isLoading = false;
+        this.isLoading = false
       }
     },
-    
+
     async loginWithPasskey() {
-      if (this.isPasskeyLoading) return;
-      
-      this.isPasskeyLoading = true;
-      this.errorMessage = '';
-      
+      if (this.isPasskeyLoading) return
+
+      this.isPasskeyLoading = true
+      this.errorMessage = ''
+
       try {
         // Use passkey authentication
-        await AuthService.authenticateWithPasskey();
-        
+        await AuthService.authenticateWithPasskey()
+
         // Redirect to the original destination or dashboard
-        const redirectTo = this.$route.query.redirect || '/dashboard';
-        this.$router.push(redirectTo);
+        const redirectTo = this.$route.query.redirect || '/dashboard'
+        this.$router.push(redirectTo)
       } catch (error) {
-        console.error('Passkey login error:', error);
-        this.errorMessage = 'Échec de l\'authentification passkey. Veuillez réessayer ou utiliser le mot de passe.';
+        console.error('Passkey login error:', error)
+        this.errorMessage =
+          "Échec de l'authentification passkey. Veuillez réessayer ou utiliser le mot de passe."
       } finally {
-        this.isPasskeyLoading = false;
+        this.isPasskeyLoading = false
       }
     },
-    
+
     goToPasswordReset() {
-      this.$router.push('/password-reset');
+      this.$router.push('/password-reset')
     },
-    
+
     goToRegister() {
-      this.$router.push('/account-creation');
+      this.$router.push('/onboarding')
     },
 
     // Gestion des thèmes
     loadThemeSettings() {
-      const savedTheme = localStorage.getItem('dashboard-theme');
-      if (savedTheme && this.availableThemes.some(theme => theme.value === savedTheme)) {
-        this.currentTheme = savedTheme;
+      const savedTheme = localStorage.getItem('dashboard-theme')
+      if (
+        savedTheme &&
+        this.availableThemes.some((theme) => theme.value === savedTheme)
+      ) {
+        this.currentTheme = savedTheme
       }
 
-      const savedAnimationPref = localStorage.getItem('dashboard-animations');
+      const savedAnimationPref = localStorage.getItem('dashboard-animations')
       if (savedAnimationPref !== null) {
-        this.animationsEnabled = savedAnimationPref === 'true';
+        this.animationsEnabled = savedAnimationPref === 'true'
       }
     },
 
     toggleThemeMenu() {
-      this.themeMenuVisible = !this.themeMenuVisible;
+      this.themeMenuVisible = !this.themeMenuVisible
     },
 
     changeTheme(theme) {
-      this.currentTheme = theme;
-      localStorage.setItem('dashboard-theme', theme);
-      this.themeMenuVisible = false;
+      this.currentTheme = theme
+      localStorage.setItem('dashboard-theme', theme)
+      this.themeMenuVisible = false
     },
 
     toggleAnimations() {
-      this.animationsEnabled = !this.animationsEnabled;
-      localStorage.setItem('dashboard-animations', this.animationsEnabled.toString());
-    }
-  }
+      this.animationsEnabled = !this.animationsEnabled
+      localStorage.setItem(
+        'dashboard-animations',
+        this.animationsEnabled.toString(),
+      )
+    },
+  },
 }
 </script>
 
@@ -334,7 +348,7 @@ export default {
   --warning-color: #ff9800;
   --text-primary: #333333;
   --text-secondary: rgba(102, 102, 102, 0.8);
-  --background-blur: rgba(255, 255, 255, 1.0);
+  --background-blur: rgba(255, 255, 255, 1);
   --border-color: rgba(255, 255, 255, 0.3);
   --shadow-color: rgba(0, 0, 0, 0.2);
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -383,7 +397,11 @@ export default {
 .title-accent {
   color: var(--primary-color);
   display: block;
-  background: linear-gradient(45deg, var(--primary-color), var(--primary-light));
+  background: linear-gradient(
+    45deg,
+    var(--primary-color),
+    var(--primary-light)
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -656,8 +674,12 @@ export default {
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Animation pour les icônes MDI */
@@ -892,7 +914,8 @@ export default {
     padding: 0 10px;
   }
 
-  .form-title, .form-subtitle {
+  .form-title,
+  .form-subtitle {
     font-size: 1.5rem;
   }
 
@@ -935,7 +958,8 @@ export default {
     padding: 10px;
   }
 
-  .form-title, .form-subtitle {
+  .form-title,
+  .form-subtitle {
     font-size: 1.3rem;
   }
 
