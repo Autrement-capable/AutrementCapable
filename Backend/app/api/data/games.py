@@ -199,31 +199,6 @@ async def post_speed_data(payload: SpeedPost, jwt: dict, session: AsyncSession =
     data = await upsert_speed_game_data(session, jwt["sub"], payload.model_dump())
     return {"message": "Speed game data saved", "data": data.__dict__}
 
-
-# === Abilities Game ===
-@games_router.get("/abilities", response_model=AbilitiesGameResponse)
-@secured_endpoint()
-async def get_abilities_game_data_endpoint(jwt: dict, session: AsyncSession = Depends(getSession)):
-    user_id = jwt["sub"]
-    data = await get_abilities_game_data(session, user_id)
-    if not data:
-        return AbilitiesGameResponse(
-            message="No abilities game data found",
-            completion=0.0,
-            skillAssessment={}
-        )
-
-    return AbilitiesGameResponse(
-        completion=data.completion,
-        skillAssessment=data.skillAssessment,
-    )
-
-@games_router.post("/abilities")
-@secured_endpoint()
-async def post_abilities_data(payload: AbilitiesPost, jwt: dict, session: AsyncSession = Depends(getSession)):
-    data = await upsert_abilities_game_data(session, jwt["sub"], payload.model_dump())
-    return {"message": "Abilities game data saved", "data": data.__dict__}
-
 # === Skills Game ===
 @games_router.get("/skills", response_model=SkillsGameResponse)
 @secured_endpoint()

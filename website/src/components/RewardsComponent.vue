@@ -1952,12 +1952,11 @@ export default {
     async fetchGamesProgress() {
       // Map des endpoints et des indices de badge associés
       const gameEndpoints = [
-        { endpoint: '/games/scenarios', badgeId: 2 },
-        //{ endpoint: '/games/shape-sequence', badgeId: 3 },
+        { endpoint: '/games/scenario', badgeId: 2 },
+        { endpoint: '/games/shape-sequence', badgeId: 3 },
         { endpoint: '/games/jobs', badgeId: 7 },
         { endpoint: '/games/speed', badgeId: 1 },
-        { endpoint: '/games/abilities', badgeId: 4 },
-        { endpoint: '/games/skills', badgeId: 3 },
+        { endpoint: '/games/skills', badgeId: 4 },
         { endpoint: '/games/room-env', badgeId: 5 },
       ];
       const updatedBadges = [...this.badges];

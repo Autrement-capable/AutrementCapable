@@ -1179,12 +1179,12 @@ export default {
 
       // Liste des jeux disponibles
       const gameRoutes = [
-        //  '/roue-des-competences',
-        //  '/scenarios',
+        '/roue-des-competences',
+        '/scenarios',
         '/environment',
-        //  '/metiers',
-        //  '/shape-sequence-game',
-        //  '/game-speed',
+        '/metiers',
+        '/shape-sequence-game',
+        '/game-speed',
       ]
 
       // Sélectionner un jeu au hasard
