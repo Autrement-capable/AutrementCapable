@@ -38,3 +38,5 @@ webauthn
 cbor2
 # Avatag gen
 openai
+# for mocking passkeys
+soft-webauthn
