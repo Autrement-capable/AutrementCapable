@@ -40,8 +40,9 @@ class Server:
             CronJobFactory.set_add_cron_job(self.AddCronJob)
 
             # Check if tables exist and initialize data if needed
-            exists, _ = await self.postgress.check_all_models_exist()
+            exists, missing_tables = await self.postgress.check_all_models_exist()
             if not exists:
+                print(f"Missing tables: {missing_tables}")
                 await self.postgress.create_all()
                 await self.init_roles()
                 await init_terms()
@@ -98,8 +99,9 @@ class Server:
     async def on_startup(self):
         """ This function runs during startup of FastAPI application. """
         # Initialize the database and create tables asynchronously
-        exists, _ = await self.postgress.check_all_models_exist()
+        exists, missing_tables = await self.postgress.check_all_models_exist()
         if not exists: # if tables do not exist, create them and init data
+            print(f"Missing tables: {missing_tables}")
             await self.postgress.create_all()
 
             # Initialize roles asynchronously
@@ -117,16 +119,26 @@ class Server:
         async with postgress.Session() as session:
             try:
                 await func(session)
+                await session.commit()
             except Exception as e:
                 print(f"[TaskScheduler] Error running {func.__name__}: {e}")
                 await session.rollback()
+                raise
             finally:
                 await session.close()
 
     async def init_roles(self):
         """ Initialize roles asynchronously """
-        session = await self.postgress.getSession()
-        await init_roles(session)
+        async with self.postgress.Session() as session:
+            try:
+                await init_roles(session)
+                await session.commit()
+            except Exception as e:
+                await session.rollback()
+                print(f"Error initializing roles: {e}")
+                raise
+            finally:
+                await session.close()
 
     def __custom_openapi__(self):
         """

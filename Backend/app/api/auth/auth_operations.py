@@ -33,7 +33,7 @@ class MeResponse(BaseModel):
 @secured_endpoint(security_type=SecurityRequirement.REFRESH_COOKIE)
 async def refresh(
     response: Response,
-    refresh_jwt: dict,
+    jwt: dict,
 ):
     """
     Refresh the access token. Requires a valid refresh token stored in an HTTP-only cookie.
@@ -41,8 +41,8 @@ async def refresh(
     The refresh token comes from an HTTP-only cookie, and a new access token is returned in the response body.
     """
     try:
-        # Decode the refresh token from the cookie
-        jwt_payload = refresh_jwt
+        # The JWT payload is now properly injected as 'jwt'
+        jwt_payload = jwt
 
         # Create a new access token
         access_token = create_token(jwt_payload["sub"], jwt_payload["role"], refresh=False)
@@ -54,6 +54,10 @@ async def refresh(
         set_refresh_cookie(response, new_refresh_token)
 
         return {"access_token": access_token}
+    except KeyError as e:
+        # If the token payload is missing required fields, clear the cookie
+        clear_refresh_cookie(response)
+        raise HTTPException(status_code=401, detail=f"Invalid token payload: missing {str(e)}")
     except Exception as e:
         # If the token validation fails, clear the cookie
         clear_refresh_cookie(response)

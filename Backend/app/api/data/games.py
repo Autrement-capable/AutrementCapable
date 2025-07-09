@@ -72,7 +72,7 @@ class ScenarioGameResponse(BaseGameResponse):
     
 class ShapeSequenceResponse(BaseGameResponse):
     levelResults: Dict[str, Any] = Field(default_factory=dict, description="Results for each completed level")
-    current_level: int = Field(..., description="Current level in the shape sequence game")
+    current_level: int = Field(0, description="Current level in the shape sequence game")
 class JobsGameResponse(BaseGameResponse):
     jobChoices: Dict[str, Any] = Field(default_factory=dict, description="User's job selections and preferences")
     
@@ -131,7 +131,8 @@ async def get_shape_sequence_data(jwt: dict, session: AsyncSession = Depends(get
         return ShapeSequenceResponse(
             message="No shape sequence game data found",
             completion=0.0,
-            levelResults={}
+            levelResults={},
+            current_level=0
         )
 
     return ShapeSequenceResponse(
