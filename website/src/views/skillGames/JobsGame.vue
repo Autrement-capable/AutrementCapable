@@ -16,6 +16,15 @@
       <img :src="flamouCongratulationsImage" alt="Flamou" class="flamou-congratulations-image" />
       <div class="flamou-speech-bubble">
         <p>{{ flamouCongratulationsMessage }}</p>
+        <div class="flamou-timer" v-if="showFlamouTimer">
+          <div class="flamou-timer-bar">
+            <div 
+              class="flamou-timer-fill"
+              :style="{ width: flamouTimerProgress + '%' }"
+            ></div>
+          </div>
+          <div class="flamou-timer-text">{{ Math.ceil(flamouTimeLeft / 1000) }}s</div>
+        </div>
       </div>
     </div>
   </div>
@@ -378,6 +387,12 @@ export default {
     const showFlamouCongratulations = ref(false)
     const flamouCongratulationsImage = ref(flamouNormal)
     const flamouCongratulationsMessage = ref('')
+    const flamouTimer = ref(null)
+    const flamouTimeLeft = ref(0)
+    const flamouTimerProgress = ref(100)
+    const showFlamouTimer = ref(false)
+    const flamouCompletionTimer = ref(null)
+    const autoAdvanceTimer = ref(null)
 
     // Métier actuel
     const currentMetier = computed(() => {
@@ -779,16 +794,20 @@ export default {
     }
 
     function finishAndShowResults() {
+      clearAllTimers()
       showResults.value = true
     }
 
     function restartGame() {
+      clearAllTimers()
       currentIndex.value = 0
       seenJobs.value = []
       likedJobs.value = []
       batchCompleted.value = false
       allJobsSeen.value = false
       showResults.value = false
+      showFlamouCongratulations.value = false
+      showFlamouTimer.value = false
 
       saveData()
       loadInitialBatch()
@@ -858,6 +877,57 @@ export default {
       showBadgeUnlockAnimation.value = false
     }
 
+    // Démarrer le timer de Flamou
+    function startFlamouTimer(duration = 3000) {
+      flamouTimeLeft.value = duration
+      flamouTimerProgress.value = 100
+      showFlamouTimer.value = true
+      
+      // Nettoyer le timer existant
+      if (flamouTimer.value) {
+        clearInterval(flamouTimer.value)
+      }
+      
+      flamouTimer.value = setInterval(() => {
+        flamouTimeLeft.value -= 100
+        flamouTimerProgress.value = (flamouTimeLeft.value / duration) * 100
+        
+        if (flamouTimeLeft.value <= 0) {
+          clearInterval(flamouTimer.value)
+          flamouTimer.value = null
+          showFlamouTimer.value = false
+          showFlamouCongratulations.value = false
+          
+          // Démarrer un délai d'attente avant de permettre la prochaine action
+          startAutoAdvanceDelay()
+        }
+      }, 100)
+    }
+    
+    // Démarrer le délai d'attente après la disparition de Flamou
+    function startAutoAdvanceDelay() {
+      autoAdvanceTimer.value = setTimeout(() => {
+        // Permettre la prochaine action (pas d'auto-advance dans ce jeu)
+        console.log('Auto-advance delay finished')
+      }, 1000) // 1 seconde de délai après la disparition de Flamou
+    }
+    
+    // Nettoyer tous les timers
+    function clearAllTimers() {
+      if (flamouTimer.value) {
+        clearInterval(flamouTimer.value)
+        flamouTimer.value = null
+      }
+      if (flamouCompletionTimer.value) {
+        clearTimeout(flamouCompletionTimer.value)
+        flamouCompletionTimer.value = null
+      }
+      if (autoAdvanceTimer.value) {
+        clearTimeout(autoAdvanceTimer.value)
+        autoAdvanceTimer.value = null
+      }
+    }
+
     // Fonction pour afficher les félicitations de Flamou
     function displayFlamouCongratulations(responseType) {
       let messages = []
@@ -895,10 +965,8 @@ export default {
       flamouCongratulationsImage.value = image
       showFlamouCongratulations.value = true
       
-      // Cacher automatiquement après 2.5 secondes
-      setTimeout(() => {
-        showFlamouCongratulations.value = false
-      }, 3500)
+      // Démarrer le timer de 3 secondes
+      startFlamouTimer(3000)
     }
 
     // Initialisation
@@ -973,6 +1041,12 @@ export default {
       flamouCongratulationsImage,
       flamouCongratulationsMessage,
       displayFlamouCongratulations,
+      flamouTimer,
+      flamouTimeLeft,
+      flamouTimerProgress,
+      showFlamouTimer,
+      startFlamouTimer,
+      clearAllTimers,
     }
   },
 }
@@ -1922,6 +1996,36 @@ export default {
   line-height: 1.4;
   font-weight: bold;
   text-align: center;
+}
+
+/* Timer de Flamou */
+.flamou-timer {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.flamou-timer-bar {
+  width: 80px;
+  height: 5px;
+  background-color: #e0e0e0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.flamou-timer-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ff6b6b, #ff8e8e);
+  border-radius: 3px;
+  transition: width 0.1s linear;
+}
+
+.flamou-timer-text {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: bold;
 }
 
 @keyframes bounce {
