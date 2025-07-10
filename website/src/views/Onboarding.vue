@@ -185,8 +185,49 @@
         </div>
       </div>
 
-      <!-- Step 5: Accessories Selection -->
+      <!-- Step 5: Skin Color Selection -->
       <div v-if="currentStep === 5" class="step-container">
+        <h1 class="step-title">Quelle est la couleur de peau de ton personnage ?</h1>
+        <div class="flamou-container">
+          <img
+            :src="flamouImages.thinking2"
+            alt="Flamou pensif"
+            class="flamou-image"
+          />
+          <div class="flamou-speech-bubble">
+            <p>
+              Choisis la couleur de peau qui correspond à ton personnage. 
+              Tu peux choisir celle qui te ressemble ou celle que tu préfères !
+            </p>
+          </div>
+        </div>
+        <div class="skin-colors-container">
+          <div
+            v-for="skinColor in availableSkinColors"
+            :key="skinColor.id"
+            class="skin-color-option"
+            :class="{ selected: responses.avatarSkinColor === skinColor.name }"
+            @click="responses.avatarSkinColor = skinColor.name"
+          >
+            <div 
+              class="skin-color-circle"
+              :style="{ backgroundColor: skinColor.hex }"
+            ></div>
+            <div class="skin-color-emoji">{{ skinColor.emoji }}</div>
+            <p>{{ skinColor.name }}</p>
+          </div>
+        </div>
+        <div class="navigation-buttons">
+          <button class="back-button" @click="previousStep">Retour</button>
+          <button class="skip-button" @click="skipSkinColorStep">
+            Je ne sais pas
+          </button>
+          <button class="next-button" @click="nextStep">Continuer</button>
+        </div>
+      </div>
+
+      <!-- Step 6: Accessories Selection -->
+      <div v-if="currentStep === 6" class="step-container">
         <h1 class="step-title">Choisis ce que ton personnage porte</h1>
         <div class="flamou-container">
           <img
@@ -252,8 +293,8 @@
         </div>
       </div>
 
-      <!-- Step 6: Color Selection -->
-      <div v-if="currentStep === 6" class="step-container">
+      <!-- Step 7: Color Selection -->
+      <div v-if="currentStep === 7" class="step-container">
         <h1 class="step-title">Quelle est ta couleur préférée ?</h1>
         <div class="flamou-container">
           <img
@@ -287,8 +328,8 @@
         </div>
       </div>
 
-      <!-- Step 7: Passion Selection -->
-      <div v-if="currentStep === 7" class="step-container">
+      <!-- Step 8: Passion Selection -->
+      <div v-if="currentStep === 8" class="step-container">
         <h1 class="step-title">Qu'est-ce que tu aimes faire ?</h1>
         <div class="flamou-container">
           <img
@@ -349,8 +390,8 @@
         </div>
       </div>
 
-      <!-- Step 8: Expression Selection -->
-      <div v-if="currentStep === 8" class="step-container">
+      <!-- Step 9: Expression Selection -->
+      <div v-if="currentStep === 9" class="step-container">
         <h1 class="step-title">Ton personnage a quelle expression ?</h1>
         <div class="flamou-container">
           <img
@@ -385,8 +426,8 @@
         </div>
       </div>
 
-      <!-- Step 9: Account Creation -->
-      <div v-if="currentStep === 9" class="step-container">
+      <!-- Step 10: Account Creation -->
+      <div v-if="currentStep === 10" class="step-container">
         <h1 class="step-title">Création de ton compte</h1>
         <div class="flamou-container">
           <img
@@ -406,8 +447,8 @@
         </div>
       </div>
 
-      <!-- Step 10: Generating Avatars -->
-      <div v-if="currentStep === 10" class="step-container">
+      <!-- Step 11: Generating Avatars -->
+      <div v-if="currentStep === 11" class="step-container">
         <h1 class="step-title">Génération de tes avatars</h1>
         <div class="flamou-container">
           <img
@@ -444,8 +485,8 @@
         </div>
       </div>
 
-      <!-- Step 11: Avatar Selection -->
-      <div v-if="currentStep === 11" class="step-container">
+      <!-- Step 12: Avatar Selection -->
+      <div v-if="currentStep === 12" class="step-container">
         <h1 class="step-title">Choisis ton avatar préféré</h1>
         <div class="flamou-container">
           <img
@@ -483,8 +524,8 @@
         </div>
       </div>
 
-      <!-- Step 12: Récapitulatif et finalisation -->
-      <div v-if="currentStep === 12" class="step-container summary-container">
+      <!-- Step 13: Récapitulatif et finalisation -->
+      <div v-if="currentStep === 13" class="step-container summary-container">
         <h1 class="step-title">Récapitulatif</h1>
         <div class="flamou-container">
           <img
@@ -531,6 +572,11 @@
               <span class="summary-value">
                 {{ getGenderLabel(responses.avatarGender) }}
               </span>
+            </div>
+
+            <div class="summary-item" v-if="responses.avatarSkinColor">
+              <span class="summary-label">Couleur de peau:</span>
+              <span class="summary-value">{{ responses.avatarSkinColor }}</span>
             </div>
 
             <div
@@ -636,6 +682,13 @@ export default {
         { id: 'white', name: 'blanc', hex: '#ffffff' },
         { id: 'black', name: 'noir', hex: '#202124' },
       ],
+      availableSkinColors: [
+        { id: 'light', name: 'claire', hex: '#fdbcb4', emoji: '🏻' },
+        { id: 'medium-light', name: 'moyenne claire', hex: '#f1c27d', emoji: '🏼' },
+        { id: 'medium', name: 'moyenne', hex: '#e0ac69', emoji: '🏽' },
+        { id: 'medium-dark', name: 'moyenne foncée', hex: '#c68642', emoji: '🏾' },
+        { id: 'dark', name: 'foncée', hex: '#8d5524', emoji: '🏿' },
+      ],
       availablePassions: [
         { id: 'games', name: 'jeux vidéo', emoji: '🎮' },
         { id: 'art', name: 'dessin ou peinture', emoji: '🎨' },
@@ -666,12 +719,13 @@ export default {
         age: 18,
         nickname: '',
         avatarGender: null,
+        avatarSkinColor: null,
         avatarAccessories: null,
         avatarColor: null,
         avatarPassions: [],
         avatarExpression: null,
       },
-      totalSteps: 12, // Updated total steps
+      totalSteps: 13, // Updated total steps
       
       // Pagination for passions
       currentPassionPage: 0,
@@ -736,7 +790,7 @@ export default {
     },
     nextStep() {
       // Set accessory response before moving to next step
-      if (this.currentStep === 5) {
+      if (this.currentStep === 6) {
         this.responses.avatarAccessories =
           this.accessories.length > 0 ? this.accessories.join(',') : 'none'
       }
@@ -745,17 +799,17 @@ export default {
       this.currentStep++
 
       // Reset passion pagination when entering passion step
-      if (this.currentStep === 7) {
+      if (this.currentStep === 8) {
         this.currentPassionPage = 0
       }
 
       // WTF vlad what black magic control flow is this took me 2 hours to figure out
 
       // Handle different steps
-      if (this.currentStep === 9) {
+      if (this.currentStep === 10) {
         // Create account first
         this.createAccount()
-      } else if (this.currentStep === 10) {
+      } else if (this.currentStep === 11) {
         // Then generate avatars
         this.generateAvatars()
       }
@@ -765,16 +819,20 @@ export default {
         this.currentStep--
         
         // Reset passion pagination when entering passion step
-        if (this.currentStep === 7) {
+        if (this.currentStep === 8) {
           this.currentPassionPage = 0
         }
       }
     },
     skipStep() {
-      if (this.currentStep === 5) {
+      if (this.currentStep === 6) {
         this.accessories = []
         this.responses.avatarAccessories = 'none'
       }
+      this.nextStep()
+    },
+    skipSkinColorStep() {
+      this.responses.avatarSkinColor = null
       this.nextStep()
     },
     skipColorStep() {
@@ -862,6 +920,7 @@ export default {
         // Save avatar creation data
         const avatarData = {
           avatarGender: this.responses.avatarGender,
+          avatarSkinColor: this.responses.avatarSkinColor,
           avatarAccessories: this.responses.avatarAccessories,
           avatarColor: this.responses.avatarColor,
           avatarPassions: this.responses.avatarPassions,
@@ -882,7 +941,7 @@ export default {
       } catch (error) {
         console.error('Account creation error:', error)
         alert('Erreur lors de la création du compte. Veuillez réessayer.')
-        this.currentStep = 8 // Go back to last step before account creation
+        this.currentStep = 9 // Go back to last step before account creation
       }
     },
 
@@ -896,6 +955,7 @@ export default {
         // Prepare avatar generation request
         const avatarRequest = {
           gender: this.responses.avatarGender || 'neutral',
+          skinColor: this.responses.avatarSkinColor,
           accessories: this.responses.avatarAccessories,
           color: this.responses.avatarColor,
           passions: this.responses.avatarPassions,
@@ -924,7 +984,7 @@ export default {
           
           // Add a small delay to show completion
           setTimeout(() => {
-            this.currentStep = 11 // Move to avatar selection
+            this.currentStep = 12 // Move to avatar selection
           }, 1000)
         } else {
           throw new Error('No avatars received from server')
@@ -940,7 +1000,7 @@ export default {
     },
 
     async retryAvatarGeneration() {
-      this.currentStep = 10 // Go back to generation step
+      this.currentStep = 11 // Go back to generation step
       await this.generateAvatars()
     },
 
@@ -992,6 +1052,7 @@ export default {
             theme: this.selectedTheme,
             avatar: selectedAvatar.data_url,
             avatarGender: this.responses.avatarGender,
+            avatarSkinColor: this.responses.avatarSkinColor,
             avatarAccessories: this.responses.avatarAccessories,
             avatarColor: this.responses.avatarColor,
             avatarPassions: this.responses.avatarPassions,
@@ -1381,6 +1442,64 @@ export default {
 
 .color-option:hover:not(.selected) {
   transform: scale(1.1);
+}
+
+/* Skin Color Selection Styles */
+.skin-colors-container {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+  margin: 30px 0;
+  flex-wrap: wrap;
+}
+
+.skin-color-option {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.skin-color-option.selected {
+  border-color: #4285f4;
+  background-color: rgba(66, 133, 244, 0.2);
+}
+
+.skin-color-option:hover:not(.selected) {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.skin-color-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  margin-bottom: 8px;
+  transition: all 0.2s ease;
+}
+
+.skin-color-option.selected .skin-color-circle {
+  border-color: #ffffff;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.skin-color-emoji {
+  font-size: 1.5rem;
+  margin-bottom: 5px;
+}
+
+.skin-color-option p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #ffffff;
+  font-weight: 500;
 }
 
 /* Passion Selection Styles */
