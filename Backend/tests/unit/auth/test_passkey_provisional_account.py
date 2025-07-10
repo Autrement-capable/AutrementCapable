@@ -58,8 +58,9 @@ async def test_passkey_provisional_account_flow():
     mock_session.get.return_value = mock_user
 
     # Mock the session.execute method for UserDetail queries
-    mock_result = AsyncMock()
-    mock_scalars = AsyncMock()
+    # The key fix: scalars() should return a regular Mock, not AsyncMock
+    mock_result = MagicMock()  # Changed from AsyncMock to MagicMock
+    mock_scalars = MagicMock()  # Changed from AsyncMock to MagicMock
     mock_scalars.first.return_value = None  # No existing UserDetail
     mock_result.scalars.return_value = mock_scalars
     mock_session.execute.return_value = mock_result
@@ -143,10 +144,10 @@ async def test_passkey_provisional_account_flow():
             }
             
             # Mock user
-            mock_user = AsyncMock()
-            mock_user.id = user_id
-            mock_user.role_id = 1
-            mock_get_user.return_value = mock_user
+            mock_user_for_registration = AsyncMock()
+            mock_user_for_registration.id = user_id
+            mock_user_for_registration.role_id = 1
+            mock_get_user.return_value = mock_user_for_registration
             
             # Mock credential registration
             mock_credential = AsyncMock()
@@ -157,7 +158,7 @@ async def test_passkey_provisional_account_flow():
             
             response = await ac.post("/auth/passkey/registration/complete", json={
                 "user_id": user_id,
-                "registration_data": attestation_serializable,  # Use the serializable version
+                "registration_data": attestation_serializable,
                 "challenge": start_data["options"]["challenge"]
             })
             assert response.status_code == 200
