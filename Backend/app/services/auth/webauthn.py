@@ -26,7 +26,7 @@ from webauthn.helpers.structs import (
 # Get RP name and ID from environment or use defaults
 RP_ID = getenv("RP_ID", "localhost")
 RP_NAME = getenv("RP_NAME", "Autrement Capable")
-ORIGIN = [getenv("ORIGIN", f"https://{RP_ID}")].append("http://test") if getenv("MODE", "PROD") == "DEV" else [getenv("ORIGIN", f"https://{RP_ID}")]
+ORIGIN = [getenv("ORIGIN", f"https://{RP_ID}"), "http://test"] if getenv("MODE", "PROD") == "DEV" else [getenv("ORIGIN", f"https://{RP_ID}")]
 
 def generate_passkey_registration_options(user_id, username) -> Dict[str, Any]:
     """
