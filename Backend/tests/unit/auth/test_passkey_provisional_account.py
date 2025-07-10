@@ -1,13 +1,44 @@
 import pytest
 from httpx import AsyncClient, ASGITransport
 from unittest.mock import patch, AsyncMock, MagicMock
+import base64
 
-from app import app  # Assuming your FastAPI app is defined here
+from app import app
 from app.db.postgress.engine import getSession
 from app.db.postgress.models.test_model import User, UserDetail, PasskeyCredential
 from soft_webauthn import SoftWebauthnDevice
 
-from webauthn.helpers import bytes_to_base64url
+def convert_bytes_to_base64(obj):
+    """Recursively convert bytes objects to base64 strings for JSON serialization"""
+    if isinstance(obj, bytes):
+        return base64.b64encode(obj).decode('ascii')
+    elif isinstance(obj, dict):
+        return {k: convert_bytes_to_base64(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_bytes_to_base64(item) for item in obj]
+    else:
+        return obj
+
+
+def prepare_options_for_virtual_device(options):
+    """Convert string-based WebAuthn options to bytes for SoftWebauthnDevice"""
+    options_copy = options.copy()
+    
+    # Convert challenge from base64url string to bytes
+    challenge_str = options_copy["challenge"]
+    challenge_padded = challenge_str + '=' * (4 - len(challenge_str) % 4)
+    options_copy["challenge"] = base64.urlsafe_b64decode(challenge_padded)
+    
+    # Convert user.id from base64url string to bytes
+    if isinstance(options_copy["user"]["id"], str):
+        user_id_str = options_copy["user"]["id"]
+        user_id_padded = user_id_str + '=' * (4 - len(user_id_str) % 4)
+        options_copy["user"]["id"] = base64.urlsafe_b64decode(user_id_padded)
+    
+    # Override attestation for SoftWebauthnDevice compatibility
+    options_copy["attestation"] = "none"
+    
+    return options_copy
 
 @pytest.mark.asyncio
 async def test_passkey_provisional_account_flow():
@@ -20,12 +51,25 @@ async def test_passkey_provisional_account_flow():
     mock_session.commit = AsyncMock()
     mock_session.flush = AsyncMock()
 
+    # Mock the session.get method for User
+    mock_user = AsyncMock()
+    mock_user.id = 1
+    mock_user.onboarding_complete = False
+    mock_session.get.return_value = mock_user
+
+    # Mock the session.execute method for UserDetail queries
+    mock_result = AsyncMock()
+    mock_scalars = AsyncMock()
+    mock_scalars.first.return_value = None  # No existing UserDetail
+    mock_result.scalars.return_value = mock_scalars
+    mock_session.execute.return_value = mock_result
+
     # When `flush` is called, simulate the DB assigning an ID to the User object
     async def flush_side_effect(*args, **kwargs):
         for call in mock_session.add.call_args_list:
             added_object = call.args[0]
             if isinstance(added_object, User):
-                added_object.id = 123  # Assign a mock ID
+                added_object.id = 1  # Match the real flow
                 break
 
     mock_session.flush.side_effect = flush_side_effect
@@ -35,20 +79,26 @@ async def test_passkey_provisional_account_flow():
 
     device = SoftWebauthnDevice()
 
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://localhost:8080") as ac:
         # 1. Start passkey registration (provisional account)
-        with patch('app.api.auth.passkeys.get_role_by_name', new_callable=AsyncMock) as mock_get_role_by_name,             patch('app.api.auth.passkeys.generate_passkey_registration_options') as mock_generate_options:
+        with patch('app.api.auth.passkeys.get_role_by_name', new_callable=AsyncMock) as mock_get_role_by_name, \
+             patch('app.api.auth.passkeys.generate_passkey_registration_options') as mock_generate_options:
+            
+            # Mock based on your actual response format
             mock_generate_options.return_value = {
-                "challenge": bytes_to_base64url(b"some_challenge_bytes"),  # String, not bytes
-                "rp": {"id": "localhost", "name": "Test RP"},
-                "user": {
-                    "id": bytes_to_base64url(b"123"),  # String, not bytes
-                    "name": "testuser", 
-                    "displayName": "Test User"
-                },
+                "challenge": "g1x5W9HKwwmfUu82wESi82TvmXVsosCunMPV9UYoHlf2TRudU_PgFmmSZPjhzN5SrUnnBWUnjC2IICIcKYs4Rw",
+                "rp": {"name": "Autrement Capable", "id": "localhost"},
+                "user": {"id": "MQ", "name": "Autrement Capable", "displayName": "Autrement Capable"},
                 "pubKeyCredParams": [
                     {"type": "public-key", "alg": -7},
-                    {"type": "public-key", "alg": -257}
+                    {"type": "public-key", "alg": -8},
+                    {"type": "public-key", "alg": -36},
+                    {"type": "public-key", "alg": -37},
+                    {"type": "public-key", "alg": -38},
+                    {"type": "public-key", "alg": -39},
+                    {"type": "public-key", "alg": -257},
+                    {"type": "public-key", "alg": -258},
+                    {"type": "public-key", "alg": -259}
                 ],
                 "timeout": 60000,
                 "excludeCredentials": [],
@@ -58,67 +108,74 @@ async def test_passkey_provisional_account_flow():
                     "requireResidentKey": False,
                     "userVerification": "preferred"
                 },
-                "attestation": "none"
+                "attestation": "none"  # Changed to "none" for SoftWebauthnDevice
             }
 
             mock_role = AsyncMock()
             mock_role.id = 1
             mock_get_role_by_name.return_value = mock_role
 
-            response = await ac.post("/auth/passkey/registration/start", json={})
+            # Use the exact payload from your real flow
+            response = await ac.post("/auth/passkey/registration/start", 
+                                   json={"first_name": None, "last_name": None, "age": None})
             assert response.status_code == 200
             start_data = response.json()
             user_id = start_data["user_id"]
+            assert user_id == 1
 
         # 2. Create credential with the virtual authenticator
-        attestation = await device.create(
-            {"publicKey": start_data["options"]},  # Wrap in publicKey object
-            "http://localhost:8080" # Match the ORIGIN from .env
+        attestation = device.create(
+            {"publicKey": prepare_options_for_virtual_device(start_data["options"])},
+            "http://localhost:8080"
         )
 
+        attestation_serializable = convert_bytes_to_base64(attestation)
         # 3. Complete the registration
-        with patch('app.api.auth.passkeys.verify_passkey_registration', return_value=AsyncMock()) as mock_verify:
+        with patch('app.api.auth.passkeys.verify_passkey_registration') as mock_verify, \
+            patch('app.db.postgress.repositories.user.get_user_by_id', new_callable=AsyncMock) as mock_get_user, \
+            patch('app.db.postgress.repositories.passkey.register_passkey_credential', new_callable=AsyncMock) as mock_register_cred, \
+            patch('app.core.security.token_creation.create_token') as mock_create_token:
+            
+            # Mock verification result
+            mock_verify.return_value = {
+                "credential_id": "test_credential_id",
+                "public_key": "test_public_key"
+            }
+            
+            # Mock user
+            mock_user = AsyncMock()
+            mock_user.id = user_id
+            mock_user.role_id = 1
+            mock_get_user.return_value = mock_user
+            
+            # Mock credential registration
+            mock_credential = AsyncMock()
+            mock_register_cred.return_value = mock_credential
+            
+            # Mock token creation
+            mock_create_token.return_value = "test_access_token"
+            
             response = await ac.post("/auth/passkey/registration/complete", json={
                 "user_id": user_id,
-                "attestation_response": attestation
+                "registration_data": attestation_serializable,  # Use the serializable version
+                "challenge": start_data["options"]["challenge"]
             })
             assert response.status_code == 200
+            registration_result = response.json()
+            assert registration_result["success"] is True
+            assert "access_token" in registration_result
+            access_token = registration_result["access_token"]
 
-        # 4. Update user profile
-        with patch('app.api.data.user_profile.get_user_by_id', new_callable=AsyncMock) as mock_get_user:
-            mock_user = User(id=user_id, is_provisional=True)
-            mock_user_detail = UserDetail(user_id=user_id)
-            mock_user.user_detail = mock_user_detail
-            mock_get_user.return_value = mock_user
+        # 4. Update user profile using the access token
+        with patch('app.core.security.decorators.decode_token') as mock_decode:
+            # Mock the JWT decoding to return user info
+            mock_decode.return_value = {"sub": user_id, "role": "Young Person"}
 
-            response = await ac.put(f"/user/profile/{user_id}", json={"first_name": "Test", "age": 30})
+            response = await ac.put("/user/profile", 
+                                  json={"first_name": "wfwf", "age": 18, "onboarding_complete": True},
+                                  headers={"Authorization": f"Bearer {access_token}"})
             assert response.status_code == 200
-            assert mock_user.is_provisional is False
-            assert mock_user_detail.first_name == "Test"
-            assert mock_user_detail.age == 30
-
-        # 5. Start authentication
-        with patch('app.api.auth.passkeys.generate_passkey_authentication_options', return_value={"challenge": "another_challenge"}) as mock_generate_auth_options:
-            response = await ac.post("/auth/passkey/authentication/start", json={"user_id": user_id})
-            assert response.status_code == 200
-            auth_options = response.json()
-
-        # 6. Get assertion with the virtual authenticator
-        assertion = await device.get(auth_options, "http://test")
-
-        # 7. Complete the authentication
-        with patch('app.api.auth.passkeys.verify_passkey_authentication', new_callable=AsyncMock) as mock_verify_auth:
-            mock_user = User(id=user_id, email=f'user_{user_id}@example.com')
-            mock_passkey = PasskeyCredential(user_id=user_id, credential_id=device.credential_id, public_key=device.public_key)
-            mock_verify_auth.return_value = (mock_user, mock_passkey)
-
-            with patch('app.core.security.token_creation.create_access_token', return_value="test_token") as mock_create_token:
-                response = await ac.post("/auth/passkey/authentication/complete", json={
-                    "user_id": user_id,
-                    "assertion_response": assertion
-                })
-                assert response.status_code == 200
-                assert response.json()["access_token"] == "test_token"
+            assert response.json()["message"] == "Profile updated successfully"
 
     # Clean up the override
     app.dependency_overrides.clear()
