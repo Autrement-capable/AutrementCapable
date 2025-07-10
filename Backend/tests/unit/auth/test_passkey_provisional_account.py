@@ -5,7 +5,7 @@ import base64
 
 from app import app
 from app.db.postgress.engine import getSession
-from app.db.postgress.models.test_model import User, UserDetail, PasskeyCredential
+from app.db.postgress.models import User, UserDetail, PasskeyCredential
 from soft_webauthn import SoftWebauthnDevice
 
 def convert_bytes_to_base64(obj):
