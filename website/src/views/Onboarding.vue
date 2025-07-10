@@ -385,6 +385,65 @@
         </div>
       </div>
 
+      <!-- Flamou Popup for Account Explanation -->
+      <div v-if="showAccountExplanationPopup" class="flamou-popup-overlay" @click="closeAccountExplanationPopup">
+        <div class="flamou-popup-container" @click.stop>
+          <div class="flamou-popup-content">
+            <div class="flamou-popup-header">
+              <img
+                :src="flamouImages.interesting"
+                alt="Flamou explique"
+                class="flamou-popup-image"
+              />
+              <button class="popup-close-button" @click="closeAccountExplanationPopup">×</button>
+            </div>
+            
+            <div class="flamou-popup-body">
+              <div class="flamou-popup-speech-bubble">
+                <h3>Pourquoi créer un compte sans mot de passe ?</h3>
+                <p>
+                  Salut ! Je vais t'expliquer pourquoi nous créons ton compte d'une façon spéciale :
+                </p>
+                <ul>
+                  <li>🔒 <strong>Plus sûr</strong> : Pas de mot de passe à retenir ou à perdre</li>
+                  <li>⚡ <strong>Plus rapide</strong> : Tu te connectes avec ton empreinte ou ton visage ou ton code d'ordinateur</li>
+                  <li>🎯 <strong>Plus simple</strong> : Pas besoin de créer un mot de passe compliqué</li>
+                </ul>
+                
+                <h4>Que va-t-il se passer maintenant ?</h4>
+                <div class="steps-explanation">
+                  <div class="step-item">
+                    <span class="step-number">1</span>
+                    <p>Je vais créer ton compte automatiquement</p>
+                  </div>
+                  <div class="step-item">
+                    <span class="step-number">2</span>
+                    <p>Nous allons générer tes avatars personnalisés</p>
+                  </div>
+                  <div class="step-item">
+                    <span class="step-number">3</span>
+                    <p>Tu pourras choisir ton avatar préféré</p>
+                  </div>
+                  <div class="step-item">
+                    <span class="step-number">4</span>
+                    <p>Et hop ! Tu seras prêt(e) à utiliser l'application</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="popup-buttons">
+                <button class="popup-button secondary" @click="closeAccountExplanationPopup">
+                  J'ai compris !
+                </button>
+                <button class="popup-button primary" @click="proceedWithAccountCreation">
+                  C'est parti ! 🚀
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Step 9: Account Creation -->
       <div v-if="currentStep === 9" class="step-container">
         <h1 class="step-title">Création de ton compte</h1>
@@ -609,6 +668,7 @@ export default {
       generationError: null,
       isFinalizingProfile: false,
       finalizationError: null,
+      showAccountExplanationPopup: false,
       
       flamouImages: {
         happy: require('@/assets/flamou/happy.png'),
@@ -753,8 +813,8 @@ export default {
 
       // Handle different steps
       if (this.currentStep === 9) {
-        // Create account first
-        this.createAccount()
+        // Show explanation popup before account creation
+        this.showAccountExplanationPopup = true
       } else if (this.currentStep === 10) {
         // Then generate avatars
         this.generateAvatars()
@@ -1020,6 +1080,16 @@ export default {
       if (gender === 'boy') return 'Garçon'
       if (gender === 'girl') return 'Fille'
       return 'Neutre'
+    },
+
+    closeAccountExplanationPopup() {
+      this.showAccountExplanationPopup = false
+      this.createAccount()
+    },
+
+    proceedWithAccountCreation() {
+      this.showAccountExplanationPopup = false
+      this.createAccount()
     },
   }
 }
@@ -1750,6 +1820,231 @@ export default {
   }
 }
 
+/* Flamou Popup Styles */
+.flamou-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.flamou-popup-container {
+  background-color: rgba(20, 20, 30, 0.95);
+  border-radius: 20px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+  border: 2px solid rgba(66, 133, 244, 0.3);
+  animation: slideIn 0.3s ease-out;
+}
+
+.flamou-popup-content {
+  padding: 0;
+}
+
+.flamou-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 30px 10px 30px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.flamou-popup-image {
+  width: 80px;
+  height: auto;
+  border-radius: 50%;
+  box-shadow: 0 5px 15px rgba(66, 133, 244, 0.3);
+}
+
+.popup-close-button {
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 2rem;
+  cursor: pointer;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.popup-close-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: scale(1.1);
+}
+
+.flamou-popup-body {
+  padding: 20px 30px 30px 30px;
+}
+
+.flamou-popup-speech-bubble {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  padding: 25px;
+  margin-bottom: 25px;
+  border: 1px solid rgba(66, 133, 244, 0.2);
+}
+
+.flamou-popup-speech-bubble h3 {
+  color: #a0c4ff;
+  margin: 0 0 15px 0;
+  font-size: 1.4rem;
+  font-weight: bold;
+}
+
+.flamou-popup-speech-bubble h4 {
+  color: #ffffff;
+  margin: 25px 0 15px 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.flamou-popup-speech-bubble p {
+  color: #ffffff;
+  margin: 0 0 15px 0;
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+
+.flamou-popup-speech-bubble ul {
+  margin: 15px 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.flamou-popup-speech-bubble li {
+  color: #ffffff;
+  margin: 10px 0;
+  font-size: 1.05rem;
+  line-height: 1.4;
+  padding-left: 10px;
+}
+
+.steps-explanation {
+  margin-top: 20px;
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+  margin: 12px 0;
+  padding: 10px;
+  background-color: rgba(66, 133, 244, 0.1);
+  border-radius: 10px;
+  border-left: 4px solid #4285f4;
+}
+
+.step-number {
+  background-color: #4285f4;
+  color: white;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-right: 15px;
+  flex-shrink: 0;
+}
+
+.step-item p {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1rem;
+}
+
+.popup-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: flex-end;
+}
+
+.popup-button {
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  min-width: 120px;
+}
+
+.popup-button.primary {
+  background-color: #4285f4;
+  color: white;
+}
+
+.popup-button.primary:hover {
+  background-color: #2a75e5;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(66, 133, 244, 0.4);
+}
+
+.popup-button.secondary {
+  background-color: transparent;
+  color: #ffffff;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.popup-button.secondary:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Custom Scrollbar Styles */
+.flamou-popup-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.flamou-popup-container::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.flamou-popup-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg, #4285f4, #a0c4ff);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.flamou-popup-container::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(45deg, #2a75e5, #8ab4f8);
+  box-shadow: 0 0 10px rgba(66, 133, 244, 0.5);
+}
+
+/* Firefox scrollbar */
+.flamou-popup-container {
+  scrollbar-width: thin;
+  scrollbar-color: #4285f4 rgba(255, 255, 255, 0.1);
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .flamou-container {
@@ -1806,6 +2101,58 @@ export default {
   .pagination-info {
     text-align: center;
     order: -1;
+  }
+  
+  /* Responsive popup styles */
+  .flamou-popup-container {
+    width: 95%;
+    max-width: none;
+    margin: 10px;
+  }
+  
+  .flamou-popup-header {
+    padding: 15px 20px 10px 20px;
+  }
+  
+  .flamou-popup-body {
+    padding: 15px 20px 20px 20px;
+  }
+  
+  .flamou-popup-speech-bubble {
+    padding: 15px;
+  }
+  
+  .flamou-popup-speech-bubble h3 {
+    font-size: 1.2rem;
+  }
+  
+  .flamou-popup-speech-bubble h4 {
+    font-size: 1.1rem;
+  }
+  
+  .flamou-popup-speech-bubble p,
+  .flamou-popup-speech-bubble li {
+    font-size: 1rem;
+  }
+  
+  .step-item {
+    flex-direction: column;
+    text-align: center;
+    padding: 15px;
+  }
+  
+  .step-number {
+    margin-right: 0;
+    margin-bottom: 10px;
+  }
+  
+  .popup-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .popup-button {
+    width: 100%;
   }
 }
 </style>
