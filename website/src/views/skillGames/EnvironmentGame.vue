@@ -10,31 +10,26 @@
 
     <!-- Section principale avec les environnements -->
     <div v-else class="main-interface">
-      <!-- Sélecteur d'environnement (désormais visible) -->
-      <div v-if="showEnvironmentSelector" class="environment-selector-overlay">
-        <div class="environment-selector-container">
-          <h2>Choisis ton espace</h2>
-          <div class="environment-selector">
-            <div
-              v-for="(env, index) in environments"
-              :key="index"
-              @click="(selectEnvironment(index), hideEnvironmentSelector())"
-              :class="[
-                'environment-card',
-                { active: currentEnvironmentIndex === index },
-              ]"
-            >
-              <div class="env-card-header">
-                <div class="env-icon">{{ env.icon }}</div>
-                <img
-                  :src="env.imageSrc"
-                  class="env-card-image"
-                  alt="Environnement"
-                />
-              </div>
-              <h3>{{ env.name }}</h3>
-              <p>{{ env.shortDescription }}</p>
+      <!-- Popup d'explication de Flamou -->
+      <div v-if="showFlamouExplanation" class="flamou-explanation-overlay">
+        <div class="flamou-explanation-container">
+          <div class="flamou-character">
+            <img :src="flamouImage" alt="Flamou" class="flamou-avatar" />
+          </div>
+          <div class="flamou-speech-bubble">
+            <h2>{{ flamouExplanation.title }}</h2>
+            <p>{{ flamouExplanation.message }}</p>
+            <div class="flamou-instructions">
+              <h3>Ce que tu vas faire :</h3>
+              <ul>
+                <li v-for="(instruction, index) in flamouExplanation.instructions" :key="index">
+                  {{ instruction }}
+                </li>
+              </ul>
             </div>
+            <button @click="startExploration" class="flamou-continue-button">
+              {{ flamouExplanation.buttonText }}
+            </button>
           </div>
         </div>
       </div>
@@ -260,61 +255,69 @@
         </div>
       </div>
 
-      <!-- Loading overlay for 3D models -->
-      <div v-if="modelsLoading" class="models-loading-overlay">
-        <div class="loading-container">
-          <h3>Chargement de l'environnement</h3>
-          <div class="loading-bar">
-            <div
-              class="loading-progress"
-              :style="{ width: loadingProgress + '%' }"
-            ></div>
+      <!-- Flamou Loading overlay for 3D models -->
+      <div v-if="modelsLoading" class="flamou-loading-overlay">
+        <div class="flamou-loading-container">
+          <div class="flamou-loading-character">
+            <img :src="flamouImage" alt="Flamou" class="flamou-loading-avatar" />
+            <div class="loading-speech-bubble">
+              <div class="loading-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+            </div>
           </div>
-          <div class="loading-text">
-            {{ Math.round(loadingProgress) }}% - Chargement des objets 3D...
-          </div>
-          <div v-if="currentLoadingItem" class="loading-item">
-            Chargement: {{ currentLoadingItem }}
+          
+          <div class="flamou-loading-content">
+            <h3>{{ getCurrentLoadingMessage() }}</h3>
+            <div class="flamou-loading-bar">
+              <div
+                class="flamou-loading-progress"
+                :style="{ width: loadingProgress + '%' }"
+              ></div>
+            </div>
+            <div class="flamou-loading-text">
+              {{ Math.round(loadingProgress) }}% - {{ getCurrentLoadingDetail() }}
+            </div>
+            <div v-if="currentLoadingItem" class="flamou-loading-item">
+              {{ currentLoadingItem }}
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Message de confirmation -->
-    <div v-if="showFeedbackMessage" class="feedback-overlay">
-      <div class="feedback-message">
-        <h3>Félicitations!</h3>
-        <p>Vous avez exploré l'environnement sensoriel.</p>
-        <div class="preference-summary">
-          <h4>Résumé de vos préférences:</h4>
-          <p>
-            <strong>Environnement:</strong>
-            {{ currentEnvironment.name }}
-          </p>
-          <p>
-            <strong>Ambiance lumineuse préférée:</strong>
-            {{ getLightPreference() }}
-          </p>
-          <p>
-            <strong>Préférence sonore:</strong>
-            {{ getSoundPreference() }}
-          </p>
+    <!-- Popup de choix Flamou -->
+    <div v-if="showFlamouChoice" class="flamou-choice-overlay">
+      <div class="flamou-choice-container">
+        <div class="flamou-character">
+          <img :src="flamouImage" alt="Flamou" class="flamou-avatar" />
         </div>
-        <div class="recommendation-box">
-          <h4>Recommandations personnalisées</h4>
-          <p>
-            D'après vos préférences, voici quelques conseils pour créer un
-            environnement adapté à vos besoins sensoriels:
-          </p>
-          <ul>
-            <li>{{ getPersonalizedRecommendation(1) }}</li>
-            <li>{{ getPersonalizedRecommendation(2) }}</li>
-            <li>{{ getPersonalizedRecommendation(3) }}</li>
-          </ul>
+        <div class="flamou-speech-bubble">
+          <h2>{{ getCompletionMessage() }}</h2>
+          <p>{{ getCompletionDescription() }}</p>
+          
+          <div class="flamou-choices">
+            <div v-if="!isLastEnvironment" class="choice-option" @click="goToNextRoom">
+              <div class="choice-icon">🏠</div>
+              <h3>Explorer la {{ getNextRoomNumber() }}ème salle</h3>
+              <p>Découvre un nouvel environnement avec d'autres paramètres à personnaliser</p>
+            </div>
+            
+            <div class="choice-option" @click="changeGame">
+              <div class="choice-icon">🎮</div>
+              <h3>Changer de jeu</h3>
+              <p>Passe à une autre activité pour continuer ton exploration</p>
+            </div>
+
+            <div class="choice-option" @click="returnToDashboard">
+              <div class="choice-icon">🏡</div>
+              <h3>Retour au tableau de bord</h3>
+              <p>Reviens au menu principal pour voir ton profil et tes progrès</p>
+            </div>
+          </div>
         </div>
-        <button @click="restartExploration" class="primary-button">
-          Recommencer l'exploration
-        </button>
       </div>
     </div>
 
@@ -332,6 +335,7 @@ import CafeAudio from '@/assets/sounds/cafe.mp3'
 import CrowdAudio from '@/assets/sounds/crowd.mp3'
 import GameGuide from '@/components/GameGuideComponent.vue'
 import AuthService from '@/services/AuthService'
+import flamouNormalImage from '@/assets/flamou/normal.png'
 
 export default {
   name: 'SensoryEnvironments',
@@ -343,9 +347,9 @@ export default {
       // Interface state
       activityStarted: false,
       currentEnvironmentIndex: 0,
-      showFeedbackMessage: false,
+      showFlamouChoice: false,
       rendererInitialized: false,
-      showEnvironmentSelector: false,
+      showFlamouExplanation: false,
       currentLoadingItem: '',
       showQuestion: false,
       currentQuestionIndex: 0,
@@ -560,6 +564,36 @@ export default {
 
       // Renderer
       renderer: null,
+
+      // Flamou explanation data
+      flamouImage: flamouNormalImage,
+      flamouExplanation: {
+        title: 'Salut ! Je suis Flamou 👋',
+        message: 'Je vais t\'aider à découvrir quel environnement te convient le mieux pour te sentir à l\'aise et bien concentré(e).',
+        instructions: [
+          'Tu vas explorer un espace virtuel en 3D',
+          'Je vais te poser des questions sur tes préférences',
+          'Tu pourras ajuster la lumière, les couleurs et les sons',
+          'À la fin, tu auras des conseils personnalisés !'
+        ],
+        buttonText: 'C\'est parti ! 🚀'
+      },
+
+      // Messages de chargement Flamou
+      loadingMessages: [
+        'Je prépare ton nouvel espace... 🏗️',
+        'J\'installe les meubles parfaits pour toi ! 🪑',
+        'Je règle l\'éclairage comme tu l\'aimes... 💡',
+        'Presque fini ! Je fais les derniers ajustements... ✨',
+        'Ton environnement sera bientôt prêt ! 🎨'
+      ],
+      loadingDetails: [
+        'Création de l\'ambiance...',
+        'Positionnement des objets...',
+        'Optimisation de l\'éclairage...',
+        'Finalisation des détails...',
+        'Dernières touches magiques...'
+      ],
     }
   },
   computed: {
@@ -570,6 +604,9 @@ export default {
     },
     currentQuestion() {
       return this.questions[this.currentQuestionIndex] || this.questions[0]
+    },
+    isLastEnvironment() {
+      return this.currentEnvironmentIndex >= this.environments.length - 1
     },
   },
   mounted() {
@@ -614,6 +651,12 @@ export default {
     },
 
     async loadSavedRoomData() {
+      // Ne charger que si le Set est vide, pour éviter d'écraser les données en cours
+      if (this.completedRooms.size > 0) {
+        console.log('Completed rooms already in memory, skipping load')
+        return
+      }
+
       try {
         const response = await AuthService.request('get', '/games/room-env')
         if (
@@ -627,6 +670,7 @@ export default {
           response.data.roomData.forEach((roomData) => {
             this.completedRooms.add(roomData.room)
           })
+          console.log('Loaded completed rooms from backend:', Array.from(this.completedRooms))
         }
       } catch (error) {
         console.warn(
@@ -651,12 +695,14 @@ export default {
           localPayload.roomData.forEach((roomData) => {
             this.completedRooms.add(roomData.room)
           })
+          console.log('Loaded completed rooms from local:', Array.from(this.completedRooms))
         } else if (savedCompletedRooms.length > 0) {
           // Fallback: utiliser l'ancien format si disponible
           this.completedRooms.clear()
           savedCompletedRooms.forEach((roomName) => {
             this.completedRooms.add(roomName)
           })
+          console.log('Loaded completed rooms from fallback:', Array.from(this.completedRooms))
         }
       }
     },
@@ -666,17 +712,30 @@ export default {
       const completedRoomsArray = Array.from(this.completedRooms)
       const completedCount = completedRoomsArray.length
 
+      console.log('=== Calculate Completion Debug ===')
+      console.log('Total rooms expected:', totalRooms)
+      console.log('Completed rooms array:', completedRoomsArray)
+      console.log('Completed count:', completedCount)
+
       // Vérification spécifique des rooms attendues
       const expectedRooms = ['Focus Room', 'Open Room']
       const hasAllExpectedRooms = expectedRooms.every((room) =>
         this.completedRooms.has(room),
       )
 
+      console.log('Expected rooms:', expectedRooms)
+      console.log('Has all expected rooms:', hasAllExpectedRooms)
+      
+      expectedRooms.forEach(room => {
+        console.log(`Has "${room}":`, this.completedRooms.has(room))
+      })
+
       if (completedCount === 0) return 0
       if (completedCount === 1) return 0.5
       if (completedCount >= 2 || hasAllExpectedRooms) return 1.0
 
       const result = Math.min(completedCount / totalRooms, 1.0)
+      console.log('Final result:', result)
       return result
     },
 
@@ -685,12 +744,13 @@ export default {
       const cleanName = environmentName.trim()
 
       const mapping = {
-        'Espace de Détente': 'Focus Room',
-        'Espace de Travail': 'Open Room',
+        'Espace Polyvalent (Concentration & Détente)': 'Focus Room',
+        'Espace social contrôlé': 'Open Room',
       }
 
       const result = mapping[cleanName] || 'Focus Room'
 
+      console.log(`Mapping environment "${cleanName}" to room "${result}"`)
       return result
     },
 
@@ -786,8 +846,14 @@ export default {
 
     // Sauvegarder les données d'une room au backend
     async saveRoomToBackend(roomName, roomData) {
+      console.log(`Saving room: "${roomName}"`)
+      console.log('Completed rooms before adding:', Array.from(this.completedRooms))
+      
       this.completedRooms.add(roomName)
+      console.log('Completed rooms after adding:', Array.from(this.completedRooms))
+      
       const globalCompletion = this.calculateCompletion()
+      console.log('Global completion:', globalCompletion)
 
       try {
         // Récupérer les données existantes
@@ -963,9 +1029,10 @@ export default {
         this.initRenderer()
       }
 
-      this.showEnvironmentSelector = true
+      // Afficher l'explication de Flamou au lieu du sélecteur d'environnement
+      this.showFlamouExplanation = true
 
-      // Attendre un court délai avant de sélectionner l'environnement
+      // Attendre un court délai avant de créer la pièce de base
       setTimeout(() => {
         this.createBasicRoom()
       }, 300)
@@ -991,33 +1058,98 @@ export default {
 
     // Finaliser l'exploration
     async finishExploration() {
-      // Sauvegarder le feedback final
-      this.saveFeedback()
-
+      console.log('=== Finish Exploration Debug ===')
+      console.log('Current environment:', this.currentEnvironment.name)
+      console.log('Current environment index:', this.currentEnvironmentIndex)
+      console.log('Current room name before check:', this.currentRoomName)
+      
       // Vérifier que currentRoomName est bien défini
       if (!this.currentRoomName) {
         console.error('currentRoomName est vide! Recalcul...')
         this.currentRoomName = this.mapEnvironmentToRoomName(
           this.currentEnvironment.name,
         )
+        console.log('New room name after mapping:', this.currentRoomName)
       }
 
       // Construire et sauvegarder les données de la room actuelle
       const roomData = this.buildRoomData(this.currentRoomName)
+      console.log('Room data to save:', roomData)
+      
       await this.saveRoomToBackend(this.currentRoomName, roomData)
 
-      // Afficher le récapitulatif
-      this.showFeedbackMessage = true
+      // Afficher le popup de choix Flamou
+      this.showFlamouChoice = true
       this.showQuestion = false
     },
 
-    toggleEnvironmentSelector() {
-      this.showEnvironmentSelector = !this.showEnvironmentSelector
+    // Commencer l'exploration avec Flamou
+    startExploration() {
+      this.showFlamouExplanation = false
+      // Sélectionner automatiquement le premier environnement (Espace Polyvalent)
+      this.selectEnvironment(0)
     },
 
-    // Masquer le sélecteur d'environnements
-    hideEnvironmentSelector() {
-      this.showEnvironmentSelector = false
+    // Aller à la salle suivante
+    goToNextRoom() {
+      this.showFlamouChoice = false
+      // Sélectionner l'environnement suivant
+      const nextIndex = this.currentEnvironmentIndex + 1
+      if (nextIndex < this.environments.length) {
+        this.selectEnvironment(nextIndex)
+      }
+    },
+
+    // Changer de jeu
+    changeGame() {
+      this.showFlamouChoice = false
+      
+      // Liste des jeux disponibles (excluant le jeu actuel)
+      const availableGames = [
+        '/roue-des-competences',
+        '/scenarios', 
+        '/metiers',
+        '/shape-sequence-game',
+        '/game-speed'
+      ]
+      
+      // Sélectionner un jeu au hasard
+      const randomIndex = Math.floor(Math.random() * availableGames.length)
+      const selectedGame = availableGames[randomIndex]
+      
+      // Rediriger vers le jeu sélectionné
+      this.$router.push(selectedGame)
+    },
+
+    // Retourner au tableau de bord
+    returnToDashboard() {
+      this.showFlamouChoice = false
+      this.$router.push('/dashboard')
+    },
+
+    // Obtenir le message de completion dynamique
+    getCompletionMessage() {
+      const envNumber = this.currentEnvironmentIndex + 1
+      
+      if (this.isLastEnvironment) {
+        return `Fantastique ! Tu as exploré tous les environnements ! 🎊`
+      } else {
+        return `Super ! Tu as terminé l'environnement ${envNumber} ! 🎉`
+      }
+    },
+
+    // Obtenir la description de completion dynamique
+    getCompletionDescription() {
+      if (this.isLastEnvironment) {
+        return `Tu as exploré tous les espaces disponibles et découvert tes préférences sensorielles. Félicitations pour ce parcours complet !`
+      } else {
+        return `Tu as bien exploré tes préférences sensorielles dans cet espace. Tu peux maintenant découvrir un nouvel environnement ou choisir une autre activité.`
+      }
+    },
+
+    // Obtenir le numéro de la prochaine salle
+    getNextRoomNumber() {
+      return this.currentEnvironmentIndex + 2
     },
 
     // Sélectionner un environnement
@@ -1298,19 +1430,6 @@ export default {
       }
     },
 
-    // Enregistrer le feedback et marquer l'environnement comme complété
-    saveFeedback() {
-      const feedback = this.getCurrentFeedback()
-      console.log('Feedback enregistré:', feedback)
-
-      // Afficher un message de confirmation
-      this.showGuideMessage({
-        title: 'Ressenti enregistré',
-        description:
-          'Votre feedback sur cet environnement a été sauvegardé. Vous pouvez voir un récapitulatif de vos préférences.',
-      })
-    },
-
     // Enregistrer les personnalisations actuelles
     saveCurrentCustomization(category) {
       const feedback = this.getCurrentFeedback()
@@ -1454,11 +1573,11 @@ export default {
       return "Prenez des pauses sensorielles régulières pour prévenir la fatigue et l'épuisement, particulièrement dans des environnements stimulants."
     },
 
-    // Recommencer l'exploration
+    // Recommencer l'exploration (si nécessaire)
     restartExploration() {
       this.resetAllData()
       // Réinitialiser les données
-      this.showFeedbackMessage = false
+      this.showFlamouChoice = false
       this.currentEnvironmentIndex = 0
       this.currentQuestionIndex = 0
       this.showQuestion = false
@@ -1486,7 +1605,7 @@ export default {
         }
       })
 
-      this.showEnvironmentSelector = true
+      this.showFlamouExplanation = true
     },
 
     // Méthodes de mise à jour du renderer
@@ -1563,6 +1682,26 @@ export default {
       } catch (error) {
         console.error('Erreur lors de la synchronisation des données:', error)
       }
+    },
+
+    // Obtenir le message de chargement actuel basé sur le pourcentage
+    getCurrentLoadingMessage() {
+      const progress = this.loadingProgress
+      if (progress < 20) return this.loadingMessages[0]
+      if (progress < 40) return this.loadingMessages[1]
+      if (progress < 60) return this.loadingMessages[2]
+      if (progress < 80) return this.loadingMessages[3]
+      return this.loadingMessages[4]
+    },
+
+    // Obtenir le détail de chargement actuel
+    getCurrentLoadingDetail() {
+      const progress = this.loadingProgress
+      if (progress < 20) return this.loadingDetails[0]
+      if (progress < 40) return this.loadingDetails[1]
+      if (progress < 60) return this.loadingDetails[2]
+      if (progress < 80) return this.loadingDetails[3]
+      return this.loadingDetails[4]
     },
   },
 }
@@ -2221,66 +2360,175 @@ export default {
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Loading overlay */
-.models-loading-overlay {
+/* Flamou Loading overlay */
+.flamou-loading-overlay {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: linear-gradient(135deg, rgba(43, 107, 255, 0.9) 0%, rgba(76, 175, 80, 0.9) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   backdrop-filter: blur(5px);
+  animation: fadeIn 0.3s ease-out;
 }
 
-.loading-container {
-  background: white;
-  padding: 25px;
-  border-radius: 12px;
-  max-width: 400px;
+.flamou-loading-container {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+  padding: 30px;
+  border-radius: 20px;
+  max-width: 500px;
   width: 90%;
   text-align: center;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  border: 3px solid #4caf50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.loading-container h3 {
-  margin-top: 0;
+.flamou-loading-character {
+  position: relative;
+  margin-bottom: 20px;
+  animation: floatBounce 2s ease-in-out infinite;
+}
+
+@keyframes floatBounce {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+.flamou-loading-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 4px solid #4caf50;
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
+}
+
+.loading-speech-bubble {
+  position: absolute;
+  top: -10px;
+  right: -20px;
+  background: white;
+  padding: 8px 12px;
+  border-radius: 15px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  border: 2px solid #4caf50;
+}
+
+.loading-speech-bubble::before {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 15px;
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid white;
+}
+
+.loading-dots {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.loading-dots span {
+  width: 6px;
+  height: 6px;
+  background: #4caf50;
+  border-radius: 50%;
+  animation: loadingDots 1.4s ease-in-out infinite both;
+}
+
+.loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+.loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+.loading-dots span:nth-child(3) { animation-delay: 0s; }
+
+@keyframes loadingDots {
+  0%, 80%, 100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+.flamou-loading-content {
+  width: 100%;
+}
+
+.flamou-loading-content h3 {
+  margin: 0 0 20px 0;
   color: #2b6bff;
-  margin-bottom: 15px;
+  font-size: 1.4rem;
+  font-weight: bold;
+  animation: textGlow 2s ease-in-out infinite alternate;
 }
 
-.loading-bar {
-  height: 10px;
-  background: #eee;
-  border-radius: 5px;
+@keyframes textGlow {
+  from {
+    text-shadow: 0 0 5px rgba(43, 107, 255, 0.3);
+  }
+  to {
+    text-shadow: 0 0 10px rgba(43, 107, 255, 0.6);
+  }
+}
+
+.flamou-loading-bar {
+  height: 12px;
+  background: #e0e0e0;
+  border-radius: 6px;
   overflow: hidden;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.loading-progress {
+.flamou-loading-progress {
   height: 100%;
-  background: #2b6bff;
-  border-radius: 5px;
+  background: linear-gradient(45deg, #4caf50, #45a049, #4caf50);
+  background-size: 200% 200%;
+  border-radius: 6px;
   transition: width 0.3s ease;
+  animation: progressShimmer 2s linear infinite;
 }
 
-.loading-text {
-  font-size: 0.9rem;
+@keyframes progressShimmer {
+  0% {
+    background-position: 200% 50%;
+  }
+  100% {
+    background-position: -200% 50%;
+  }
+}
+
+.flamou-loading-text {
+  font-size: 1rem;
   color: #555;
   margin-bottom: 10px;
+  font-weight: 500;
 }
 
-.loading-item {
-  font-size: 0.8rem;
-  color: #888;
+.flamou-loading-item {
+  font-size: 0.9rem;
+  color: #777;
   font-style: italic;
+  opacity: 0.8;
 }
 
-/* Feedback overlay */
-.feedback-overlay {
+/* Flamou choice popup */
+.flamou-choice-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -2291,74 +2539,79 @@ export default {
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  backdrop-filter: blur(3px);
+  animation: fadeIn 0.3s ease-out;
 }
 
-.feedback-message {
-  background: white;
+.flamou-choice-container {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
   padding: 30px;
-  border-radius: 12px;
-  max-width: 600px;
+  border-radius: 20px;
+  max-width: 800px;
   width: 90%;
-  text-align: center;
-  max-height: 90vh;
+  max-height: 80vh;
   overflow-y: auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  border: 3px solid #4caf50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  animation: slideInUp 0.5s ease-out;
 }
 
-.feedback-message h3 {
-  color: #3a57e8;
-  margin-top: 0;
-  margin-bottom: 10px;
+.flamou-choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+  width: 100%;
+  max-width: 800px;
 }
 
-.preference-summary {
-  background: #f8f9fa;
-  padding: 15px;
-  border-radius: 8px;
-  margin: 20px 0;
-  text-align: left;
+.choice-option {
+  background: white;
+  border: 3px solid #e0e0e0;
+  border-radius: 15px;
+  padding: 25px 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-.preference-summary h4 {
-  margin-top: 0;
-  margin-bottom: 10px;
-  color: #444;
+.choice-option:hover {
+  border-color: #4caf50;
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(76, 175, 80, 0.2);
 }
 
-.preference-summary p {
-  margin: 5px 0;
-  color: #555;
+.choice-option:active {
+  transform: translateY(-2px);
 }
 
-.recommendation-box {
-  background: #e6f3ff;
-  border-radius: 8px;
-  padding: 15px;
-  margin: 20px 0;
-  text-align: left;
+.choice-icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+  display: block;
 }
 
-.recommendation-box h4 {
-  margin-top: 0;
-  margin-bottom: 10px;
-  color: #3a57e8;
+.choice-option h3 {
+  color: #2b6bff;
+  margin: 0 0 10px 0;
+  font-size: 1.3rem;
+  font-weight: bold;
 }
 
-.recommendation-box p {
-  margin: 5px 0;
-  color: #555;
+.choice-option p {
+  color: #666;
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.4;
 }
 
-.recommendation-box ul {
-  padding-left: 20px;
-}
-
-.recommendation-box li {
-  margin-bottom: 10px;
-  color: #333;
-}
-
-/* Environment selector */
-.environment-selector-overlay {
+/* Flamou explanation popup */
+.flamou-explanation-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -2370,94 +2623,146 @@ export default {
   justify-content: center;
   z-index: 100;
   backdrop-filter: blur(3px);
+  animation: fadeIn 0.3s ease-out;
 }
 
-.environment-selector-container {
-  background: white;
+.flamou-explanation-container {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
   padding: 30px;
-  border-radius: 12px;
-  max-width: 900px;
+  border-radius: 20px;
+  max-width: 700px;
   width: 90%;
   max-height: 80vh;
   overflow-y: auto;
-}
-
-.environment-selector-container h2 {
-  color: #2b6bff;
-  margin-top: 0;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-.environment-selector {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  border: 3px solid #4caf50;
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 20px;
-  justify-content: center;
-  margin: 15px 0;
-}
-
-.environment-card {
-  flex: 0 1 calc(33.333% - 20px); /* Pour avoir 3 cartes par ligne */
-  min-width: 220px; /* Largeur minimale pour les petits écrans */
-  max-width: 280px;
-  background: #f8f9fa;
-  border-radius: 10px;
-  overflow: hidden;
-  transition: all 0.2s;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
-  margin-bottom: 15px;
-}
-
-.env-card-image {
-  height: 160px;
-  width: 100%;
-  object-fit: cover; /* Pour s'assurer que l'image couvre bien l'espace sans déformation */
-  display: block;
-  transition: transform 0.3s ease;
-}
-
-.environment-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-.env-card-header {
-  position: relative;
-  overflow: hidden; /* Pour masquer le débordement lors du zoom */
-}
-
-.environment-card.active {
-  border: 2px solid #3a57e8;
-}
-
-.environment-card h3 {
-  margin: 10px 15px;
-  color: #333;
-}
-
-.environment-card p {
-  margin: 0 15px 15px;
-  color: #666;
-  font-size: 0.9rem;
-}
-
-.env-icon {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  font-size: 24px;
-  background: rgba(255, 255, 255, 0.9);
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  z-index: 1;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  animation: slideInUp 0.5s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(50px) scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.flamou-character {
+  margin-bottom: 20px;
+  animation: bounce 1s ease-in-out infinite alternate;
+}
+
+@keyframes bounce {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-10px);
+  }
+}
+
+.flamou-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 4px solid #4caf50;
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
+}
+
+.flamou-speech-bubble {
+  background: white;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  position: relative;
+  max-width: 100%;
+}
+
+.flamou-speech-bubble::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 15px solid transparent;
+  border-right: 15px solid transparent;
+  border-bottom: 15px solid white;
+}
+
+.flamou-speech-bubble h2 {
+  color: #2b6bff;
+  margin: 0 0 15px 0;
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
+.flamou-speech-bubble p {
+  color: #555;
+  margin: 0 0 20px 0;
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+
+.flamou-instructions {
+  background: #f0f6ff;
+  padding: 20px;
+  border-radius: 12px;
+  margin: 20px 0;
+  border-left: 4px solid #2b6bff;
+}
+
+.flamou-instructions h3 {
+  color: #2b6bff;
+  margin: 0 0 15px 0;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.flamou-instructions ul {
+  margin: 0;
+  padding-left: 20px;
+  text-align: left;
+}
+
+.flamou-instructions li {
+  color: #444;
+  margin-bottom: 8px;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.flamou-continue-button {
+  background: linear-gradient(45deg, #4caf50, #45a049);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 50px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+  margin-top: 10px;
+}
+
+.flamou-continue-button:hover {
+  background: linear-gradient(45deg, #45a049, #3d8b40);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+.flamou-continue-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(76, 175, 80, 0.3);
 }
 
 /* Boutons */
@@ -2516,6 +2821,61 @@ export default {
   .guide-content {
     width: 95%;
     padding: 15px 20px;
+  }
+
+  .flamou-explanation-container {
+    width: 95%;
+    padding: 20px;
+  }
+
+  .flamou-avatar {
+    width: 100px;
+    height: 100px;
+  }
+
+  .flamou-speech-bubble h2 {
+    font-size: 1.5rem;
+  }
+
+  .flamou-speech-bubble p {
+    font-size: 1rem;
+  }
+
+  .flamou-choice-container {
+    width: 95%;
+    padding: 20px;
+  }
+
+  .flamou-choices {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    max-width: 100%;
+  }
+
+  .choice-option {
+    padding: 20px 15px;
+  }
+
+  .choice-icon {
+    font-size: 2.5rem;
+  }
+
+  .choice-option h3 {
+    font-size: 1.2rem;
+  }
+
+  .flamou-loading-container {
+    width: 95%;
+    padding: 20px;
+  }
+
+  .flamou-loading-avatar {
+    width: 80px;
+    height: 80px;
+  }
+
+  .flamou-loading-content h3 {
+    font-size: 1.2rem;
   }
 }
 
