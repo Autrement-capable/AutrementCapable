@@ -22,8 +22,6 @@
     "html2pdf.js": "^0.10.3",
     "mitt": "^3.0.1",
     "openai": "^4.96.0",
-    "pixi-isometric-tilemaps": "github:holywyvern/pixi-isometric-tilemaps",
-    "pixi.js": "^8.8.1",
     "three": "^0.173.0",
     "vue": "^3.2.13",
     "vue-router": "^4.0.3",
