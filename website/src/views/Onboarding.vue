@@ -298,10 +298,17 @@
           />
           <div class="flamou-speech-bubble">
             <p>
-              Choisis toutes les activités que tu aimes. Tu peux en sélectionner plusieurs !
+              Choisis toutes les activités que tu aimes. Tu peux en sélectionner
+              plusieurs !
             </p>
-            <div v-if="responses.avatarPassions.length > 0" class="selected-passions-indicator">
-              {{ responses.avatarPassions.length }} passion{{ responses.avatarPassions.length > 1 ? 's' : '' }} sélectionnée{{ responses.avatarPassions.length > 1 ? 's' : '' }}
+            <div
+              v-if="responses.avatarPassions.length > 0"
+              class="selected-passions-indicator"
+            >
+              {{ responses.avatarPassions.length }} passion{{
+                responses.avatarPassions.length > 1 ? 's' : ''
+              }}
+              sélectionnée{{ responses.avatarPassions.length > 1 ? 's' : '' }}
             </div>
           </div>
         </div>
@@ -310,29 +317,31 @@
             v-for="passion in currentPassions"
             :key="passion.id"
             class="passion-option"
-            :class="{ selected: responses.avatarPassions.includes(passion.name) }"
+            :class="{
+              selected: responses.avatarPassions.includes(passion.name),
+            }"
             @click="togglePassion(passion.name)"
           >
             <div class="passion-image">{{ passion.emoji }}</div>
             <p>{{ passion.name }}</p>
           </div>
         </div>
-        
+
         <!-- Pagination controls -->
         <div class="passion-pagination">
-          <button 
+          <button
             class="pagination-button"
             @click="previousPassionPage"
             :disabled="!canGoToPreviousPassionPage"
           >
             ← Précédent
           </button>
-          
+
           <div class="pagination-info">
             Page {{ currentPassionPage + 1 }} sur {{ totalPassionPages }}
           </div>
-          
-          <button 
+
+          <button
             class="pagination-button"
             @click="nextPassionPage"
             :disabled="!canGoToNextPassionPage"
@@ -385,6 +394,80 @@
         </div>
       </div>
 
+      <!-- Flamou Popup for Account Explanation -->
+      <div
+        v-if="showAccountExplanationPopup"
+        class="flamou-popup-overlay"
+        @click="closeAccountExplanationPopup"
+      >
+        <div class="flamou-popup-container" @click.stop>
+          <div class="flamou-popup-content">
+            <div class="flamou-popup-header">
+              <img
+                :src="flamouImages.interesting"
+                alt="Flamou explique"
+                class="flamou-popup-image"
+              />
+              <button
+                class="popup-close-button"
+                @click="closeAccountExplanationPopup"
+              >
+                ×
+              </button>
+            </div>
+
+            <div class="flamou-popup-body">
+              <div class="flamou-popup-speech-bubble">
+                <!-- <h3>Pourquoi créer un compte sans mot de passe ?</h3>
+                <p>
+                  Salut ! Je vais t'expliquer pourquoi nous créons ton compte d'une façon spéciale :
+                </p>
+                <ul>
+                  <li>🔒 <strong>Plus sûr</strong> : Pas de mot de passe à retenir ou à perdre</li>
+                  <li>⚡ <strong>Plus rapide</strong> : Tu te connectes avec ton empreinte ou ton visage ou ton code d'ordinateur</li>
+                  <li>🎯 <strong>Plus simple</strong> : Pas besoin de créer un mot de passe compliqué</li>
+                </ul>
+                 -->
+                <h3>Que va-t-il se passer maintenant ?</h3>
+                <div class="steps-explanation">
+                  <div class="step-item">
+                    <span class="step-number">1</span>
+                    <p>Je vais créer ton compte automatiquement</p>
+                  </div>
+                  <div class="step-item">
+                    <span class="step-number">2</span>
+                    <p>Nous allons générer tes avatars personnalisés</p>
+                  </div>
+                  <div class="step-item">
+                    <span class="step-number">3</span>
+                    <p>Tu pourras choisir ton avatar préféré</p>
+                  </div>
+                  <div class="step-item">
+                    <span class="step-number">4</span>
+                    <p>Et hop ! Tu seras prêt(e) à utiliser l'application</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="popup-buttons">
+                <button
+                  class="popup-button secondary"
+                  @click="closeAccountExplanationPopup"
+                >
+                  J'ai compris !
+                </button>
+                <button
+                  class="popup-button primary"
+                  @click="proceedWithAccountCreation"
+                >
+                  C'est parti ! 🚀
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Step 9: Account Creation -->
       <div v-if="currentStep === 9" class="step-container">
         <h1 class="step-title">Création de ton compte</h1>
@@ -396,7 +479,8 @@
           />
           <div class="flamou-speech-bubble">
             <p>
-              Parfait ! Maintenant, créons ton compte pour sauvegarder tes informations...
+              Parfait ! Maintenant, créons ton compte pour sauvegarder tes
+              informations...
             </p>
           </div>
         </div>
@@ -411,14 +495,27 @@
         <h1 class="step-title">Génération de tes avatars</h1>
         <div class="flamou-container">
           <img
-            :src="flamouImages.happy2"
+            :src="currentFlamouImage"
             alt="Flamou intéressé"
-            class="flamou-image animated-bounce"
+            class="flamou-image interactive-flamou"
+            :class="flamouAnimationClass"
+            @click="interactWithFlamou"
           />
           <div class="flamou-speech-bubble">
             <p>
-              {{ loadingText }} Patiente un peu, nous créons tes personnages...
+              {{ currentFlamouMessage }}
             </p>
+          </div>
+        </div>
+        
+        <!-- Interactive Controls -->
+        <div class="flamou-controls">
+          <div class="control-hint">Clique sur Flamou pour t'amuser pendant l'attente !</div>
+          <div class="control-buttons">
+            <button @click="makeFlamouHappy" class="control-btn happy-btn">😊 Sourire</button>
+            <button @click="makeFlamouDance" class="control-btn dance-btn">💃 Danser</button>
+            <button @click="makeFlamouSpin" class="control-btn spin-btn">🌀 Tourner</button>
+            <button @click="makeFlamouJump" class="control-btn jump-btn">🦘 Sauter</button>
           </div>
         </div>
         <div class="loading-container">
@@ -426,15 +523,15 @@
           <p class="loading-text">{{ loadingText }}</p>
           <div v-if="generationProgress > 0" class="generation-progress">
             <div class="progress-bar-container">
-              <div 
-                class="progress-bar-fill" 
+              <div
+                class="progress-bar-fill"
                 :style="{ width: generationProgress + '%' }"
               ></div>
             </div>
             <p class="progress-text">{{ Math.round(generationProgress) }}%</p>
           </div>
         </div>
-        
+
         <!-- Show error if generation fails -->
         <div v-if="generationError" class="error-container">
           <p class="error-message">{{ generationError }}</p>
@@ -465,7 +562,11 @@
             :class="{ selected: selectedAvatarIndex === index }"
             @click="selectedAvatarIndex = index"
           >
-            <img :src="avatar.data_url" :alt="`Avatar option ${index + 1}`" class="avatar-image" />
+            <img
+              :src="avatar.data_url"
+              :alt="`Avatar option ${index + 1}`"
+              class="avatar-image"
+            />
             <div class="avatar-label">Option {{ index + 1 }}</div>
           </div>
         </div>
@@ -553,10 +654,14 @@
 
             <div
               class="summary-item"
-              v-if="responses.avatarPassions && responses.avatarPassions.length > 0"
+              v-if="
+                responses.avatarPassions && responses.avatarPassions.length > 0
+              "
             >
               <span class="summary-label">Passions:</span>
-              <span class="summary-value">{{ responses.avatarPassions.join(', ') }}</span>
+              <span class="summary-value">
+                {{ responses.avatarPassions.join(', ') }}
+              </span>
             </div>
 
             <div class="summary-item" v-if="responses.avatarExpression">
@@ -575,7 +680,11 @@
             @click="finalizeProfile"
             :disabled="isFinalizingProfile"
           >
-            {{ isFinalizingProfile ? 'Finalisation en cours...' : 'Finaliser mon profil' }}
+            {{
+              isFinalizingProfile
+                ? 'Finalisation en cours...'
+                : 'Finaliser mon profil'
+            }}
           </button>
         </div>
 
@@ -609,7 +718,25 @@ export default {
       generationError: null,
       isFinalizingProfile: false,
       finalizationError: null,
+      showAccountExplanationPopup: false,
       
+      // Interactive Flamou controls
+      currentFlamouImage: null,
+      currentFlamouMessage: 'Création de tes avatars...',
+      flamouAnimationClass: 'animated-bounce',
+      flamouInteractionCount: 0,
+      flamouMessages: [
+        'Création de tes avatars... Patiente un peu !',
+        'J\'adore quand tu joues avec moi ! 😊',
+        'Regarde-moi danser pendant qu\'on attend !',
+        'Wheeee ! Je tourne, je tourne !',
+        'Hop hop hop ! Je saute de joie !',
+        'Tu es vraiment amusant(e) ! 🎉',
+        'Encore un peu de patience, tes avatars arrivent !',
+        'Tu me fais rire ! Continuons à jouer !',
+        'C\'est bientôt fini, je sens que ça va être génial !'
+      ],
+
       flamouImages: {
         happy: require('@/assets/flamou/happy.png'),
         happy2: require('@/assets/flamou/happy2.png'),
@@ -672,7 +799,7 @@ export default {
         avatarExpression: null,
       },
       totalSteps: 12, // Updated total steps
-      
+
       // Pagination for passions
       currentPassionPage: 0,
       passionsPerPage: 9,
@@ -691,22 +818,22 @@ export default {
       }
       return null
     },
-    
+
     // Pagination for passions
     currentPassions() {
       const start = this.currentPassionPage * this.passionsPerPage
       const end = start + this.passionsPerPage
       return this.availablePassions.slice(start, end)
     },
-    
+
     totalPassionPages() {
       return Math.ceil(this.availablePassions.length / this.passionsPerPage)
     },
-    
+
     canGoToPreviousPassionPage() {
       return this.currentPassionPage > 0
     },
-    
+
     canGoToNextPassionPage() {
       return this.currentPassionPage < this.totalPassionPages - 1
     },
@@ -753,8 +880,8 @@ export default {
 
       // Handle different steps
       if (this.currentStep === 9) {
-        // Create account first
-        this.createAccount()
+        // Show explanation popup before account creation
+        this.showAccountExplanationPopup = true
       } else if (this.currentStep === 10) {
         // Then generate avatars
         this.generateAvatars()
@@ -763,7 +890,7 @@ export default {
     previousStep() {
       if (this.currentStep > 1) {
         this.currentStep--
-        
+
         // Reset passion pagination when entering passion step
         if (this.currentStep === 7) {
           this.currentPassionPage = 0
@@ -789,26 +916,26 @@ export default {
       this.responses.avatarExpression = null
       this.nextStep()
     },
-    
+
     // Pagination methods for passions
     previousPassionPage() {
       if (this.canGoToPreviousPassionPage) {
         this.currentPassionPage--
       }
     },
-    
+
     nextPassionPage() {
       if (this.canGoToNextPassionPage) {
         this.currentPassionPage++
       }
     },
-    
+
     goToPassionPage(pageIndex) {
       if (pageIndex >= 0 && pageIndex < this.totalPassionPages) {
         this.currentPassionPage = pageIndex
       }
     },
-    
+
     togglePassion(passionName) {
       const index = this.responses.avatarPassions.indexOf(passionName)
       if (index === -1) {
@@ -835,15 +962,14 @@ export default {
         const result = await AuthService.registerWithPasskey()
         console.log('Account creation successful:', result)
 
-    // Possible options ofr the profile update endpoint
-    //    first_name: Optional[str]
-    //    last_name: Optional[str]
-    //    email: Optional[str]
-    //    age: Optional[int]
-    //    phone_number: Optional[str]
-    //    address: Optional[str]
-    //    onboarding_complete: Optional[bool]
-
+        // Possible options ofr the profile update endpoint
+        //    first_name: Optional[str]
+        //    last_name: Optional[str]
+        //    email: Optional[str]
+        //    age: Optional[int]
+        //    phone_number: Optional[str]
+        //    address: Optional[str]
+        //    onboarding_complete: Optional[bool]
 
         // Update user profile with additional data
         const profileData = {
@@ -853,12 +979,14 @@ export default {
         }
         console.log('Updating profile with data:', profileData)
         // we dont await this call because we dont need its result
-        AuthService.request("put", "/user/profile", profileData).then((response) => {
-          console.log('Profile updated successfully:', response.data)
-        }).catch((error) => {
-          console.error('Error updating profile:', error)
-          // Non-critical error, continue with flow
-        })
+        AuthService.request('put', '/user/profile', profileData)
+          .then((response) => {
+            console.log('Profile updated successfully:', response.data)
+          })
+          .catch((error) => {
+            console.error('Error updating profile:', error)
+            // Non-critical error, continue with flow
+          })
         // Save avatar creation data
         const avatarData = {
           avatarGender: this.responses.avatarGender,
@@ -867,18 +995,25 @@ export default {
           avatarPassions: this.responses.avatarPassions,
           avatarExpression: this.responses.avatarExpression,
         }
-          // no need to await this call because we dont need its result either
-          AuthService.request("post", "/user/profile/avatar-creation-data", avatarData)
+        // no need to await this call because we dont need its result either
+        AuthService.request(
+          'post',
+          '/user/profile/avatar-creation-data',
+          avatarData,
+        )
           .then((response) => {
-            console.log('Avatar creation data saved successfully:', response.data)
-          }).catch((error) => {
+            console.log(
+              'Avatar creation data saved successfully:',
+              response.data,
+            )
+          })
+          .catch((error) => {
             console.error('Error saving avatar creation data:', error)
             // Non-critical error, continue with flow
           })
 
         // Move to avatar generation
         this.nextStep()
-
       } catch (error) {
         console.error('Account creation error:', error)
         alert('Erreur lors de la création du compte. Veuillez réessayer.')
@@ -891,6 +1026,9 @@ export default {
       this.generationProgress = 0
       this.generationError = null
       this.loadingText = 'Création de tes avatars...'
+      
+      // Initialize interactive Flamou
+      this.initializeInteractiveFlamou()
 
       try {
         // Prepare avatar generation request
@@ -912,8 +1050,12 @@ export default {
         }, 1000)
 
         // Call backend endpoint for avatar generation
-        const response = await AuthService.request('post', '/avatars/generate', avatarRequest)
-        
+        const response = await AuthService.request(
+          'post',
+          '/avatars/generate',
+          avatarRequest,
+        )
+
         clearInterval(progressInterval)
         this.generationProgress = 100
 
@@ -921,7 +1063,7 @@ export default {
 
         if (response.data.avatars && response.data.avatars.length > 0) {
           this.generatedAvatars = response.data.avatars
-          
+
           // Add a small delay to show completion
           setTimeout(() => {
             this.currentStep = 11 // Move to avatar selection
@@ -929,11 +1071,13 @@ export default {
         } else {
           throw new Error('No avatars received from server')
         }
-
       } catch (error) {
         console.error('Avatar generation error:', error)
-        this.generationError = error.response?.data?.detail || error.message || 'Erreur lors de la génération des avatars'
-        
+        this.generationError =
+          error.response?.data?.detail ||
+          error.message ||
+          'Erreur lors de la génération des avatars'
+
         // Show fallback avatars or retry option
         this.loadingText = 'Une erreur est survenue...'
       }
@@ -963,24 +1107,28 @@ export default {
         const blob = await response.blob()
 
         // Create a proper File object with correct mime type
-        const avatarFile = new File([blob], 'avatar.png', { 
+        const avatarFile = new File([blob], 'avatar.png', {
           type: 'image/png',
-          lastModified: Date.now()
+          lastModified: Date.now(),
         })
 
         // Upload avatar using PictureService
         const { uploadPicture } = usePicture()
-        
+
         try {
           const uploadResult = await uploadPicture(avatarFile, 'avatar')
           console.log('Avatar uploaded successfully:', uploadResult)
-          
+
           // Store the upload result for future reference
-          localStorage.setItem('avatar_upload_result', JSON.stringify(uploadResult))
+          localStorage.setItem(
+            'avatar_upload_result',
+            JSON.stringify(uploadResult),
+          )
         } catch (uploadError) {
           console.error('Error uploading avatar:', uploadError)
           // Non-critical error, but inform user
-          this.finalizationError = 'Avatar sauvegardé localement mais problème lors du téléchargement sur le serveur'
+          this.finalizationError =
+            'Avatar sauvegardé localement mais problème lors du téléchargement sur le serveur'
         }
 
         // Save user profile data in localStorage for potential future use
@@ -1001,11 +1149,11 @@ export default {
 
         // Redirect to dashboard
         this.$router.push('/dashboard')
-
       } catch (error) {
         console.error('Profile finalization error:', error)
         this.finalizationError =
-          error.message || 'Erreur lors de la finalisation du profil. Veuillez réessayer.'
+          error.message ||
+          'Erreur lors de la finalisation du profil. Veuillez réessayer.'
       } finally {
         this.isFinalizingProfile = false
       }
@@ -1021,7 +1169,73 @@ export default {
       if (gender === 'girl') return 'Fille'
       return 'Neutre'
     },
-  }
+
+    closeAccountExplanationPopup() {
+      this.showAccountExplanationPopup = false
+      this.createAccount()
+    },
+
+    proceedWithAccountCreation() {
+      this.showAccountExplanationPopup = false
+      this.createAccount()
+    },
+    
+    // Interactive Flamou methods
+    initializeInteractiveFlamou() {
+      this.currentFlamouImage = this.flamouImages.happy2
+      this.currentFlamouMessage = this.flamouMessages[0]
+      this.flamouAnimationClass = 'animated-bounce'
+      this.flamouInteractionCount = 0
+    },
+    
+    interactWithFlamou() {
+      this.flamouInteractionCount++
+      const messageIndex = Math.min(this.flamouInteractionCount, this.flamouMessages.length - 1)
+      this.currentFlamouMessage = this.flamouMessages[messageIndex]
+      
+      // Cycle through different Flamou expressions
+      const images = [this.flamouImages.happy, this.flamouImages.interesting, this.flamouImages.happy2, this.flamouImages.hey]
+      this.currentFlamouImage = images[this.flamouInteractionCount % images.length]
+      
+      // Add temporary wiggle animation
+      this.flamouAnimationClass = 'flamou-wiggle'
+      setTimeout(() => {
+        this.flamouAnimationClass = 'animated-bounce'
+      }, 800)
+    },
+    
+    makeFlamouHappy() {
+      this.currentFlamouMessage = 'Tu me rends si heureux ! 😊'
+      this.flamouAnimationClass = 'flamou-pulse'
+      setTimeout(() => {
+        this.flamouAnimationClass = 'animated-bounce'
+      }, 1000)
+    },
+    
+    makeFlamouDance() {
+      this.currentFlamouMessage = 'Regarde-moi danser ! 💃'
+      this.flamouAnimationClass = 'flamou-dance'
+      setTimeout(() => {
+        this.flamouAnimationClass = 'animated-bounce'
+      }, 2000)
+    },
+    
+    makeFlamouSpin() {
+      this.currentFlamouMessage = 'Wheeee ! Je tourne ! 🌀'
+      this.flamouAnimationClass = 'flamou-spin'
+      setTimeout(() => {
+        this.flamouAnimationClass = 'animated-bounce'
+      }, 1500)
+    },
+    
+    makeFlamouJump() {
+      this.currentFlamouMessage = 'Hop hop hop ! Je saute ! 🦘'
+      this.flamouAnimationClass = 'flamou-jump'
+      setTimeout(() => {
+        this.flamouAnimationClass = 'animated-bounce'
+      }, 1200)
+    },
+  },
 }
 </script>
 
@@ -1721,6 +1935,36 @@ export default {
   animation: bounce 1.5s infinite alternate;
 }
 
+.interactive-flamou {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.interactive-flamou:hover {
+  transform: scale(1.05);
+  filter: brightness(1.1);
+}
+
+.flamou-wiggle {
+  animation: wiggle 0.8s ease-in-out;
+}
+
+.flamou-pulse {
+  animation: pulse 1s ease-in-out;
+}
+
+.flamou-dance {
+  animation: dance 2s ease-in-out;
+}
+
+.flamou-spin {
+  animation: spin-flamou 1.5s ease-in-out;
+}
+
+.flamou-jump {
+  animation: jump 1.2s ease-in-out;
+}
+
 @keyframes bounce {
   0% {
     transform: translateY(0);
@@ -1728,6 +1972,36 @@ export default {
   100% {
     transform: translateY(-10px);
   }
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-5deg); }
+  75% { transform: rotate(5deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+@keyframes dance {
+  0%, 100% { transform: rotate(0deg) translateY(0); }
+  25% { transform: rotate(-10deg) translateY(-5px); }
+  50% { transform: rotate(10deg) translateY(-10px); }
+  75% { transform: rotate(-5deg) translateY(-5px); }
+}
+
+@keyframes spin-flamou {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes jump {
+  0%, 100% { transform: translateY(0); }
+  25% { transform: translateY(-20px); }
+  50% { transform: translateY(-30px); }
+  75% { transform: translateY(-15px); }
 }
 
 @keyframes spin {
@@ -1750,62 +2024,413 @@ export default {
   }
 }
 
+/* Flamou Popup Styles */
+.flamou-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.flamou-popup-container {
+  background-color: rgba(20, 20, 30, 0.95);
+  border-radius: 20px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+  border: 2px solid rgba(66, 133, 244, 0.3);
+  animation: slideIn 0.3s ease-out;
+}
+
+.flamou-popup-content {
+  padding: 0;
+}
+
+.flamou-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 30px 10px 30px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.flamou-popup-image {
+  width: 80px;
+  height: auto;
+  border-radius: 50%;
+  box-shadow: 0 5px 15px rgba(66, 133, 244, 0.3);
+}
+
+.popup-close-button {
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 2rem;
+  cursor: pointer;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.popup-close-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: scale(1.1);
+}
+
+.flamou-popup-body {
+  padding: 20px 30px 30px 30px;
+}
+
+.flamou-popup-speech-bubble {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  padding: 25px;
+  margin-bottom: 25px;
+  border: 1px solid rgba(66, 133, 244, 0.2);
+}
+
+.flamou-popup-speech-bubble h3 {
+  color: #a0c4ff;
+  margin: 0 0 15px 0;
+  font-size: 1.4rem;
+  font-weight: bold;
+}
+
+.flamou-popup-speech-bubble h4 {
+  color: #ffffff;
+  margin: 25px 0 15px 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.flamou-popup-speech-bubble p {
+  color: #ffffff;
+  margin: 0 0 15px 0;
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+
+.flamou-popup-speech-bubble ul {
+  margin: 15px 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.flamou-popup-speech-bubble li {
+  color: #ffffff;
+  margin: 10px 0;
+  font-size: 1.05rem;
+  line-height: 1.4;
+  padding-left: 10px;
+}
+
+.steps-explanation {
+  margin-top: 20px;
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+  margin: 12px 0;
+  padding: 10px;
+  background-color: rgba(66, 133, 244, 0.1);
+  border-radius: 10px;
+  border-left: 4px solid #4285f4;
+}
+
+.step-number {
+  background-color: #4285f4;
+  color: white;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-right: 15px;
+  flex-shrink: 0;
+}
+
+.step-item p {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1rem;
+}
+
+.popup-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: flex-end;
+}
+
+.popup-button {
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  min-width: 120px;
+}
+
+.popup-button.primary {
+  background-color: #4285f4;
+  color: white;
+}
+
+.popup-button.primary:hover {
+  background-color: #2a75e5;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(66, 133, 244, 0.4);
+}
+
+.popup-button.secondary {
+  background-color: transparent;
+  color: #ffffff;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.popup-button.secondary:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Custom Scrollbar Styles */
+.flamou-popup-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.flamou-popup-container::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.flamou-popup-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg, #4285f4, #a0c4ff);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.flamou-popup-container::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(45deg, #2a75e5, #8ab4f8);
+  box-shadow: 0 0 10px rgba(66, 133, 244, 0.5);
+}
+
+/* Firefox scrollbar */
+.flamou-popup-container {
+  scrollbar-width: thin;
+  scrollbar-color: #4285f4 rgba(255, 255, 255, 0.1);
+}
+
+/* Interactive Flamou Controls */
+.flamou-controls {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.control-hint {
+  color: #a0c4ff;
+  font-size: 0.9rem;
+  margin-bottom: 15px;
+  text-align: center;
+  font-style: italic;
+}
+
+.control-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.control-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.happy-btn {
+  background: linear-gradient(45deg, #ffeb3b, #ffc107);
+  color: #333;
+}
+
+.dance-btn {
+  background: linear-gradient(45deg, #e91e63, #9c27b0);
+  color: white;
+}
+
+.spin-btn {
+  background: linear-gradient(45deg, #2196f3, #03a9f4);
+  color: white;
+}
+
+.jump-btn {
+  background: linear-gradient(45deg, #4caf50, #8bc34a);
+  color: white;
+}
+
+.control-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.control-btn:active {
+  transform: translateY(0);
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
-  .flamou-container {
-    flex-direction: column;
-    text-align: center;
-  }
-  
-  .flamou-image {
-    margin-right: 0;
-    margin-bottom: 15px;
-  }
-  
-  .flamou-speech-bubble {
-    margin-left: 0;
-    max-width: 90%;
-  }
-  
-  .flamou-speech-bubble:before {
-    display: none;
-  }
-  
-  .avatars-container {
+  .control-buttons {
     flex-direction: column;
     align-items: center;
   }
   
+  .control-btn {
+    width: 100%;
+    max-width: 200px;
+  }
+
+
+  .flamou-container {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .flamou-image {
+    margin-right: 0;
+    margin-bottom: 15px;
+  }
+
+  .flamou-speech-bubble {
+    margin-left: 0;
+    max-width: 90%;
+  }
+
+  .flamou-speech-bubble:before {
+    display: none;
+  }
+
+  .avatars-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
   .avatar-option {
     width: 250px;
   }
-  
+
   .summary-content {
     flex-direction: column;
   }
-  
+
   .summary-avatar {
     margin-right: 0;
     margin-bottom: 20px;
     text-align: center;
   }
-  
+
   /* Responsive pagination */
   .passion-pagination {
     flex-direction: column;
     gap: 10px;
     padding: 10px;
   }
-  
+
   .pagination-button {
     width: 100%;
     max-width: 200px;
     margin: 0 auto;
   }
-  
+
   .pagination-info {
     text-align: center;
     order: -1;
+  }
+
+  /* Responsive popup styles */
+  .flamou-popup-container {
+    width: 95%;
+    max-width: none;
+    margin: 10px;
+  }
+
+  .flamou-popup-header {
+    padding: 15px 20px 10px 20px;
+  }
+
+  .flamou-popup-body {
+    padding: 15px 20px 20px 20px;
+  }
+
+  .flamou-popup-speech-bubble {
+    padding: 15px;
+  }
+
+  .flamou-popup-speech-bubble h3 {
+    font-size: 1.2rem;
+  }
+
+  .flamou-popup-speech-bubble h4 {
+    font-size: 1.1rem;
+  }
+
+  .flamou-popup-speech-bubble p,
+  .flamou-popup-speech-bubble li {
+    font-size: 1rem;
+  }
+
+  .step-item {
+    flex-direction: column;
+    text-align: center;
+    padding: 15px;
+  }
+
+  .step-number {
+    margin-right: 0;
+    margin-bottom: 10px;
+  }
+
+  .popup-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .popup-button {
+    width: 100%;
   }
 }
 </style>
