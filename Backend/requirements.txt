@@ -15,11 +15,14 @@ python-multipart
 # for database
 asyncpg
 sqlalchemy[asyncio]
-psycopg2
+# psycopg2
+psycopg2-binary # just for testing use the one above in production
 # for testing
 pytest
 pytest-asyncio
 httpx
+pytest-order
+pytest-dependency
 # Debugging
 debugpy
 # email
@@ -35,3 +38,5 @@ webauthn
 cbor2
 # Avatag gen
 openai
+# for mocking passkeys
+soft-webauthn
