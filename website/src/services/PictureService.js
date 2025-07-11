@@ -16,7 +16,9 @@ const DEFAULT_CONFIG = {
 }
 
 // Change here the API URL to the backend server
-const API_URL = process.env.VUE_APP_SERVER_URL || 'http://localhost:5000' // 'https://api.autrement-cap.fr'
+
+const API_URL = process.env.VUE_APP_SERVER_URL || 'http://localhost:5000'
+// const API_URL = process.env.VUE_APP_SERVER_URL || 'https://api.autrement-cap.fr'
 
 // API endpoint for pictures - using relative path since we'll use AuthService for requests
 const PICTURE_ENDPOINT = 'user/picture'
