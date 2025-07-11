@@ -298,10 +298,17 @@
           />
           <div class="flamou-speech-bubble">
             <p>
-              Choisis toutes les activités que tu aimes. Tu peux en sélectionner plusieurs !
+              Choisis toutes les activités que tu aimes. Tu peux en sélectionner
+              plusieurs !
             </p>
-            <div v-if="responses.avatarPassions.length > 0" class="selected-passions-indicator">
-              {{ responses.avatarPassions.length }} passion{{ responses.avatarPassions.length > 1 ? 's' : '' }} sélectionnée{{ responses.avatarPassions.length > 1 ? 's' : '' }}
+            <div
+              v-if="responses.avatarPassions.length > 0"
+              class="selected-passions-indicator"
+            >
+              {{ responses.avatarPassions.length }} passion{{
+                responses.avatarPassions.length > 1 ? 's' : ''
+              }}
+              sélectionnée{{ responses.avatarPassions.length > 1 ? 's' : '' }}
             </div>
           </div>
         </div>
@@ -310,29 +317,31 @@
             v-for="passion in currentPassions"
             :key="passion.id"
             class="passion-option"
-            :class="{ selected: responses.avatarPassions.includes(passion.name) }"
+            :class="{
+              selected: responses.avatarPassions.includes(passion.name),
+            }"
             @click="togglePassion(passion.name)"
           >
             <div class="passion-image">{{ passion.emoji }}</div>
             <p>{{ passion.name }}</p>
           </div>
         </div>
-        
+
         <!-- Pagination controls -->
         <div class="passion-pagination">
-          <button 
+          <button
             class="pagination-button"
             @click="previousPassionPage"
             :disabled="!canGoToPreviousPassionPage"
           >
             ← Précédent
           </button>
-          
+
           <div class="pagination-info">
             Page {{ currentPassionPage + 1 }} sur {{ totalPassionPages }}
           </div>
-          
-          <button 
+
+          <button
             class="pagination-button"
             @click="nextPassionPage"
             :disabled="!canGoToNextPassionPage"
@@ -386,7 +395,11 @@
       </div>
 
       <!-- Flamou Popup for Account Explanation -->
-      <div v-if="showAccountExplanationPopup" class="flamou-popup-overlay" @click="closeAccountExplanationPopup">
+      <div
+        v-if="showAccountExplanationPopup"
+        class="flamou-popup-overlay"
+        @click="closeAccountExplanationPopup"
+      >
         <div class="flamou-popup-container" @click.stop>
           <div class="flamou-popup-content">
             <div class="flamou-popup-header">
@@ -395,12 +408,17 @@
                 alt="Flamou explique"
                 class="flamou-popup-image"
               />
-              <button class="popup-close-button" @click="closeAccountExplanationPopup">×</button>
+              <button
+                class="popup-close-button"
+                @click="closeAccountExplanationPopup"
+              >
+                ×
+              </button>
             </div>
-            
+
             <div class="flamou-popup-body">
               <div class="flamou-popup-speech-bubble">
-                <h3>Pourquoi créer un compte sans mot de passe ?</h3>
+                <!-- <h3>Pourquoi créer un compte sans mot de passe ?</h3>
                 <p>
                   Salut ! Je vais t'expliquer pourquoi nous créons ton compte d'une façon spéciale :
                 </p>
@@ -409,8 +427,8 @@
                   <li>⚡ <strong>Plus rapide</strong> : Tu te connectes avec ton empreinte ou ton visage ou ton code d'ordinateur</li>
                   <li>🎯 <strong>Plus simple</strong> : Pas besoin de créer un mot de passe compliqué</li>
                 </ul>
-                
-                <h4>Que va-t-il se passer maintenant ?</h4>
+                 -->
+                <h3>Que va-t-il se passer maintenant ?</h3>
                 <div class="steps-explanation">
                   <div class="step-item">
                     <span class="step-number">1</span>
@@ -430,12 +448,18 @@
                   </div>
                 </div>
               </div>
-              
+
               <div class="popup-buttons">
-                <button class="popup-button secondary" @click="closeAccountExplanationPopup">
+                <button
+                  class="popup-button secondary"
+                  @click="closeAccountExplanationPopup"
+                >
                   J'ai compris !
                 </button>
-                <button class="popup-button primary" @click="proceedWithAccountCreation">
+                <button
+                  class="popup-button primary"
+                  @click="proceedWithAccountCreation"
+                >
                   C'est parti ! 🚀
                 </button>
               </div>
@@ -455,7 +479,8 @@
           />
           <div class="flamou-speech-bubble">
             <p>
-              Parfait ! Maintenant, créons ton compte pour sauvegarder tes informations...
+              Parfait ! Maintenant, créons ton compte pour sauvegarder tes
+              informations...
             </p>
           </div>
         </div>
@@ -485,15 +510,15 @@
           <p class="loading-text">{{ loadingText }}</p>
           <div v-if="generationProgress > 0" class="generation-progress">
             <div class="progress-bar-container">
-              <div 
-                class="progress-bar-fill" 
+              <div
+                class="progress-bar-fill"
                 :style="{ width: generationProgress + '%' }"
               ></div>
             </div>
             <p class="progress-text">{{ Math.round(generationProgress) }}%</p>
           </div>
         </div>
-        
+
         <!-- Show error if generation fails -->
         <div v-if="generationError" class="error-container">
           <p class="error-message">{{ generationError }}</p>
@@ -524,7 +549,11 @@
             :class="{ selected: selectedAvatarIndex === index }"
             @click="selectedAvatarIndex = index"
           >
-            <img :src="avatar.data_url" :alt="`Avatar option ${index + 1}`" class="avatar-image" />
+            <img
+              :src="avatar.data_url"
+              :alt="`Avatar option ${index + 1}`"
+              class="avatar-image"
+            />
             <div class="avatar-label">Option {{ index + 1 }}</div>
           </div>
         </div>
@@ -612,10 +641,14 @@
 
             <div
               class="summary-item"
-              v-if="responses.avatarPassions && responses.avatarPassions.length > 0"
+              v-if="
+                responses.avatarPassions && responses.avatarPassions.length > 0
+              "
             >
               <span class="summary-label">Passions:</span>
-              <span class="summary-value">{{ responses.avatarPassions.join(', ') }}</span>
+              <span class="summary-value">
+                {{ responses.avatarPassions.join(', ') }}
+              </span>
             </div>
 
             <div class="summary-item" v-if="responses.avatarExpression">
@@ -634,7 +667,11 @@
             @click="finalizeProfile"
             :disabled="isFinalizingProfile"
           >
-            {{ isFinalizingProfile ? 'Finalisation en cours...' : 'Finaliser mon profil' }}
+            {{
+              isFinalizingProfile
+                ? 'Finalisation en cours...'
+                : 'Finaliser mon profil'
+            }}
           </button>
         </div>
 
@@ -669,7 +706,7 @@ export default {
       isFinalizingProfile: false,
       finalizationError: null,
       showAccountExplanationPopup: false,
-      
+
       flamouImages: {
         happy: require('@/assets/flamou/happy.png'),
         happy2: require('@/assets/flamou/happy2.png'),
@@ -732,7 +769,7 @@ export default {
         avatarExpression: null,
       },
       totalSteps: 12, // Updated total steps
-      
+
       // Pagination for passions
       currentPassionPage: 0,
       passionsPerPage: 9,
@@ -751,22 +788,22 @@ export default {
       }
       return null
     },
-    
+
     // Pagination for passions
     currentPassions() {
       const start = this.currentPassionPage * this.passionsPerPage
       const end = start + this.passionsPerPage
       return this.availablePassions.slice(start, end)
     },
-    
+
     totalPassionPages() {
       return Math.ceil(this.availablePassions.length / this.passionsPerPage)
     },
-    
+
     canGoToPreviousPassionPage() {
       return this.currentPassionPage > 0
     },
-    
+
     canGoToNextPassionPage() {
       return this.currentPassionPage < this.totalPassionPages - 1
     },
@@ -823,7 +860,7 @@ export default {
     previousStep() {
       if (this.currentStep > 1) {
         this.currentStep--
-        
+
         // Reset passion pagination when entering passion step
         if (this.currentStep === 7) {
           this.currentPassionPage = 0
@@ -849,26 +886,26 @@ export default {
       this.responses.avatarExpression = null
       this.nextStep()
     },
-    
+
     // Pagination methods for passions
     previousPassionPage() {
       if (this.canGoToPreviousPassionPage) {
         this.currentPassionPage--
       }
     },
-    
+
     nextPassionPage() {
       if (this.canGoToNextPassionPage) {
         this.currentPassionPage++
       }
     },
-    
+
     goToPassionPage(pageIndex) {
       if (pageIndex >= 0 && pageIndex < this.totalPassionPages) {
         this.currentPassionPage = pageIndex
       }
     },
-    
+
     togglePassion(passionName) {
       const index = this.responses.avatarPassions.indexOf(passionName)
       if (index === -1) {
@@ -895,15 +932,14 @@ export default {
         const result = await AuthService.registerWithPasskey()
         console.log('Account creation successful:', result)
 
-    // Possible options ofr the profile update endpoint
-    //    first_name: Optional[str]
-    //    last_name: Optional[str]
-    //    email: Optional[str]
-    //    age: Optional[int]
-    //    phone_number: Optional[str]
-    //    address: Optional[str]
-    //    onboarding_complete: Optional[bool]
-
+        // Possible options ofr the profile update endpoint
+        //    first_name: Optional[str]
+        //    last_name: Optional[str]
+        //    email: Optional[str]
+        //    age: Optional[int]
+        //    phone_number: Optional[str]
+        //    address: Optional[str]
+        //    onboarding_complete: Optional[bool]
 
         // Update user profile with additional data
         const profileData = {
@@ -913,12 +949,14 @@ export default {
         }
         console.log('Updating profile with data:', profileData)
         // we dont await this call because we dont need its result
-        AuthService.request("put", "/user/profile", profileData).then((response) => {
-          console.log('Profile updated successfully:', response.data)
-        }).catch((error) => {
-          console.error('Error updating profile:', error)
-          // Non-critical error, continue with flow
-        })
+        AuthService.request('put', '/user/profile', profileData)
+          .then((response) => {
+            console.log('Profile updated successfully:', response.data)
+          })
+          .catch((error) => {
+            console.error('Error updating profile:', error)
+            // Non-critical error, continue with flow
+          })
         // Save avatar creation data
         const avatarData = {
           avatarGender: this.responses.avatarGender,
@@ -927,18 +965,25 @@ export default {
           avatarPassions: this.responses.avatarPassions,
           avatarExpression: this.responses.avatarExpression,
         }
-          // no need to await this call because we dont need its result either
-          AuthService.request("post", "/user/profile/avatar-creation-data", avatarData)
+        // no need to await this call because we dont need its result either
+        AuthService.request(
+          'post',
+          '/user/profile/avatar-creation-data',
+          avatarData,
+        )
           .then((response) => {
-            console.log('Avatar creation data saved successfully:', response.data)
-          }).catch((error) => {
+            console.log(
+              'Avatar creation data saved successfully:',
+              response.data,
+            )
+          })
+          .catch((error) => {
             console.error('Error saving avatar creation data:', error)
             // Non-critical error, continue with flow
           })
 
         // Move to avatar generation
         this.nextStep()
-
       } catch (error) {
         console.error('Account creation error:', error)
         alert('Erreur lors de la création du compte. Veuillez réessayer.')
@@ -972,8 +1017,12 @@ export default {
         }, 1000)
 
         // Call backend endpoint for avatar generation
-        const response = await AuthService.request('post', '/avatars/generate', avatarRequest)
-        
+        const response = await AuthService.request(
+          'post',
+          '/avatars/generate',
+          avatarRequest,
+        )
+
         clearInterval(progressInterval)
         this.generationProgress = 100
 
@@ -981,7 +1030,7 @@ export default {
 
         if (response.data.avatars && response.data.avatars.length > 0) {
           this.generatedAvatars = response.data.avatars
-          
+
           // Add a small delay to show completion
           setTimeout(() => {
             this.currentStep = 11 // Move to avatar selection
@@ -989,11 +1038,13 @@ export default {
         } else {
           throw new Error('No avatars received from server')
         }
-
       } catch (error) {
         console.error('Avatar generation error:', error)
-        this.generationError = error.response?.data?.detail || error.message || 'Erreur lors de la génération des avatars'
-        
+        this.generationError =
+          error.response?.data?.detail ||
+          error.message ||
+          'Erreur lors de la génération des avatars'
+
         // Show fallback avatars or retry option
         this.loadingText = 'Une erreur est survenue...'
       }
@@ -1023,24 +1074,28 @@ export default {
         const blob = await response.blob()
 
         // Create a proper File object with correct mime type
-        const avatarFile = new File([blob], 'avatar.png', { 
+        const avatarFile = new File([blob], 'avatar.png', {
           type: 'image/png',
-          lastModified: Date.now()
+          lastModified: Date.now(),
         })
 
         // Upload avatar using PictureService
         const { uploadPicture } = usePicture()
-        
+
         try {
           const uploadResult = await uploadPicture(avatarFile, 'avatar')
           console.log('Avatar uploaded successfully:', uploadResult)
-          
+
           // Store the upload result for future reference
-          localStorage.setItem('avatar_upload_result', JSON.stringify(uploadResult))
+          localStorage.setItem(
+            'avatar_upload_result',
+            JSON.stringify(uploadResult),
+          )
         } catch (uploadError) {
           console.error('Error uploading avatar:', uploadError)
           // Non-critical error, but inform user
-          this.finalizationError = 'Avatar sauvegardé localement mais problème lors du téléchargement sur le serveur'
+          this.finalizationError =
+            'Avatar sauvegardé localement mais problème lors du téléchargement sur le serveur'
         }
 
         // Save user profile data in localStorage for potential future use
@@ -1061,11 +1116,11 @@ export default {
 
         // Redirect to dashboard
         this.$router.push('/dashboard')
-
       } catch (error) {
         console.error('Profile finalization error:', error)
         this.finalizationError =
-          error.message || 'Erreur lors de la finalisation du profil. Veuillez réessayer.'
+          error.message ||
+          'Erreur lors de la finalisation du profil. Veuillez réessayer.'
       } finally {
         this.isFinalizingProfile = false
       }
@@ -1091,7 +1146,7 @@ export default {
       this.showAccountExplanationPopup = false
       this.createAccount()
     },
-  }
+  },
 }
 </script>
 
@@ -2051,106 +2106,106 @@ export default {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .flamou-image {
     margin-right: 0;
     margin-bottom: 15px;
   }
-  
+
   .flamou-speech-bubble {
     margin-left: 0;
     max-width: 90%;
   }
-  
+
   .flamou-speech-bubble:before {
     display: none;
   }
-  
+
   .avatars-container {
     flex-direction: column;
     align-items: center;
   }
-  
+
   .avatar-option {
     width: 250px;
   }
-  
+
   .summary-content {
     flex-direction: column;
   }
-  
+
   .summary-avatar {
     margin-right: 0;
     margin-bottom: 20px;
     text-align: center;
   }
-  
+
   /* Responsive pagination */
   .passion-pagination {
     flex-direction: column;
     gap: 10px;
     padding: 10px;
   }
-  
+
   .pagination-button {
     width: 100%;
     max-width: 200px;
     margin: 0 auto;
   }
-  
+
   .pagination-info {
     text-align: center;
     order: -1;
   }
-  
+
   /* Responsive popup styles */
   .flamou-popup-container {
     width: 95%;
     max-width: none;
     margin: 10px;
   }
-  
+
   .flamou-popup-header {
     padding: 15px 20px 10px 20px;
   }
-  
+
   .flamou-popup-body {
     padding: 15px 20px 20px 20px;
   }
-  
+
   .flamou-popup-speech-bubble {
     padding: 15px;
   }
-  
+
   .flamou-popup-speech-bubble h3 {
     font-size: 1.2rem;
   }
-  
+
   .flamou-popup-speech-bubble h4 {
     font-size: 1.1rem;
   }
-  
+
   .flamou-popup-speech-bubble p,
   .flamou-popup-speech-bubble li {
     font-size: 1rem;
   }
-  
+
   .step-item {
     flex-direction: column;
     text-align: center;
     padding: 15px;
   }
-  
+
   .step-number {
     margin-right: 0;
     margin-bottom: 10px;
   }
-  
+
   .popup-buttons {
     flex-direction: column;
     gap: 10px;
   }
-  
+
   .popup-button {
     width: 100%;
   }
