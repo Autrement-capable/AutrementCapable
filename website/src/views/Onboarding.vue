@@ -495,14 +495,27 @@
         <h1 class="step-title">Génération de tes avatars</h1>
         <div class="flamou-container">
           <img
-            :src="flamouImages.happy2"
+            :src="currentFlamouImage"
             alt="Flamou intéressé"
-            class="flamou-image animated-bounce"
+            class="flamou-image interactive-flamou"
+            :class="flamouAnimationClass"
+            @click="interactWithFlamou"
           />
           <div class="flamou-speech-bubble">
             <p>
-              {{ loadingText }} Patiente un peu, nous créons tes personnages...
+              {{ currentFlamouMessage }}
             </p>
+          </div>
+        </div>
+        
+        <!-- Interactive Controls -->
+        <div class="flamou-controls">
+          <div class="control-hint">Clique sur Flamou pour t'amuser pendant l'attente !</div>
+          <div class="control-buttons">
+            <button @click="makeFlamouHappy" class="control-btn happy-btn">😊 Sourire</button>
+            <button @click="makeFlamouDance" class="control-btn dance-btn">💃 Danser</button>
+            <button @click="makeFlamouSpin" class="control-btn spin-btn">🌀 Tourner</button>
+            <button @click="makeFlamouJump" class="control-btn jump-btn">🦘 Sauter</button>
           </div>
         </div>
         <div class="loading-container">
@@ -706,6 +719,23 @@ export default {
       isFinalizingProfile: false,
       finalizationError: null,
       showAccountExplanationPopup: false,
+      
+      // Interactive Flamou controls
+      currentFlamouImage: null,
+      currentFlamouMessage: 'Création de tes avatars...',
+      flamouAnimationClass: 'animated-bounce',
+      flamouInteractionCount: 0,
+      flamouMessages: [
+        'Création de tes avatars... Patiente un peu !',
+        'J\'adore quand tu joues avec moi ! 😊',
+        'Regarde-moi danser pendant qu\'on attend !',
+        'Wheeee ! Je tourne, je tourne !',
+        'Hop hop hop ! Je saute de joie !',
+        'Tu es vraiment amusant(e) ! 🎉',
+        'Encore un peu de patience, tes avatars arrivent !',
+        'Tu me fais rire ! Continuons à jouer !',
+        'C\'est bientôt fini, je sens que ça va être génial !'
+      ],
 
       flamouImages: {
         happy: require('@/assets/flamou/happy.png'),
@@ -996,6 +1026,9 @@ export default {
       this.generationProgress = 0
       this.generationError = null
       this.loadingText = 'Création de tes avatars...'
+      
+      // Initialize interactive Flamou
+      this.initializeInteractiveFlamou()
 
       try {
         // Prepare avatar generation request
@@ -1145,6 +1178,62 @@ export default {
     proceedWithAccountCreation() {
       this.showAccountExplanationPopup = false
       this.createAccount()
+    },
+    
+    // Interactive Flamou methods
+    initializeInteractiveFlamou() {
+      this.currentFlamouImage = this.flamouImages.happy2
+      this.currentFlamouMessage = this.flamouMessages[0]
+      this.flamouAnimationClass = 'animated-bounce'
+      this.flamouInteractionCount = 0
+    },
+    
+    interactWithFlamou() {
+      this.flamouInteractionCount++
+      const messageIndex = Math.min(this.flamouInteractionCount, this.flamouMessages.length - 1)
+      this.currentFlamouMessage = this.flamouMessages[messageIndex]
+      
+      // Cycle through different Flamou expressions
+      const images = [this.flamouImages.happy, this.flamouImages.interesting, this.flamouImages.happy2, this.flamouImages.hey]
+      this.currentFlamouImage = images[this.flamouInteractionCount % images.length]
+      
+      // Add temporary wiggle animation
+      this.flamouAnimationClass = 'flamou-wiggle'
+      setTimeout(() => {
+        this.flamouAnimationClass = 'animated-bounce'
+      }, 800)
+    },
+    
+    makeFlamouHappy() {
+      this.currentFlamouMessage = 'Tu me rends si heureux ! 😊'
+      this.flamouAnimationClass = 'flamou-pulse'
+      setTimeout(() => {
+        this.flamouAnimationClass = 'animated-bounce'
+      }, 1000)
+    },
+    
+    makeFlamouDance() {
+      this.currentFlamouMessage = 'Regarde-moi danser ! 💃'
+      this.flamouAnimationClass = 'flamou-dance'
+      setTimeout(() => {
+        this.flamouAnimationClass = 'animated-bounce'
+      }, 2000)
+    },
+    
+    makeFlamouSpin() {
+      this.currentFlamouMessage = 'Wheeee ! Je tourne ! 🌀'
+      this.flamouAnimationClass = 'flamou-spin'
+      setTimeout(() => {
+        this.flamouAnimationClass = 'animated-bounce'
+      }, 1500)
+    },
+    
+    makeFlamouJump() {
+      this.currentFlamouMessage = 'Hop hop hop ! Je saute ! 🦘'
+      this.flamouAnimationClass = 'flamou-jump'
+      setTimeout(() => {
+        this.flamouAnimationClass = 'animated-bounce'
+      }, 1200)
     },
   },
 }
@@ -1846,6 +1935,36 @@ export default {
   animation: bounce 1.5s infinite alternate;
 }
 
+.interactive-flamou {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.interactive-flamou:hover {
+  transform: scale(1.05);
+  filter: brightness(1.1);
+}
+
+.flamou-wiggle {
+  animation: wiggle 0.8s ease-in-out;
+}
+
+.flamou-pulse {
+  animation: pulse 1s ease-in-out;
+}
+
+.flamou-dance {
+  animation: dance 2s ease-in-out;
+}
+
+.flamou-spin {
+  animation: spin-flamou 1.5s ease-in-out;
+}
+
+.flamou-jump {
+  animation: jump 1.2s ease-in-out;
+}
+
 @keyframes bounce {
   0% {
     transform: translateY(0);
@@ -1853,6 +1972,36 @@ export default {
   100% {
     transform: translateY(-10px);
   }
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-5deg); }
+  75% { transform: rotate(5deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+@keyframes dance {
+  0%, 100% { transform: rotate(0deg) translateY(0); }
+  25% { transform: rotate(-10deg) translateY(-5px); }
+  50% { transform: rotate(10deg) translateY(-10px); }
+  75% { transform: rotate(-5deg) translateY(-5px); }
+}
+
+@keyframes spin-flamou {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes jump {
+  0%, 100% { transform: translateY(0); }
+  25% { transform: translateY(-20px); }
+  50% { transform: translateY(-30px); }
+  75% { transform: translateY(-15px); }
 }
 
 @keyframes spin {
@@ -2100,8 +2249,82 @@ export default {
   scrollbar-color: #4285f4 rgba(255, 255, 255, 0.1);
 }
 
+/* Interactive Flamou Controls */
+.flamou-controls {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.control-hint {
+  color: #a0c4ff;
+  font-size: 0.9rem;
+  margin-bottom: 15px;
+  text-align: center;
+  font-style: italic;
+}
+
+.control-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.control-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.happy-btn {
+  background: linear-gradient(45deg, #ffeb3b, #ffc107);
+  color: #333;
+}
+
+.dance-btn {
+  background: linear-gradient(45deg, #e91e63, #9c27b0);
+  color: white;
+}
+
+.spin-btn {
+  background: linear-gradient(45deg, #2196f3, #03a9f4);
+  color: white;
+}
+
+.jump-btn {
+  background: linear-gradient(45deg, #4caf50, #8bc34a);
+  color: white;
+}
+
+.control-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.control-btn:active {
+  transform: translateY(0);
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
+  .control-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .control-btn {
+    width: 100%;
+    max-width: 200px;
+  }
+
+
   .flamou-container {
     flex-direction: column;
     text-align: center;
