@@ -168,9 +168,9 @@ async def test_passkey_provisional_account_flow():
             access_token = registration_result["access_token"]
 
         # 4. Update user profile using the access token
-        with patch('app.core.security.decorators.decode_token') as mock_decode:
-            # Mock the JWT decoding to return user info
-            mock_decode.return_value = {"sub": user_id, "role": "Young Person"}
+        with patch('app.core.security.decorators.get_jwt_data') as mock_get_jwt:
+            # Mock the JWT data to return user info directly (for ACCESS_TOKEN security type)
+            mock_get_jwt.return_value = {"sub": user_id, "role": "Young Person"}
 
             response = await ac.put("/user/profile", 
                                   json={"first_name": "wfwf", "age": 18, "onboarding_complete": True},
