@@ -1,0 +1,7 @@
+[build]
+  base = "website"            # if your frontend is in a subfolder
+  publish = "website/dist"    # or "frontend/build" depending on your framework
+  command = "yarn build"       # or "npm run build"
+
+[build.environment]
+  VITE_API_URL = "https://api.autrement-cap.fr"  # or any env you need
