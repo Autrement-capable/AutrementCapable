@@ -40,7 +40,8 @@ jobs:
         echo "Connecting to $USER@$HOST..."
         ssh -v -o StrictHostKeyChecking=no $USER@$HOST << 'EOF'
           echo "Connected to server ✅"
-          cd /code/AutrementCapable || { echo "❌ Failed to cd"; exit 1; }
+          ls -al
+          cd ~/code/AutrementCapable || { echo "❌ Failed to cd"; exit 1; }
           git pull origin main || { echo "❌ git pull failed"; exit 1; }
           cd Backend || { echo "❌ Failed to cd to Backend"; exit 1; }
           docker compose down || { echo "❌ docker down failed"; exit 1; }
