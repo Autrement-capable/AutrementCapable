@@ -52,3 +52,9 @@ class Settings(BaseModel):
 # Load settings from the YAML file during class initialization
 __config_file__ = "./config/config.yaml"
 settings = Settings.from_yaml(__config_file__)
+
+def get_secret_key() -> str:
+    """
+    Get the secret key for JWT signing. Function for testing purposes.
+    """
+    return settings.authjwt_secret_key
