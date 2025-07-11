@@ -185,8 +185,51 @@
         </div>
       </div>
 
-      <!-- Step 5: Accessories Selection -->
+      <!-- Step 5: Skin Color Selection -->
       <div v-if="currentStep === 5" class="step-container">
+        <h1 class="step-title">
+          Quelle est la couleur de peau de ton personnage ?
+        </h1>
+        <div class="flamou-container">
+          <img
+            :src="flamouImages.thinking2"
+            alt="Flamou pensif"
+            class="flamou-image"
+          />
+          <div class="flamou-speech-bubble">
+            <p>
+              Choisis la couleur de peau qui correspond à ton personnage. Tu
+              peux choisir celle qui te ressemble ou celle que tu préfères !
+            </p>
+          </div>
+        </div>
+        <div class="skin-colors-container">
+          <div
+            v-for="skinColor in availableSkinColors"
+            :key="skinColor.id"
+            class="skin-color-option"
+            :class="{ selected: responses.avatarSkinColor === skinColor.name }"
+            @click="responses.avatarSkinColor = skinColor.name"
+          >
+            <div
+              class="skin-color-circle"
+              :style="{ backgroundColor: skinColor.hex }"
+            ></div>
+            <div class="skin-color-emoji">{{ skinColor.emoji }}</div>
+            <p>{{ skinColor.name }}</p>
+          </div>
+        </div>
+        <div class="navigation-buttons">
+          <button class="back-button" @click="previousStep">Retour</button>
+          <button class="skip-button" @click="skipSkinColorStep">
+            Je ne sais pas
+          </button>
+          <button class="next-button" @click="nextStep">Continuer</button>
+        </div>
+      </div>
+
+      <!-- Step 6: Accessories Selection -->
+      <div v-if="currentStep === 6" class="step-container">
         <h1 class="step-title">Choisis ce que ton personnage porte</h1>
         <div class="flamou-container">
           <img
@@ -252,8 +295,8 @@
         </div>
       </div>
 
-      <!-- Step 6: Color Selection -->
-      <div v-if="currentStep === 6" class="step-container">
+      <!-- Step 7: Color Selection -->
+      <div v-if="currentStep === 7" class="step-container">
         <h1 class="step-title">Quelle est ta couleur préférée ?</h1>
         <div class="flamou-container">
           <img
@@ -287,8 +330,8 @@
         </div>
       </div>
 
-      <!-- Step 7: Passion Selection -->
-      <div v-if="currentStep === 7" class="step-container">
+      <!-- Step 8: Passion Selection -->
+      <div v-if="currentStep === 8" class="step-container">
         <h1 class="step-title">Qu'est-ce que tu aimes faire ?</h1>
         <div class="flamou-container">
           <img
@@ -298,10 +341,17 @@
           />
           <div class="flamou-speech-bubble">
             <p>
-              Choisis toutes les activités que tu aimes. Tu peux en sélectionner plusieurs !
+              Choisis toutes les activités que tu aimes. Tu peux en sélectionner
+              plusieurs !
             </p>
-            <div v-if="responses.avatarPassions.length > 0" class="selected-passions-indicator">
-              {{ responses.avatarPassions.length }} passion{{ responses.avatarPassions.length > 1 ? 's' : '' }} sélectionnée{{ responses.avatarPassions.length > 1 ? 's' : '' }}
+            <div
+              v-if="responses.avatarPassions.length > 0"
+              class="selected-passions-indicator"
+            >
+              {{ responses.avatarPassions.length }} passion{{
+                responses.avatarPassions.length > 1 ? 's' : ''
+              }}
+              sélectionnée{{ responses.avatarPassions.length > 1 ? 's' : '' }}
             </div>
           </div>
         </div>
@@ -310,29 +360,31 @@
             v-for="passion in currentPassions"
             :key="passion.id"
             class="passion-option"
-            :class="{ selected: responses.avatarPassions.includes(passion.name) }"
+            :class="{
+              selected: responses.avatarPassions.includes(passion.name),
+            }"
             @click="togglePassion(passion.name)"
           >
             <div class="passion-image">{{ passion.emoji }}</div>
             <p>{{ passion.name }}</p>
           </div>
         </div>
-        
+
         <!-- Pagination controls -->
         <div class="passion-pagination">
-          <button 
+          <button
             class="pagination-button"
             @click="previousPassionPage"
             :disabled="!canGoToPreviousPassionPage"
           >
             ← Précédent
           </button>
-          
+
           <div class="pagination-info">
             Page {{ currentPassionPage + 1 }} sur {{ totalPassionPages }}
           </div>
-          
-          <button 
+
+          <button
             class="pagination-button"
             @click="nextPassionPage"
             :disabled="!canGoToNextPassionPage"
@@ -349,8 +401,8 @@
         </div>
       </div>
 
-      <!-- Step 8: Expression Selection -->
-      <div v-if="currentStep === 8" class="step-container">
+      <!-- Step 9: Expression Selection -->
+      <div v-if="currentStep === 9" class="step-container">
         <h1 class="step-title">Ton personnage a quelle expression ?</h1>
         <div class="flamou-container">
           <img
@@ -385,8 +437,8 @@
         </div>
       </div>
 
-      <!-- Step 9: Account Creation -->
-      <div v-if="currentStep === 9" class="step-container">
+      <!-- Step 10: Account Creation -->
+      <div v-if="currentStep === 10" class="step-container">
         <h1 class="step-title">Création de ton compte</h1>
         <div class="flamou-container">
           <img
@@ -396,7 +448,8 @@
           />
           <div class="flamou-speech-bubble">
             <p>
-              Parfait ! Maintenant, créons ton compte pour sauvegarder tes informations...
+              Parfait ! Maintenant, créons ton compte pour sauvegarder tes
+              informations...
             </p>
           </div>
         </div>
@@ -406,8 +459,8 @@
         </div>
       </div>
 
-      <!-- Step 10: Generating Avatars -->
-      <div v-if="currentStep === 10" class="step-container">
+      <!-- Step 11: Generating Avatars -->
+      <div v-if="currentStep === 11" class="step-container">
         <h1 class="step-title">Génération de tes avatars</h1>
         <div class="flamou-container">
           <img
@@ -426,15 +479,15 @@
           <p class="loading-text">{{ loadingText }}</p>
           <div v-if="generationProgress > 0" class="generation-progress">
             <div class="progress-bar-container">
-              <div 
-                class="progress-bar-fill" 
+              <div
+                class="progress-bar-fill"
                 :style="{ width: generationProgress + '%' }"
               ></div>
             </div>
             <p class="progress-text">{{ Math.round(generationProgress) }}%</p>
           </div>
         </div>
-        
+
         <!-- Show error if generation fails -->
         <div v-if="generationError" class="error-container">
           <p class="error-message">{{ generationError }}</p>
@@ -444,8 +497,8 @@
         </div>
       </div>
 
-      <!-- Step 11: Avatar Selection -->
-      <div v-if="currentStep === 11" class="step-container">
+      <!-- Step 12: Avatar Selection -->
+      <div v-if="currentStep === 12" class="step-container">
         <h1 class="step-title">Choisis ton avatar préféré</h1>
         <div class="flamou-container">
           <img
@@ -465,7 +518,11 @@
             :class="{ selected: selectedAvatarIndex === index }"
             @click="selectedAvatarIndex = index"
           >
-            <img :src="avatar.data_url" :alt="`Avatar option ${index + 1}`" class="avatar-image" />
+            <img
+              :src="avatar.data_url"
+              :alt="`Avatar option ${index + 1}`"
+              class="avatar-image"
+            />
             <div class="avatar-label">Option {{ index + 1 }}</div>
           </div>
         </div>
@@ -483,8 +540,8 @@
         </div>
       </div>
 
-      <!-- Step 12: Récapitulatif et finalisation -->
-      <div v-if="currentStep === 12" class="step-container summary-container">
+      <!-- Step 13: Récapitulatif et finalisation -->
+      <div v-if="currentStep === 13" class="step-container summary-container">
         <h1 class="step-title">Récapitulatif</h1>
         <div class="flamou-container">
           <img
@@ -533,6 +590,11 @@
               </span>
             </div>
 
+            <div class="summary-item" v-if="responses.avatarSkinColor">
+              <span class="summary-label">Couleur de peau:</span>
+              <span class="summary-value">{{ responses.avatarSkinColor }}</span>
+            </div>
+
             <div
               class="summary-item"
               v-if="
@@ -553,10 +615,14 @@
 
             <div
               class="summary-item"
-              v-if="responses.avatarPassions && responses.avatarPassions.length > 0"
+              v-if="
+                responses.avatarPassions && responses.avatarPassions.length > 0
+              "
             >
               <span class="summary-label">Passions:</span>
-              <span class="summary-value">{{ responses.avatarPassions.join(', ') }}</span>
+              <span class="summary-value">
+                {{ responses.avatarPassions.join(', ') }}
+              </span>
             </div>
 
             <div class="summary-item" v-if="responses.avatarExpression">
@@ -575,7 +641,11 @@
             @click="finalizeProfile"
             :disabled="isFinalizingProfile"
           >
-            {{ isFinalizingProfile ? 'Finalisation en cours...' : 'Finaliser mon profil' }}
+            {{
+              isFinalizingProfile
+                ? 'Finalisation en cours...'
+                : 'Finaliser mon profil'
+            }}
           </button>
         </div>
 
@@ -609,7 +679,7 @@ export default {
       generationError: null,
       isFinalizingProfile: false,
       finalizationError: null,
-      
+
       flamouImages: {
         happy: require('@/assets/flamou/happy.png'),
         happy2: require('@/assets/flamou/happy2.png'),
@@ -635,6 +705,23 @@ export default {
         { id: 'orange', name: 'orange', hex: '#ff9800' },
         { id: 'white', name: 'blanc', hex: '#ffffff' },
         { id: 'black', name: 'noir', hex: '#202124' },
+      ],
+      availableSkinColors: [
+        { id: 'light', name: 'claire', hex: '#fdbcb4', emoji: '' },
+        {
+          id: 'medium-light',
+          name: 'moyenne claire',
+          hex: '#f1c27d',
+          emoji: '🏼',
+        },
+        { id: 'medium', name: 'moyenne', hex: '#e0ac69', emoji: '🏽' },
+        {
+          id: 'medium-dark',
+          name: 'moyenne foncée',
+          hex: '#c68642',
+          emoji: '🏾',
+        },
+        { id: 'dark', name: 'foncée', hex: '#8d5524', emoji: '🏿' },
       ],
       availablePassions: [
         { id: 'games', name: 'jeux vidéo', emoji: '🎮' },
@@ -666,13 +753,14 @@ export default {
         age: 18,
         nickname: '',
         avatarGender: null,
+        avatarSkinColor: null,
         avatarAccessories: null,
         avatarColor: null,
         avatarPassions: [],
         avatarExpression: null,
       },
-      totalSteps: 12, // Updated total steps
-      
+      totalSteps: 13, // Updated total steps
+
       // Pagination for passions
       currentPassionPage: 0,
       passionsPerPage: 9,
@@ -691,22 +779,22 @@ export default {
       }
       return null
     },
-    
+
     // Pagination for passions
     currentPassions() {
       const start = this.currentPassionPage * this.passionsPerPage
       const end = start + this.passionsPerPage
       return this.availablePassions.slice(start, end)
     },
-    
+
     totalPassionPages() {
       return Math.ceil(this.availablePassions.length / this.passionsPerPage)
     },
-    
+
     canGoToPreviousPassionPage() {
       return this.currentPassionPage > 0
     },
-    
+
     canGoToNextPassionPage() {
       return this.currentPassionPage < this.totalPassionPages - 1
     },
@@ -736,7 +824,7 @@ export default {
     },
     nextStep() {
       // Set accessory response before moving to next step
-      if (this.currentStep === 5) {
+      if (this.currentStep === 6) {
         this.responses.avatarAccessories =
           this.accessories.length > 0 ? this.accessories.join(',') : 'none'
       }
@@ -745,17 +833,17 @@ export default {
       this.currentStep++
 
       // Reset passion pagination when entering passion step
-      if (this.currentStep === 7) {
+      if (this.currentStep === 8) {
         this.currentPassionPage = 0
       }
 
       // WTF vlad what black magic control flow is this took me 2 hours to figure out
 
       // Handle different steps
-      if (this.currentStep === 9) {
+      if (this.currentStep === 10) {
         // Create account first
         this.createAccount()
-      } else if (this.currentStep === 10) {
+      } else if (this.currentStep === 11) {
         // Then generate avatars
         this.generateAvatars()
       }
@@ -763,18 +851,22 @@ export default {
     previousStep() {
       if (this.currentStep > 1) {
         this.currentStep--
-        
+
         // Reset passion pagination when entering passion step
-        if (this.currentStep === 7) {
+        if (this.currentStep === 8) {
           this.currentPassionPage = 0
         }
       }
     },
     skipStep() {
-      if (this.currentStep === 5) {
+      if (this.currentStep === 6) {
         this.accessories = []
         this.responses.avatarAccessories = 'none'
       }
+      this.nextStep()
+    },
+    skipSkinColorStep() {
+      this.responses.avatarSkinColor = null
       this.nextStep()
     },
     skipColorStep() {
@@ -789,26 +881,26 @@ export default {
       this.responses.avatarExpression = null
       this.nextStep()
     },
-    
+
     // Pagination methods for passions
     previousPassionPage() {
       if (this.canGoToPreviousPassionPage) {
         this.currentPassionPage--
       }
     },
-    
+
     nextPassionPage() {
       if (this.canGoToNextPassionPage) {
         this.currentPassionPage++
       }
     },
-    
+
     goToPassionPage(pageIndex) {
       if (pageIndex >= 0 && pageIndex < this.totalPassionPages) {
         this.currentPassionPage = pageIndex
       }
     },
-    
+
     togglePassion(passionName) {
       const index = this.responses.avatarPassions.indexOf(passionName)
       if (index === -1) {
@@ -835,15 +927,14 @@ export default {
         const result = await AuthService.registerWithPasskey()
         console.log('Account creation successful:', result)
 
-    // Possible options ofr the profile update endpoint
-    //    first_name: Optional[str]
-    //    last_name: Optional[str]
-    //    email: Optional[str]
-    //    age: Optional[int]
-    //    phone_number: Optional[str]
-    //    address: Optional[str]
-    //    onboarding_complete: Optional[bool]
-
+        // Possible options ofr the profile update endpoint
+        //    first_name: Optional[str]
+        //    last_name: Optional[str]
+        //    email: Optional[str]
+        //    age: Optional[int]
+        //    phone_number: Optional[str]
+        //    address: Optional[str]
+        //    onboarding_complete: Optional[bool]
 
         // Update user profile with additional data
         const profileData = {
@@ -853,36 +944,46 @@ export default {
         }
         console.log('Updating profile with data:', profileData)
         // we dont await this call because we dont need its result
-        AuthService.request("put", "/user/profile", profileData).then((response) => {
-          console.log('Profile updated successfully:', response.data)
-        }).catch((error) => {
-          console.error('Error updating profile:', error)
-          // Non-critical error, continue with flow
-        })
+        AuthService.request('put', '/user/profile', profileData)
+          .then((response) => {
+            console.log('Profile updated successfully:', response.data)
+          })
+          .catch((error) => {
+            console.error('Error updating profile:', error)
+            // Non-critical error, continue with flow
+          })
         // Save avatar creation data
         const avatarData = {
           avatarGender: this.responses.avatarGender,
+          avatarSkinColor: this.responses.avatarSkinColor,
           avatarAccessories: this.responses.avatarAccessories,
           avatarColor: this.responses.avatarColor,
           avatarPassions: this.responses.avatarPassions,
           avatarExpression: this.responses.avatarExpression,
         }
-          // no need to await this call because we dont need its result either
-          AuthService.request("post", "/user/profile/avatar-creation-data", avatarData)
+        // no need to await this call because we dont need its result either
+        AuthService.request(
+          'post',
+          '/user/profile/avatar-creation-data',
+          avatarData,
+        )
           .then((response) => {
-            console.log('Avatar creation data saved successfully:', response.data)
-          }).catch((error) => {
+            console.log(
+              'Avatar creation data saved successfully:',
+              response.data,
+            )
+          })
+          .catch((error) => {
             console.error('Error saving avatar creation data:', error)
             // Non-critical error, continue with flow
           })
 
         // Move to avatar generation
         this.nextStep()
-
       } catch (error) {
         console.error('Account creation error:', error)
         alert('Erreur lors de la création du compte. Veuillez réessayer.')
-        this.currentStep = 8 // Go back to last step before account creation
+        this.currentStep = 9 // Go back to last step before account creation
       }
     },
 
@@ -896,6 +997,7 @@ export default {
         // Prepare avatar generation request
         const avatarRequest = {
           gender: this.responses.avatarGender || 'neutral',
+          skinColor: this.responses.avatarSkinColor,
           accessories: this.responses.avatarAccessories,
           color: this.responses.avatarColor,
           passions: this.responses.avatarPassions,
@@ -912,8 +1014,12 @@ export default {
         }, 1000)
 
         // Call backend endpoint for avatar generation
-        const response = await AuthService.request('post', '/avatars/generate', avatarRequest)
-        
+        const response = await AuthService.request(
+          'post',
+          '/avatars/generate',
+          avatarRequest,
+        )
+
         clearInterval(progressInterval)
         this.generationProgress = 100
 
@@ -921,26 +1027,28 @@ export default {
 
         if (response.data.avatars && response.data.avatars.length > 0) {
           this.generatedAvatars = response.data.avatars
-          
+
           // Add a small delay to show completion
           setTimeout(() => {
-            this.currentStep = 11 // Move to avatar selection
+            this.currentStep = 12 // Move to avatar selection
           }, 1000)
         } else {
           throw new Error('No avatars received from server')
         }
-
       } catch (error) {
         console.error('Avatar generation error:', error)
-        this.generationError = error.response?.data?.detail || error.message || 'Erreur lors de la génération des avatars'
-        
+        this.generationError =
+          error.response?.data?.detail ||
+          error.message ||
+          'Erreur lors de la génération des avatars'
+
         // Show fallback avatars or retry option
         this.loadingText = 'Une erreur est survenue...'
       }
     },
 
     async retryAvatarGeneration() {
-      this.currentStep = 10 // Go back to generation step
+      this.currentStep = 11 // Go back to generation step
       await this.generateAvatars()
     },
 
@@ -963,24 +1071,28 @@ export default {
         const blob = await response.blob()
 
         // Create a proper File object with correct mime type
-        const avatarFile = new File([blob], 'avatar.png', { 
+        const avatarFile = new File([blob], 'avatar.png', {
           type: 'image/png',
-          lastModified: Date.now()
+          lastModified: Date.now(),
         })
 
         // Upload avatar using PictureService
         const { uploadPicture } = usePicture()
-        
+
         try {
           const uploadResult = await uploadPicture(avatarFile, 'avatar')
           console.log('Avatar uploaded successfully:', uploadResult)
-          
+
           // Store the upload result for future reference
-          localStorage.setItem('avatar_upload_result', JSON.stringify(uploadResult))
+          localStorage.setItem(
+            'avatar_upload_result',
+            JSON.stringify(uploadResult),
+          )
         } catch (uploadError) {
           console.error('Error uploading avatar:', uploadError)
           // Non-critical error, but inform user
-          this.finalizationError = 'Avatar sauvegardé localement mais problème lors du téléchargement sur le serveur'
+          this.finalizationError =
+            'Avatar sauvegardé localement mais problème lors du téléchargement sur le serveur'
         }
 
         // Save user profile data in localStorage for potential future use
@@ -992,6 +1104,7 @@ export default {
             theme: this.selectedTheme,
             avatar: selectedAvatar.data_url,
             avatarGender: this.responses.avatarGender,
+            avatarSkinColor: this.responses.avatarSkinColor,
             avatarAccessories: this.responses.avatarAccessories,
             avatarColor: this.responses.avatarColor,
             avatarPassions: this.responses.avatarPassions,
@@ -1001,11 +1114,11 @@ export default {
 
         // Redirect to dashboard
         this.$router.push('/dashboard')
-
       } catch (error) {
         console.error('Profile finalization error:', error)
         this.finalizationError =
-          error.message || 'Erreur lors de la finalisation du profil. Veuillez réessayer.'
+          error.message ||
+          'Erreur lors de la finalisation du profil. Veuillez réessayer.'
       } finally {
         this.isFinalizingProfile = false
       }
@@ -1021,7 +1134,7 @@ export default {
       if (gender === 'girl') return 'Fille'
       return 'Neutre'
     },
-  }
+  },
 }
 </script>
 
@@ -1381,6 +1494,64 @@ export default {
 
 .color-option:hover:not(.selected) {
   transform: scale(1.1);
+}
+
+/* Skin Color Selection Styles */
+.skin-colors-container {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+  margin: 30px 0;
+  flex-wrap: wrap;
+}
+
+.skin-color-option {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.skin-color-option.selected {
+  border-color: #4285f4;
+  background-color: rgba(66, 133, 244, 0.2);
+}
+
+.skin-color-option:hover:not(.selected) {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.skin-color-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  margin-bottom: 8px;
+  transition: all 0.2s ease;
+}
+
+.skin-color-option.selected .skin-color-circle {
+  border-color: #ffffff;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.skin-color-emoji {
+  font-size: 1.5rem;
+  margin-bottom: 5px;
+}
+
+.skin-color-option p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #ffffff;
+  font-weight: 500;
 }
 
 /* Passion Selection Styles */
@@ -1756,53 +1927,53 @@ export default {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .flamou-image {
     margin-right: 0;
     margin-bottom: 15px;
   }
-  
+
   .flamou-speech-bubble {
     margin-left: 0;
     max-width: 90%;
   }
-  
+
   .flamou-speech-bubble:before {
     display: none;
   }
-  
+
   .avatars-container {
     flex-direction: column;
     align-items: center;
   }
-  
+
   .avatar-option {
     width: 250px;
   }
-  
+
   .summary-content {
     flex-direction: column;
   }
-  
+
   .summary-avatar {
     margin-right: 0;
     margin-bottom: 20px;
     text-align: center;
   }
-  
+
   /* Responsive pagination */
   .passion-pagination {
     flex-direction: column;
     gap: 10px;
     padding: 10px;
   }
-  
+
   .pagination-button {
     width: 100%;
     max-width: 200px;
     margin: 0 auto;
   }
-  
+
   .pagination-info {
     text-align: center;
     order: -1;

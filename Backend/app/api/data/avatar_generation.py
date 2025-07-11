@@ -29,6 +29,7 @@ except Exception as e:
 class AvatarGenerationRequest(BaseModel):
     """Request model for avatar generation"""
     gender: str = Field(..., description="Avatar gender: 'boy', 'girl', or 'neutral'")
+    skinColor: Optional[str] = Field(None, description="Avatar skin color: 'claire', 'moyenne claire', 'moyenne', 'moyenne foncée', or 'foncée'")
     accessories: Optional[str] = Field(None, description="Comma-separated accessories or 'none'")
     color: Optional[str] = Field(None, description="Preferred color")
     passions: Optional[List[str]] = Field(None, description="List of user's passions/interests")
@@ -50,7 +51,7 @@ class AvatarGenerationResponse(BaseModel):
 # Router
 avatar_router = APIRouter(prefix="/avatars", tags=["Avatar Generation"])
 
-def build_avatar_prompt(gender: str, accessories: Optional[str] = None, 
+def build_avatar_prompt(gender: str, skinColor: Optional[str] = None, accessories: Optional[str] = None, 
                        color: Optional[str] = None, passions: Optional[List[str]] = None, 
                        expression: Optional[str] = None, variation_suffix: str = "") -> str:
     """
@@ -58,6 +59,7 @@ def build_avatar_prompt(gender: str, accessories: Optional[str] = None,
     
     Args:
         gender: Avatar gender ('boy', 'girl', 'neutral')
+        skinColor: Avatar skin color ('claire', 'moyenne claire', 'moyenne', 'moyenne foncée', 'foncée')
         accessories: Accessories string
         color: Preferred color
         passions: List of user's passions/interests
@@ -73,6 +75,11 @@ def build_avatar_prompt(gender: str, accessories: Optional[str] = None,
         'girl': 'féminin', 
         'neutral': 'neutre'
     }.get(gender, 'neutre')
+    
+    # Build skin color text
+    skin_color_text = ""
+    if skinColor:
+        skin_color_text = f"avec une peau de couleur {skinColor}"
     
     # Build accessories text
     accessories_text = "sans accessoires particuliers"
@@ -106,7 +113,7 @@ palette de couleurs naturelle et harmonieuse, rendu propre et professionnel.
 Fond : blanc uni pur (#FFFFFF), sans motif, sans dégradé, sans ombre.
 Aucun objet, décor, texte ou palette de couleurs autour du personnage.
 
-Personnage : de genre {gender_fr}, {accessories_text}, {color_text}, {passions_text}, {expression_text}.
+Personnage : de genre {gender_fr}, {skin_color_text}, {accessories_text}, {color_text}, {passions_text}, {expression_text}.
 Vue de face, position debout, le modèle est coupé à la taille, au niveau de la ceinture, proportions naturelles,
 cadré et centré dans l'image, bien éclairé, détails soignés sur vêtements et accessoires.
 ne coupez jamais la tête de la personne sur la photo.
@@ -222,6 +229,7 @@ async def generate_avatars(
         for avatar_id, variation in prompt_variations:
             full_prompt = build_avatar_prompt(
                 gender=request.gender,
+                skinColor=request.skinColor,
                 accessories=request.accessories,
                 color=request.color,
                 passions=request.passions,
