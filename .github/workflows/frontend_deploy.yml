@@ -1,0 +1,31 @@
+name: Deploy to Netlify
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Check for [DEPLOY_FRONTEND] in commit messages
+      id: check_deploy
+      run: |
+        echo "🔍 Checking commit messages..."
+        if git log -1 --pretty=%B | grep -q "\[DEPLOY_FRONTEND\]"; then
+          echo "🚀 Found [DEPLOY_FRONTEND] in commit message"
+          echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "⚠️ No [DEPLOY_FRONTEND] tag found, skipping deploy"
+          echo "should_deploy=false" >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Trigger Netlify deploy hook
+      if: steps.check_deploy.outputs.should_deploy == 'true'
+      run: |
+        curl -X POST -d '{}' ${{ secrets.NETLIFY_BUILD_HOOK }}

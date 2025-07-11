@@ -24,6 +24,9 @@ def init_cors(app):
         "http://127.0.0.1:3000",
         "https://api.autrement-cap.fr",
         "https://pgadmin.autrement-cap.fr",
+        "https://autrement-capable.netlify.app",
+        "https://autrement-cap.fr",
+        "https://www.autrement-cap.fr",
     ]
     
     # Log the allowed origins
