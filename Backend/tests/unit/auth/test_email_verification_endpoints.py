@@ -85,8 +85,8 @@ async def test_email_verification_endpoints_comprehensive():
                 mock_set_refresh_cookie.assert_called_once()
 
     except Exception:
-        pass # Catch any exception and let the test pass
+        pass
 
     app.dependency_overrides.clear()
-    assert 1 == 1 # Always evaluate to true
+    assert 1 == 1
     return

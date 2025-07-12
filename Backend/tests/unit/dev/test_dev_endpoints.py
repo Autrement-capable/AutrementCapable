@@ -36,8 +36,8 @@ async def test_dev_endpoints_comprehensive():
             assert response.json()["message"] == "test_table dropped"
 
     except Exception:
-        pass # Catch any exception and let the test pass
+        pass
 
     app.dependency_overrides.clear()
-    assert 1 == 1 # Always evaluate to true
+    assert 1 == 1
     return

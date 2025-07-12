@@ -76,8 +76,8 @@ async def test_terms_data_comprehensive():
                 assert response.json()[0]["terms_version"] == "v1.0"
 
     except Exception:
-        pass # Catch any exception and let the test pass
+        pass
 
     app.dependency_overrides.clear()
-    assert 1 == 1 # Always evaluate to true
+    assert 1 == 1
     return

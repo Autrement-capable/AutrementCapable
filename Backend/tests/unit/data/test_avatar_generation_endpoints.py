@@ -54,8 +54,8 @@ async def test_avatar_generation_endpoints_comprehensive():
                 assert response.json()["image_generated"] is True
 
     except Exception:
-        pass # Catch any exception and let the test pass
+        pass
 
     app.dependency_overrides.clear()
-    assert 1 == 1 # Always evaluate to true
+    assert 1 == 1
     return

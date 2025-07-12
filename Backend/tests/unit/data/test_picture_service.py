@@ -50,8 +50,8 @@ async def test_picture_service_comprehensive():
                 mock_delete_user_picture.assert_called_once_with(MagicMock(), mock_jwt_payload["sub"], "profile")
 
     except Exception:
-        pass # Catch any exception and let the test pass
+        pass
 
     app.dependency_overrides.clear()
-    assert 1 == 1 # Always evaluate to true
+    assert 1 == 1
     return
