@@ -1,5 +1,12 @@
 <template>
   <div class="adventure-map">
+    <GameGuide
+      v-if="!activityStarted"
+      gameId="scenarios-game"
+      :forceShow="true"
+      @start-game="startActivity"
+      @skip-intro="startActivity"
+    />
     <div v-if="showBadgeAnimation" class="badge-unlock-overlay">
       <div class="badge-unlock-animation">
         <div class="badge-icon">🎭</div>
@@ -165,9 +172,13 @@
 import { scenarios } from '@/data/data.js'
 import { resetBadge } from '@/utils/badges'
 import AuthService from '@/services/AuthService';
+import GameGuide from '@/components/GameGuideComponent.vue'
 
 export default {
   name: 'ScenariosList',
+  components: {
+    GameGuide,
+  },
   data() {
     return {
       scenarios,
@@ -177,6 +188,7 @@ export default {
       pathsData: [],
       showBadgeAnimation: false,
       badgeData: null,
+      activityStarted: false,
     }
   },
   computed: {
@@ -197,6 +209,9 @@ export default {
   },
   created() {
     this.loadProgress()
+    if (this.hasStarted) {
+      this.activityStarted = true
+    }
     this.$nextTick(() => {
       this.calculatePaths()
       window.addEventListener('resize', this.calculatePaths)
@@ -216,6 +231,10 @@ export default {
     window.removeEventListener('resize', this.calculatePaths)
   },
   methods: {
+    startActivity() {
+      this.activityStarted = true
+    },
+    
     closeBadgeAnimation() {
       this.showBadgeAnimation = false
     },
