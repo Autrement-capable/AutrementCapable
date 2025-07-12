@@ -82,7 +82,7 @@ async def logout(
     """
 
     jti_access = jwt["jti"]
-    expires_access = datetime.utcfromtimestamp(jwt["exp"])
+    expires_access = datetime.datetime.utcfromtimestamp(jwt["exp"])
 
     # Revoke the access token
     is_ok = await revoke_token(session, jti_access, expires_access, "access", commit=False)
@@ -98,7 +98,7 @@ async def logout(
     if refresh_jwt:
         try:
             jti_refresh = refresh_jwt.get("jti")
-            expires_refresh = datetime.utcfromtimestamp(refresh_jwt["exp"])
+            expires_refresh = datetime.datetime.utcfromtimestamp(refresh_jwt["exp"])
             await revoke_token(session, jti_refresh, expires_refresh, "refresh")
         except Exception:
             # If token is invalid, we just continue as we already cleared the cookie
