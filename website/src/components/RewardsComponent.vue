@@ -325,6 +325,10 @@
         <span class="button-icon">👤</span>
         Mon profil
       </button>
+      <button class="action-button logout-button" @click="showLogoutConfirmation">
+        <span class="button-icon">🚪</span>
+        Se déconnecter
+      </button>
     </div>
 
     <!-- Détails du badge (modal) -->
@@ -378,6 +382,29 @@
               class="share-button"
             >
               Partager ce badge
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de confirmation de déconnexion -->
+    <div v-if="showLogoutModal" class="logout-modal-overlay" @click="cancelLogout">
+      <div class="logout-modal" @click.stop>
+        <div class="logout-modal-content">
+          <div class="logout-icon">⚠️</div>
+          <h3 class="logout-title">Confirmer la déconnexion</h3>
+          <p class="logout-message">
+            Êtes-vous sûr de vouloir vous déconnecter ? 
+            Vous devrez vous reconnecter pour accéder à votre profil.
+          </p>
+          <div class="logout-actions">
+            <button class="logout-confirm-btn" @click="confirmLogout" :disabled="isLoggingOut">
+              <span v-if="isLoggingOut" class="logout-spinner"></span>
+              {{ isLoggingOut ? 'Déconnexion...' : 'Oui, se déconnecter' }}
+            </button>
+            <button class="logout-cancel-btn" @click="cancelLogout" :disabled="isLoggingOut">
+              Annuler
             </button>
           </div>
         </div>
@@ -589,6 +616,8 @@ export default {
       showBadgeUnlockAnimation: false,
       newlyUnlockedBadge: null,
       internalShowGuide: this.showProfileGuide,
+      showLogoutModal: false,
+      isLoggingOut: false,
       profileTourActive: false,
       profileTourStep: 0,
       profileTourSections: [
@@ -814,6 +843,83 @@ export default {
     this.cleanup();
   },
   methods: {
+    /**
+     * Affiche la modal de confirmation de déconnexion
+     */
+    showLogoutConfirmation() {
+      this.showLogoutModal = true;
+      
+      const container = document.querySelector('.rewards-container');
+      if (container) {
+        container.scrollTo({
+          top: 0,
+          behavior: 'smooth'  // Animation fluide
+        });
+        
+        // Désactiver le défilement pendant que la modal est ouverte
+        container.classList.add('no-scroll');
+      }
+    },
+
+    /**
+     * Annule la déconnexion et ferme la modal
+     */
+    cancelLogout() {
+      if (!this.isLoggingOut) {
+        this.showLogoutModal = false;
+        
+        // 🔥 CORRECTION : Réactiver le défilement de manière plus robuste
+        this.$nextTick(() => {
+          const container = document.querySelector('.rewards-container');
+          if (container) {
+            container.classList.remove('no-scroll');
+            // Force le scroll à être réactivé
+            container.style.overflow = '';
+          }
+        });
+      }
+    },
+
+    /**
+     * Confirme et effectue la déconnexion
+     */
+    async confirmLogout() {
+      try {
+        this.isLoggingOut = true;
+        
+        // Effectuer la déconnexion via le service d'authentification
+        await AuthService.logout();
+        
+        // Nettoyer les données locales
+        // this.clearUserData();
+        
+        // Fermer la modal des récompenses
+        this.$emit('close');
+        
+        // Rediriger vers la page de connexion
+        this.$router.push('/login');
+        
+      } catch (error) {
+        console.error('Erreur lors de la déconnexion:', error);
+        
+        // Afficher un message d'erreur à l'utilisateur
+        alert('Une erreur est survenue lors de la déconnexion. Veuillez réessayer.');
+        
+        // 🔥 CORRECTION : En cas d'erreur, réactiver le défilement
+        this.$nextTick(() => {
+          const container = document.querySelector('.rewards-container');
+          if (container) {
+            container.classList.remove('no-scroll');
+            container.style.overflow = '';
+          }
+        });
+        
+      } finally {
+        this.isLoggingOut = false;
+        this.showLogoutModal = false;
+      }
+    },
+
     checkAllGamesCompleted() {
       // Vérifier si tous les jeux sont terminés pour débloquer le badge "Tous les jeux finis"
       if (this.canUnlockAllGamesCompleted()) {
@@ -2937,6 +3043,182 @@ export default {
 /* Modal détails badge */
 .no-scroll {
   overflow: hidden !important;
+}
+
+/* Bouton de déconnexion */
+.logout-button {
+  background-color: rgba(244, 67, 54, 0.8);
+}
+
+.logout-button:hover {
+  background-color: rgba(244, 67, 54, 0.9);
+}
+
+/* Modal de confirmation de déconnexion */
+.logout-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.3s ease;
+}
+
+.logout-modal {
+  background-color: rgba(30, 30, 45, 0.98);
+  border-radius: 20px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: scaleIn 0.3s ease;
+}
+
+.logout-modal-content {
+  padding: 30px;
+  text-align: center;
+}
+
+.logout-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.logout-title {
+  font-size: 24px;
+  color: white;
+  margin: 0 0 16px 0;
+  font-weight: bold;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.logout-message {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+}
+
+.logout-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.logout-confirm-btn, .logout-cancel-btn {
+  padding: 12px 24px;
+  border-radius: 24px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 140px;
+}
+
+.logout-confirm-btn {
+  background-color: #f44336;
+  color: white;
+}
+
+.logout-confirm-btn:hover:not(:disabled) {
+  background-color: #d32f2f;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.logout-confirm-btn:disabled {
+  background-color: #666;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.logout-cancel-btn {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.logout-cancel-btn:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.logout-cancel-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Spinner de chargement pour la déconnexion */
+.logout-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Mode contraste élevé pour les éléments de déconnexion */
+.high-contrast .logout-modal {
+  background-color: #000;
+  border: 2px solid #fff;
+}
+
+.high-contrast .logout-confirm-btn {
+  background-color: #f00;
+  border: 2px solid #fff;
+}
+
+.high-contrast .logout-cancel-btn {
+  background-color: #333;
+  border: 2px solid #fff;
+}
+
+.high-contrast .logout-button {
+  background-color: #f00;
+  border: 2px solid #fff;
+}
+
+/* Responsive pour la modal de déconnexion */
+@media (max-width: 480px) {
+  .logout-modal {
+    width: 95%;
+  }
+  
+  .logout-modal-content {
+    padding: 20px;
+  }
+  
+  .logout-actions {
+    flex-direction: column;
+  }
+  
+  .logout-confirm-btn, .logout-cancel-btn {
+    width: 100%;
+    min-width: auto;
+  }
+  
+  .logout-title {
+    font-size: 20px;
+  }
+  
+  .logout-message {
+    font-size: 14px;
+  }
 }
 
 .badge-modal-overlay {
